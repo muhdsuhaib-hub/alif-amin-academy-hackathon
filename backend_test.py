@@ -139,14 +139,20 @@ class QuranAcademyAPITester:
         ]
         
         all_protected = True
+        failed_endpoints = []
+        
         for endpoint, method in endpoints:
             success, data = self.make_request(method, endpoint, expected_status=401)
             if not success:
                 all_protected = False
-                break
+                failed_endpoints.append(f"{endpoint} returned {data.get('status_code', 'unknown')}")
         
-        return self.log_result("Protected Endpoints (No Auth)", all_protected, 
-                             "All endpoints properly require authentication")
+        if all_protected:
+            return self.log_result("Protected Endpoints (No Auth)", True, 
+                                 "All endpoints properly require authentication")
+        else:
+            return self.log_result("Protected Endpoints (No Auth)", False, 
+                                 f"Failed: {', '.join(failed_endpoints)}")
 
     def create_test_session(self):
         """Create a test session using MongoDB (simulated)"""
