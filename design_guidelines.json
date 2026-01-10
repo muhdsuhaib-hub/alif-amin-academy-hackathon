@@ -1,0 +1,224 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "Al-Ilm Academy",
+      "tone": "Warm, Welcoming, Premium, Spiritual but Modern",
+      "principles": [
+        "Fusion: Islamic Heritage x Modern EdTech",
+        "Emotion: Serenity and Focus",
+        "Content: The Quran is the Hero",
+        "Zoom In: Focus on human connection (Teacher-Student)",
+        "Negative Space: Respect the sacred text with breathing room"
+      ]
+    },
+    "typography": {
+      "font_family": {
+        "headings": "Playfair Display, serif",
+        "body": "Manrope, sans-serif",
+        "arabic": "Amiri, serif"
+      },
+      "scale": {
+        "h1": "text-5xl md:text-7xl font-medium tracking-tight leading-tight",
+        "h2": "text-4xl md:text-5xl font-medium tracking-tight",
+        "h3": "text-2xl md:text-3xl font-medium",
+        "body_lg": "text-lg md:text-xl leading-relaxed",
+        "body_base": "text-base leading-relaxed",
+        "caption": "text-sm font-medium tracking-wide uppercase"
+      },
+      "weights": {
+        "light": 300,
+        "regular": 400,
+        "medium": 500,
+        "bold": 700
+      }
+    },
+    "colors": {
+      "palette": {
+        "primary": {
+          "DEFAULT": "#044E42",
+          "foreground": "#FFFFFF",
+          "50": "#E6F7F4",
+          "100": "#C1EBE4",
+          "200": "#98DED3",
+          "300": "#6ED1C1",
+          "400": "#4BC4B0",
+          "500": "#2EB6A0",
+          "600": "#044E42",
+          "700": "#033B32",
+          "800": "#022822",
+          "900": "#011512"
+        },
+        "secondary": {
+          "DEFAULT": "#D4AF37",
+          "foreground": "#000000",
+          "50": "#FCF9E8",
+          "100": "#F8F2C6",
+          "200": "#F1E5A0",
+          "300": "#EAD87A",
+          "400": "#E3CB54",
+          "500": "#D4AF37",
+          "600": "#AA8C2C",
+          "700": "#806921",
+          "800": "#554616",
+          "900": "#2B230B"
+        },
+        "background": {
+          "DEFAULT": "#FDFBF7",
+          "paper": "#F7F3E8",
+          "dark": "#022822"
+        },
+        "text": {
+          "primary": "#1A1A1A",
+          "secondary": "#5A5A5A",
+          "muted": "#9CA3AF"
+        },
+        "accent": {
+          "DEFAULT": "#E76F51",
+          "foreground": "#FFFFFF"
+        }
+      },
+      "usage": {
+        "primary_action": "bg-primary text-white hover:bg-primary/90",
+        "secondary_action": "bg-secondary/20 text-secondary-900 hover:bg-secondary/30",
+        "surface": "bg-white border border-primary/5 shadow-sm",
+        "surface_highlight": "bg-background-paper"
+      }
+    },
+    "spacing": {
+      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+      "section_padding": "py-16 md:py-24 lg:py-32",
+      "card_padding": "p-6 md:p-8 lg:p-10",
+      "grid_gap": "gap-6 md:gap-8 lg:gap-12"
+    },
+    "visual_enhancers": {
+      "radius": {
+        "default": "rounded-2xl",
+        "button": "rounded-full",
+        "card": "rounded-3xl"
+      },
+      "shadows": {
+        "soft": "shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
+        "hover": "shadow-[0_8px_30px_rgb(0,0,0,0.08)]",
+        "glow": "shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+      },
+      "textures": {
+        "noise": "bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20",
+        "pattern": "bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] opacity-5"
+      },
+      "glass": "backdrop-blur-xl bg-white/70 border border-white/20 shadow-sm"
+    },
+    "layout_strategies": {
+      "marketing": {
+        "grid": "grid grid-cols-1 md:grid-cols-12 gap-8",
+        "hero": "min-h-[80vh] flex items-center relative overflow-hidden",
+        "feature_section": "py-24 relative"
+      },
+      "dashboard": {
+        "grid": "grid grid-cols-1 md:grid-cols-4 gap-6",
+        "sidebar": "hidden md:flex flex-col w-64 fixed inset-y-0 z-50 bg-white border-r border-primary/5",
+        "main_content": "md:pl-64 min-h-screen bg-background"
+      }
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "h-12 px-8 rounded-full bg-primary text-white font-medium transition-all hover:scale-105 hover:shadow-lg active:scale-95",
+      "secondary": "h-12 px-8 rounded-full bg-secondary/10 text-primary-900 font-medium transition-all hover:bg-secondary/20",
+      "outline": "h-12 px-8 rounded-full border-2 border-primary/20 text-primary font-medium hover:border-primary hover:bg-primary/5"
+    },
+    "cards": {
+      "feature": "p-8 rounded-3xl bg-white border border-primary/5 shadow-soft hover:shadow-hover transition-all duration-300 group",
+      "pricing": "p-10 rounded-3xl bg-white border border-primary/10 relative overflow-hidden",
+      "dashboard_widget": "p-6 rounded-2xl bg-white border border-gray-100 shadow-sm"
+    },
+    "inputs": {
+      "default": "h-12 rounded-xl border-gray-200 focus:border-primary focus:ring-primary/20 bg-gray-50/50"
+    }
+  },
+  "assets": {
+    "images": {
+      "hero_bg": {
+        "url": "https://images.unsplash.com/photo-1600616677773-0fbd06bd2727?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Islamic geometric architecture background",
+        "usage": "Hero section background with overlay"
+      },
+      "student_learning": {
+        "url": "https://images.unsplash.com/photo-1618190405497-00f284b5dda5?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Young girl reading Quran peacefully",
+        "usage": "Landing page feature section"
+      },
+      "boy_reading": {
+        "url": "https://images.unsplash.com/photo-1545589245-a5ce759f413f?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Boy focused on reading",
+        "usage": "Student dashboard welcome or features"
+      },
+      "teacher_female": {
+        "url": "https://images.unsplash.com/photo-1547567919-07728e7d2dc5?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Professional female teacher",
+        "usage": "Teacher profile or testimonials"
+      },
+      "teacher_male": {
+        "url": "https://images.pexels.com/photos/8121775/pexels-photo-8121775.jpeg",
+        "alt": "Professional male teacher",
+        "usage": "Teacher profile or testimonials"
+      },
+      "pattern_detail": {
+        "url": "https://images.unsplash.com/photo-1635722784047-8c2c489df874?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Intricate geometric pattern",
+        "usage": "Subtle background for cards or footers"
+      }
+    },
+    "icons": {
+      "library": "lucide-react",
+      "style": "Stroke width 1.5px, rounded ends"
+    }
+  },
+  "libraries": {
+    "quran_reader": "react-quran",
+    "animations": "framer-motion",
+    "dates": "date-fns",
+    "charts": "recharts",
+    "toast": "sonner"
+  },
+  "instructions_to_main_agent": {
+    "general": [
+      "Use 'Playfair Display' for all Headings (h1-h3) to give a premium, heritage feel.",
+      "Use 'Manrope' for all body text for maximum legibility.",
+      "Implement a 'Warm Cream' (#FDFBF7) background instead of pure white to reduce eye strain and feel more organic.",
+      "Use the 'Deep Emerald' (#044E42) as the primary brand color, but use it sparingly for high-impact elements.",
+      "Use 'Gold' (#D4AF37) ONLY for accents (borders, small icons, highlights). Do not use it for large backgrounds.",
+      "Ensure all interactive elements have a hover state that lifts them slightly (-translate-y-1).",
+      "For the 'Digital Mushaf', use a dark mode interface even if the rest of the app is light mode, to simulate a focused reading environment."
+    ],
+    "layout": [
+      "Avoid standard Bootstrap grids. Use the 'Bento' grid style for the dashboard.",
+      "Add generous padding (py-24) to marketing sections.",
+      "Use 'glassmorphism' for the sticky navigation bar."
+    ],
+    "components": [
+      "Customize Shadcn components to match the 'rounded-2xl' and 'rounded-3xl' radius.",
+      "Do not use default Shadcn slate colors. Override with the custom 'Emerald' and 'Sand' palette.",
+      "Use 'Sonner' for all toast notifications."
+    ]
+  },
+  "universal_guidelines": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy",
+    "Use glass-morphism effects with backdrop filters (12-24px blur)",
+    "You MUST NOT apply universal transition. Eg: transition: all. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms",
+    "You MUST NOT center align the app container, ie do not add .App { text-align: center; } in the css file. This disrupts the human natural reading flow of text",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯📚🎭🎬🎪🎉🎊🎁🎀🎂🍰🎈🎨🎰💰💵💳🏦💎🪙💸🤑📊📈📉💹🔢🏆🥇 etc for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
+    "Main agent relies on these image URLs. Missing categories (especially sponsor logos) = main agent will use placeholder text which is FORBIDDEN",
+    "Prioritize using pre-existing components from src/components/ui when applicable",
+    "Create new components that match the style and conventions of existing components when needed",
+    "Examine existing components to understand the project's component patterns before creating new ones",
+    "Components MUST use named exports (export const ComponentName = ...)",
+    "Pages MUST use default exports (export default function PageName() {...})",
+    "Use sonner for toasts. Sonner component are located in /app/src/components/ui/sonner.tsx"
+  ]
+}
