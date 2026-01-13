@@ -65,6 +65,11 @@ export default function BookClass({ user }) {
       return;
     }
 
+    if (!studentProfile?.student_id) {
+      toast.error('Student profile not found. Please complete onboarding first.');
+      return;
+    }
+
     setBooking(true);
     try {
       const response = await fetch(`${API}/bookings`, {
@@ -72,7 +77,7 @@ export default function BookClass({ user }) {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          student_id: user.user_id,
+          student_id: studentProfile.student_id,
           teacher_id: teacherId,
           start_time_utc: selectedSlot.start_time_utc,
           end_time_utc: selectedSlot.end_time_utc,
