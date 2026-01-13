@@ -201,7 +201,41 @@ export default function TeacherDashboard({ user }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab('schedule')}
+            className="px-4 py-2 rounded-lg font-medium transition-all"
+            style={{
+              backgroundColor: activeTab === 'schedule' ? '#0F3D2E' : 'transparent',
+              color: activeTab === 'schedule' ? 'white' : '#5A5A5A'
+            }}
+          >
+            Today's Schedule
+          </button>
+          <button
+            onClick={() => setActiveTab('availability')}
+            className="px-4 py-2 rounded-lg font-medium transition-all"
+            style={{
+              backgroundColor: activeTab === 'availability' ? '#0F3D2E' : 'transparent',
+              color: activeTab === 'availability' ? 'white' : '#5A5A5A'
+            }}
+          >
+            Manage Availability
+          </button>
+          <button
+            onClick={() => setActiveTab('info')}
+            className="px-4 py-2 rounded-lg font-medium transition-all"
+            style={{
+              backgroundColor: activeTab === 'info' ? '#0F3D2E' : 'transparent',
+              color: activeTab === 'info' ? 'white' : '#5A5A5A'
+            }}
+          >
+            My Info
+          </button>
+        </div>
+
+        {activeTab === 'schedule' && (
           <div className="bg-white rounded-3xl p-8 shadow-soft">
             <h2 className="text-2xl font-medium mb-6" style={{ color: '#0F3D2E' }}>Today's Schedule</h2>
 
@@ -235,6 +269,7 @@ export default function TeacherDashboard({ user }) {
                           rel="noopener noreferrer"
                           className="h-8 px-4 rounded-full bg-[#0F3D2E] text-white text-sm font-medium flex items-center gap-2 transition-all hover:scale-105"
                         >
+                          <Video className="w-4 h-4" />
                           Join
                         </a>
                       )}
@@ -249,51 +284,178 @@ export default function TeacherDashboard({ user }) {
               </div>
             )}
           </div>
+        )}
 
+        {activeTab === 'availability' && (
           <div className="bg-white rounded-3xl p-8 shadow-soft">
-            <h2 className="text-2xl font-medium mb-6" style={{ color: '#0F3D2E' }}>Teacher Info</h2>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>Manage Availability</h2>
+                <p className="text-sm mt-1" style={{ color: '#5A5A5A' }}>Set your available time slots for students to book</p>
+              </div>
+              <button
+                data-testid="add-slot-button"
+                onClick={() => setShowAddSlot(true)}
+                className="h-10 px-4 rounded-full bg-[#0F3D2E] text-white font-medium flex items-center gap-2 transition-all hover:scale-105"
+              >
+                <Plus className="w-4 h-4" />
+                Add Slot
+              </button>
+            </div>
 
-            {dashboardData?.teacher && (
-              <div className="space-y-4">
-                <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
-                  <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Hourly Rate</p>
-                  <p className="text-xl font-medium" style={{ color: '#0F3D2E' }}>
-                    RM {dashboardData.teacher.hourly_rate}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
-                  <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Total Classes Taught</p>
-                  <p className="text-xl font-medium" style={{ color: '#0F3D2E' }}>
-                    {dashboardData.teacher.total_classes}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
-                  <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Rating</p>
-                  <p className="text-xl font-medium" style={{ color: '#0F3D2E' }}>
-                    {dashboardData.teacher.rating.toFixed(1)} / 5.0
-                  </p>
-                </div>
-
-                {dashboardData.teacher.meet_link && (
-                  <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
-                    <p className="text-sm mb-2" style={{ color: '#5A5A5A' }}>Your Google Meet Link</p>
-                    <a
-                      href={dashboardData.teacher.meet_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm break-all"
-                      style={{ color: '#0F3D2E' }}
+            {availability.length === 0 ? (
+              <div className="text-center py-8">
+                <Calendar className="w-12 h-12 mx-auto mb-4" style={{ color: '#9CA3AF' }} />
+                <p style={{ color: '#5A5A5A' }}>No availability slots set</p>
+                <p className="text-sm mt-2" style={{ color: '#9CA3AF' }}>Add time slots to allow students to book classes with you</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {availability.map((slot, idx) => (
+                  <div
+                    key={slot.slot_id}
+                    className="p-4 rounded-xl border flex justify-between items-center"
+                    style={{ borderColor: slot.is_booked ? 'rgba(46, 182, 160, 0.3)' : 'rgba(4, 78, 66, 0.1)', backgroundColor: slot.is_booked ? 'rgba(46, 182, 160, 0.05)' : 'transparent' }}
+                  >
+                    <div className="flex items-center gap-4">
+                      <Clock className="w-5 h-5" style={{ color: '#0F3D2E' }} />
+                      <div>
+                        <p className="font-medium" style={{ color: '#0F3D2E' }}>
+                          {formatDateTime(slot.start_time_utc)}
+                        </p>
+                        <p className="text-sm" style={{ color: '#5A5A5A' }}>1 hour slot</p>
+                      </div>
+                    </div>
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-medium"
+                      style={{
+                        backgroundColor: slot.is_booked ? 'rgba(46, 182, 160, 0.1)' : 'rgba(200, 169, 81, 0.1)',
+                        color: slot.is_booked ? '#2EB6A0' : '#C8A951'
+                      }}
                     >
-                      {dashboardData.teacher.meet_link}
-                    </a>
+                      {slot.is_booked ? 'Booked' : 'Available'}
+                    </span>
                   </div>
-                )}
+                ))}
               </div>
             )}
           </div>
-        </div>
+        )}
+
+        {activeTab === 'info' && dashboardData?.teacher && (
+          <div className="bg-white rounded-3xl p-8 shadow-soft">
+            <h2 className="text-2xl font-medium mb-6" style={{ color: '#0F3D2E' }}>Teacher Info</h2>
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
+                <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Hourly Rate</p>
+                <p className="text-xl font-medium" style={{ color: '#0F3D2E' }}>
+                  RM {dashboardData.teacher.hourly_rate}
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
+                <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Total Classes Taught</p>
+                <p className="text-xl font-medium" style={{ color: '#0F3D2E' }}>
+                  {dashboardData.teacher.total_classes}
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
+                <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Rating</p>
+                <p className="text-xl font-medium" style={{ color: '#0F3D2E' }}>
+                  {dashboardData.teacher.rating.toFixed(1)} / 5.0
+                </p>
+              </div>
+
+              {dashboardData.teacher.meet_link && (
+                <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
+                  <p className="text-sm mb-2" style={{ color: '#5A5A5A' }}>Your Google Meet Link</p>
+                  <a
+                    href={dashboardData.teacher.meet_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm break-all"
+                    style={{ color: '#0F3D2E' }}
+                  >
+                    {dashboardData.teacher.meet_link}
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Add Slot Modal */}
+        {showAddSlot && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>Add Availability Slot</h3>
+                <button onClick={() => setShowAddSlot(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                  <X className="w-5 h-5" style={{ color: '#5A5A5A' }} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Date</label>
+                  <input
+                    type="date"
+                    data-testid="slot-date"
+                    value={newSlot.date}
+                    onChange={(e) => setNewSlot({ ...newSlot, date: e.target.value })}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Time</label>
+                  <input
+                    type="time"
+                    data-testid="slot-time"
+                    value={newSlot.time}
+                    onChange={(e) => setNewSlot({ ...newSlot, time: e.target.value })}
+                    className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  />
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="recurring"
+                    checked={newSlot.recurring}
+                    onChange={(e) => setNewSlot({ ...newSlot, recurring: e.target.checked, recurrence_pattern: e.target.checked ? 'weekly' : null })}
+                    className="w-4 h-4 rounded border-gray-300 text-[#0F3D2E] focus:ring-[#0F3D2E]"
+                  />
+                  <label htmlFor="recurring" className="text-sm" style={{ color: '#5A5A5A' }}>
+                    Make this a recurring weekly slot
+                  </label>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    data-testid="confirm-add-slot"
+                    onClick={handleAddSlot}
+                    disabled={addingSlot}
+                    className="flex-1 h-11 rounded-full bg-[#0F3D2E] text-white font-medium transition-all hover:scale-105 disabled:opacity-50"
+                  >
+                    {addingSlot ? 'Adding...' : 'Add Slot'}
+                  </button>
+                  <button
+                    onClick={() => setShowAddSlot(false)}
+                    className="flex-1 h-11 rounded-full border font-medium transition-all hover:bg-gray-50"
+                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)', color: '#0F3D2E' }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
