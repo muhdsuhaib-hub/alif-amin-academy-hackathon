@@ -11,7 +11,6 @@ export default function Onboarding() {
   const [answers, setAnswers] = useState({
     userType: '',
     level: '',
-    learner: '',
     preference: ''
   });
 
@@ -24,7 +23,7 @@ export default function Onboarding() {
     }
     
     setTimeout(() => {
-      if (step < 3) {
+      if (step < 2) {
         setStep(step + 1);
       } else {
         handleComplete();
@@ -49,7 +48,7 @@ export default function Onboarding() {
 
   const questions = [
     {
-      title: 'Who are you?',
+      title: "We'd love to know who you are",
       options: [
         { value: 'Student', label: 'Student', description: 'I want to learn myself' },
         { value: 'Parent', label: 'Parent of a student', description: 'For my child or children' },
@@ -57,20 +56,12 @@ export default function Onboarding() {
       ]
     },
     {
-      title: 'Current Quran reading level?',
+      title: 'Which best describes your Quran reading?',
       options: [
         { value: 'beginner', label: 'Just starting', description: 'Not confident yet' },
         { value: 'slow', label: 'Read slowly with mistakes', description: 'Need practice and correction' },
         { value: 'comfortable', label: 'Read comfortably', description: 'Want improvement' },
         { value: 'advanced', label: 'Read well', description: 'Want deeper understanding' }
-      ]
-    },
-    {
-      title: 'Who will be learning?',
-      options: [
-        { value: 'myself', label: 'Myself', description: '' },
-        { value: 'child', label: 'My child / children', description: '' },
-        { value: 'other', label: 'Someone else', description: '' }
       ]
     },
     {
@@ -83,7 +74,7 @@ export default function Onboarding() {
   ];
 
   const currentQuestion = questions[step];
-  const fieldNames = ['userType', 'level', 'learner', 'preference'];
+  const fieldNames = ['userType', 'level', 'preference'];
 
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5EF' }}>
@@ -91,7 +82,7 @@ export default function Onboarding() {
         <button
           onClick={handleBack}
           className="flex items-center gap-2 mb-12 text-sm font-medium"
-          style={{ color: '#5A5A5A' }}
+          style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -103,10 +94,10 @@ export default function Onboarding() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <p className="text-2xl font-light mb-2" style={{ color: '#0F3D2E' }}>
+            <p className="text-2xl font-medium mb-2" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
               Absolutely no payment required to begin.
             </p>
-            <p className="text-lg font-light" style={{ color: '#5A5A5A' }}>
+            <p className="text-lg font-normal" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
               Just a few questions to personalise your experience.
             </p>
           </motion.div>
@@ -124,7 +115,7 @@ export default function Onboarding() {
               />
             ))}
           </div>
-          <p className="text-sm" style={{ color: '#9CA3AF' }}>
+          <p className="text-sm" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>
             Question {step + 1} of {questions.length}
           </p>
         </div>
@@ -138,8 +129,8 @@ export default function Onboarding() {
             transition={{ duration: 0.3 }}
           >
             <h2 
-              className="text-4xl md:text-5xl font-light mb-12"
-              style={{ color: '#1F2933' }}
+              className="text-4xl md:text-5xl font-semibold mb-12"
+              style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}
             >
               {currentQuestion.title}
             </h2>
@@ -158,16 +149,17 @@ export default function Onboarding() {
                   className="w-full p-6 rounded-2xl text-left border-2 transition-all"
                   style={{
                     borderColor: answers[fieldNames[step]] === option.value ? '#0F3D2E' : 'rgba(15, 61, 46, 0.1)',
-                    backgroundColor: answers[fieldNames[step]] === option.value ? 'rgba(15, 61, 46, 0.03)' : '#FFFFFF'
+                    backgroundColor: answers[fieldNames[step]] === option.value ? 'rgba(15, 61, 46, 0.03)' : '#FFFFFF',
+                    fontFamily: 'Cal Sans'
                   }}
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-xl font-medium mb-1" style={{ color: '#1F2933' }}>
+                      <h3 className="text-xl font-semibold mb-1" style={{ color: '#1F2933' }}>
                         {option.label}
                       </h3>
                       {option.description && (
-                        <p className="text-sm" style={{ color: '#5A5A5A' }}>
+                        <p className="text-sm font-normal" style={{ color: '#5A5A5A', fontWeight: 300 }}>
                           {option.description}
                         </p>
                       )}

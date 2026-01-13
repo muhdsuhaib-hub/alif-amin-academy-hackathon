@@ -2,28 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
-const quranImages = [
-  'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=1200&q=80',
-  'https://images.unsplash.com/photo-1618190405497-00f284b5dda5?w=1200&q=80', 
-  'https://images.unsplash.com/photo-1545589245-a5ce759f413f?w=1200&q=80',
-  'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=1200&q=80',
-  'https://images.pexels.com/photos/8088501/pexels-photo-8088501.jpeg?w=1200&q=80'
-];
-
 export default function Landing() {
   const navigate = useNavigate();
   const { scrollY } = useScroll();
   const [scrollPosition, setScrollPosition] = useState(0);
 
-  const opacity1 = useTransform(scrollY, [0, 300], [1, 0]);
-  const opacity2 = useTransform(scrollY, [400, 800], [0, 1]);
-  const opacity3 = useTransform(scrollY, [900, 1300], [0, 1]);
-  const opacity4 = useTransform(scrollY, [1400, 1800], [0, 1]);
-  
-  const y1 = useTransform(scrollY, [0, 500], [0, -100]);
-  const y2 = useTransform(scrollY, [400, 1200], [100, -100]);
-  const y3 = useTransform(scrollY, [900, 1700], [100, -100]);
-  const y4 = useTransform(scrollY, [1400, 2200], [100, -100]);
+  const opacity1 = useTransform(scrollY, [0, 400], [1, 0]);
+  const opacity2 = useTransform(scrollY, [300, 700], [0, 1]);
+  const opacity3 = useTransform(scrollY, [600, 1000], [0, 1]);
+  const opacity4 = useTransform(scrollY, [900, 1300], [0, 1]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -118,21 +105,6 @@ export default function Landing() {
         className="relative py-32 overflow-hidden"
         style={{ opacity: opacity2 }}
       >
-        <motion.div 
-          className="absolute inset-0 z-0"
-          style={{ y: y2 }}
-        >
-          <div className="relative w-full h-full">
-            <img 
-              src={quranImages[0]}
-              alt="Person reading Quran"
-              className="parallax-image opacity-20"
-              style={{ filter: 'blur(2px)' }}
-            />
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #F7F5EF 0%, transparent 20%, transparent 80%, #F7F5EF 100%)' }}></div>
-          </div>
-        </motion.div>
-
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -168,21 +140,6 @@ export default function Landing() {
         className="relative py-32 overflow-hidden" 
         style={{ backgroundColor: '#FFFFFF', opacity: opacity3 }}
       >
-        <motion.div 
-          className="absolute inset-0 z-0"
-          style={{ y: y3 }}
-        >
-          <div className="relative w-full h-full">
-            <img 
-              src={quranImages[1]}
-              alt="Child learning Quran"
-              className="parallax-image opacity-15"
-              style={{ filter: 'blur(2px)' }}
-            />
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, transparent 20%, transparent 80%, #FFFFFF 100%)' }}></div>
-          </div>
-        </motion.div>
-
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
@@ -255,21 +212,6 @@ export default function Landing() {
         className="relative py-32 overflow-hidden"
         style={{ opacity: opacity4 }}
       >
-        <motion.div 
-          className="absolute inset-0 z-0"
-          style={{ y: y4 }}
-        >
-          <div className="relative w-full h-full">
-            <img 
-              src={quranImages[2]}
-              alt="Quran study"
-              className="parallax-image opacity-20"
-              style={{ filter: 'blur(2px)' }}
-            />
-            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #F7F5EF 0%, transparent 20%, transparent 80%, #F7F5EF 100%)' }}></div>
-          </div>
-        </motion.div>
-
         <div className="max-w-4xl mx-auto px-6 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
