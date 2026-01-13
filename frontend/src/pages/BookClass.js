@@ -15,10 +15,26 @@ export default function BookClass({ user }) {
   const [bookingType, setBookingType] = useState('trial');
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
+  const [studentProfile, setStudentProfile] = useState(null);
 
   useEffect(() => {
     fetchTeacherAndAvailability();
+    fetchStudentProfile();
   }, [teacherId]);
+
+  const fetchStudentProfile = async () => {
+    try {
+      const response = await fetch(`${API}/students/dashboard`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setStudentProfile(data.student);
+      }
+    } catch (error) {
+      console.error('Error fetching student profile:', error);
+    }
+  };
 
   const fetchTeacherAndAvailability = async () => {
     try {
