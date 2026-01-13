@@ -460,45 +460,6 @@ async def get_student_dashboard(current_user: User = Depends(get_current_user)):
     }
 
 
-@api_router.get("/teachers/dashboard")
-async def get_teacher_dashboard(current_user: User = Depends(get_current_user)):
-    if current_user.role != "teacher":
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    teacher_doc = await db.teachers.find_one({"user_id": current_user.user_id}, {"_id": 0})
-    if not teacher_doc:
-        raise HTTPException(status_code=404, detail="Teacher profile not found")
-    
-    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    today_end = today_start + timedelta(days=1)
-    
-    todays_classes = await db.bookings.find({
-        "teacher_id": teacher_doc["teacher_id"],
-        "status": "scheduled",
-        "start_time_utc": {
-            "$gte": today_start.isoformat(),
-            "$lt": today_end.isoformat()
-        }
-    }, {"_id": 0}).sort("start_time_utc", 1).to_list(20)
-    
-    month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    
-    completed_this_month = await db.bookings.count_documents({
-        "teacher_id": teacher_doc["teacher_id"],
-        "status": "completed",
-        "start_time_utc": {"$gte": month_start.isoformat()}
-    })
-    
-    estimated_earnings = completed_this_month * teacher_doc.get("hourly_rate", 0)
-    
-    return {
-        "teacher": teacher_doc,
-        "todays_classes": todays_classes,
-        "completed_this_month": completed_this_month,
-        "estimated_earnings": estimated_earnings
-    }
-
-
 @api_router.get("/admin/stats")
 async def get_admin_stats(current_user: User = Depends(get_current_user)):
     if current_user.role != "admin":
