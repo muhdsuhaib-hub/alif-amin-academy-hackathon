@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, BookOpen, LogOut, Users, Clock, TrendingUp } from 'lucide-react';
+import { Calendar, BookOpen, LogOut, Users, Clock, TrendingUp, Video } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
