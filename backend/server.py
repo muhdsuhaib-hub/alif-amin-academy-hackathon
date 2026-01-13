@@ -426,20 +426,69 @@ async def get_admin_stats(current_user: User = Depends(get_current_user)):
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
     
+    total_users = await db.users.count_documents({})
     total_students = await db.students.count_documents({})
     total_teachers = await db.teachers.count_documents({"is_active": True})
     total_bookings = await db.bookings.count_documents({})
     
+    today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+    week_start = today_start - timedelta(days=7)
     month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    new_signups_today = await db.users.count_documents({
+        "created_at": {"$gte": today_start.isoformat(), "$lt": today_end.isoformat()}
+    })
+    
+    new_signups_week = await db.users.count_documents({
+        "created_at": {"$gte": week_start.isoformat()}
+    })
+    
     bookings_this_month = await db.bookings.count_documents({
         "created_at": {"$gte": month_start.isoformat()}
     })
     
+    completed_bookings = await db.bookings.count_documents({"status": "completed"})
+    
+    todays_classes = await db.bookings.find({
+        "start_time_utc": {
+            "$gte": today_start.isoformat(),
+            "$lt": today_end.isoformat()
+        },
+        "status": "scheduled"
+    }, {"_id": 0}).to_list(100)
+    
+    trial_students = await db.students.find({
+        "subscription_status": "trial"
+    }, {"_id": 0}).to_list(100)
+    
+    revenue_mtd = completed_bookings * 80
+    conversion_rate = (total_students / max(total_users, 1)) * 100
+    
+    last_month_start = (month_start - timedelta(days=1)).replace(day=1)
+    last_month_bookings = await db.bookings.count_documents({
+        "created_at": {
+            "$gte": last_month_start.isoformat(),
+            "$lt": month_start.isoformat()
+        }
+    })
+    
+    booking_trend = "up" if bookings_this_month > last_month_bookings else "down"
+    
     return {
+        "total_users": total_users,
         "total_students": total_students,
         "total_teachers": total_teachers,
         "total_bookings": total_bookings,
-        "bookings_this_month": bookings_this_month
+        "new_signups_today": new_signups_today,
+        "new_signups_week": new_signups_week,
+        "bookings_this_month": bookings_this_month,
+        "revenue_mtd": revenue_mtd,
+        "conversion_rate": round(conversion_rate, 1),
+        "booking_trend": booking_trend,
+        "todays_classes": todays_classes,
+        "trial_students": trial_students[:5],
+        "completed_bookings": completed_bookings
     }
 
 
