@@ -416,6 +416,8 @@ export default function TeacherDashboard({ user }) {
             </div>
           </div>
         )}
+        </>
+        )}
 
         {/* Add Slot Modal */}
         {showAddSlot && (
