@@ -42,16 +42,45 @@ function AuthCallback() {
         const data = await response.json();
         document.cookie = `session_token=${data.session_token}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=none`;
 
-        const roleRoutes = {
-          student: '/student/dashboard',
-          teacher: '/teacher/dashboard',
-          admin: '/admin/dashboard'
-        };
-
-        navigate(roleRoutes[data.user.role] || '/student/dashboard', {
-          state: { user: data.user },
-          replace: true
-        });
+        // Check if user already has a role
+        if (data.user.role === 'admin') {
+          // Admin goes directly to admin dashboard
+          navigate('/admin/dashboard', {
+            state: { user: data.user },
+            replace: true
+          });
+        } else if (data.user.role === 'teacher') {
+          // Teacher goes to teacher dashboard
+          navigate('/teacher/dashboard', {
+            state: { user: data.user },
+            replace: true
+          });
+        } else if (data.user.role === 'student') {
+          // Check if student profile exists
+          const studentCheck = await fetch(`${API}/students/dashboard`, {
+            credentials: 'include'
+          });
+          
+          if (studentCheck.ok) {
+            // Student with profile goes to dashboard
+            navigate('/student/dashboard', {
+              state: { user: data.user },
+              replace: true
+            });
+          } else {
+            // New student goes to onboarding
+            navigate('/onboarding', {
+              state: { user: data.user },
+              replace: true
+            });
+          }
+        } else {
+          // New user without role goes to onboarding
+          navigate('/onboarding', {
+            state: { user: data.user },
+            replace: true
+          });
+        }
       } catch (error) {
         console.error('Auth error:', error);
         navigate('/onboarding');
