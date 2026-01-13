@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, LogOut, Calendar, DollarSign, Users, Clock } from 'lucide-react';
+import { BookOpen, LogOut, Calendar, DollarSign, Users, Clock, Plus, X, Video } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -10,6 +10,16 @@ export default function TeacherDashboard({ user }) {
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showAddSlot, setShowAddSlot] = useState(false);
+  const [availability, setAvailability] = useState([]);
+  const [newSlot, setNewSlot] = useState({
+    date: '',
+    time: '',
+    recurring: false,
+    recurrence_pattern: null
+  });
+  const [addingSlot, setAddingSlot] = useState(false);
+  const [activeTab, setActiveTab] = useState('schedule');
 
   useEffect(() => {
     fetchDashboard();
