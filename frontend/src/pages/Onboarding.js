@@ -31,17 +31,47 @@ export default function Onboarding() {
     }, 300);
   };
 
-  const handleComplete = () => {
-    const answers = {
+  const handleComplete = async () => {
+    const onboardingData = {
       userType: answers.userType,
       level: answers.level,
       preference: answers.preference
     };
-    localStorage.setItem('onboarding', JSON.stringify(answers));
     
-    // After onboarding, redirect to student dashboard
-    const redirectUrl = window.location.origin + '/auth/callback';
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    // Check if user is already authenticated
+    try {
+      const response = await fetch(`${API}/auth/me`, {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        // User is authenticated, complete onboarding
+        const userData = await response.json();
+        
+        // Send onboarding data to backend
+        await fetch(`${API}/auth/complete-onboarding`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(onboardingData)
+        });
+        
+        localStorage.setItem('onboarding', JSON.stringify(onboardingData));
+        
+        // Redirect to student dashboard
+        navigate('/student/dashboard', { state: { user: userData } });
+      } else {
+        // User not authenticated, redirect to auth
+        localStorage.setItem('onboarding', JSON.stringify(onboardingData));
+        const redirectUrl = window.location.origin + '/auth/callback';
+        window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+      }
+    } catch (error) {
+      // If error, redirect to auth
+      localStorage.setItem('onboarding', JSON.stringify(onboardingData));
+      const redirectUrl = window.location.origin + '/auth/callback';
+      window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    }
   };
 
   const handleBack = () => {
