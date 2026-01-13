@@ -29,10 +29,10 @@ export default function AdminLogin() {
 
         <div className="bg-white rounded-3xl p-10 shadow-soft">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-medium mb-2" style={{ color: '#0F3D2E' }}>
+            <h1 className="text-3xl font-semibold mb-2 tracking-tight" style={{ color: '#0F3D2E' }}>
               Admin Access
             </h1>
-            <p className="text-sm" style={{ color: '#5A5A5A' }}>
+            <p className="text-sm font-normal" style={{ color: '#5A5A5A' }}>
               Alif Amin Academy
             </p>
           </div>
@@ -59,7 +59,7 @@ export default function AdminLogin() {
             )}
           </button>
 
-          <p className="text-xs text-center mt-6" style={{ color: '#9CA3AF' }}>
+          <p className="text-xs text-center mt-6 font-normal" style={{ color: '#9CA3AF' }}>
             This area is for staff and administrators only
           </p>
         </div>
