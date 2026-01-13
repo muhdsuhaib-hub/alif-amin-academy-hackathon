@@ -128,6 +128,44 @@ async def get_session_data(request: Request):
     }
 
 
+@api_router.post("/auth/complete-onboarding")
+async def complete_onboarding(onboarding_data: dict, current_user: User = Depends(get_current_user)):
+    # Create student profile if it doesn't exist
+    existing_student = await db.students.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    
+    if not existing_student:
+        student_id = f"student_{uuid.uuid4().hex[:12]}"
+        student_doc = {
+            "student_id": student_id,
+            "user_id": current_user.user_id,
+            "parent_name": None,
+            "parent_email": None,
+            "parent_phone": None,
+            "current_level": onboarding_data.get("level", "beginner"),
+            "subscription_status": "trial",
+            "subscription_plan": None,
+            "next_billing_date": None
+        }
+        await db.students.insert_one(student_doc)
+        
+        # Create progress tracking
+        progress_id = f"progress_{uuid.uuid4().hex[:12]}"
+        progress_doc = {
+            "progress_id": progress_id,
+            "student_id": student_id,
+            "current_surah": "Al-Fatiha",
+            "current_surah_number": 1,
+            "verses_completed": 0,
+            "total_verses_in_surah": 7,
+            "completion_percentage": 0.0,
+            "total_classes_taken": 0,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.progress.insert_one(progress_doc)
+    
+    return {"message": "Onboarding completed successfully"}
+
+
 @api_router.get("/auth/me")
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     return current_user
