@@ -2,36 +2,28 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
-const IslamicPattern = ({ className = '', opacity = 0.03 }) => (
-  <svg className={className} viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <pattern id="islamic-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-        <path
-          d="M50,10 L60,30 L50,50 L40,30 Z M50,50 L60,70 L50,90 L40,70 Z M10,50 L30,60 L50,50 L30,40 Z M50,50 L70,60 L90,50 L70,40 Z"
-          fill="none"
-          stroke="#0F3D2E"
-          strokeWidth="0.5"
-          opacity={opacity}
-        />
-        <circle cx="50" cy="50" r="3" fill="#0F3D2E" opacity={opacity * 1.5} />
-        <circle cx="10" cy="10" r="2" fill="#C8A951" opacity={opacity * 0.5} />
-        <circle cx="90" cy="10" r="2" fill="#C8A951" opacity={opacity * 0.5} />
-        <circle cx="10" cy="90" r="2" fill="#C8A951" opacity={opacity * 0.5} />
-        <circle cx="90" cy="90" r="2" fill="#C8A951" opacity={opacity * 0.5} />
-      </pattern>
-    </defs>
-    <rect width="200" height="200" fill="url(#islamic-pattern)" />
-  </svg>
-);
+const quranImages = [
+  'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=1200&q=80',
+  'https://images.unsplash.com/photo-1618190405497-00f284b5dda5?w=1200&q=80', 
+  'https://images.unsplash.com/photo-1545589245-a5ce759f413f?w=1200&q=80',
+  'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=1200&q=80',
+  'https://images.pexels.com/photos/8088501/pexels-photo-8088501.jpeg?w=1200&q=80'
+];
 
 export default function Landing() {
   const navigate = useNavigate();
   const { scrollY } = useScroll();
   const [scrollPosition, setScrollPosition] = useState(0);
 
-  const y1 = useTransform(scrollY, [0, 500], [0, 150]);
-  const y2 = useTransform(scrollY, [0, 500], [0, -100]);
-  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+  const opacity1 = useTransform(scrollY, [0, 300], [1, 0]);
+  const opacity2 = useTransform(scrollY, [400, 800], [0, 1]);
+  const opacity3 = useTransform(scrollY, [900, 1300], [0, 1]);
+  const opacity4 = useTransform(scrollY, [1400, 1800], [0, 1]);
+  
+  const y1 = useTransform(scrollY, [0, 500], [0, -100]);
+  const y2 = useTransform(scrollY, [400, 1200], [100, -100]);
+  const y3 = useTransform(scrollY, [900, 1700], [100, -100]);
+  const y4 = useTransform(scrollY, [1400, 2200], [100, -100]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,14 +47,14 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 glass-effect">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-5 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="text-3xl font-semibold tracking-tight" style={{ color: '#0F3D2E' }}>Alif Amin</div>
+            <div className="text-3xl font-semibold tracking-tight" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>Alif Amin</div>
           </div>
           <div className="flex items-center gap-3">
             <button
               data-testid="login-button"
               onClick={handleLogin}
               className="h-10 px-6 rounded-full text-sm font-medium transition-all hover:bg-opacity-5"
-              style={{ color: '#0F3D2E', border: '1px solid rgba(15, 61, 46, 0.2)' }}
+              style={{ color: '#0F3D2E', border: '1px solid rgba(15, 61, 46, 0.2)', fontFamily: 'Cal Sans', fontWeight: 500 }}
             >
               Log In
             </button>
@@ -70,7 +62,7 @@ export default function Landing() {
               data-testid="signup-button"
               onClick={handleGetStarted}
               className="h-10 px-6 rounded-full text-white text-sm font-medium transition-all hover:scale-105"
-              style={{ backgroundColor: '#0F3D2E' }}
+              style={{ backgroundColor: '#0F3D2E', fontFamily: 'Cal Sans', fontWeight: 600 }}
             >
               Sign Up
             </button>
@@ -79,49 +71,16 @@ export default function Landing() {
       </nav>
 
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-        <motion.div
-          className="absolute inset-0 opacity-100"
-          style={{ y: y1 }}
-        >
-          <div className="absolute top-0 left-0 w-full h-full">
-            <motion.div
-              className="absolute top-20 left-10 w-96 h-96 animate-float"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 2 }}
-            >
-              <IslamicPattern className="w-full h-full" opacity={0.04} />
-            </motion.div>
-            <motion.div
-              className="absolute top-40 right-20 w-80 h-80 animate-rotate-slow"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 2, delay: 0.5 }}
-            >
-              <IslamicPattern className="w-full h-full" opacity={0.03} />
-            </motion.div>
-            <motion.div
-              className="absolute bottom-20 left-1/4 w-72 h-72"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 2, delay: 1 }}
-              style={{ y: y2 }}
-            >
-              <IslamicPattern className="w-full h-full" opacity={0.025} />
-            </motion.div>
-          </div>
-        </motion.div>
-
         <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            style={{ opacity }}
+            style={{ opacity: opacity1 }}
           >
             <h1 
-              className="text-6xl md:text-8xl font-semibold tracking-tight leading-tight mb-8"
-              style={{ color: '#1F2933', letterSpacing: '-0.03em' }}
+              className="text-6xl md:text-8xl font-bold tracking-tight leading-tight mb-8"
+              style={{ color: '#1F2933', fontFamily: 'Great Kingdom', letterSpacing: '-0.01em' }}
             >
               Learn the Quran.
               <br />
@@ -131,8 +90,8 @@ export default function Landing() {
             </h1>
             
             <p 
-              className="text-xl md:text-2xl mb-4 font-normal tracking-wide"
-              style={{ color: '#5A5A5A' }}
+              className="text-xl md:text-2xl mb-4 font-medium tracking-wide"
+              style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}
             >
               From Alif to Amin. Guided Every Step.
             </p>
@@ -142,21 +101,39 @@ export default function Landing() {
               onClick={handleGetStarted}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="mt-12 h-16 px-12 rounded-full text-white text-lg font-medium shadow-soft"
-              style={{ backgroundColor: '#0F3D2E' }}
+              className="mt-12 h-16 px-12 rounded-full text-white text-lg font-semibold shadow-soft"
+              style={{ backgroundColor: '#0F3D2E', fontFamily: 'Cal Sans' }}
             >
               Start Absolutely Free
             </motion.button>
 
-            <p className="mt-4 text-sm font-normal" style={{ color: '#9CA3AF' }}>
+            <p className="mt-4 text-sm font-normal" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>
               No card required
             </p>
           </motion.div>
         </div>
       </section>
 
-      <section className="py-32 relative">
-        <div className="max-w-4xl mx-auto px-6 text-center">
+      <motion.section 
+        className="relative py-32 overflow-hidden"
+        style={{ opacity: opacity2 }}
+      >
+        <motion.div 
+          className="absolute inset-0 z-0"
+          style={{ y: y2 }}
+        >
+          <div className="relative w-full h-full">
+            <img 
+              src={quranImages[0]}
+              alt="Person reading Quran"
+              className="parallax-image opacity-20"
+              style={{ filter: 'blur(2px)' }}
+            />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #F7F5EF 0%, transparent 20%, transparent 80%, #F7F5EF 100%)' }}></div>
+          </div>
+        </motion.div>
+
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -165,36 +142,54 @@ export default function Landing() {
             className="space-y-12"
           >
             <div className="space-y-6">
-              <p className="text-2xl md:text-3xl font-normal" style={{ color: '#1F2933' }}>
+              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
                 Guided for beginners and families
               </p>
               <div className="w-24 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
             </div>
 
             <div className="space-y-6">
-              <p className="text-2xl md:text-3xl font-normal" style={{ color: '#1F2933' }}>
+              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
                 Personalised after just 3 simple questions
               </p>
               <div className="w-24 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
             </div>
 
             <div className="space-y-6">
-              <p className="text-2xl md:text-3xl font-normal" style={{ color: '#1F2933' }}>
+              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
                 No payment or commitment upfront
               </p>
             </div>
           </motion.div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="py-32 relative" style={{ backgroundColor: '#FFFFFF' }}>
-        <div className="max-w-6xl mx-auto px-6">
+      <motion.section 
+        className="relative py-32 overflow-hidden" 
+        style={{ backgroundColor: '#FFFFFF', opacity: opacity3 }}
+      >
+        <motion.div 
+          className="absolute inset-0 z-0"
+          style={{ y: y3 }}
+        >
+          <div className="relative w-full h-full">
+            <img 
+              src={quranImages[1]}
+              alt="Child learning Quran"
+              className="parallax-image opacity-15"
+              style={{ filter: 'blur(2px)' }}
+            />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #FFFFFF 0%, transparent 20%, transparent 80%, #FFFFFF 100%)' }}></div>
+          </div>
+        </motion.div>
+
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-4xl md:text-5xl font-semibold text-center mb-20 tracking-tight"
-            style={{ color: '#0F3D2E' }}
+            style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}
           >
             How It Starts
           </motion.h2>
@@ -226,15 +221,15 @@ export default function Landing() {
                 className="text-center space-y-6"
               >
                 <div 
-                  className="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-3xl font-semibold text-white"
-                  style={{ backgroundColor: '#0F3D2E' }}
+                  className="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-3xl font-bold text-white"
+                  style={{ backgroundColor: '#0F3D2E', fontFamily: 'Cal Sans' }}
                 >
                   {step.number}
                 </div>
-                <h3 className="text-xl font-semibold" style={{ color: '#1F2933' }}>
+                <h3 className="text-xl font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
                   {step.title}
                 </h3>
-                <p className="text-base font-normal" style={{ color: '#5A5A5A' }}>
+                <p className="text-base font-normal" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
                   {step.description}
                 </p>
               </motion.div>
@@ -247,17 +242,35 @@ export default function Landing() {
               onClick={handleGetStarted}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="h-14 px-10 rounded-full text-white text-base font-medium shadow-soft"
-              style={{ backgroundColor: '#0F3D2E' }}
+              className="h-14 px-10 rounded-full text-white text-base font-semibold shadow-soft"
+              style={{ backgroundColor: '#0F3D2E', fontFamily: 'Cal Sans' }}
             >
               Begin Free Trial
             </motion.button>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="py-32 relative">
-        <div className="max-w-4xl mx-auto px-6">
+      <motion.section 
+        className="relative py-32 overflow-hidden"
+        style={{ opacity: opacity4 }}
+      >
+        <motion.div 
+          className="absolute inset-0 z-0"
+          style={{ y: y4 }}
+        >
+          <div className="relative w-full h-full">
+            <img 
+              src={quranImages[2]}
+              alt="Quran study"
+              className="parallax-image opacity-20"
+              style={{ filter: 'blur(2px)' }}
+            />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, #F7F5EF 0%, transparent 20%, transparent 80%, #F7F5EF 100%)' }}></div>
+          </div>
+        </motion.div>
+
+        <div className="max-w-4xl mx-auto px-6 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -265,29 +278,29 @@ export default function Landing() {
             className="space-y-16"
           >
             <div className="text-center space-y-8">
-              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A' }}>
+              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
                 "A calm and respectful approach to learning. Perfect for our family."
               </p>
               <div className="w-32 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
             </div>
 
             <div className="text-center space-y-8">
-              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A' }}>
+              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
                 "No pressure, just genuine guidance. Exactly what we needed."
               </p>
             </div>
           </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       <footer className="py-16 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="text-2xl font-semibold tracking-tight" style={{ color: '#0F3D2E' }}>
+            <div className="text-2xl font-semibold tracking-tight" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
               Alif Amin
             </div>
             
-            <div className="flex gap-8 text-sm font-normal" style={{ color: '#5A5A5A' }}>
+            <div className="flex gap-8 text-sm font-medium" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
               <a href="#" className="hover:opacity-70 transition-opacity">About</a>
               <a href="#" className="hover:opacity-70 transition-opacity">Contact</a>
               <a href="#" className="hover:opacity-70 transition-opacity">Privacy</a>
@@ -295,7 +308,7 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="text-center mt-8 text-sm font-normal" style={{ color: '#9CA3AF' }}>
+          <div className="text-center mt-8 text-sm font-normal" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>
             © 2025 Alif Amin. From Alif to Amin. Guided Every Step.
           </div>
         </div>
