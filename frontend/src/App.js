@@ -9,6 +9,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
 import BrowseTeachers from './pages/BrowseTeachers';
 import BookClass from './pages/BookClass';
+import TeacherSignup from './pages/TeacherSignup';
 import { Toaster } from './components/ui/sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -32,6 +33,9 @@ function AuthCallback() {
         return;
       }
 
+      // Check if this is a pending teacher signup
+      const isPendingTeacher = localStorage.getItem('pendingTeacherSignup') === 'true';
+
       try {
         const response = await fetch(`${API}/auth/session-data`, {
           headers: { 'X-Session-ID': sessionId }
@@ -41,6 +45,30 @@ function AuthCallback() {
 
         const data = await response.json();
         document.cookie = `session_token=${data.session_token}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=none`;
+
+        // Handle pending teacher signup - create teacher application
+        if (isPendingTeacher && data.user.role !== 'admin' && data.user.role !== 'teacher') {
+          localStorage.removeItem('pendingTeacherSignup');
+          
+          // Call backend to register as pending teacher
+          const teacherResponse = await fetch(`${API}/auth/register-teacher`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+          });
+
+          if (teacherResponse.ok) {
+            // Navigate to teacher dashboard (pending approval state)
+            navigate('/teacher/dashboard', {
+              state: { user: { ...data.user, role: 'teacher' }, pendingApproval: true },
+              replace: true
+            });
+            return;
+          }
+        }
+
+        // Clear any pending signup flag
+        localStorage.removeItem('pendingTeacherSignup');
 
         // Check if user already has a role
         if (data.user.role === 'admin') {
