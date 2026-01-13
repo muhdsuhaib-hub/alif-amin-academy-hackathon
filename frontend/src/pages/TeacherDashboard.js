@@ -229,6 +229,7 @@ export default function TeacherDashboard({ user }) {
             </div>
           </div>
         </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
