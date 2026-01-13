@@ -130,7 +130,7 @@ function AppRouter() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/onboarding" element={<Onboarding />} />
-      <Route path="/admin-login" element={<AdminLogin />} />
+      <Route path="/auth/admin" element={<AdminLogin />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       
       <Route path="/student/dashboard" element={
