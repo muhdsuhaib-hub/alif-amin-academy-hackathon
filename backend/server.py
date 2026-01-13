@@ -166,6 +166,41 @@ async def complete_onboarding(onboarding_data: dict, current_user: User = Depend
     return {"message": "Onboarding completed successfully"}
 
 
+@api_router.post("/auth/register-teacher")
+async def register_teacher(current_user: User = Depends(get_current_user)):
+    """Register a user as a teacher (pending approval)"""
+    
+    # Check if already a teacher
+    existing_teacher = await db.teachers.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    if existing_teacher:
+        return {"message": "Already registered as teacher", "teacher": existing_teacher}
+    
+    # Update user role to teacher
+    await db.users.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": {"role": "teacher"}}
+    )
+    
+    # Create teacher profile (pending approval)
+    teacher_id = f"teacher_{uuid.uuid4().hex[:12]}"
+    teacher_doc = {
+        "teacher_id": teacher_id,
+        "user_id": current_user.user_id,
+        "bio": "",
+        "specializations": [],
+        "hourly_rate": 50,  # Default rate
+        "rating": 5.0,
+        "total_classes": 0,
+        "is_active": False,  # Pending approval
+        "approval_status": "pending",
+        "meet_link": None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.teachers.insert_one(teacher_doc)
+    
+    return {"message": "Teacher registration submitted", "teacher_id": teacher_id, "status": "pending"}
+
+
 @api_router.get("/auth/me")
 async def get_current_user_info(current_user: User = Depends(get_current_user)):
     return current_user
