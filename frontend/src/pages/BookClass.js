@@ -94,27 +94,27 @@ export default function BookClass({ user }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#044E42]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F3D2E]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FDFBF7' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#F7F5EF' }}>
       <nav className="bg-white border-b" style={{ borderColor: 'rgba(4, 78, 66, 0.1)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <button
               data-testid="back-button"
               onClick={() => navigate('/student/teachers')}
-              className="flex items-center gap-2 text-[#044E42]"
+              className="flex items-center gap-2 text-[#0F3D2E]"
             >
               <ArrowLeft className="w-5 h-5" />
               Back
             </button>
             <div className="flex items-center gap-2">
-              <BookOpen className="w-8 h-8" style={{ color: '#044E42' }} />
-              <span className="text-2xl font-medium" style={{ color: '#044E42' }}>Book Class</span>
+              <BookOpen className="w-8 h-8" style={{ color: '#0F3D2E' }} />
+              <span className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>Book Class</span>
             </div>
           </div>
         </div>
@@ -130,7 +130,7 @@ export default function BookClass({ user }) {
                 className="w-20 h-20 rounded-full"
               />
               <div>
-                <h1 className="text-3xl font-medium mb-2" style={{ color: '#044E42' }}>
+                <h1 className="text-3xl font-medium mb-2" style={{ color: '#0F3D2E' }}>
                   {teacher.user?.name}
                 </h1>
                 <p style={{ color: '#5A5A5A' }}>{teacher.bio || 'Experienced Quran teacher'}</p>
@@ -140,29 +140,29 @@ export default function BookClass({ user }) {
             <div className="grid grid-cols-2 gap-4 p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
               <div>
                 <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Experience</p>
-                <p className="font-medium" style={{ color: '#044E42' }}>{teacher.years_experience} years</p>
+                <p className="font-medium" style={{ color: '#0F3D2E' }}>{teacher.years_experience} years</p>
               </div>
               <div>
                 <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Hourly Rate</p>
-                <p className="font-medium" style={{ color: '#044E42' }}>RM {teacher.hourly_rate}</p>
+                <p className="font-medium" style={{ color: '#0F3D2E' }}>RM {teacher.hourly_rate}</p>
               </div>
             </div>
           </div>
         )}
 
         <div className="bg-white rounded-3xl p-8 shadow-soft mb-8">
-          <h2 className="text-2xl font-medium mb-6" style={{ color: '#044E42' }}>Select Booking Type</h2>
+          <h2 className="text-2xl font-medium mb-6" style={{ color: '#0F3D2E' }}>Select Booking Type</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               data-testid="booking-type-trial"
               onClick={() => setBookingType('trial')}
               className={`p-4 rounded-xl border-2 transition-all ${
                 bookingType === 'trial'
-                  ? 'border-[#044E42] bg-[#044E42] bg-opacity-5'
-                  : 'border-gray-200 hover:border-[#044E42] hover:border-opacity-30'
+                  ? 'border-[#0F3D2E] bg-[#0F3D2E] bg-opacity-5'
+                  : 'border-gray-200 hover:border-[#0F3D2E] hover:border-opacity-30'
               }`}
             >
-              <h3 className="text-lg font-medium mb-1" style={{ color: '#044E42' }}>Free Trial</h3>
+              <h3 className="text-lg font-medium mb-1" style={{ color: '#0F3D2E' }}>Free Trial</h3>
               <p className="text-sm" style={{ color: '#5A5A5A' }}>15-minute evaluation session</p>
             </button>
             <button
@@ -170,18 +170,18 @@ export default function BookClass({ user }) {
               onClick={() => setBookingType('paid')}
               className={`p-4 rounded-xl border-2 transition-all ${
                 bookingType === 'paid'
-                  ? 'border-[#044E42] bg-[#044E42] bg-opacity-5'
-                  : 'border-gray-200 hover:border-[#044E42] hover:border-opacity-30'
+                  ? 'border-[#0F3D2E] bg-[#0F3D2E] bg-opacity-5'
+                  : 'border-gray-200 hover:border-[#0F3D2E] hover:border-opacity-30'
               }`}
             >
-              <h3 className="text-lg font-medium mb-1" style={{ color: '#044E42' }}>Regular Class</h3>
+              <h3 className="text-lg font-medium mb-1" style={{ color: '#0F3D2E' }}>Regular Class</h3>
               <p className="text-sm" style={{ color: '#5A5A5A' }}>1-hour lesson (RM {teacher?.hourly_rate})</p>
             </button>
           </div>
         </div>
 
         <div className="bg-white rounded-3xl p-8 shadow-soft">
-          <h2 className="text-2xl font-medium mb-6" style={{ color: '#044E42' }}>Available Time Slots</h2>
+          <h2 className="text-2xl font-medium mb-6" style={{ color: '#0F3D2E' }}>Available Time Slots</h2>
 
           {availability.length === 0 ? (
             <div data-testid="no-availability" className="text-center py-8">
@@ -197,19 +197,19 @@ export default function BookClass({ user }) {
                   onClick={() => setSelectedSlot(slot)}
                   className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                     selectedSlot?.slot_id === slot.slot_id
-                      ? 'border-[#044E42] bg-[#044E42] bg-opacity-5'
-                      : 'border-gray-200 hover:border-[#044E42] hover:border-opacity-30'
+                      ? 'border-[#0F3D2E] bg-[#0F3D2E] bg-opacity-5'
+                      : 'border-gray-200 hover:border-[#0F3D2E] hover:border-opacity-30'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <Clock className="w-5 h-5" style={{ color: '#044E42' }} />
-                      <span className="font-medium" style={{ color: '#044E42' }}>
+                      <Clock className="w-5 h-5" style={{ color: '#0F3D2E' }} />
+                      <span className="font-medium" style={{ color: '#0F3D2E' }}>
                         {formatDateTime(slot.start_time_utc)}
                       </span>
                     </div>
                     {selectedSlot?.slot_id === slot.slot_id && (
-                      <div className="w-6 h-6 rounded-full bg-[#044E42] flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-[#0F3D2E] flex items-center justify-center">
                         <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -226,7 +226,7 @@ export default function BookClass({ user }) {
               data-testid="confirm-booking-button"
               onClick={handleBooking}
               disabled={!selectedSlot || booking}
-              className="w-full h-12 px-8 rounded-full bg-[#044E42] text-white font-medium transition-all hover:scale-105 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-6"
+              className="w-full h-12 px-8 rounded-full bg-[#0F3D2E] text-white font-medium transition-all hover:scale-105 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-6"
             >
               {booking ? 'Booking...' : 'Confirm Booking'}
             </button>

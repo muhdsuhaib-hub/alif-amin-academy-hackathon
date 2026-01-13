@@ -99,12 +99,12 @@ export default function StudentDashboard({ user }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div data-testid="stat-card-classes" className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#044E42' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#0F3D2E' }}>
                 <Calendar className="w-6 h-6 text-white" />
               </div>
               <div>
                 <p className="text-sm" style={{ color: '#9CA3AF' }}>Total Classes</p>
-                <p className="text-2xl font-medium" style={{ color: '#044E42' }}>
+                <p className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>
                   {dashboardData?.progress?.total_classes_taken || 0}
                 </p>
               </div>
@@ -118,7 +118,7 @@ export default function StudentDashboard({ user }) {
               </div>
               <div>
                 <p className="text-sm" style={{ color: '#9CA3AF' }}>Current Surah</p>
-                <p className="text-2xl font-medium" style={{ color: '#044E42' }}>
+                <p className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>
                   {dashboardData?.progress?.current_surah || 'Al-Fatiha'}
                 </p>
               </div>
@@ -132,7 +132,7 @@ export default function StudentDashboard({ user }) {
               </div>
               <div>
                 <p className="text-sm" style={{ color: '#9CA3AF' }}>Progress</p>
-                <p className="text-2xl font-medium" style={{ color: '#044E42' }}>
+                <p className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>
                   {dashboardData?.progress?.completion_percentage?.toFixed(0) || 0}%
                 </p>
               </div>
@@ -143,7 +143,7 @@ export default function StudentDashboard({ user }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-3xl p-8 shadow-soft">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-medium" style={{ color: '#044E42' }}>Upcoming Classes</h2>
+              <h2 className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>Upcoming Classes</h2>
               <button
                 data-testid="browse-teachers-button"
                 onClick={() => navigate('/student/teachers')}
@@ -160,7 +160,7 @@ export default function StudentDashboard({ user }) {
                 <button
                   data-testid="book-first-class-button"
                   onClick={() => navigate('/student/teachers')}
-                  className="h-10 px-6 rounded-full bg-[#044E42] text-white font-medium transition-all hover:scale-105"
+                  className="h-10 px-6 rounded-full bg-[#0F3D2E] text-white font-medium transition-all hover:scale-105"
                 >
                   Browse Teachers
                 </button>
@@ -175,7 +175,7 @@ export default function StudentDashboard({ user }) {
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <p className="font-medium" style={{ color: '#044E42' }}>
+                        <p className="font-medium" style={{ color: '#0F3D2E' }}>
                           {formatDateTime(booking.start_time_utc)}
                         </p>
                         <p className="text-sm" style={{ color: '#5A5A5A' }}>1 hour session</p>
@@ -193,7 +193,7 @@ export default function StudentDashboard({ user }) {
                       )}
                     </div>
                     {booking.booking_type === 'trial' && (
-                      <span className="inline-block text-xs px-2 py-1 rounded-full bg-[#D4AF37] bg-opacity-20 text-[#044E42]">
+                      <span className="inline-block text-xs px-2 py-1 rounded-full bg-[#D4AF37] bg-opacity-20 text-[#0F3D2E]">
                         Free Trial
                       </span>
                     )}
@@ -204,7 +204,7 @@ export default function StudentDashboard({ user }) {
           </div>
 
           <div className="bg-white rounded-3xl p-8 shadow-soft">
-            <h2 className="text-2xl font-medium mb-6" style={{ color: '#044E42' }}>Recent Classes</h2>
+            <h2 className="text-2xl font-medium mb-6" style={{ color: '#0F3D2E' }}>Recent Classes</h2>
 
             {!dashboardData?.past_classes || dashboardData.past_classes.length === 0 ? (
               <div data-testid="no-past-classes" className="text-center py-8">
@@ -219,7 +219,7 @@ export default function StudentDashboard({ user }) {
                     data-testid={`past-class-${idx}`}
                     className="p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}
                   >
-                    <p className="font-medium mb-1" style={{ color: '#044E42' }}>
+                    <p className="font-medium mb-1" style={{ color: '#0F3D2E' }}>
                       {formatDateTime(booking.start_time_utc)}
                     </p>
                     <p className="text-sm" style={{ color: '#5A5A5A' }}>Completed</p>
@@ -231,12 +231,12 @@ export default function StudentDashboard({ user }) {
         </div>
 
         <div className="bg-white rounded-3xl p-8 shadow-soft">
-          <h2 className="text-2xl font-medium mb-6" style={{ color: '#044E42' }}>Your Progress</h2>
+          <h2 className="text-2xl font-medium mb-6" style={{ color: '#0F3D2E' }}>Your Progress</h2>
           <div className="space-y-4">
             <div>
               <div className="flex justify-between mb-2">
                 <span style={{ color: '#5A5A5A' }}>Current Surah: {dashboardData?.progress?.current_surah || 'Al-Fatiha'}</span>
-                <span style={{ color: '#044E42' }} className="font-medium">
+                <span style={{ color: '#0F3D2E' }} className="font-medium">
                   {dashboardData?.progress?.verses_completed || 0} / {dashboardData?.progress?.total_verses_in_surah || 7} verses
                 </span>
               </div>
@@ -244,7 +244,7 @@ export default function StudentDashboard({ user }) {
                 <div
                   className="h-3 rounded-full transition-all"
                   style={{
-                    backgroundColor: '#044E42',
+                    backgroundColor: '#0F3D2E',
                     width: `${(dashboardData?.progress?.verses_completed || 0) / (dashboardData?.progress?.total_verses_in_surah || 7) * 100}%`
                   }}
                 />

@@ -57,25 +57,25 @@ export default function TeacherDashboard({ user }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#044E42]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F3D2E]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FDFBF7' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#F7F5EF' }}>
       <nav className="bg-white border-b" style={{ borderColor: 'rgba(4, 78, 66, 0.1)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <BookOpen className="w-8 h-8" style={{ color: '#044E42' }} />
-            <span className="text-2xl font-medium" style={{ color: '#044E42' }}>Al-Ilm Academy</span>
+            <BookOpen className="w-8 h-8" style={{ color: '#0F3D2E' }} />
+            <span className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>Alif Amin</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm" style={{ color: '#5A5A5A' }}>{user?.name}</span>
             <button
               data-testid="logout-button"
               onClick={handleLogout}
-              className="flex items-center gap-2 h-10 px-4 rounded-full border border-[#044E42] border-opacity-20 text-[#044E42] hover:bg-[#044E42] hover:bg-opacity-5 transition-all"
+              className="flex items-center gap-2 h-10 px-4 rounded-full border border-[#0F3D2E] border-opacity-20 text-[#0F3D2E] hover:bg-[#0F3D2E] hover:bg-opacity-5 transition-all"
             >
               <LogOut className="w-4 h-4" />
               Logout
@@ -86,19 +86,19 @@ export default function TeacherDashboard({ user }) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-medium mb-2" style={{ color: '#044E42' }}>Teacher Dashboard</h1>
+          <h1 className="text-4xl font-medium mb-2" style={{ color: '#0F3D2E' }}>Teacher Dashboard</h1>
           <p style={{ color: '#5A5A5A' }}>Manage your classes and track your earnings</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div data-testid="stat-card-today" className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#044E42' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#0F3D2E' }}>
                 <Calendar className="w-6 h-6 text-white" />
               </div>
               <div>
                 <p className="text-sm" style={{ color: '#9CA3AF' }}>Today's Classes</p>
-                <p className="text-2xl font-medium" style={{ color: '#044E42' }}>
+                <p className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>
                   {dashboardData?.todays_classes?.length || 0}
                 </p>
               </div>
@@ -112,7 +112,7 @@ export default function TeacherDashboard({ user }) {
               </div>
               <div>
                 <p className="text-sm" style={{ color: '#9CA3AF' }}>This Month</p>
-                <p className="text-2xl font-medium" style={{ color: '#044E42' }}>
+                <p className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>
                   {dashboardData?.completed_this_month || 0} classes
                 </p>
               </div>
@@ -126,7 +126,7 @@ export default function TeacherDashboard({ user }) {
               </div>
               <div>
                 <p className="text-sm" style={{ color: '#9CA3AF' }}>Est. Earnings</p>
-                <p className="text-2xl font-medium" style={{ color: '#044E42' }}>
+                <p className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>
                   RM {dashboardData?.estimated_earnings?.toFixed(2) || '0.00'}
                 </p>
               </div>
@@ -136,7 +136,7 @@ export default function TeacherDashboard({ user }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-3xl p-8 shadow-soft">
-            <h2 className="text-2xl font-medium mb-6" style={{ color: '#044E42' }}>Today's Schedule</h2>
+            <h2 className="text-2xl font-medium mb-6" style={{ color: '#0F3D2E' }}>Today's Schedule</h2>
 
             {!dashboardData?.todays_classes || dashboardData.todays_classes.length === 0 ? (
               <div data-testid="no-classes-today" className="text-center py-8">
@@ -153,7 +153,7 @@ export default function TeacherDashboard({ user }) {
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <p className="font-medium" style={{ color: '#044E42' }}>
+                        <p className="font-medium" style={{ color: '#0F3D2E' }}>
                           {formatDateTime(booking.start_time_utc)}
                         </p>
                         <p className="text-sm" style={{ color: '#5A5A5A' }}>
@@ -166,14 +166,14 @@ export default function TeacherDashboard({ user }) {
                           href={booking.meet_link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="h-8 px-4 rounded-full bg-[#044E42] text-white text-sm font-medium flex items-center gap-2 transition-all hover:scale-105"
+                          className="h-8 px-4 rounded-full bg-[#0F3D2E] text-white text-sm font-medium flex items-center gap-2 transition-all hover:scale-105"
                         >
                           Join
                         </a>
                       )}
                     </div>
                     {booking.booking_type === 'trial' && (
-                      <span className="inline-block text-xs px-2 py-1 rounded-full bg-[#D4AF37] bg-opacity-20 text-[#044E42]">
+                      <span className="inline-block text-xs px-2 py-1 rounded-full bg-[#D4AF37] bg-opacity-20 text-[#0F3D2E]">
                         Trial Class
                       </span>
                     )}
@@ -184,27 +184,27 @@ export default function TeacherDashboard({ user }) {
           </div>
 
           <div className="bg-white rounded-3xl p-8 shadow-soft">
-            <h2 className="text-2xl font-medium mb-6" style={{ color: '#044E42' }}>Teacher Info</h2>
+            <h2 className="text-2xl font-medium mb-6" style={{ color: '#0F3D2E' }}>Teacher Info</h2>
 
             {dashboardData?.teacher && (
               <div className="space-y-4">
                 <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
                   <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Hourly Rate</p>
-                  <p className="text-xl font-medium" style={{ color: '#044E42' }}>
+                  <p className="text-xl font-medium" style={{ color: '#0F3D2E' }}>
                     RM {dashboardData.teacher.hourly_rate}
                   </p>
                 </div>
 
                 <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
                   <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Total Classes Taught</p>
-                  <p className="text-xl font-medium" style={{ color: '#044E42' }}>
+                  <p className="text-xl font-medium" style={{ color: '#0F3D2E' }}>
                     {dashboardData.teacher.total_classes}
                   </p>
                 </div>
 
                 <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
                   <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Rating</p>
-                  <p className="text-xl font-medium" style={{ color: '#044E42' }}>
+                  <p className="text-xl font-medium" style={{ color: '#0F3D2E' }}>
                     {dashboardData.teacher.rating.toFixed(1)} / 5.0
                   </p>
                 </div>
@@ -217,7 +217,7 @@ export default function TeacherDashboard({ user }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm break-all"
-                      style={{ color: '#044E42' }}
+                      style={{ color: '#0F3D2E' }}
                     >
                       {dashboardData.teacher.meet_link}
                     </a>
