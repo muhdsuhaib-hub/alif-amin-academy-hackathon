@@ -34,7 +34,7 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 glass-effect">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-5 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="text-3xl font-semibold tracking-tight" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>Alif Amin</div>
+            <div className="text-3xl font-semibold tracking-tight" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>Alif Amin Academy</div>
           </div>
           <div className="flex items-center gap-3">
             <button

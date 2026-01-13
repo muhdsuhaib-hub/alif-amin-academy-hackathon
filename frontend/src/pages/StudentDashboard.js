@@ -74,7 +74,7 @@ export default function StudentDashboard({ user }) {
       <nav className="bg-white border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <span className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>Alif Amin</span>
+            <span className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>Alif Amin Academy</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm" style={{ color: '#5A5A5A' }}>{user?.name}</span>
