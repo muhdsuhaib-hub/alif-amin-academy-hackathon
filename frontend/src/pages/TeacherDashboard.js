@@ -157,11 +157,35 @@ export default function TeacherDashboard({ user }) {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Pending Approval Banner */}
+        {isPendingApproval && (
+          <div 
+            className="mb-8 p-6 rounded-2xl flex items-start gap-4"
+            style={{ backgroundColor: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.3)' }}
+          >
+            <AlertCircle className="w-6 h-6 mt-0.5" style={{ color: '#D4AF37' }} />
+            <div>
+              <h3 className="text-lg font-semibold mb-1" style={{ color: '#1F2933' }}>Application Under Review</h3>
+              <p style={{ color: '#5A5A5A' }}>
+                Thank you for registering as a teacher! Your application is currently being reviewed by our team. 
+                You&apos;ll receive an email notification once your account is approved, and you&apos;ll be able to start teaching.
+              </p>
+              <div className="mt-4 flex items-center gap-2 text-sm" style={{ color: '#D4AF37' }}>
+                <CheckCircle className="w-4 h-4" />
+                <span>Profile created successfully</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="mb-8">
           <h1 className="text-4xl font-medium mb-2" style={{ color: '#0F3D2E' }}>Teacher Dashboard</h1>
-          <p style={{ color: '#5A5A5A' }}>Manage your classes and track your earnings</p>
+          <p style={{ color: '#5A5A5A' }}>
+            {isPendingApproval ? 'Complete your profile while waiting for approval' : 'Manage your classes and track your earnings'}
+          </p>
         </div>
 
+        {!isPendingApproval && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div data-testid="stat-card-today" className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm">
             <div className="flex items-center gap-4">
