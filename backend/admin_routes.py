@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, Depends
-from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime, timezone, timedelta
 import uuid
 import os
@@ -7,11 +6,14 @@ from typing import Optional, List
 from pydantic import BaseModel
 from models import User, Teacher, Student
 
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
 admin_router = APIRouter(prefix="/api/admin")
+
+# Database will be injected from server.py
+db = None
+
+def init_admin_routes(database):
+    global db
+    db = database
 
 
 class SupportTicket(BaseModel):
