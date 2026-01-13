@@ -32,8 +32,14 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
+    const answers = {
+      userType: answers.userType,
+      level: answers.level,
+      preference: answers.preference
+    };
     localStorage.setItem('onboarding', JSON.stringify(answers));
     
+    // After onboarding, redirect to student dashboard
     const redirectUrl = window.location.origin + '/auth/callback';
     window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
   };
