@@ -164,7 +164,7 @@ export default function TeacherDashboard({ user }) {
                 <Calendar className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-sm" style={{ color: '#9CA3AF' }}>Today's Classes</p>
+                <p className="text-sm" style={{ color: '#9CA3AF' }}>Today&apos;s Classes</p>
                 <p className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>
                   {dashboardData?.todays_classes?.length || 0}
                 </p>
