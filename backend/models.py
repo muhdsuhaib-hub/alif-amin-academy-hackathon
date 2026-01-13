@@ -71,7 +71,6 @@ class AvailabilitySlot(BaseModel):
     recurrence_pattern: Optional[str] = None
 
 class AvailabilityCreate(BaseModel):
-    teacher_id: str
     start_time_utc: datetime
     end_time_utc: datetime
     recurring: bool = False
