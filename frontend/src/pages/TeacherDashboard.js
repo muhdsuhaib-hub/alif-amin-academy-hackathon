@@ -231,7 +231,9 @@ export default function TeacherDashboard({ user }) {
         </div>
         )}
 
-        {/* Tabs */}
+        {/* Tabs - Only show for approved teachers */}
+        {!isPendingApproval && (
+        <>
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setActiveTab('schedule')}
