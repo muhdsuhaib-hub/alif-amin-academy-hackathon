@@ -33,11 +33,68 @@ export default function TeacherDashboard({ user }) {
       if (response.ok) {
         const data = await response.json();
         setDashboardData(data);
+        // Fetch availability if we have teacher data
+        if (data.teacher?.teacher_id) {
+          fetchAvailability(data.teacher.teacher_id);
+        }
       }
     } catch (error) {
       console.error('Error fetching dashboard:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAvailability = async (teacherId) => {
+    try {
+      const response = await fetch(`${API}/teachers/${teacherId}/availability`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAvailability(data);
+      }
+    } catch (error) {
+      console.error('Error fetching availability:', error);
+    }
+  };
+
+  const handleAddSlot = async () => {
+    if (!newSlot.date || !newSlot.time) {
+      toast.error('Please select a date and time');
+      return;
+    }
+
+    setAddingSlot(true);
+    try {
+      const startTime = new Date(`${newSlot.date}T${newSlot.time}`);
+      const endTime = new Date(startTime.getTime() + 60 * 60 * 1000); // 1 hour slot
+
+      const response = await fetch(`${API}/teachers/${dashboardData.teacher.teacher_id}/availability`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          start_time_utc: startTime.toISOString(),
+          end_time_utc: endTime.toISOString(),
+          recurring: newSlot.recurring,
+          recurrence_pattern: newSlot.recurrence_pattern
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Availability slot added successfully');
+        setShowAddSlot(false);
+        setNewSlot({ date: '', time: '', recurring: false, recurrence_pattern: null });
+        fetchAvailability(dashboardData.teacher.teacher_id);
+      } else {
+        const error = await response.json();
+        toast.error(error.detail || 'Failed to add slot');
+      }
+    } catch (error) {
+      toast.error('Error adding availability slot');
+    } finally {
+      setAddingSlot(false);
     }
   };
 
