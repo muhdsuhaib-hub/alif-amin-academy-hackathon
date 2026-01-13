@@ -65,7 +65,7 @@ async def get_current_user(request: Request, session_token: Optional[str] = Cook
 
 @api_router.get("/")
 async def root():
-    return {"message": "Al-Ilm Academy API", "version": "1.0"}
+    return {"message": "Alif Amin Academy API", "version": "1.0"}
 
 
 @api_router.get("/auth/session-data")
