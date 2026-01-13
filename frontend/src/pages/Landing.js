@@ -1,207 +1,253 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Users, Calendar, Video, Award, ArrowRight } from 'lucide-react';
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { scrollY } = useScroll();
+  const [scrollPosition, setScrollPosition] = useState(0);
+
+  const y1 = useTransform(scrollY, [0, 500], [0, 150]);
+  const y2 = useTransform(scrollY, [0, 500], [0, -100]);
+  const opacity = useTransform(scrollY, [0, 300], [1, 0]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollPosition(window.scrollY);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleGetStarted = () => {
-    const redirectUrl = window.location.origin + '/auth/callback';
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    navigate('/onboarding');
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FDFBF7' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#F7F5EF' }}>
       <nav className="fixed top-0 w-full z-50 glass-effect">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <BookOpen className="w-8 h-8" style={{ color: '#044E42' }} />
-            <span className="text-2xl font-medium" style={{ color: '#044E42' }}>Al-Ilm Academy</span>
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-5 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="text-3xl font-medium" style={{ color: '#0F3D2E' }}>Alif Amin</div>
           </div>
-          <button
-            data-testid="nav-login-button"
-            onClick={() => navigate('/login')}
-            className="h-10 px-6 rounded-full border-2 border-[#044E42] text-[#044E42] font-medium hover:bg-[#044E42] hover:text-white transition-all"
+          <a
+            href="/admin-login"
+            className="text-sm font-medium" 
+            style={{ color: '#5A5A5A' }}
           >
-            Login
-          </button>
+            Admin Access
+          </a>
         </div>
       </nav>
 
-      <section className="min-h-screen flex items-center relative overflow-hidden pt-20">
-        <div 
-          className="absolute inset-0 opacity-20" 
-          style={{ 
-            backgroundImage: 'url(https://images.unsplash.com/photo-1600616677773-0fbd06bd2727?crop=entropy&cs=srgb&fm=jpg&q=85)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h1 className="text-5xl md:text-7xl font-medium tracking-tight leading-tight mb-6" style={{ color: '#044E42' }}>
-                Learn Quran with Expert Teachers
-              </h1>
-              <p className="text-lg md:text-xl leading-relaxed mb-8" style={{ color: '#5A5A5A' }}>
-                Connect with qualified Quran teachers for personalized 1-on-1 video lessons. Choose your teacher, schedule at your convenience, and progress at your own pace.
-              </p>
-              <div className="flex gap-4">
-                <button
-                  data-testid="get-started-button"
-                  onClick={handleGetStarted}
-                  className="h-12 px-8 rounded-full bg-[#044E42] text-white font-medium transition-all hover:scale-105 hover:shadow-lg active:scale-95 flex items-center gap-2"
-                >
-                  Get Started
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-                <button
-                  data-testid="book-trial-button"
-                  onClick={handleGetStarted}
-                  className="h-12 px-8 rounded-full bg-[#D4AF37] bg-opacity-10 text-[#044E42] font-medium transition-all hover:bg-opacity-20"
-                >
-                  Book Free Trial
-                </button>
-              </div>
-            </div>
-            <div className="relative">
-              <img 
-                src="https://images.unsplash.com/photo-1618190405497-00f284b5dda5?crop=entropy&cs=srgb&fm=jpg&q=85"
-                alt="Student learning Quran"
-                className="rounded-3xl shadow-soft w-full"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        <motion.div
+          className="absolute inset-0 opacity-5"
+          style={{ y: y1 }}
+        >
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+                <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#0F3D2E" strokeWidth="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+          </svg>
+        </motion.div>
 
-      <section className="py-24 relative" style={{ backgroundColor: '#F7F3E8' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-medium tracking-tight mb-4" style={{ color: '#044E42' }}>
-              Why Choose Al-Ilm Academy?
-            </h2>
-            <p className="text-lg" style={{ color: '#5A5A5A' }}>
-              Premium Quran education designed for modern families
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <Users className="w-12 h-12" />,
-                title: 'Expert Teachers',
-                description: 'Learn from qualified and experienced Quran teachers with proven track records.'
-              },
-              {
-                icon: <Calendar className="w-12 h-12" />,
-                title: 'Flexible Scheduling',
-                description: 'Choose times that work for you. Our teachers are available across multiple time zones.'
-              },
-              {
-                icon: <Video className="w-12 h-12" />,
-                title: '1-on-1 Video Lessons',
-                description: 'Personalized attention through live video sessions with integrated digital Quran.'
-              },
-              {
-                icon: <Award className="w-12 h-12" />,
-                title: 'Track Progress',
-                description: 'Monitor your learning journey with detailed progress tracking and teacher feedback.'
-              },
-              {
-                icon: <BookOpen className="w-12 h-12" />,
-                title: 'Digital Mushaf',
-                description: 'Follow along with our integrated digital Quran reader during your lessons.'
-              },
-              {
-                icon: <ArrowRight className="w-12 h-12" />,
-                title: 'Free Trial',
-                description: 'Start with a complimentary 15-minute evaluation session before committing.'
-              }
-            ].map((feature, idx) => (
-              <div 
-                key={idx}
-                data-testid={`feature-card-${idx}`}
-                className="p-8 rounded-3xl bg-white border border-[#044E42] border-opacity-5 shadow-soft hover:shadow-hover transition-all duration-300 group"
-              >
-                <div className="mb-4" style={{ color: '#D4AF37' }}>
-                  {feature.icon}
-                </div>
-                <h3 className="text-2xl font-medium mb-3" style={{ color: '#044E42' }}>
-                  {feature.title}
-                </h3>
-                <p style={{ color: '#5A5A5A' }}>
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-medium tracking-tight mb-4" style={{ color: '#044E42' }}>
-              How It Works
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {[
-              { step: '1', title: 'Sign Up', description: 'Create your account in seconds with Google' },
-              { step: '2', title: 'Choose Teacher', description: 'Browse our qualified teachers and pick your favorite' },
-              { step: '3', title: 'Schedule Class', description: 'Book a time slot that fits your schedule' },
-              { step: '4', title: 'Start Learning', description: 'Join your live video class and begin your journey' }
-            ].map((item, idx) => (
-              <div key={idx} className="text-center">
-                <div 
-                  className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl font-medium text-white"
-                  style={{ backgroundColor: '#044E42' }}
-                >
-                  {item.step}
-                </div>
-                <h3 className="text-xl font-medium mb-2" style={{ color: '#044E42' }}>
-                  {item.title}
-                </h3>
-                <p className="text-sm" style={{ color: '#5A5A5A' }}>
-                  {item.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-24" style={{ backgroundColor: '#044E42' }}>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-medium tracking-tight mb-6 text-white">
-            Ready to Begin Your Journey?
-          </h2>
-          <p className="text-lg mb-8 text-white text-opacity-90">
-            Join hundreds of students learning Quran with Al-Ilm Academy
-          </p>
-          <button
-            data-testid="cta-get-started-button"
-            onClick={handleGetStarted}
-            className="h-12 px-8 rounded-full bg-[#D4AF37] text-[#044E42] font-medium transition-all hover:scale-105 hover:shadow-glow active:scale-95"
+        <div className="max-w-5xl mx-auto px-6 text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            style={{ opacity }}
           >
-            Get Started Today
-          </button>
+            <h1 
+              className="text-6xl md:text-8xl font-light tracking-tight leading-tight mb-8"
+              style={{ color: '#1F2933' }}
+            >
+              Learn the Quran.
+              <br />
+              <span style={{ color: '#0F3D2E' }}>Calmly. Clearly.</span>
+              <br />
+              At Your Pace.
+            </h1>
+            
+            <p 
+              className="text-xl md:text-2xl mb-4 font-light tracking-wide"
+              style={{ color: '#5A5A5A' }}
+            >
+              From Alif to Amin. Guided Every Step.
+            </p>
+
+            <motion.button
+              data-testid="start-free-button"
+              onClick={handleGetStarted}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="mt-12 h-16 px-12 rounded-full text-white text-lg font-medium shadow-soft"
+              style={{ backgroundColor: '#0F3D2E' }}
+            >
+              Start Absolutely Free
+            </motion.button>
+
+            <p className="mt-4 text-sm" style={{ color: '#9CA3AF' }}>
+              No card required
+            </p>
+          </motion.div>
         </div>
       </section>
 
-      <footer className="py-12 border-t" style={{ borderColor: 'rgba(4, 78, 66, 0.1)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <BookOpen className="w-6 h-6" style={{ color: '#044E42' }} />
-            <span className="text-xl font-medium" style={{ color: '#044E42' }}>Al-Ilm Academy</span>
+      <section className="py-32 relative">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="space-y-12"
+          >
+            <div className="space-y-6">
+              <p className="text-2xl md:text-3xl font-light" style={{ color: '#1F2933' }}>
+                Guided for beginners and families
+              </p>
+              <div className="w-24 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
+            </div>
+
+            <div className="space-y-6">
+              <p className="text-2xl md:text-3xl font-light" style={{ color: '#1F2933' }}>
+                Personalised after just 3 simple questions
+              </p>
+              <div className="w-24 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
+            </div>
+
+            <div className="space-y-6">
+              <p className="text-2xl md:text-3xl font-light" style={{ color: '#1F2933' }}>
+                No payment or commitment upfront
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section className="py-32 relative" style={{ backgroundColor: '#FFFFFF' }}>
+        <div className="max-w-6xl mx-auto px-6">
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-4xl md:text-5xl font-light text-center mb-20"
+            style={{ color: '#0F3D2E' }}
+          >
+            How It Starts
+          </motion.h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+            {[
+              {
+                number: '1',
+                title: 'Answer 3 simple questions',
+                description: 'Tell us about yourself and your learning goals'
+              },
+              {
+                number: '2',
+                title: 'Get a personalised learning path',
+                description: 'We match you with the perfect teacher and schedule'
+              },
+              {
+                number: '3',
+                title: 'Begin your free trial',
+                description: 'Start learning with absolutely no commitment'
+              }
+            ].map((step, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: idx * 0.2 }}
+                className="text-center space-y-6"
+              >
+                <div 
+                  className="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-3xl font-light text-white"
+                  style={{ backgroundColor: '#0F3D2E' }}
+                >
+                  {step.number}
+                </div>
+                <h3 className="text-xl font-medium" style={{ color: '#1F2933' }}>
+                  {step.title}
+                </h3>
+                <p className="text-base font-light" style={{ color: '#5A5A5A' }}>
+                  {step.description}
+                </p>
+              </motion.div>
+            ))}
           </div>
-          <p className="text-sm" style={{ color: '#9CA3AF' }}>
-            © 2025 Al-Ilm Academy. All rights reserved.
-          </p>
+
+          <div className="text-center mt-20">
+            <motion.button
+              data-testid="begin-trial-button"
+              onClick={handleGetStarted}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="h-14 px-10 rounded-full text-white text-base font-medium shadow-soft"
+              style={{ backgroundColor: '#0F3D2E' }}
+            >
+              Begin Free Trial
+            </motion.button>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-32 relative">
+        <div className="max-w-4xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="space-y-16"
+          >
+            <div className="text-center space-y-8">
+              <p className="text-xl md:text-2xl font-light italic" style={{ color: '#5A5A5A' }}>
+                "A calm and respectful approach to learning. Perfect for our family."
+              </p>
+              <div className="w-32 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
+            </div>
+
+            <div className="text-center space-y-8">
+              <p className="text-xl md:text-2xl font-light italic" style={{ color: '#5A5A5A' }}>
+                "No pressure, just genuine guidance. Exactly what we needed."
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <footer className="py-16 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>
+              Alif Amin
+            </div>
+            
+            <div className="flex gap-8 text-sm" style={{ color: '#5A5A5A' }}>
+              <a href="#" className="hover:opacity-70 transition-opacity">About</a>
+              <a href="#" className="hover:opacity-70 transition-opacity">Contact</a>
+              <a href="#" className="hover:opacity-70 transition-opacity">Privacy</a>
+              <a href="#" className="hover:opacity-70 transition-opacity">Terms</a>
+              <a 
+                href="/admin-login" 
+                className="hover:opacity-70 transition-opacity"
+                style={{ color: '#9CA3AF' }}
+              >
+                Admin Access
+              </a>
+            </div>
+          </div>
+
+          <div className="text-center mt-8 text-sm" style={{ color: '#9CA3AF' }}>
+            © 2025 Alif Amin. From Alif to Amin. Guided Every Step.
+          </div>
         </div>
       </footer>
     </div>
