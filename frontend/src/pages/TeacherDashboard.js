@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, LogOut, Calendar, DollarSign, Users, Clock, Plus, X, Video } from 'lucide-react';
+import { BookOpen, LogOut, Calendar, DollarSign, Users, Clock, Plus, X, Video, AlertCircle, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -20,6 +20,7 @@ export default function TeacherDashboard({ user }) {
   });
   const [addingSlot, setAddingSlot] = useState(false);
   const [activeTab, setActiveTab] = useState('schedule');
+  const [isPendingApproval, setIsPendingApproval] = useState(false);
 
   useEffect(() => {
     fetchDashboard();
@@ -33,8 +34,12 @@ export default function TeacherDashboard({ user }) {
       if (response.ok) {
         const data = await response.json();
         setDashboardData(data);
-        // Fetch availability if we have teacher data
-        if (data.teacher?.teacher_id) {
+        // Check if teacher is pending approval
+        if (data.teacher?.approval_status === 'pending' || data.teacher?.is_active === false) {
+          setIsPendingApproval(true);
+        }
+        // Fetch availability if we have teacher data and is approved
+        if (data.teacher?.teacher_id && data.teacher?.is_active) {
           fetchAvailability(data.teacher.teacher_id);
         }
       }
