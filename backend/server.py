@@ -15,6 +15,7 @@ from models import (
     AvailabilitySlot, AvailabilityCreate, Booking, BookingCreate,
     Lesson, LessonCreate, Progress, Subscription, Payment
 )
+from admin_routes import admin_router
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -576,6 +577,7 @@ async def create_student_profile(student: StudentCreate, current_user: User = De
 
 
 app.include_router(api_router)
+app.include_router(admin_router)
 
 app.add_middleware(
     CORSMiddleware,
