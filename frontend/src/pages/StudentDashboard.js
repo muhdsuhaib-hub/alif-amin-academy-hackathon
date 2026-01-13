@@ -180,15 +180,16 @@ export default function StudentDashboard({ user }) {
                         </p>
                         <p className="text-sm" style={{ color: '#5A5A5A' }}>1 hour session</p>
                       </div>
-                      {canJoinClass(booking.start_time_utc) && booking.meet_link && (
+                      {booking.meet_link && (
                         <a
                           data-testid={`join-class-button-${idx}`}
                           href={booking.meet_link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="h-8 px-4 rounded-full bg-[#D4AF37] text-white text-sm font-medium flex items-center gap-2 transition-all hover:scale-105"
+                          className={`h-8 px-4 rounded-full text-white text-sm font-medium flex items-center gap-2 transition-all hover:scale-105 ${canJoinClass(booking.start_time_utc) ? 'bg-[#2EB6A0]' : 'bg-[#D4AF37]'}`}
                         >
-                          Join Now
+                          <Video className="w-4 h-4" />
+                          {canJoinClass(booking.start_time_utc) ? 'Join Now' : 'Join Class'}
                         </a>
                       )}
                     </div>
