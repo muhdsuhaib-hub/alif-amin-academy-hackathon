@@ -7,6 +7,11 @@ import {
   Bell, Search, Filter, Download
 } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import UserManagement from '../components/admin/UserManagement';
+import BookingCalendar from '../components/admin/BookingCalendar';
+import FinancialReports from '../components/admin/FinancialReports';
+import SupportTickets from '../components/admin/SupportTickets';
+import SubscriptionManagement from '../components/admin/SubscriptionManagement';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -381,57 +386,13 @@ export default function AdminDashboard({ user }) {
           </>
         )}
 
-        {activeTab === 'users' && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>User Management</h2>
-              <div className="flex gap-3">
-                <button className="flex items-center gap-2 h-10 px-4 rounded-lg border transition-all hover:bg-gray-50" style={{ borderColor: 'rgba(15, 61, 46, 0.2)', color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
-                  <Search className="w-4 h-4" />
-                  Search
-                </button>
-                <button className="flex items-center gap-2 h-10 px-4 rounded-lg border transition-all hover:bg-gray-50" style={{ borderColor: 'rgba(15, 61, 46, 0.2)', color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
-                  <Filter className="w-4 h-4" />
-                  Filter
-                </button>
-                <button className="flex items-center gap-2 h-10 px-4 rounded-lg text-white transition-all hover:scale-105" style={{ backgroundColor: '#0F3D2E', fontFamily: 'Cal Sans' }}>
-                  <UserPlus className="w-4 h-4" />
-                  Add User
-                </button>
-              </div>
-            </div>
-            <p className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
-              User management interface - Coming soon
-            </p>
-          </div>
-        )}
+        {activeTab === 'users' && <UserManagement />}
 
-        {activeTab === 'bookings' && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-            <h2 className="text-2xl font-semibold mb-4" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Booking Management</h2>
-            <p className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
-              Master calendar and booking management - Coming soon
-            </p>
-          </div>
-        )}
+        {activeTab === 'bookings' && <BookingCalendar />}
 
-        {activeTab === 'finance' && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-            <h2 className="text-2xl font-semibold mb-4" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Financial Management</h2>
-            <p className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
-              Revenue reports and payroll calculator - Coming soon
-            </p>
-          </div>
-        )}
+        {activeTab === 'finance' && <FinancialReports />}
 
-        {activeTab === 'support' && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-            <h2 className="text-2xl font-semibold mb-4" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Support & Operations</h2>
-            <p className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
-              Support tickets and operations management - Coming soon
-            </p>
-          </div>
-        )}
+        {activeTab === 'support' && <SupportTickets />}
       </div>
     </div>
   );
