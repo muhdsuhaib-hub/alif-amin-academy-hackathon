@@ -64,25 +64,24 @@ export default function StudentDashboard({ user }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#044E42]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F3D2E]"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FDFBF7' }}>
-      <nav className="bg-white border-b" style={{ borderColor: 'rgba(4, 78, 66, 0.1)' }}>
+    <div className="min-h-screen" style={{ backgroundColor: '#F7F5EF' }}>
+      <nav className="bg-white border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <BookOpen className="w-8 h-8" style={{ color: '#044E42' }} />
-            <span className="text-2xl font-medium" style={{ color: '#044E42' }}>Al-Ilm Academy</span>
+            <span className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>Alif Amin</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm" style={{ color: '#5A5A5A' }}>{user?.name}</span>
             <button
               data-testid="logout-button"
               onClick={handleLogout}
-              className="flex items-center gap-2 h-10 px-4 rounded-full border border-[#044E42] border-opacity-20 text-[#044E42] hover:bg-[#044E42] hover:bg-opacity-5 transition-all"
+              className="flex items-center gap-2 h-10 px-4 rounded-full border border-[#0F3D2E] border-opacity-20 text-[#0F3D2E] hover:bg-[#0F3D2E] hover:bg-opacity-5 transition-all"
             >
               <LogOut className="w-4 h-4" />
               Logout
@@ -93,7 +92,7 @@ export default function StudentDashboard({ user }) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-medium mb-2" style={{ color: '#044E42' }}>Welcome, {user?.name?.split(' ')[0]}</h1>
+          <h1 className="text-4xl font-medium mb-2" style={{ color: '#0F3D2E' }}>Welcome, {user?.name?.split(' ')[0]}</h1>
           <p style={{ color: '#5A5A5A' }}>Continue your Quran learning journey</p>
         </div>
 
