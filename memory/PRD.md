@@ -47,6 +47,12 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 - [x] Classroom: Join Class button
   - [x] Google Meet link displayed for upcoming classes
   - [x] Visual indication when class is joinable
+- [x] **Teacher Signup Flow** (NEW)
+  - [x] Selecting "Teacher" in onboarding redirects to `/teacher-signup`
+  - [x] Teacher signup page with Google login
+  - [x] Teacher profile created with pending approval status
+  - [x] Pending approval banner in teacher dashboard
+  - [x] Dashboard hides stats/tabs until approved
 
 ### 🔜 P3 - Future Tasks (NOT STARTED)
 - [ ] **Integrations**
