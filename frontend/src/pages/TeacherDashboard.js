@@ -237,7 +237,7 @@ export default function TeacherDashboard({ user }) {
 
         {activeTab === 'schedule' && (
           <div className="bg-white rounded-3xl p-8 shadow-soft">
-            <h2 className="text-2xl font-medium mb-6" style={{ color: '#0F3D2E' }}>Today's Schedule</h2>
+            <h2 className="text-2xl font-medium mb-6" style={{ color: '#0F3D2E' }}>Today&apos;s Schedule</h2>
 
             {!dashboardData?.todays_classes || dashboardData.todays_classes.length === 0 ? (
               <div data-testid="no-classes-today" className="text-center py-8">
