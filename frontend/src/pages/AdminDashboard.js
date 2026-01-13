@@ -112,6 +112,7 @@ export default function AdminDashboard({ user }) {
                 { id: 'overview', label: 'Overview', icon: BarChart3 },
                 { id: 'users', label: 'Users', icon: Users },
                 { id: 'bookings', label: 'Bookings', icon: Calendar },
+                { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
                 { id: 'finance', label: 'Finance', icon: DollarSign },
                 { id: 'support', label: 'Support', icon: Bell }
               ].map(tab => (
@@ -389,6 +390,8 @@ export default function AdminDashboard({ user }) {
         {activeTab === 'users' && <UserManagement />}
 
         {activeTab === 'bookings' && <BookingCalendar />}
+
+        {activeTab === 'subscriptions' && <SubscriptionManagement />}
 
         {activeTab === 'finance' && <FinancialReports />}
 
