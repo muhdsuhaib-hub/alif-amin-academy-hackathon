@@ -211,7 +211,7 @@ export default function TeacherDashboard({ user }) {
               color: activeTab === 'schedule' ? 'white' : '#5A5A5A'
             }}
           >
-            Today's Schedule
+            Today&apos;s Schedule
           </button>
           <button
             onClick={() => setActiveTab('availability')}
