@@ -111,6 +111,7 @@ export default function AdminDashboard({ user }) {
             <div className="hidden md:flex gap-1">
               {[
                 { id: 'overview', label: 'Overview', icon: BarChart3 },
+                { id: 'approvals', label: 'Approvals', icon: UserCheck },
                 { id: 'users', label: 'Users', icon: Users },
                 { id: 'bookings', label: 'Bookings', icon: Calendar },
                 { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
@@ -119,6 +120,7 @@ export default function AdminDashboard({ user }) {
               ].map(tab => (
                 <button
                   key={tab.id}
+                  data-testid={`tab-${tab.id}`}
                   onClick={() => setActiveTab(tab.id)}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
                   style={{
