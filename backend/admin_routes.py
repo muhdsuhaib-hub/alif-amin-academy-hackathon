@@ -473,7 +473,7 @@ async def manage_subscription(sub_update: SubscriptionUpdate):
     if sub_update.discount_percentage:
         update_data["discount_percentage"] = sub_update.discount_percentage
     
-    result = await db.students.update_one(
+    await db.students.update_one(
         {"student_id": sub_update.student_id},
         {"$set": update_data}
     )
