@@ -4,7 +4,7 @@ import {
   Users, Calendar, DollarSign, TrendingUp, TrendingDown, 
   LogOut, Clock, AlertCircle, CheckCircle, XCircle,
   BookOpen, UserPlus, CreditCard, BarChart3, Settings,
-  Bell, Search, Filter, Download
+  Bell, Search, Filter, Download, UserCheck
 } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import UserManagement from '../components/admin/UserManagement';
@@ -12,6 +12,7 @@ import BookingCalendar from '../components/admin/BookingCalendar';
 import FinancialReports from '../components/admin/FinancialReports';
 import SupportTickets from '../components/admin/SupportTickets';
 import SubscriptionManagement from '../components/admin/SubscriptionManagement';
+import TeacherApprovals from '../components/admin/TeacherApprovals';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
