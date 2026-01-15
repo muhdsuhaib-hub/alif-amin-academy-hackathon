@@ -108,6 +108,71 @@ async def delete_user(user_id: str):
     return {"message": "User deleted successfully"}
 
 
+# Teacher Approval Endpoints
+@admin_router.get("/teachers/pending")
+async def get_pending_teachers():
+    """Get all teachers pending approval"""
+    pending_teachers = await db.teachers.find(
+        {"$or": [{"approval_status": "pending"}, {"is_active": False}]},
+        {"_id": 0}
+    ).to_list(100)
+    
+    # Enrich with user data
+    for teacher in pending_teachers:
+        user = await db.users.find_one({"user_id": teacher["user_id"]}, {"_id": 0})
+        if user:
+            teacher["user"] = user
+    
+    return {"pending_teachers": pending_teachers}
+
+
+@admin_router.post("/teachers/{teacher_id}/approve")
+async def approve_teacher(teacher_id: str):
+    """Approve a pending teacher"""
+    teacher = await db.teachers.find_one({"teacher_id": teacher_id})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    # Update teacher status
+    await db.teachers.update_one(
+        {"teacher_id": teacher_id},
+        {"$set": {
+            "is_active": True,
+            "approval_status": "approved",
+            "approved_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"message": "Teacher approved successfully", "teacher_id": teacher_id}
+
+
+@admin_router.post("/teachers/{teacher_id}/reject")
+async def reject_teacher(teacher_id: str, reason: Optional[str] = None):
+    """Reject a pending teacher application"""
+    teacher = await db.teachers.find_one({"teacher_id": teacher_id})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    
+    # Update teacher status
+    await db.teachers.update_one(
+        {"teacher_id": teacher_id},
+        {"$set": {
+            "is_active": False,
+            "approval_status": "rejected",
+            "rejection_reason": reason,
+            "rejected_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Optionally revert user role back to student
+    await db.users.update_one(
+        {"user_id": teacher["user_id"]},
+        {"$set": {"role": "student"}}
+    )
+    
+    return {"message": "Teacher application rejected", "teacher_id": teacher_id}
+
+
 # Master Calendar Endpoints
 @admin_router.get("/calendar/bookings")
 async def get_calendar_bookings(
