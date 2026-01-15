@@ -291,7 +291,7 @@ export default function AdminDashboard({ user }) {
 
             {/* Today's Highlights */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border mb-8" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-              <h3 className="text-xl font-semibold mb-6" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Today's Highlights</h3>
+              <h3 className="text-xl font-semibold mb-6" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Today&apos;s Highlights</h3>
               
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div>
