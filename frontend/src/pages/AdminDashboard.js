@@ -390,6 +390,8 @@ export default function AdminDashboard({ user }) {
           </>
         )}
 
+        {activeTab === 'approvals' && <TeacherApprovals />}
+
         {activeTab === 'users' && <UserManagement />}
 
         {activeTab === 'bookings' && <BookingCalendar />}
