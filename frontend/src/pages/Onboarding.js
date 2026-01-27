@@ -36,7 +36,7 @@ export default function Onboarding() {
     const onboardingData = {
       userType: answers.userType,
       level: answers.level,
-      preference: answers.preference
+      schedule: answers.preference
     };
     
     // Check if user is already authenticated
@@ -57,21 +57,25 @@ export default function Onboarding() {
           body: JSON.stringify(onboardingData)
         });
         
-        localStorage.setItem('onboarding', JSON.stringify(onboardingData));
-        
         // Redirect to student dashboard
         navigate('/student/dashboard', { state: { user: userData } });
       } else {
-        // User not authenticated, redirect to auth
-        localStorage.setItem('onboarding', JSON.stringify(onboardingData));
-        const redirectUrl = window.location.origin + '/auth/callback';
-        window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+        // User not authenticated, redirect to Auth page with onboarding data
+        navigate('/auth', { 
+          state: { 
+            fromOnboarding: true, 
+            onboardingData 
+          } 
+        });
       }
     } catch (error) {
-      // If error, redirect to auth
-      localStorage.setItem('onboarding', JSON.stringify(onboardingData));
-      const redirectUrl = window.location.origin + '/auth/callback';
-      window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+      // If error, redirect to Auth page with onboarding data
+      navigate('/auth', { 
+        state: { 
+          fromOnboarding: true, 
+          onboardingData 
+        } 
+      });
     }
   };
 
