@@ -350,6 +350,85 @@ async def log_student_progress(log_data: dict, current_user: User = Depends(get_
     return {"message": "Progress logged successfully", "log_id": log_id}
 
 
+@api_router.get("/teachers/{teacher_id}/transactions")
+async def get_teacher_transactions(teacher_id: str, current_user: User = Depends(get_current_user)):
+    """Get transaction history for a teacher"""
+    # Get all completed bookings for this teacher
+    bookings = await db.bookings.find(
+        {"teacher_id": teacher_id, "status": "completed"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    transactions = []
+    for booking in bookings:
+        # Get student info
+        student = await db.students.find_one({"student_id": booking.get("student_id")}, {"_id": 0})
+        user = None
+        if student:
+            user = await db.users.find_one({"user_id": student.get("user_id")}, {"_id": 0})
+        
+        # Get teacher rate
+        teacher = await db.teachers.find_one({"teacher_id": teacher_id}, {"_id": 0})
+        rate = teacher.get("hourly_rate", 50) if teacher else 50
+        
+        transactions.append({
+            "id": booking.get("booking_id"),
+            "date": booking.get("start_time_utc", "")[:10],
+            "student": user.get("name", "Unknown") if user else "Unknown",
+            "type": "Trial Class" if booking.get("booking_type") == "trial" else "Class Fee",
+            "amount": 0 if booking.get("booking_type") == "trial" else rate,
+            "status": "completed"
+        })
+    
+    return {"transactions": transactions}
+
+
+@api_router.get("/teachers/notes/{student_id}")
+async def get_student_notes(student_id: str, current_user: User = Depends(get_current_user)):
+    """Get lesson notes for a student"""
+    notes = await db.progress_logs.find(
+        {"student_id": student_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    formatted_notes = []
+    for note in notes:
+        formatted_notes.append({
+            "id": note.get("log_id"),
+            "date": note.get("created_at", "")[:10],
+            "note": note.get("tajweed_notes") or f"{note.get('current_book', '')} - {note.get('fluency_rating', '')}"
+        })
+    
+    return {"notes": formatted_notes}
+
+
+@api_router.put("/teachers/{teacher_id}/profile")
+async def update_teacher_profile(teacher_id: str, profile_data: dict, current_user: User = Depends(get_current_user)):
+    """Update teacher profile"""
+    if current_user.role not in ["teacher", "admin"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    update_fields = {}
+    if "bio" in profile_data:
+        update_fields["bio"] = profile_data["bio"]
+    if "hourlyRate" in profile_data:
+        update_fields["hourly_rate"] = profile_data["hourlyRate"]
+    if "meetLink" in profile_data:
+        update_fields["meet_link"] = profile_data["meetLink"]
+    if "specializations" in profile_data:
+        update_fields["specializations"] = profile_data["specializations"]
+    if "yearsExperience" in profile_data:
+        update_fields["years_experience"] = profile_data["yearsExperience"]
+    
+    if update_fields:
+        await db.teachers.update_one(
+            {"teacher_id": teacher_id},
+            {"$set": update_fields}
+        )
+    
+    return {"message": "Profile updated successfully"}
+
+
 @api_router.get("/teachers/{teacher_id}/availability")
 async def get_teacher_availability(teacher_id: str, start_date: Optional[str] = None, end_date: Optional[str] = None):
     query = {"teacher_id": teacher_id, "is_booked": False}
