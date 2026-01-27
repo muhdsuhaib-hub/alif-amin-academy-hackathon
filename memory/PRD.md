@@ -22,7 +22,17 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 
 ### ✅ P0 - Critical (COMPLETED)
 - [x] User authentication via Google OAuth
+- [x] **Email/Password Authentication** (NEW)
+  - [x] Email registration with password
+  - [x] Email login with password
+  - [x] Email existence check API
+  - [x] Password hashing with bcrypt
 - [x] Role-based redirections (Admin → /admin/dashboard, Student → /student/dashboard, Teacher → /teacher/dashboard)
+- [x] **Profile Registration for New Students** (NEW)
+  - [x] After onboarding, redirects to profile form
+  - [x] Collects: Full Name, Email, Phone, Password
+  - [x] Shows onboarding preferences (Level, Schedule)
+  - [x] Creates student profile with all data
 - [x] Onboarding flow for new users
 - [x] Admin access for specific emails (muhdsuhaib@gmail.com, hello.alifamin@gmail.com)
 - [x] Admin Dashboard UI with functional backend connections
