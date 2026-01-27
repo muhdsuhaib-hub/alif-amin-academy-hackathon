@@ -18,6 +18,7 @@ from models import (
     Lesson, LessonCreate, Progress, Subscription, Payment
 )
 from admin_routes import admin_router, init_admin_routes
+from notification_routes import notification_router, init_notification_routes
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -967,6 +968,10 @@ app.include_router(api_router)
 # Initialize admin routes with database
 init_admin_routes(db)
 app.include_router(admin_router)
+
+# Initialize notification routes with database
+init_notification_routes(db)
+app.include_router(notification_router)
 
 app.add_middleware(
     CORSMiddleware,
