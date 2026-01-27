@@ -571,13 +571,6 @@ function ClassroomTools({ teacherData, students }) {
   const [pointerPosition, setPointerPosition] = useState({ x: 50, y: 50 });
   const [isPointerActive, setIsPointerActive] = useState(false);
 
-  useEffect(() => {
-    // Load saved notes for selected student
-    if (selectedStudent) {
-      fetchStudentNotes(selectedStudent.student_id);
-    }
-  }, [selectedStudent]);
-
   const fetchStudentNotes = async (studentId) => {
     try {
       const response = await fetch(`${API}/teachers/notes/${studentId}`, {
@@ -599,6 +592,13 @@ function ClassroomTools({ teacherData, students }) {
     }
   };
 
+  useEffect(() => {
+    // Load saved notes for selected student
+    if (selectedStudent) {
+      fetchStudentNotes(selectedStudent.student_id);
+    }
+  }, [selectedStudent]);
+
   const handleSaveNote = async () => {
     if (!currentNote.trim() || !selectedStudent) return;
     
@@ -606,7 +606,7 @@ function ClassroomTools({ teacherData, students }) {
     setLessonNotes(prev => ({
       ...prev,
       [selectedStudent.student_id]: [
-        { id: Date.now(), date: new Date().toISOString().split('T')[0], note: currentNote },
+        { id: Math.random(), date: new Date().toISOString().split('T')[0], note: currentNote },
         ...(prev[selectedStudent.student_id] || [])
       ]
     }));
