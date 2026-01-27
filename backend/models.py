@@ -149,3 +149,28 @@ class Payment(BaseModel):
     payment_method: str = "billplz"
     transaction_id: Optional[str] = None
     created_at: datetime
+
+
+# Notification Models
+class Notification(BaseModel):
+    notification_id: str
+    user_id: str
+    title: str
+    message: str
+    notification_type: Literal[
+        "upcoming_class", "class_reminder", "booking_confirmed", "booking_cancelled",
+        "no_upcoming_class", "leave_note_reminder", "earning_credited",
+        "withdrawal_request", "new_registration", "class_reschedule",
+        "teacher_approved", "teacher_pending", "system"
+    ]
+    related_id: Optional[str] = None  # booking_id, teacher_id, student_id, etc.
+    is_read: bool = False
+    created_at: datetime
+
+
+class NotificationCreate(BaseModel):
+    user_id: str
+    title: str
+    message: str
+    notification_type: str
+    related_id: Optional[str] = None
