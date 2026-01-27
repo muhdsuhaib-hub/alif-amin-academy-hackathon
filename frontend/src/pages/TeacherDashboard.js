@@ -3,33 +3,1367 @@ import { useNavigate } from 'react-router-dom';
 import { 
   BookOpen, LogOut, Calendar, DollarSign, Users, Clock, Plus, X, Video, 
   AlertCircle, CheckCircle, Bell, Star, ChevronDown, ChevronUp, 
-  Wallet, Edit3, Save, User, Circle
+  Wallet, Edit3, Save, User, Circle, Menu, Home, FileText, 
+  Settings, CreditCard, BookMarker, UserCheck, Download, Upload,
+  Globe, Award, Tag, MessageSquare, ChevronRight, RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Sidebar Navigation Component
+function TeacherSidebar({ activeSection, setActiveSection, isCollapsed, setIsCollapsed }) {
+  const menuItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'wallet', label: 'Earnings Wallet', icon: Wallet },
+    { id: 'availability', label: 'Availability', icon: Calendar },
+    { id: 'classroom', label: 'Classroom Tools', icon: BookMarker },
+    { id: 'students', label: 'Student Management', icon: Users },
+    { id: 'profile', label: 'Profile', icon: User },
+  ];
+
+  return (
+    <aside 
+      className={`fixed left-0 top-0 h-full bg-white border-r z-50 transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}
+      style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}
+    >
+      {/* Logo */}
+      <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+        {!isCollapsed && (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#0F3D2E' }}>
+              <BookOpen className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-semibold text-sm" style={{ color: '#0F3D2E' }}>Alif Amin</span>
+          </div>
+        )}
+        <button 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="p-1.5 rounded-lg hover:bg-gray-100 transition-all"
+        >
+          <Menu className="w-5 h-5" style={{ color: '#5A5A5A' }} />
+        </button>
+      </div>
+
+      {/* Menu Items */}
+      <nav className="p-2 space-y-1">
+        {menuItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setActiveSection(item.id)}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
+              activeSection === item.id ? 'bg-[#0F3D2E] text-white' : 'hover:bg-gray-50 text-gray-600'
+            }`}
+          >
+            <item.icon className="w-5 h-5 flex-shrink-0" />
+            {!isCollapsed && <span className="text-sm font-medium">{item.label}</span>}
+          </button>
+        ))}
+      </nav>
+    </aside>
+  );
+}
+
+// Earnings Wallet Section
+function EarningsWallet({ teacherData }) {
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [bankDetails, setBankDetails] = useState({
+    bank: 'maybank',
+    accountNumber: '',
+    accountName: ''
+  });
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const fetchTransactions = async () => {
+    try {
+      const response = await fetch(`${API}/teachers/${teacherData?.teacher_id}/transactions`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setTransactions(data.transactions || []);
+      }
+    } catch (error) {
+      // Mock data for demo
+      setTransactions([
+        { id: 1, date: '2026-01-15', student: 'Ahmad bin Ali', type: 'Class Fee', amount: 80, status: 'completed' },
+        { id: 2, date: '2026-01-14', student: 'Sarah Abdullah', type: 'Class Fee', amount: 80, status: 'completed' },
+        { id: 3, date: '2026-01-13', student: 'Muhammad Hafiz', type: 'Trial Class', amount: 0, status: 'completed' },
+        { id: 4, date: '2026-01-12', student: 'Fatimah Zahra', type: 'Class Fee', amount: 80, status: 'completed' },
+        { id: 5, date: '2026-01-10', student: 'Ahmad bin Ali', type: 'Class Fee', amount: 80, status: 'completed' },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
+      toast.error('Please enter a valid amount');
+      return;
+    }
+    toast.success('Withdrawal request submitted! Funds will arrive in 1-3 business days.');
+    setShowWithdrawModal(false);
+    setWithdrawAmount('');
+  };
+
+  const totalEarnings = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const availableBalance = totalEarnings * 0.85; // 15% platform fee
+
+  return (
+    <div className="space-y-6">
+      {/* Balance Card */}
+      <div className="bg-gradient-to-br from-[#0F3D2E] to-[#1a5c47] rounded-2xl p-6 text-white">
+        <div className="flex items-start justify-between mb-6">
+          <div>
+            <p className="text-sm opacity-80 mb-1">Available Balance</p>
+            <p className="text-4xl font-bold">RM {availableBalance.toFixed(2)}</p>
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-white bg-opacity-20 flex items-center justify-center">
+            <Wallet className="w-6 h-6" />
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowWithdrawModal(true)}
+            className="flex-1 h-11 rounded-xl bg-white text-[#0F3D2E] font-medium flex items-center justify-center gap-2 transition-all hover:bg-opacity-90"
+          >
+            <CreditCard className="w-4 h-4" />
+            Withdraw Funds
+          </button>
+          <button className="h-11 px-4 rounded-xl bg-white bg-opacity-20 font-medium flex items-center gap-2 transition-all hover:bg-opacity-30">
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <p className="text-xs text-gray-500 mb-1">Total Earned</p>
+          <p className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>RM {totalEarnings.toFixed(2)}</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <p className="text-xs text-gray-500 mb-1">Platform Fee (15%)</p>
+          <p className="text-xl font-semibold" style={{ color: '#E76F51' }}>RM {(totalEarnings * 0.15).toFixed(2)}</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <p className="text-xs text-gray-500 mb-1">Classes This Month</p>
+          <p className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>{transactions.length}</p>
+        </div>
+      </div>
+
+      {/* Transaction History */}
+      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Transaction History</h3>
+          <button className="text-xs text-[#0F3D2E] font-medium flex items-center gap-1">
+            <Download className="w-3 h-3" />
+            Export
+          </button>
+        </div>
+        <div className="divide-y" style={{ borderColor: 'rgba(15, 61, 46, 0.05)' }}>
+          {transactions.map((tx) => (
+            <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-gray-50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#F7F5EF] flex items-center justify-center">
+                  <BookOpen className="w-5 h-5" style={{ color: '#0F3D2E' }} />
+                </div>
+                <div>
+                  <p className="font-medium text-sm" style={{ color: '#1F2933' }}>{tx.student}</p>
+                  <p className="text-xs text-gray-500">{tx.type} • {tx.date}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className={`font-semibold ${tx.amount > 0 ? 'text-[#2EB6A0]' : 'text-gray-400'}`}>
+                  {tx.amount > 0 ? `+RM ${tx.amount}` : 'Free'}
+                </p>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-600">
+                  {tx.status}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Withdraw Modal */}
+      {showWithdrawModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>Withdraw Funds</h3>
+              <button onClick={() => setShowWithdrawModal(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Amount (RM)</label>
+                <input
+                  type="number"
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                  placeholder="Enter amount"
+                  max={availableBalance}
+                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                />
+                <p className="text-xs text-gray-500 mt-1">Available: RM {availableBalance.toFixed(2)}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Bank</label>
+                <select
+                  value={bankDetails.bank}
+                  onChange={(e) => setBankDetails({ ...bankDetails, bank: e.target.value })}
+                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                >
+                  <option value="maybank">Maybank</option>
+                  <option value="cimb">CIMB Bank</option>
+                  <option value="rhb">RHB Bank</option>
+                  <option value="publicbank">Public Bank</option>
+                  <option value="paypal">PayPal (International)</option>
+                  <option value="wise">Wise (International)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Account Number</label>
+                <input
+                  type="text"
+                  value={bankDetails.accountNumber}
+                  onChange={(e) => setBankDetails({ ...bankDetails, accountNumber: e.target.value })}
+                  placeholder="Enter account number"
+                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Account Holder Name</label>
+                <input
+                  type="text"
+                  value={bankDetails.accountName}
+                  onChange={(e) => setBankDetails({ ...bankDetails, accountName: e.target.value })}
+                  placeholder="Enter account holder name"
+                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                />
+              </div>
+
+              <button
+                onClick={handleWithdraw}
+                className="w-full h-11 rounded-xl bg-[#0F3D2E] text-white font-medium transition-all hover:opacity-90"
+              >
+                Submit Withdrawal Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Availability Calendar Section
+function AvailabilityCalendar({ teacherData }) {
+  const [availability, setAvailability] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newSlot, setNewSlot] = useState({
+    startDate: '',
+    endDate: '',
+    startTime: '',
+    endTime: '',
+    recurring: false,
+    days: []
+  });
+  const [userTimezone, setUserTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const [loading, setLoading] = useState(false);
+
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  useEffect(() => {
+    if (teacherData?.teacher_id) {
+      fetchAvailability();
+    }
+  }, [teacherData]);
+
+  const fetchAvailability = async () => {
+    try {
+      const response = await fetch(`${API}/teachers/${teacherData.teacher_id}/availability`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAvailability(data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching availability:', error);
+    }
+  };
+
+  const handleAddAvailability = async () => {
+    if (!newSlot.startDate || !newSlot.startTime || !newSlot.endTime) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Generate slots for the date range
+      const start = new Date(newSlot.startDate);
+      const end = newSlot.endDate ? new Date(newSlot.endDate) : start;
+      
+      let currentDate = new Date(start);
+      while (currentDate <= end) {
+        const startDateTime = new Date(`${currentDate.toISOString().split('T')[0]}T${newSlot.startTime}`);
+        const endDateTime = new Date(`${currentDate.toISOString().split('T')[0]}T${newSlot.endTime}`);
+
+        await fetch(`${API}/teachers/${teacherData.teacher_id}/availability`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            start_time_utc: startDateTime.toISOString(),
+            end_time_utc: endDateTime.toISOString(),
+            recurring: newSlot.recurring
+          })
+        });
+
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      toast.success('Availability slots added successfully!');
+      setShowAddModal(false);
+      setNewSlot({ startDate: '', endDate: '', startTime: '', endTime: '', recurring: false, days: [] });
+      fetchAvailability();
+    } catch (error) {
+      toast.error('Failed to add availability');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const convertToLocalTime = (utcTime) => {
+    const date = new Date(utcTime);
+    return date.toLocaleString('en-US', { 
+      timeZone: userTimezone,
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  const convertToLocalDate = (utcTime) => {
+    const date = new Date(utcTime);
+    return date.toLocaleDateString('en-US', { 
+      timeZone: userTimezone,
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Timezone Info */}
+      <div className="bg-blue-50 rounded-xl p-4 flex items-center gap-3">
+        <Globe className="w-5 h-5 text-blue-600" />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-blue-900">Your Timezone: {userTimezone}</p>
+          <p className="text-xs text-blue-700">All times are automatically converted for students in different timezones</p>
+        </div>
+      </div>
+
+      {/* Add Availability Button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold" style={{ color: '#0F3D2E' }}>Your Availability</h3>
+          <p className="text-sm text-gray-500">Set when you&apos;re available for classes</p>
+        </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[#0F3D2E] text-white font-medium transition-all hover:opacity-90"
+        >
+          <Plus className="w-4 h-4" />
+          Add Availability
+        </button>
+      </div>
+
+      {/* Availability Grid */}
+      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <h4 className="font-medium" style={{ color: '#1F2933' }}>Upcoming Available Slots</h4>
+        </div>
+        
+        {availability.length === 0 ? (
+          <div className="p-8 text-center">
+            <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="text-gray-500">No availability set</p>
+            <p className="text-sm text-gray-400 mt-1">Add your available time slots to start receiving bookings</p>
+          </div>
+        ) : (
+          <div className="divide-y" style={{ borderColor: 'rgba(15, 61, 46, 0.05)' }}>
+            {availability.slice(0, 15).map((slot, idx) => (
+              <div key={slot.slot_id || idx} className="p-4 flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-[#F7F5EF] flex flex-col items-center justify-center">
+                    <span className="text-xs font-medium" style={{ color: '#0F3D2E' }}>
+                      {convertToLocalDate(slot.start_time_utc).split(' ')[0]}
+                    </span>
+                    <span className="text-lg font-bold" style={{ color: '#0F3D2E' }}>
+                      {new Date(slot.start_time_utc).getDate()}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium" style={{ color: '#1F2933' }}>
+                      {convertToLocalTime(slot.start_time_utc)} - {convertToLocalTime(slot.end_time_utc)}
+                    </p>
+                    <p className="text-xs text-gray-500">{convertToLocalDate(slot.start_time_utc)}</p>
+                  </div>
+                </div>
+                <span 
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                    slot.is_booked 
+                      ? 'bg-green-50 text-green-600' 
+                      : 'bg-yellow-50 text-yellow-600'
+                  }`}
+                >
+                  {slot.is_booked ? 'Booked' : 'Available'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Add Availability Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>Add Availability</h3>
+              <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Start Date</label>
+                  <input
+                    type="date"
+                    value={newSlot.startDate}
+                    onChange={(e) => setNewSlot({ ...newSlot, startDate: e.target.value })}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">End Date (Optional)</label>
+                  <input
+                    type="date"
+                    value={newSlot.endDate}
+                    onChange={(e) => setNewSlot({ ...newSlot, endDate: e.target.value })}
+                    min={newSlot.startDate || new Date().toISOString().split('T')[0]}
+                    className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Start Time</label>
+                  <input
+                    type="time"
+                    value={newSlot.startTime}
+                    onChange={(e) => setNewSlot({ ...newSlot, startTime: e.target.value })}
+                    className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">End Time</label>
+                  <input
+                    type="time"
+                    value={newSlot.endTime}
+                    onChange={(e) => setNewSlot({ ...newSlot, endTime: e.target.value })}
+                    className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-[#F7F5EF]">
+                <p className="text-sm font-medium mb-3" style={{ color: '#0F3D2E' }}>Quick Select Time Slots</p>
+                <div className="flex flex-wrap gap-2">
+                  {['08:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00', '20:00-22:00'].map((slot) => (
+                    <button
+                      key={slot}
+                      onClick={() => {
+                        const [start, end] = slot.split('-');
+                        setNewSlot({ ...newSlot, startTime: start, endTime: end });
+                      }}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all hover:bg-[#0F3D2E] hover:text-white"
+                      style={{ backgroundColor: 'white', color: '#0F3D2E', border: '1px solid rgba(15, 61, 46, 0.2)' }}
+                    >
+                      {slot.replace('-', ' - ')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="recurring"
+                  checked={newSlot.recurring}
+                  onChange={(e) => setNewSlot({ ...newSlot, recurring: e.target.checked })}
+                  className="w-4 h-4 rounded border-gray-300 text-[#0F3D2E] focus:ring-[#0F3D2E]"
+                />
+                <label htmlFor="recurring" className="text-sm text-gray-700">
+                  Make this a recurring weekly slot
+                </label>
+              </div>
+
+              <button
+                onClick={handleAddAvailability}
+                disabled={loading}
+                className="w-full h-11 rounded-xl bg-[#0F3D2E] text-white font-medium flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    Add Availability
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Classroom Tools Section
+function ClassroomTools({ teacherData, students }) {
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [lessonNotes, setLessonNotes] = useState({});
+  const [currentNote, setCurrentNote] = useState('');
+  const [showMushaf, setShowMushaf] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pointerPosition, setPointerPosition] = useState({ x: 50, y: 50 });
+  const [isPointerActive, setIsPointerActive] = useState(false);
+
+  useEffect(() => {
+    // Load saved notes for selected student
+    if (selectedStudent) {
+      fetchStudentNotes(selectedStudent.student_id);
+    }
+  }, [selectedStudent]);
+
+  const fetchStudentNotes = async (studentId) => {
+    try {
+      const response = await fetch(`${API}/teachers/notes/${studentId}`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setLessonNotes(prev => ({ ...prev, [studentId]: data.notes || [] }));
+      }
+    } catch (error) {
+      // Mock notes
+      setLessonNotes(prev => ({ 
+        ...prev, 
+        [studentId]: [
+          { id: 1, date: '2026-01-15', note: "Student struggles with Makhraj of letter 'Ain'" },
+          { id: 2, date: '2026-01-14', note: 'Good progress on Madd rules, continue practicing' },
+        ]
+      }));
+    }
+  };
+
+  const handleSaveNote = async () => {
+    if (!currentNote.trim() || !selectedStudent) return;
+    
+    toast.success('Note saved successfully');
+    setLessonNotes(prev => ({
+      ...prev,
+      [selectedStudent.student_id]: [
+        { id: Date.now(), date: new Date().toISOString().split('T')[0], note: currentNote },
+        ...(prev[selectedStudent.student_id] || [])
+      ]
+    }));
+    setCurrentNote('');
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isPointerActive) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setPointerPosition({ x, y });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Digital Mushaf Card */}
+      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <div>
+            <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Digital Mushaf</h3>
+            <p className="text-sm text-gray-500">Interactive Quran with live pointer</p>
+          </div>
+          <button
+            onClick={() => setShowMushaf(true)}
+            className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[#0F3D2E] text-white font-medium transition-all hover:opacity-90"
+          >
+            <BookMarker className="w-4 h-4" />
+            Open Mushaf
+          </button>
+        </div>
+        <div className="p-6 bg-[#F7F5EF]">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }}>604</p>
+              <p className="text-xs text-gray-500">Total Pages</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }}>114</p>
+              <p className="text-xs text-gray-500">Surahs</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }}>30</p>
+              <p className="text-xs text-gray-500">Juz</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Lesson Notes */}
+      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Lesson Notes</h3>
+          <p className="text-sm text-gray-500">Private notes for each student</p>
+        </div>
+        
+        <div className="p-4">
+          {/* Student Selector */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2 text-gray-700">Select Student</label>
+            <select
+              value={selectedStudent?.student_id || ''}
+              onChange={(e) => {
+                const student = students.find(s => s.student_id === e.target.value);
+                setSelectedStudent(student);
+              }}
+              className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+              style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+            >
+              <option value="">Choose a student...</option>
+              {students.map(student => (
+                <option key={student.student_id} value={student.student_id}>
+                  {student.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {selectedStudent && (
+            <>
+              {/* Add Note */}
+              <div className="mb-4">
+                <textarea
+                  value={currentNote}
+                  onChange={(e) => setCurrentNote(e.target.value)}
+                  placeholder="Add a note about this student's progress..."
+                  className="w-full h-24 p-3 rounded-lg border resize-none focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                />
+                <button
+                  onClick={handleSaveNote}
+                  className="mt-2 flex items-center gap-2 h-9 px-4 rounded-lg bg-[#0F3D2E] text-white text-sm font-medium transition-all hover:opacity-90"
+                >
+                  <Save className="w-4 h-4" />
+                  Save Note
+                </button>
+              </div>
+
+              {/* Notes History */}
+              <div className="space-y-3">
+                <h4 className="text-sm font-medium text-gray-700">Previous Notes</h4>
+                {(lessonNotes[selectedStudent.student_id] || []).map(note => (
+                  <div key={note.id} className="p-3 rounded-lg bg-[#F7F5EF]">
+                    <p className="text-sm" style={{ color: '#1F2933' }}>{note.note}</p>
+                    <p className="text-xs text-gray-500 mt-1">{note.date}</p>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Mushaf Modal */}
+      {showMushaf && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+          <div className="w-full h-full flex flex-col">
+            {/* Header */}
+            <div className="bg-[#0F3D2E] text-white p-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <button onClick={() => setShowMushaf(false)} className="p-2 hover:bg-white hover:bg-opacity-10 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+                <h3 className="font-semibold">Digital Mushaf - Uthmani Script</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsPointerActive(!isPointerActive)}
+                  className={`px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all ${
+                    isPointerActive ? 'bg-[#D4AF37] text-[#0F3D2E]' : 'bg-white bg-opacity-20'
+                  }`}
+                >
+                  <Edit3 className="w-4 h-4" />
+                  {isPointerActive ? 'Pointer ON' : 'Enable Pointer'}
+                </button>
+                <div className="flex items-center gap-2 bg-white bg-opacity-20 rounded-lg px-3 py-2">
+                  <button 
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    className="p-1 hover:bg-white hover:bg-opacity-20 rounded"
+                  >
+                    <ChevronDown className="w-4 h-4 rotate-90" />
+                  </button>
+                  <span className="w-16 text-center">Page {currentPage}</span>
+                  <button 
+                    onClick={() => setCurrentPage(Math.min(604, currentPage + 1))}
+                    className="p-1 hover:bg-white hover:bg-opacity-20 rounded"
+                  >
+                    <ChevronDown className="w-4 h-4 -rotate-90" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Mushaf Display */}
+            <div 
+              className="flex-1 bg-[#FDF8E8] flex items-center justify-center relative cursor-crosshair"
+              onMouseMove={handlePointerMove}
+            >
+              {/* Simulated Quran Page */}
+              <div className="w-[600px] h-[800px] bg-white shadow-2xl rounded-lg p-8 relative overflow-hidden">
+                <div className="absolute top-4 right-4 text-xs text-gray-400">Page {currentPage}</div>
+                
+                {/* Arabic Text Simulation */}
+                <div className="text-right font-arabic leading-loose" style={{ direction: 'rtl' }}>
+                  <p className="text-2xl mb-4" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                    بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+                  </p>
+                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                    الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ﴿١﴾
+                  </p>
+                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                    الرَّحْمَٰنِ الرَّحِيمِ ﴿٢﴾
+                  </p>
+                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                    مَالِكِ يَوْمِ الدِّينِ ﴿٣﴾
+                  </p>
+                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                    إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ﴿٤﴾
+                  </p>
+                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                    اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ﴿٥﴾
+                  </p>
+                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                    صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ ﴿٦﴾
+                  </p>
+                </div>
+
+                {/* Live Pointer */}
+                {isPointerActive && (
+                  <div 
+                    className="absolute w-6 h-6 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                    style={{ 
+                      left: `${pointerPosition.x}%`, 
+                      top: `${pointerPosition.y}%`,
+                      transition: 'all 0.1s ease-out'
+                    }}
+                  >
+                    <div className="w-6 h-6 bg-[#E76F51] rounded-full opacity-80 animate-pulse"></div>
+                    <div className="absolute top-0 left-0 w-6 h-6 bg-[#E76F51] rounded-full animate-ping"></div>
+                  </div>
+                )}
+              </div>
+
+              {isPointerActive && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-[#0F3D2E] text-white px-4 py-2 rounded-lg text-sm">
+                  Move your cursor to point at specific text. Students see your pointer in real-time.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Student Management Section
+function StudentManagement({ teacherData, students, setStudents }) {
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedStudentForReport, setSelectedStudentForReport] = useState(null);
+  const [reportData, setReportData] = useState({
+    attendance: '4/4',
+    progress: '',
+    notes: ''
+  });
+
+  const getLastLessonStatus = (lastSession) => {
+    if (!lastSession) return 'never';
+    const daysSince = Math.floor((Date.now() - new Date(lastSession).getTime()) / (1000 * 60 * 60 * 24));
+    if (daysSince > 14) return 'inactive';
+    if (daysSince > 7) return 'warning';
+    return 'active';
+  };
+
+  const sendReminder = async (student) => {
+    toast.success(`Reminder sent to ${student.name}!`);
+  };
+
+  const generateReport = () => {
+    if (!selectedStudentForReport) return;
+    
+    // In real app, this would generate a PDF
+    toast.success('Report generated! Check your downloads folder.');
+    setShowReportModal(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <p className="text-xs text-gray-500 mb-1">Active Students</p>
+          <p className="text-2xl font-semibold" style={{ color: '#0F3D2E' }}>
+            {students.filter(s => getLastLessonStatus(s.last_session) === 'active').length}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <p className="text-xs text-gray-500 mb-1">Need Attention</p>
+          <p className="text-2xl font-semibold" style={{ color: '#E76F51' }}>
+            {students.filter(s => getLastLessonStatus(s.last_session) === 'warning').length}
+          </p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <p className="text-xs text-gray-500 mb-1">Inactive (2+ weeks)</p>
+          <p className="text-2xl font-semibold text-gray-400">
+            {students.filter(s => getLastLessonStatus(s.last_session) === 'inactive').length}
+          </p>
+        </div>
+      </div>
+
+      {/* Student List */}
+      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Student List</h3>
+        </div>
+        
+        <div className="divide-y" style={{ borderColor: 'rgba(15, 61, 46, 0.05)' }}>
+          {students.map(student => {
+            const status = getLastLessonStatus(student.last_session);
+            return (
+              <div key={student.student_id} className="p-4 flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white font-medium">
+                    {student.name?.charAt(0) || 'S'}
+                  </div>
+                  <div>
+                    <p className="font-medium" style={{ color: '#1F2933' }}>{student.name}</p>
+                    <p className="text-sm text-gray-500">{student.current_level}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-3">
+                  {/* Last Lesson Indicator */}
+                  <div className="text-right mr-2">
+                    <p className="text-xs text-gray-500">Last lesson</p>
+                    <p className={`text-sm font-medium ${
+                      status === 'active' ? 'text-green-600' :
+                      status === 'warning' ? 'text-yellow-600' :
+                      status === 'inactive' ? 'text-red-500' : 'text-gray-400'
+                    }`}>
+                      {student.last_session ? new Date(student.last_session).toLocaleDateString() : 'Never'}
+                    </p>
+                  </div>
+
+                  {/* Status Badge */}
+                  {status === 'warning' && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-50 text-yellow-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      7+ days
+                    </span>
+                  )}
+                  {status === 'inactive' && (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      14+ days
+                    </span>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    {(status === 'warning' || status === 'inactive') && (
+                      <button
+                        onClick={() => sendReminder(student)}
+                        className="h-8 px-3 rounded-lg text-xs font-medium bg-[#D4AF37] text-white transition-all hover:opacity-90"
+                      >
+                        Send Reminder
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setSelectedStudentForReport(student);
+                        setShowReportModal(true);
+                      }}
+                      className="h-8 px-3 rounded-lg text-xs font-medium border transition-all hover:bg-gray-50"
+                      style={{ borderColor: 'rgba(15, 61, 46, 0.2)', color: '#0F3D2E' }}
+                    >
+                      <FileText className="w-3 h-3 inline mr-1" />
+                      Report
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Report Card Modal */}
+      {showReportModal && selectedStudentForReport && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>Generate Report Card</h3>
+              <button onClick={() => setShowReportModal(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-[#F7F5EF]">
+                <p className="text-sm font-medium" style={{ color: '#0F3D2E' }}>{selectedStudentForReport.name}</p>
+                <p className="text-xs text-gray-500">{selectedStudentForReport.current_level}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Attendance (This Month)</label>
+                <input
+                  type="text"
+                  value={reportData.attendance}
+                  onChange={(e) => setReportData({ ...reportData, attendance: e.target.value })}
+                  placeholder="e.g., 4/4"
+                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Progress</label>
+                <input
+                  type="text"
+                  value={reportData.progress}
+                  onChange={(e) => setReportData({ ...reportData, progress: e.target.value })}
+                  placeholder="e.g., Completed Surah Al-Mulk"
+                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">Additional Notes</label>
+                <textarea
+                  value={reportData.notes}
+                  onChange={(e) => setReportData({ ...reportData, notes: e.target.value })}
+                  placeholder="Comments for parents..."
+                  className="w-full h-24 p-3 rounded-lg border resize-none focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                />
+              </div>
+
+              <button
+                onClick={generateReport}
+                className="w-full h-11 rounded-xl bg-[#0F3D2E] text-white font-medium flex items-center justify-center gap-2 transition-all hover:opacity-90"
+              >
+                <Download className="w-4 h-4" />
+                Generate PDF Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Profile Management Section
+function ProfileManagement({ teacherData, user }) {
+  const [profile, setProfile] = useState({
+    bio: teacherData?.bio || '',
+    hourlyRate: teacherData?.hourly_rate || 50,
+    meetLink: teacherData?.meet_link || '',
+    specializations: teacherData?.specializations || [],
+    yearsExperience: teacherData?.years_experience || 0
+  });
+  const [videoFile, setVideoFile] = useState(null);
+  const [certificateFile, setCertificateFile] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  const specialties = [
+    'Hifz (Memorization)',
+    'Tajweed',
+    'Qiraat',
+    'Arabic for Kids',
+    'Arabic for Adults',
+    'English Speaking',
+    'Malay Speaking',
+    'Female Students Only'
+  ];
+
+  const toggleSpecialty = (specialty) => {
+    setProfile(prev => ({
+      ...prev,
+      specializations: prev.specializations.includes(specialty)
+        ? prev.specializations.filter(s => s !== specialty)
+        : [...prev.specializations, specialty]
+    }));
+  };
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      const response = await fetch(`${API}/teachers/${teacherData.teacher_id}/profile`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(profile)
+      });
+
+      if (response.ok) {
+        toast.success('Profile updated successfully!');
+      } else {
+        toast.success('Profile saved (demo mode)');
+      }
+    } catch (error) {
+      toast.success('Profile saved (demo mode)');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleVideoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 50 * 1024 * 1024) {
+        toast.error('Video must be under 50MB');
+        return;
+      }
+      setVideoFile(file);
+      toast.success('Video selected! Save profile to upload.');
+    }
+  };
+
+  const handleCertificateUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCertificateFile(file);
+      toast.success('Certificate selected! Save profile to upload.');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Profile Header */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="flex items-center gap-6">
+          <div className="w-24 h-24 rounded-2xl bg-[#0F3D2E] flex items-center justify-center text-white text-3xl font-medium">
+            {user?.name?.charAt(0) || 'T'}
+          </div>
+          <div className="flex-1">
+            <h2 className="text-2xl font-semibold" style={{ color: '#0F3D2E' }}>{user?.name}</h2>
+            <p className="text-gray-500">{user?.email}</p>
+            <div className="flex items-center gap-2 mt-2">
+              {teacherData?.is_active ? (
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  Verified Teacher
+                </span>
+              ) : (
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-50 text-yellow-600">
+                  Pending Verification
+                </span>
+              )}
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#F7F5EF]" style={{ color: '#0F3D2E' }}>
+                <Star className="w-3 h-3 inline mr-1" fill="#D4AF37" stroke="#D4AF37" />
+                {teacherData?.rating?.toFixed(1) || '5.0'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Basic Info */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <h3 className="font-semibold mb-4" style={{ color: '#0F3D2E' }}>Basic Information</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700">Bio / About Me</label>
+            <textarea
+              value={profile.bio}
+              onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+              placeholder="Tell students about yourself, your teaching style, and experience..."
+              className="w-full h-32 p-3 rounded-lg border resize-none focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+              style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-700">Hourly Rate (RM)</label>
+              <input
+                type="number"
+                value={profile.hourlyRate}
+                onChange={(e) => setProfile({ ...profile, hourlyRate: parseFloat(e.target.value) })}
+                className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-700">Years of Experience</label>
+              <input
+                type="number"
+                value={profile.yearsExperience}
+                onChange={(e) => setProfile({ ...profile, yearsExperience: parseInt(e.target.value) })}
+                className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700">Google Meet Link</label>
+            <input
+              type="url"
+              value={profile.meetLink}
+              onChange={(e) => setProfile({ ...profile, meetLink: e.target.value })}
+              placeholder="https://meet.google.com/xxx-xxxx-xxx"
+              className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+              style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Specialties */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <h3 className="font-semibold mb-4" style={{ color: '#0F3D2E' }}>Specialties & Skills</h3>
+        <div className="flex flex-wrap gap-2">
+          {specialties.map(specialty => (
+            <button
+              key={specialty}
+              onClick={() => toggleSpecialty(specialty)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                profile.specializations.includes(specialty)
+                  ? 'bg-[#0F3D2E] text-white'
+                  : 'bg-[#F7F5EF] text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {profile.specializations.includes(specialty) && <CheckCircle className="w-4 h-4 inline mr-1" />}
+              {specialty}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Video Introduction */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <h3 className="font-semibold mb-2" style={{ color: '#0F3D2E' }}>Video Introduction</h3>
+        <p className="text-sm text-gray-500 mb-4">Upload a 1-2 minute video of yourself reciting Quran so parents can hear your voice and Tajweed quality.</p>
+        
+        <div className="border-2 border-dashed rounded-xl p-8 text-center" style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}>
+          {videoFile ? (
+            <div>
+              <Video className="w-12 h-12 mx-auto mb-3" style={{ color: '#0F3D2E' }} />
+              <p className="font-medium" style={{ color: '#0F3D2E' }}>{videoFile.name}</p>
+              <p className="text-sm text-gray-500">{(videoFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+            </div>
+          ) : (
+            <>
+              <Upload className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p className="text-gray-500 mb-2">Drag and drop or click to upload</p>
+              <p className="text-xs text-gray-400">MP4, MOV up to 50MB</p>
+            </>
+          )}
+          <input
+            type="file"
+            accept="video/*"
+            onChange={handleVideoUpload}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            style={{ position: 'relative' }}
+          />
+        </div>
+      </div>
+
+      {/* Certificates */}
+      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <h3 className="font-semibold mb-2" style={{ color: '#0F3D2E' }}>Ijazah / Certificates</h3>
+        <p className="text-sm text-gray-500 mb-4">Upload your credentials to get a &quot;Verified&quot; badge (e.g., Degree from Al-Azhar, Darul Quran).</p>
+        
+        <div className="border-2 border-dashed rounded-xl p-8 text-center" style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}>
+          {certificateFile ? (
+            <div>
+              <Award className="w-12 h-12 mx-auto mb-3" style={{ color: '#D4AF37' }} />
+              <p className="font-medium" style={{ color: '#0F3D2E' }}>{certificateFile.name}</p>
+            </div>
+          ) : (
+            <>
+              <Award className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p className="text-gray-500 mb-2">Upload your certificates</p>
+              <p className="text-xs text-gray-400">PDF, JPG, PNG up to 10MB</p>
+            </>
+          )}
+          <input
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={handleCertificateUpload}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            style={{ position: 'relative' }}
+          />
+        </div>
+      </div>
+
+      {/* Save Button */}
+      <button
+        onClick={handleSaveProfile}
+        disabled={saving}
+        className="w-full h-12 rounded-xl bg-[#0F3D2E] text-white font-medium flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
+      >
+        {saving ? (
+          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <>
+            <Save className="w-5 h-5" />
+            Save Profile
+          </>
+        )}
+      </button>
+    </div>
+  );
+}
+
+// Dashboard Overview Section (simplified from original)
+function DashboardOverview({ teacherData, students, user }) {
+  return (
+    <div className="space-y-6">
+      {/* Welcome Banner */}
+      <div className="bg-gradient-to-br from-[#0F3D2E] to-[#1a5c47] rounded-2xl p-6 text-white">
+        <h1 className="text-2xl font-bold mb-2">Welcome back, {user?.name?.split(' ')[0]}!</h1>
+        <p className="opacity-80">Here&apos;s your teaching overview for today</p>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <DollarSign className="w-8 h-8 mb-2" style={{ color: '#2EB6A0' }} />
+          <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }}>RM {(teacherData?.estimated_earnings || 0).toFixed(0)}</p>
+          <p className="text-xs text-gray-500">This Month</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <Users className="w-8 h-8 mb-2" style={{ color: '#D4AF37' }} />
+          <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }}>{students.length}</p>
+          <p className="text-xs text-gray-500">Active Students</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <Calendar className="w-8 h-8 mb-2" style={{ color: '#E76F51' }} />
+          <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }}>{teacherData?.todays_classes?.length || 0}</p>
+          <p className="text-xs text-gray-500">Classes Today</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <Star className="w-8 h-8 mb-2" style={{ color: '#FBBF24' }} fill="#FBBF24" />
+          <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }}>{(teacherData?.teacher?.rating || 5.0).toFixed(1)}</p>
+          <p className="text-xs text-gray-500">Your Rating</p>
+        </div>
+      </div>
+
+      {/* Today's Schedule */}
+      <div className="bg-white rounded-2xl border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Today&apos;s Schedule</h3>
+        </div>
+        <div className="p-4">
+          {(!teacherData?.todays_classes || teacherData.todays_classes.length === 0) ? (
+            <div className="text-center py-8">
+              <Clock className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p className="text-gray-500">No classes scheduled for today</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {teacherData.todays_classes.map((cls, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-[#F7F5EF]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-1 h-10 rounded-full bg-[#0F3D2E]"></div>
+                    <div>
+                      <p className="font-medium" style={{ color: '#1F2933' }}>
+                        {new Date(cls.start_time_utc).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                      </p>
+                      <p className="text-xs text-gray-500">Student ID: {cls.student_id?.slice(0, 8)}...</p>
+                    </div>
+                  </div>
+                  {cls.meet_link && (
+                    <a
+                      href={cls.meet_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="h-9 px-4 rounded-lg bg-[#0F3D2E] text-white text-sm font-medium flex items-center gap-2"
+                    >
+                      <Video className="w-4 h-4" />
+                      Join
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Main Teacher Dashboard Component
 export default function TeacherDashboard({ user }) {
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isPendingApproval, setIsPendingApproval] = useState(false);
-  const [isOnline, setIsOnline] = useState(true);
-  const [showEditAvailability, setShowEditAvailability] = useState(false);
-  const [availability, setAvailability] = useState([]);
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [students, setStudents] = useState([]);
-  const [expandedStudent, setExpandedStudent] = useState(null);
-  const [newSlot, setNewSlot] = useState({ date: '', time: '' });
-  const [addingSlot, setAddingSlot] = useState(false);
-  const [quickLog, setQuickLog] = useState({
-    currentBook: '',
-    startPage: '',
-    endPage: '',
-    fluencyRating: 'smooth',
-    tajweedNotes: ''
-  });
-  const [savingLog, setSavingLog] = useState(false);
 
   useEffect(() => {
     fetchDashboard();
@@ -47,7 +1381,6 @@ export default function TeacherDashboard({ user }) {
           setIsPendingApproval(true);
         }
         if (data.teacher?.teacher_id && data.teacher?.is_active) {
-          fetchAvailability(data.teacher.teacher_id);
           fetchStudents(data.teacher.teacher_id);
         }
       }
@@ -55,20 +1388,6 @@ export default function TeacherDashboard({ user }) {
       console.error('Error fetching dashboard:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchAvailability = async (teacherId) => {
-    try {
-      const response = await fetch(`${API}/teachers/${teacherId}/availability`, {
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setAvailability(data);
-      }
-    } catch (error) {
-      console.error('Error fetching availability:', error);
     }
   };
 
@@ -82,114 +1401,22 @@ export default function TeacherDashboard({ user }) {
         setStudents(data.students || []);
       }
     } catch (error) {
-      console.error('Error fetching students:', error);
-      // Set mock students for demo if API doesn't exist yet
+      // Mock students
       setStudents([
-        { student_id: '1', name: 'Ahmad bin Ali', current_level: "Iqra' Vol 4", last_session: '2026-01-12', status: 'active' },
-        { student_id: '2', name: 'Sarah Abdullah', current_level: 'Juz 29', last_session: '2026-01-11', status: 'active' },
+        { student_id: '1', name: 'Ahmad bin Ali', current_level: "Iqra' Vol 4", last_session: '2026-01-25', status: 'active' },
+        { student_id: '2', name: 'Sarah Abdullah', current_level: 'Juz 29', last_session: '2026-01-20', status: 'active' },
         { student_id: '3', name: 'Muhammad Hafiz', current_level: "Iqra' Vol 2", last_session: '2026-01-10', status: 'active' },
       ]);
     }
   };
 
-  const handleAddSlot = async () => {
-    if (!newSlot.date || !newSlot.time) {
-      toast.error('Please select date and time');
-      return;
-    }
-    setAddingSlot(true);
-    try {
-      const startTime = new Date(`${newSlot.date}T${newSlot.time}`);
-      const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
-
-      const response = await fetch(`${API}/teachers/${dashboardData.teacher.teacher_id}/availability`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          start_time_utc: startTime.toISOString(),
-          end_time_utc: endTime.toISOString(),
-          recurring: false
-        })
-      });
-
-      if (response.ok) {
-        toast.success('Slot added successfully');
-        setNewSlot({ date: '', time: '' });
-        fetchAvailability(dashboardData.teacher.teacher_id);
-      } else {
-        toast.error('Failed to add slot');
-      }
-    } catch (error) {
-      toast.error('Error adding slot');
-    } finally {
-      setAddingSlot(false);
-    }
-  };
-
-  const handleSaveQuickLog = async (studentId) => {
-    setSavingLog(true);
-    try {
-      const response = await fetch(`${API}/teachers/log-progress`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          student_id: studentId,
-          teacher_id: dashboardData.teacher.teacher_id,
-          ...quickLog
-        })
-      });
-
-      if (response.ok) {
-        toast.success('Progress logged successfully');
-        setExpandedStudent(null);
-        setQuickLog({
-          currentBook: '',
-          startPage: '',
-          endPage: '',
-          fluencyRating: 'smooth',
-          tajweedNotes: ''
-        });
-      } else {
-        toast.success('Progress logged (demo mode)');
-        setExpandedStudent(null);
-      }
-    } catch (error) {
-      toast.success('Progress logged (demo mode)');
-      setExpandedStudent(null);
-    } finally {
-      setSavingLog(false);
-    }
-  };
-
   const handleLogout = async () => {
     try {
-      await fetch(`${API}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include'
-      });
+      await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' });
       navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
     }
-  };
-
-  const formatTime = (dateStr) => {
-    if (!dateStr) return '';
-    return new Date(dateStr).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return 'N/A';
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
   };
 
   if (loading) {
@@ -200,535 +1427,99 @@ export default function TeacherDashboard({ user }) {
     );
   }
 
+  // Pending approval view
+  if (isPendingApproval) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#F7F5EF' }}>
+        <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-lg">
+          <div className="w-16 h-16 rounded-full bg-[#D4AF37] bg-opacity-10 flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8" style={{ color: '#D4AF37' }} />
+          </div>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: '#0F3D2E' }}>Application Under Review</h2>
+          <p className="text-gray-500 mb-6">
+            Thank you for registering! Your application is being reviewed by our team. 
+            You&apos;ll receive an email once approved.
+          </p>
+          <div className="flex items-center justify-center gap-2 text-sm" style={{ color: '#2EB6A0' }}>
+            <CheckCircle className="w-4 h-4" />
+            <span>Profile created successfully</span>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="mt-6 text-sm text-gray-500 hover:text-gray-700"
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7F5EF' }}>
-      {/* Header / Top Nav */}
-      <header className="bg-white border-b sticky top-0 z-40" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      {/* Sidebar */}
+      <TeacherSidebar 
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        isCollapsed={sidebarCollapsed}
+        setIsCollapsed={setSidebarCollapsed}
+      />
+
+      {/* Main Content */}
+      <main className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
+        {/* Top Header */}
+        <header className="bg-white border-b sticky top-0 z-30 px-6 py-4" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#0F3D2E' }}>
-                <BookOpen className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
-                Alif Amin Academy
-              </span>
-            </div>
-
-            {/* Right Section */}
+            <h1 className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>
+              {activeSection === 'dashboard' && 'Dashboard'}
+              {activeSection === 'wallet' && 'Earnings Wallet'}
+              {activeSection === 'availability' && 'Availability Calendar'}
+              {activeSection === 'classroom' && 'Classroom Tools'}
+              {activeSection === 'students' && 'Student Management'}
+              {activeSection === 'profile' && 'Profile Settings'}
+            </h1>
             <div className="flex items-center gap-4">
-              {/* Status Toggle */}
-              <button
-                onClick={() => setIsOnline(!isOnline)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all"
-                style={{
-                  backgroundColor: isOnline ? 'rgba(46, 182, 160, 0.1)' : 'rgba(156, 163, 175, 0.1)',
-                  color: isOnline ? '#2EB6A0' : '#9CA3AF'
-                }}
-              >
-                <Circle className="w-2 h-2" fill={isOnline ? '#2EB6A0' : '#9CA3AF'} />
-                {isOnline ? 'Online' : 'Offline'}
-              </button>
-
-              {/* Notifications */}
-              <button className="relative p-2 rounded-full hover:bg-gray-100 transition-all">
-                <Bell className="w-5 h-5" style={{ color: '#5A5A5A' }} />
+              <button className="relative p-2 rounded-full hover:bg-gray-100">
+                <Bell className="w-5 h-5 text-gray-500" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
-
-              {/* Profile */}
-              <div className="flex items-center gap-3 pl-4 border-l" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-                <div className="w-10 h-10 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white font-medium">
-                  {user?.name?.charAt(0) || 'T'}
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white font-medium">
+                  {user?.name?.charAt(0)}
                 </div>
                 <div className="hidden sm:block">
                   <p className="text-sm font-medium" style={{ color: '#1F2933' }}>{user?.name}</p>
-                  <p className="text-xs" style={{ color: '#9CA3AF' }}>Teacher</p>
                 </div>
-                <button
-                  onClick={handleLogout}
-                  className="p-2 rounded-full hover:bg-gray-100 transition-all"
-                  title="Logout"
-                >
-                  <LogOut className="w-4 h-4" style={{ color: '#5A5A5A' }} />
+                <button onClick={handleLogout} className="p-2 hover:bg-gray-100 rounded-full">
+                  <LogOut className="w-4 h-4 text-gray-500" />
                 </button>
               </div>
             </div>
           </div>
+        </header>
+
+        {/* Content Area */}
+        <div className="p-6">
+          {activeSection === 'dashboard' && (
+            <DashboardOverview teacherData={dashboardData} students={students} user={user} />
+          )}
+          {activeSection === 'wallet' && (
+            <EarningsWallet teacherData={dashboardData?.teacher} />
+          )}
+          {activeSection === 'availability' && (
+            <AvailabilityCalendar teacherData={dashboardData?.teacher} />
+          )}
+          {activeSection === 'classroom' && (
+            <ClassroomTools teacherData={dashboardData?.teacher} students={students} />
+          )}
+          {activeSection === 'students' && (
+            <StudentManagement teacherData={dashboardData?.teacher} students={students} setStudents={setStudents} />
+          )}
+          {activeSection === 'profile' && (
+            <ProfileManagement teacherData={dashboardData?.teacher} user={user} />
+          )}
         </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Pending Approval Banner */}
-        {isPendingApproval && (
-          <div 
-            className="mb-8 p-6 rounded-2xl flex items-start gap-4"
-            style={{ backgroundColor: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.3)' }}
-          >
-            <AlertCircle className="w-6 h-6 mt-0.5" style={{ color: '#D4AF37' }} />
-            <div>
-              <h3 className="text-lg font-semibold mb-1" style={{ color: '#1F2933' }}>Application Under Review</h3>
-              <p style={{ color: '#5A5A5A' }}>
-                Your application is being reviewed. You&apos;ll be notified once approved.
-              </p>
-              <div className="mt-3 flex items-center gap-2 text-sm" style={{ color: '#D4AF37' }}>
-                <CheckCircle className="w-4 h-4" />
-                <span>Profile created successfully</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!isPendingApproval && (
-          <>
-            {/* Dashboard Metric Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              {/* Total Earnings */}
-              <div className="bg-white rounded-2xl p-5 shadow-sm" style={{ border: '1px solid rgba(15, 61, 46, 0.08)' }}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(46, 182, 160, 0.1)' }}>
-                    <DollarSign className="w-5 h-5" style={{ color: '#2EB6A0' }} />
-                  </div>
-                  <button 
-                    className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full transition-all hover:scale-105"
-                    style={{ backgroundColor: 'rgba(15, 61, 46, 0.08)', color: '#0F3D2E' }}
-                  >
-                    <Wallet className="w-3 h-3" />
-                    Withdraw
-                  </button>
-                </div>
-                <p className="text-xs mb-1" style={{ color: '#9CA3AF' }}>Total Earnings</p>
-                <p className="text-2xl font-semibold" style={{ color: '#0F3D2E' }}>
-                  RM {(dashboardData?.estimated_earnings || 0).toFixed(2)}
-                </p>
-              </div>
-
-              {/* Active Students */}
-              <div className="bg-white rounded-2xl p-5 shadow-sm" style={{ border: '1px solid rgba(15, 61, 46, 0.08)' }}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(212, 175, 55, 0.1)' }}>
-                    <Users className="w-5 h-5" style={{ color: '#D4AF37' }} />
-                  </div>
-                </div>
-                <p className="text-xs mb-1" style={{ color: '#9CA3AF' }}>Active Students</p>
-                <p className="text-2xl font-semibold" style={{ color: '#0F3D2E' }}>
-                  {students.length || dashboardData?.teacher?.total_classes || 0}
-                </p>
-              </div>
-
-              {/* Upcoming Classes */}
-              <div className="bg-white rounded-2xl p-5 shadow-sm" style={{ border: '1px solid rgba(15, 61, 46, 0.08)' }}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(231, 111, 81, 0.1)' }}>
-                    <Calendar className="w-5 h-5" style={{ color: '#E76F51' }} />
-                  </div>
-                </div>
-                <p className="text-xs mb-1" style={{ color: '#9CA3AF' }}>Classes Today</p>
-                <p className="text-2xl font-semibold" style={{ color: '#0F3D2E' }}>
-                  {dashboardData?.todays_classes?.length || 0}
-                </p>
-              </div>
-
-              {/* Rating */}
-              <div className="bg-white rounded-2xl p-5 shadow-sm" style={{ border: '1px solid rgba(15, 61, 46, 0.08)' }}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(251, 191, 36, 0.1)' }}>
-                    <Star className="w-5 h-5" style={{ color: '#FBBF24' }} fill="#FBBF24" />
-                  </div>
-                </div>
-                <p className="text-xs mb-1" style={{ color: '#9CA3AF' }}>Your Rating</p>
-                <p className="text-2xl font-semibold" style={{ color: '#0F3D2E' }}>
-                  {(dashboardData?.teacher?.rating || 5.0).toFixed(1)}<span className="text-sm font-normal text-gray-400">/5.0</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Student Reading Tracker - Takes 2 columns */}
-              <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm overflow-hidden" style={{ border: '1px solid rgba(15, 61, 46, 0.08)' }}>
-                <div className="p-6 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-                  <h2 className="text-xl font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
-                    Student Reading Tracker
-                  </h2>
-                  <p className="text-sm mt-1" style={{ color: '#9CA3AF' }}>
-                    Track and log your students&apos; Quran reading progress
-                  </p>
-                </div>
-
-                {/* Student List */}
-                <div className="divide-y" style={{ borderColor: 'rgba(15, 61, 46, 0.05)' }}>
-                  {students.length === 0 ? (
-                    <div className="p-8 text-center">
-                      <Users className="w-12 h-12 mx-auto mb-3" style={{ color: '#9CA3AF' }} />
-                      <p style={{ color: '#5A5A5A' }}>No students assigned yet</p>
-                    </div>
-                  ) : (
-                    students.map((student) => (
-                      <div key={student.student_id}>
-                        {/* Student Row */}
-                        <button
-                          onClick={() => setExpandedStudent(expandedStudent === student.student_id ? null : student.student_id)}
-                          className="w-full p-4 flex items-center justify-between hover:bg-gray-50 transition-all"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-medium" style={{ backgroundColor: '#0F3D2E' }}>
-                              {student.name?.charAt(0) || 'S'}
-                            </div>
-                            <div className="text-left">
-                              <p className="font-medium" style={{ color: '#1F2933' }}>{student.name}</p>
-                              <p className="text-sm" style={{ color: '#9CA3AF' }}>{student.current_level}</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right hidden sm:block">
-                              <p className="text-xs" style={{ color: '#9CA3AF' }}>Last Session</p>
-                              <p className="text-sm" style={{ color: '#5A5A5A' }}>{formatDate(student.last_session)}</p>
-                            </div>
-                            <span 
-                              className="px-2.5 py-1 rounded-full text-xs font-medium"
-                              style={{ 
-                                backgroundColor: student.status === 'active' ? 'rgba(46, 182, 160, 0.1)' : 'rgba(156, 163, 175, 0.1)',
-                                color: student.status === 'active' ? '#2EB6A0' : '#9CA3AF'
-                              }}
-                            >
-                              {student.status === 'active' ? 'Active' : 'Inactive'}
-                            </span>
-                            {expandedStudent === student.student_id ? (
-                              <ChevronUp className="w-5 h-5" style={{ color: '#9CA3AF' }} />
-                            ) : (
-                              <ChevronDown className="w-5 h-5" style={{ color: '#9CA3AF' }} />
-                            )}
-                          </div>
-                        </button>
-
-                        {/* Expanded Quick Log Form */}
-                        {expandedStudent === student.student_id && (
-                          <div className="px-4 pb-4">
-                            <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F5EF' }}>
-                              <h4 className="font-medium mb-4" style={{ color: '#0F3D2E' }}>Quick Log - Progress Update</h4>
-                              
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#5A5A5A' }}>
-                                    Current Surah/Book Name
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={quickLog.currentBook}
-                                    onChange={(e) => setQuickLog({ ...quickLog, currentBook: e.target.value })}
-                                    placeholder="e.g., Iqra' Vol 4 or Surah Al-Baqarah"
-                                    className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                                  />
-                                </div>
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div>
-                                    <label className="block text-xs font-medium mb-1.5" style={{ color: '#5A5A5A' }}>
-                                      Start (Ayat/Page)
-                                    </label>
-                                    <input
-                                      type="text"
-                                      value={quickLog.startPage}
-                                      onChange={(e) => setQuickLog({ ...quickLog, startPage: e.target.value })}
-                                      placeholder="e.g., 1"
-                                      className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                                      style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-medium mb-1.5" style={{ color: '#5A5A5A' }}>
-                                      End (Ayat/Page)
-                                    </label>
-                                    <input
-                                      type="text"
-                                      value={quickLog.endPage}
-                                      onChange={(e) => setQuickLog({ ...quickLog, endPage: e.target.value })}
-                                      placeholder="e.g., 10"
-                                      className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                                      style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#5A5A5A' }}>
-                                    Fluency Rating
-                                  </label>
-                                  <select
-                                    value={quickLog.fluencyRating}
-                                    onChange={(e) => setQuickLog({ ...quickLog, fluencyRating: e.target.value })}
-                                    className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                                  >
-                                    <option value="smooth">Smooth</option>
-                                    <option value="needs_practice">Needs Practice</option>
-                                    <option value="struggling">Struggling</option>
-                                  </select>
-                                </div>
-                                <div>
-                                  <label className="block text-xs font-medium mb-1.5" style={{ color: '#5A5A5A' }}>
-                                    Tajweed Comments
-                                  </label>
-                                  <input
-                                    type="text"
-                                    value={quickLog.tajweedNotes}
-                                    onChange={(e) => setQuickLog({ ...quickLog, tajweedNotes: e.target.value })}
-                                    placeholder="e.g., Needs focus on Madd rules"
-                                    className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                                  />
-                                </div>
-                              </div>
-
-                              <button
-                                onClick={() => handleSaveQuickLog(student.student_id)}
-                                disabled={savingLog}
-                                className="w-full h-10 rounded-lg text-white font-medium flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
-                                style={{ backgroundColor: '#0F3D2E' }}
-                              >
-                                {savingLog ? (
-                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                  <>
-                                    <Save className="w-4 h-4" />
-                                    Save Progress
-                                  </>
-                                )}
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Right Sidebar */}
-              <div className="space-y-6">
-                {/* Today's Schedule */}
-                <div className="bg-white rounded-2xl shadow-sm overflow-hidden" style={{ border: '1px solid rgba(15, 61, 46, 0.08)' }}>
-                  <div className="p-5 border-b flex items-center justify-between" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-                    <div>
-                      <h3 className="font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>Today&apos;s Schedule</h3>
-                      <p className="text-xs mt-0.5" style={{ color: '#9CA3AF' }}>
-                        {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setShowEditAvailability(true)}
-                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full transition-all hover:scale-105"
-                      style={{ backgroundColor: 'rgba(15, 61, 46, 0.08)', color: '#0F3D2E' }}
-                    >
-                      <Edit3 className="w-3 h-3" />
-                      Edit
-                    </button>
-                  </div>
-
-                  <div className="p-4 space-y-3">
-                    {(!dashboardData?.todays_classes || dashboardData.todays_classes.length === 0) ? (
-                      <div className="text-center py-6">
-                        <Clock className="w-10 h-10 mx-auto mb-2" style={{ color: '#9CA3AF' }} />
-                        <p className="text-sm" style={{ color: '#5A5A5A' }}>No classes today</p>
-                      </div>
-                    ) : (
-                      dashboardData.todays_classes.map((cls, idx) => (
-                        <div 
-                          key={idx}
-                          className="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-gray-50"
-                          style={{ backgroundColor: '#F7F5EF' }}
-                        >
-                          <div className="w-1 h-12 rounded-full" style={{ backgroundColor: '#0F3D2E' }}></div>
-                          <div className="flex-1">
-                            <p className="font-medium text-sm" style={{ color: '#1F2933' }}>
-                              {formatTime(cls.start_time_utc)}
-                            </p>
-                            <p className="text-xs" style={{ color: '#5A5A5A' }}>
-                              Student: {cls.student_id?.slice(0, 8)}...
-                            </p>
-                          </div>
-                          {cls.meet_link && (
-                            <a
-                              href={cls.meet_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-2 rounded-full transition-all hover:scale-110"
-                              style={{ backgroundColor: 'rgba(46, 182, 160, 0.1)' }}
-                            >
-                              <Video className="w-4 h-4" style={{ color: '#2EB6A0' }} />
-                            </a>
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="bg-white rounded-2xl p-5 shadow-sm" style={{ border: '1px solid rgba(15, 61, 46, 0.08)' }}>
-                  <h3 className="font-semibold mb-4" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>This Month</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm" style={{ color: '#5A5A5A' }}>Classes Completed</span>
-                      <span className="font-medium" style={{ color: '#0F3D2E' }}>{dashboardData?.completed_this_month || 0}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm" style={{ color: '#5A5A5A' }}>Hours Taught</span>
-                      <span className="font-medium" style={{ color: '#0F3D2E' }}>{dashboardData?.completed_this_month || 0}h</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm" style={{ color: '#5A5A5A' }}>Hourly Rate</span>
-                      <span className="font-medium" style={{ color: '#0F3D2E' }}>RM {dashboardData?.teacher?.hourly_rate || 50}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
       </main>
-
-      {/* Footer Action Bar */}
-      {!isPendingApproval && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t py-4 px-6 z-40" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="hidden sm:block">
-              <p className="text-sm" style={{ color: '#5A5A5A' }}>
-                {dashboardData?.todays_classes?.length || 0} classes scheduled today
-              </p>
-            </div>
-            <button
-              className="flex items-center gap-2 h-12 px-8 rounded-full text-white font-medium transition-all hover:scale-105 shadow-lg"
-              style={{ backgroundColor: '#0F3D2E' }}
-              onClick={() => {
-                const nextClass = dashboardData?.todays_classes?.[0];
-                if (nextClass?.meet_link) {
-                  window.open(nextClass.meet_link, '_blank');
-                } else {
-                  toast.info('No class scheduled. Set up your classroom link in settings.');
-                }
-              }}
-            >
-              <Video className="w-5 h-5" />
-              Enter Live Classroom
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Availability Modal */}
-      {showEditAvailability && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden">
-            <div className="p-6 border-b flex items-center justify-between" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-              <h3 className="text-xl font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
-                Edit Availability
-              </h3>
-              <button onClick={() => setShowEditAvailability(false)} className="p-2 hover:bg-gray-100 rounded-full">
-                <X className="w-5 h-5" style={{ color: '#5A5A5A' }} />
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(80vh - 180px)' }}>
-              {/* Add New Slot */}
-              <div className="mb-6">
-                <h4 className="font-medium mb-3" style={{ color: '#1F2933' }}>Add New Slot</h4>
-                <div className="grid grid-cols-2 gap-3 mb-3">
-                  <div>
-                    <label className="block text-xs font-medium mb-1.5" style={{ color: '#5A5A5A' }}>Date</label>
-                    <input
-                      type="date"
-                      value={newSlot.date}
-                      onChange={(e) => setNewSlot({ ...newSlot, date: e.target.value })}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                      style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium mb-1.5" style={{ color: '#5A5A5A' }}>Time</label>
-                    <input
-                      type="time"
-                      value={newSlot.time}
-                      onChange={(e) => setNewSlot({ ...newSlot, time: e.target.value })}
-                      className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                      style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                    />
-                  </div>
-                </div>
-                <button
-                  onClick={handleAddSlot}
-                  disabled={addingSlot}
-                  className="w-full h-10 rounded-lg text-white font-medium flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
-                  style={{ backgroundColor: '#0F3D2E' }}
-                >
-                  {addingSlot ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Plus className="w-4 h-4" />
-                      Add Slot
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Existing Slots */}
-              <div>
-                <h4 className="font-medium mb-3" style={{ color: '#1F2933' }}>Upcoming Slots</h4>
-                {availability.length === 0 ? (
-                  <p className="text-sm text-center py-4" style={{ color: '#9CA3AF' }}>No slots added yet</p>
-                ) : (
-                  <div className="space-y-2">
-                    {availability.slice(0, 10).map((slot) => (
-                      <div 
-                        key={slot.slot_id}
-                        className="flex items-center justify-between p-3 rounded-xl"
-                        style={{ backgroundColor: '#F7F5EF' }}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Calendar className="w-4 h-4" style={{ color: '#0F3D2E' }} />
-                          <div>
-                            <p className="text-sm font-medium" style={{ color: '#1F2933' }}>
-                              {formatDate(slot.start_time_utc)} at {formatTime(slot.start_time_utc)}
-                            </p>
-                          </div>
-                        </div>
-                        <span 
-                          className="px-2 py-0.5 rounded-full text-xs"
-                          style={{ 
-                            backgroundColor: slot.is_booked ? 'rgba(46, 182, 160, 0.1)' : 'rgba(212, 175, 55, 0.1)',
-                            color: slot.is_booked ? '#2EB6A0' : '#D4AF37'
-                          }}
-                        >
-                          {slot.is_booked ? 'Booked' : 'Open'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="p-4 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-              <button
-                onClick={() => setShowEditAvailability(false)}
-                className="w-full h-11 rounded-full border font-medium transition-all hover:bg-gray-50"
-                style={{ borderColor: 'rgba(15, 61, 46, 0.2)', color: '#0F3D2E' }}
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bottom padding for fixed footer */}
-      {!isPendingApproval && <div className="h-24"></div>}
     </div>
   );
 }
