@@ -8,6 +8,7 @@ import {
   Globe, Award, Tag, MessageSquare, ChevronRight, RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
+import NotificationBell from '../components/NotificationBell';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -1481,10 +1482,7 @@ export default function TeacherDashboard({ user }) {
               {activeSection === 'profile' && 'Profile Settings'}
             </h1>
             <div className="flex items-center gap-4">
-              <button className="relative p-2 rounded-full hover:bg-gray-100">
-                <Bell className="w-5 h-5 text-gray-500" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-              </button>
+              <NotificationBell userId={user?.user_id} userRole="teacher" />
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white font-medium">
                   {user?.name?.charAt(0)}
