@@ -30,9 +30,10 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 - [x] Role-based redirections (Admin → /admin/dashboard, Student → /student/dashboard, Teacher → /teacher/dashboard)
 - [x] **Profile Registration for New Students**
   - [x] After onboarding, redirects to profile form
-  - [x] Collects: Full Name, Email, Phone, Password
-  - [x] Shows onboarding preferences (Level, Schedule)
-  - [x] Creates student profile with all data
+  - [x] Collects: Full Name, Email, Phone (with country code), Password
+  - [x] Phone number is mandatory with country code dropdown (18 countries)
+  - [x] Phone input only allows numbers (no spaces/dashes)
+  - [x] Reading level stored in student profile from onboarding
 - [x] Onboarding flow for new users
 - [x] Admin access for specific emails (muhdsuhaib@gmail.com, hello.alifamin@gmail.com)
 - [x] Admin Dashboard UI with functional backend connections
@@ -87,7 +88,7 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
   - [x] **Earnings Wallet**: Balance display, Withdraw button with bank selection (Maybank/CIMB/PayPal/Wise), Transaction history
   - [x] **Availability Calendar**: Date range selection, time slots, auto timezone converter, quick time slot presets
   - [x] **Classroom Tools**: Digital Mushaf with Uthmani script (604 pages, 114 surahs, 30 juz), Live pointer, Lesson Notes per student
-  - [x] **Student Management**: Active/Warning/Inactive stats, Last lesson indicator, Send Reminder button, Report Card PDF generator
+  - [x] **Student Management**: Active/Warning/Inactive stats, Student List table with Full Name, Email, Reading Level columns, Last lesson indicator, Send Reminder button, Report Card PDF generator
   - [x] **Profile Management**: Editable bio, hourly rate, Google Meet link, specialties tags, Video intro upload, Ijazah/Certificate upload
 
 ### 🔜 P3 - Future Tasks (NOT STARTED)
