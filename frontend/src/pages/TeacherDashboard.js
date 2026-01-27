@@ -4,7 +4,7 @@ import {
   BookOpen, LogOut, Calendar, DollarSign, Users, Clock, Plus, X, Video, 
   AlertCircle, CheckCircle, Bell, Star, ChevronDown, ChevronUp, 
   Wallet, Edit3, Save, User, Circle, Menu, Home, FileText, 
-  Settings, CreditCard, BookMarker, UserCheck, Download, Upload,
+  Settings, CreditCard, Book, UserCheck, Download, Upload,
   Globe, Award, Tag, MessageSquare, ChevronRight, RefreshCw
 } from 'lucide-react';
 import { toast } from 'sonner';
