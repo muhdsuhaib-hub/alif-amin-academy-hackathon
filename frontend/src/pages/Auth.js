@@ -602,19 +602,6 @@ export default function Auth() {
                     </>
                   )}
 
-                  {/* Onboarding Summary */}
-                  {(formData.schedulePreference || formData.readingLevel) && (
-                    <div className="p-4 rounded-xl bg-[#F7F5EF]">
-                      <p className="text-sm font-medium mb-2" style={{ color: '#0F3D2E' }}>Your Preferences</p>
-                      {formData.schedulePreference && (
-                        <p className="text-sm text-gray-600">Schedule: {formData.schedulePreference}</p>
-                      )}
-                      {formData.readingLevel && (
-                        <p className="text-sm text-gray-600">Level: {formData.readingLevel}</p>
-                      )}
-                    </div>
-                  )}
-
                   {/* Submit */}
                   <button
                     type="submit"
