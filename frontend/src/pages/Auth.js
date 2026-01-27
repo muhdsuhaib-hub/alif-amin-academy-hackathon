@@ -30,6 +30,8 @@ export default function Auth() {
     confirmPassword: '',
     fullName: '',
     phone: '',
+    countryCode: '+60',
+    phoneNumber: '',
     schedulePreference: onboardingData.schedule || '',
     readingLevel: onboardingData.level || '',
     goals: onboardingData.goals || []
