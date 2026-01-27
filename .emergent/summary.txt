@@ -3,113 +3,118 @@ The user wants to build a web-based platform for an online Quran Academy named A
 
 **PRODUCT REQUIREMENTS:**
 - **User Roles:** Student/Parent, Teacher, and Super Admin.
+- **Authentication:** Support for both Google OAuth and traditional Email/Password login.
+- **Role-Based Redirection:** Users should be directed to their respective dashboards (Student, Teacher, Admin) upon login.
 - **Student/Parent Portal:**
-  - Onboarding: Registration/Login (Email, Google Auth), Free Trial Booking.
-  - Dashboard: View upcoming/past classes, and teacher feedback.
-  - Scheduling: Interactive calendar with timezone detection, reschedule/cancel options.
-  - Classroom: Join Class button (Google Meet), integrated Digital Mushaf (Quran reader).
-  - Payments: Subscription management via Billplz.
-- **Teacher Portal:**
-  - Schedule Management: Set availability.
-  - Appointments: View daily classes.
-  - Classroom Tools: Digital Mushaf with annotations, lesson notes.
-  - Payroll: View hours taught and estimated earnings.
+  - Onboarding: Multi-step questionnaire leading to a profile creation form.
+  - Dashboard: View upcoming/past classes and progress.
+  - Teacher Browsing & Booking: Interactive calendar with timezone detection to book available slots with teachers.
+  - Classroom: Join Class button and an integrated Digital Mushaf (Quran reader).
+  - Payments: Subscription management.
+- **Teacher Platform:**
+  - Comprehensive sidebar navigation.
+  - **Earnings Wallet:** View balance and transaction history. A Withdraw button should be present for future payment integration.
+  - **Availability Calendar:** A tool for teachers to set their availability by date and time ranges, with automatic timezone conversion.
+  - **Classroom Tools:** A Digital Mushaf with a live pointer and a private lesson notes section for each student.
+  - **Profile Management:** Editable profile with bio, rate, experience, video introduction upload, and certificate/Ijazah upload for a Verified badge.
+  - **Student Management:** A list of students with Last Lesson indicators to prompt follow-ups and a Report Card Generator.
 - **Admin Dashboard:**
-  - User Management: Full control over teacher and student databases.
-  - Booking Management: A master calendar with manual override capabilities.
-  - Financials: Revenue reports (MRR) and a payroll calculator.
-- **Integrations:**
-  - Video Conferencing: Google Meet.
-  - Notifications: Email and WhatsApp (Twilio).
-  - Payments: Billplz.
+  - User Management: Full control over all users, with filtering capabilities and data export to Excel.
+  - Teacher Approvals: A dedicated section to review and approve/reject new teacher applications.
+  - Booking Management: A master calendar with override capabilities.
+  - Financials: Revenue reports and payroll calculator.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application using FastAPI, React, and MongoDB. The application features a complete user authentication flow via Google OAuth. A sophisticated, branded landing page for Alif Amin Academy with parallax scrolling effects and a multi-step onboarding flow for new users is in place.
+A full-stack application (FastAPI, React, MongoDB) with a complete, role-based authentication system supporting both Google OAuth and Email/Password. The application correctly redirects Admins, Teachers, and Students to their respective dashboards.
 
-A comprehensive, though currently non-functional, Admin Dashboard UI has been constructed, featuring components for User Management, a Master Calendar, Financial Reports, Support Tickets, and Subscription Management. Corresponding backend API endpoints have been defined in . A script to grant admin access to specific emails has also been created and successfully executed.
+- **Admin Dashboard:** Fully functional with user management, financial overviews, and a new teacher approval system. The User Management tab has been updated with a new UI for filtering and a Download to Excel button, but the backend functionality for this is not yet implemented.
+- **Teacher Platform:** A comprehensive, multi-tabbed interface with a sidebar has been built. It includes sections for an Earnings Wallet, Availability Calendar, Classroom Tools (Digital Mushaf, Lesson Notes), Student Management, and extensive Profile Management. Most features are connected to the backend.
+- **Student Flow:** A multi-step onboarding process correctly leads new users to a Complete Your Profile registration form. Existing students are redirected to their dashboard.
 
 **Last working item**:
-- **Last item agent was working:** The agent was resolving a critical backend crash (). This error occurred because the  file was attempting to access environment variables before they were loaded by . The agent fixed this by moving the database connection logic inside the functions that require it, ensuring  is called first. This was part of a larger effort to fix user-reported issues with login/onboarding redirection.
+- **Last item agent was working:** The agent was addressing a user request to fix the new user onboarding flow and enhance the Admin Dashboard.
+    1.  **Bug Fix:** A bug where completing the onboarding questionnaire incorrectly redirected to the landing page instead of the Complete Your Profile form. The agent attempted a fix using  to persist onboarding data across navigation.
+    2.  **Feature Enhancement:** Adding user filtering (by role) and a Download to Excel feature to the Admin User Management page. The agent overwrote the frontend component with the new UI but did not implement the corresponding backend logic.
 - **Status:** IN PROGRESS
-- **Agent Testing Done:** N (The agent only confirmed that the backend server restarted successfully after the fix but did not test the user-facing login and redirection flows that were reported as broken.)
-- **Which testing method agent to use?** Frontend testing agent. This is necessary to perform end-to-end testing of the user flows (login, onboarding, admin redirection) that involve UI interaction and complex state changes, which cannot be verified by simple backend checks or screenshots.
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** Frontend testing agent. This is required to perform an end-to-end test of the entire new user journey (Onboarding -> Redirection to Auth page -> Profile creation -> Redirection to Student Dashboard) and to verify the new UI elements in the Admin dashboard.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- **Issue 1 (P0):** Admin login redirects to onboarding instead of the admin dashboard.
-- **Issue 2 (P0):** Standard user login does not redirect directly to the appropriate dashboard (Student/Teacher).
-- **Issue 3 (P0):** Onboarding completion does not redirect to the Student Dashboard.
-- **Issue 4 (P1):** The Admin Dashboard UI is not connected to the backend.
+- **Issue 1 (P0): Onboarding redirection bug.**
+- **Issue 2 (P1): Admin user management enhancement is incomplete.**
 
 **Issues Detail:**
-- **Issue 1: Admin login redirection failure**
-    - **Attempted fixes:** The agent modified the authentication flow in  to check the user's role and redirect accordingly. However, this fix has not been verified after the subsequent backend crash and repair.
+- **Issue 1: Onboarding redirection bug**
+    - **Attempted fixes:** The agent modified  to save user preferences to  before navigating to . The  component was updated to read from  as a fallback. This fix has not been tested.
     - **Next debug checklist:**
-        1. Use the frontend testing agent to simulate a login with the admin email () via the  route.
-        2. Verify that the  endpoint returns the correct user object with .
-        3. Trace the redirection logic in  to confirm it correctly processes the user's role and navigates to .
-    - **Why fix this issue and what will be achieved with the fix?** This is critical for the user (who is the admin) to access the core management features of the application.
-    - **Status:** TESTING PENDING
+        1.  Start a new browser session and navigate to .
+        2.  Complete the multi-step questionnaire as a Student.
+        3.  Verify that the application correctly redirects to .
+        4.  Confirm the Complete Your Profile form is displayed, and the Your Preferences section reflects the choices made during onboarding.
+        5.  Create a new account using this form and ensure you are logged in and redirected to the .
+    - **Why fix this issue and what will be achieved with the fix?** This is a critical bug that breaks the entire registration flow for new students.
+    - **Status:** IN PROGRESS
     - **Is recurring issue?** Y
     - **Should Test frontend/backend/both after fix?** Both.
 
-- **Issue 2 & 3: Incorrect redirection for standard users and after onboarding**
-    - **Attempted fixes:** The agent created a new endpoint  and updated the  component to call it. Logic in  was also adjusted.
+- **Issue 2: Admin user management enhancement is incomplete**
+    - **Attempted fixes:** The agent overwrote  to add UI controls for filtering by role and a Download to Excel button. No backend changes were made.
     - **Next debug checklist:**
-        1. Use the frontend testing agent to complete the sign-up and onboarding flow.
-        2. Check the browser's network tab to ensure  is called successfully and a user session is created.
-        3. Verify the frontend redirects to the  upon completion.
-        4. Test the login flow for an existing non-admin user to ensure it redirects directly to their dashboard.
-    - **Why fix this issue and what will be achieved with the fix?** This is fundamental to the user experience. A broken sign-up and login flow will prevent any user from using the platform.
-    - **Status:** TESTING PENDING
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Both.
+        1.  Install a library for Excel/CSV generation in the backend (e.g., Looking in indexes: https://pypi.org/simple, https://d33sy5i8bnduwe.cloudfront.net/simple/
+Requirement already satisfied: pandas in /root/.venv/lib/python3.11/site-packages (2.3.3)
+Collecting openpyxl
+  Downloading openpyxl-3.1.5-py2.py3-none-any.whl.metadata (2.5 kB)
+Requirement already satisfied: numpy>=1.23.2 in /root/.venv/lib/python3.11/site-packages (from pandas) (2.4.0)
+Requirement already satisfied: python-dateutil>=2.8.2 in /root/.venv/lib/python3.11/site-packages (from pandas) (2.9.0.post0)
+Requirement already satisfied: pytz>=2020.1 in /root/.venv/lib/python3.11/site-packages (from pandas) (2025.2)
+Requirement already satisfied: tzdata>=2022.7 in /root/.venv/lib/python3.11/site-packages (from pandas) (2025.3)
+Collecting et-xmlfile (from openpyxl)
+  Downloading et_xmlfile-2.0.0-py3-none-any.whl.metadata (2.7 kB)
+Requirement already satisfied: six>=1.5 in /root/.venv/lib/python3.11/site-packages (from python-dateutil>=2.8.2->pandas) (1.17.0)
+Downloading openpyxl-3.1.5-py2.py3-none-any.whl (250 kB)
+Downloading et_xmlfile-2.0.0-py3-none-any.whl (18 kB)
+Installing collected packages: et-xmlfile, openpyxl
 
-- **Issue 4: Admin Dashboard is non-functional**
-    - **Attempted fixes:** N/A. The UI components were just created.
-    - **Next debug checklist:** This is a larger task, not a bug. See In progress Task List.
-    - **Why fix this issue and what will be achieved with the fix?** To make the admin dashboard functional.
-    - **Status:** NOT STARTED
+Successfully installed et-xmlfile-2.0.0 openpyxl-3.1.5).
+        2.  Modify the  endpoint in  to accept a  query parameter to filter the user list.
+        3.  Create a new backend endpoint (e.g., ) that fetches user data and returns it as a CSV or Excel file.
+        4.  Connect the frontend filter and download buttons to these new backend functionalities.
+    - **Why fix this issue and what will be achieved with the fix?** To fulfill a direct user request for essential admin functionality, allowing for better user data analysis and management.
+    - **Status:** NOT STARTED (Backend portion)
     - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Both.
 
 **In progress Task List**:
-- **Task 1: Complete Admin Dashboard Functionality**
-  - **Where to resume:** The frontend components for the admin dashboard () are currently static. They need to be updated to make API calls to the endpoints defined in .
-  - **What will be achieved with this?** A fully interactive and functional admin dashboard where the admin can manage users, view bookings, see financial data, and handle support tickets.
-  - **Status:** IN PROGRESS
-  - **Should Test frontend/backend/both after fix?** Both.
+None. The current work is classified under the issues above.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks (P1):**
-    - **Teacher Portal:** Implement  so teachers can set their availability.
-    - **Student Portal:** Implement the  feature with an interactive calendar to book classes based on teacher availability.
-    - **Classroom:** Implement the Join Class button to link to a (manually provided for now) Google Meet URL.
+    - **Payment Integration:** Integrate a payment provider (e.g., Billplz, PayPal) for the Withdraw button in the teacher's Earnings Wallet.
+    - **Real-time Classroom:** Implement the Live Pen/Pointer for the Digital Mushaf using WebSockets.
+    - **File Storage:** Implement file uploads and storage (e.g., using S3) for teacher profile videos and verification certificates.
 - **Future Tasks (P2):**
-    - **Integrations:** Implement Billplz for payments, Google Meet API for automatic link generation, and email/Twilio for notifications.
-    - **Digital Mushaf:** Integrate a Quran reader into the classroom interface.
-    - **Teacher Payroll:** Implement the payroll view and calculator.
-    - **Read Tracker:** Implement the visual progress bar for Surahs.
+    - **Google Meet API Integration:** Automate the creation of Google Meet links for classes.
+    - **Notifications:** Integrate Twilio for WhatsApp notifications.
+    - **PDF Report Generator:** Implement the Report Card Generator for student progress reports.
+    - **Enhanced Auth:** Add two-factor authentication and additional social logins (Apple, Facebook).
 
 **Completed work in this session**
-- **Initial Application:** Built the first version of the Al-Ilm Academy full-stack app.
-- **Rebranding:** Completely redesigned the UI to match the Alif Amin Academy brand identity, including a new landing page with parallax scrolling, custom fonts, and a refined color scheme.
-- **Onboarding Flow:** Created a multi-step user onboarding questionnaire.
-- **Admin Access:**
-    - Implemented a dedicated admin login route at .
-    - Created and ran a script () to assign admin roles to specific user emails.
-- **Admin Dashboard Scaffolding:**
-    - Created placeholder UI components for all major admin sections: User Management, Booking Calendar, Financial Reports, Support Tickets, and Subscription Management.
-    - Defined corresponding backend API routes in .
-- **Bug Fixes:**
-    - Resolved a  backend crash.
-    - Implemented (but unverified) fixes for user login, admin access, and onboarding redirection logic.
-    - Renamed all instances of Alif Amin to Alif Amin Academy.
+- **Unified Authentication System:** Implemented a full-featured auth system supporting both Google OAuth and Email/Password. Created a new, unified  page for login and signup.
+- **Role-Based Redirection:** Fixed all P0 issues related to user redirection, ensuring Admins, Teachers, and Students land on their correct dashboards after login.
+- **Teacher Signup & Approval Flow:**
+    - Created a dedicated teacher signup page and backend registration process.
+    - Implemented a pending status for new teachers.
+    - Built an Approvals tab in the Admin Dashboard for admins to review and activate new teachers.
+- **Complete Teacher Platform Implementation:**
+    - Redesigned the Teacher Dashboard into a comprehensive platform with a full sidebar navigation.
+    - Implemented features for: Earnings Wallet, Availability Calendar, Classroom Tools (Digital Mushaf, Notes), Student Management (with retention indicators), and full Profile Management.
+- **Student Onboarding to Profile Creation:** Implemented the flow where new students complete the onboarding questionnaire and are then taken to a Complete Your Profile form to finish registration.
 
 **Earlier issues found/mentioned but not fixed**
-None. All user-reported issues have been addressed, but the fixes are pending verification.
+- None.
 
 **Known issue recurrence from previous fork**
 - N/A
@@ -118,82 +123,93 @@ None. All user-reported issues have been addressed, but the fixes are pending ve
 
 
 **Key Technical Concepts**
-- **Frontend:** React, React Router, Tailwind CSS,  for animations.
-- **Backend:** FastAPI (Python), MongoDB with  as the ODM.
-- **Authentication:** Google OAuth with a role-based access control system (student, teacher, admin).
-- **Architecture:** Monolithic repository with a React Single-Page Application (SPA) consuming a separate FastAPI backend API.
+- **Frontend:** React, React Router, Tailwind CSS, .
+- **Backend:** FastAPI (Python), MongoDB with .
+- **Authentication:** Dual system with Emergent-managed Google OAuth and a custom Email/Password implementation using JWT () and password hashing ().
+- **State Management:** Using React hooks, React Router's , and  to pass data between components and routes.
 
 **key DB schema**
 - **users:** 
 - **teachers:** 
 - **students:** 
-- **classes:** 
-- **subscriptions:** 
+- **progress_logs:** 
+- **lesson_notes:** 
 
 **changes in tech stack**
-- The user's initial preference for  and  was changed to the platform's standard stack of  and .
+- **Added:**  and  for email/password authentication.
 
 **All files of reference**
-- : The main FastAPI application file that integrates all backend routes.
-- : Contains all API endpoints specifically for the Admin Dashboard.
-- : The root of the React application, containing all client-side routing and redirection logic. This file is critical for fixing the login issues.
-- : The container component for the new Admin Dashboard UI.
-- : Handles the user sign-up and profile creation flow.
-- : This directory holds all the newly created, static UI components for the admin panel.
+- : Contains the core application logic, including all new authentication endpoints (register, login) and the numerous endpoints supporting the teacher platform.
+- : The new, unified component for handling both email and Google login/signup.
+- : Modified to use  and redirect to  upon completion.
+- : Overwritten with a new UI for filtering and exporting users. The backend logic is pending.
+- : Needs modification to support filtering and exporting of user data.
+- : Has been completely rewritten into a large, multi-functional component that serves as the entire teacher platform.
+- : Updated with the new  route and modified  logic to handle role-based redirects from all auth methods.
 
 **Areas that need refactoring**:
-- The Admin Dashboard components in  are static and contain placeholder data. They require a complete implementation to fetch data from the backend and handle user interactions.
+-  is now over 900 lines long and handles the state and UI for many distinct features. It should be broken down into smaller, self-contained components for each sidebar section (e.g., , , ) to improve readability and maintainability.
 
 **key api endpoints**
-- : Fetches the current authenticated user's profile.
-- : Creates a student profile after the onboarding questionnaire is completed.
-- : (New) Fetches KPI data for the admin dashboard.
-- : (New) For managing users (students and teachers).
-- : (New) For managing class bookings.
+- : New user signup with email/password.
+- : User login with email/password.
+- : Fetches teachers awaiting approval.
+- : Approves a teacher application.
+- : Fetches a teacher's list of students.
+- : Updates a teacher's profile details.
+- : (Needs modification) Fetches all users, will be updated to support filtering.
 
 **Critical Info for New Agent**
-- **Verification is the top priority.** The immediate next step must be to verify the fixes for the user-reported redirection issues (admin login, student login, onboarding completion). Do not proceed with new features until these are confirmed to be working.
-- The Admin Dashboard is currently a UI-only feature. The components and backend routes exist, but they are not connected. The next major task will be to implement the functionality for each of the admin tabs.
-- The user has a strong focus on design and user experience. Pay close attention to their feedback on UI elements, animations, and wording.
+- Your immediate priority is to fix the two pending items from the last user request: the onboarding redirection bug and the backend implementation for the admin user filtering/export feature.
+- The  file is the new centerpiece of the teacher experience but is very monolithic. After fixing the current issues, proposing a refactor of this component into smaller pieces would be a valuable next step for code health.
+- The user is highly engaged and provides detailed, multi-part feature requests. Ensure you address all parts of a request and verify each major piece of functionality with screenshots as you complete it.
 
 **documents and test reports created in this job**
 - 
 - 
 - 
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** How do I access the Admin dashboard? (Resolved by agent providing URL and creating script)
-2.  **User:** Create a script to grant admin access to  and . (Completed)
-3.  **User:** Redesign the Admin Dashboard with a long list of detailed requirements. (Agent built static UI)
-4.  **User:** Complete all remaining admin components without stopping. (Agent built static UI)
-5.  **User:** Reported 4 critical bugs: login redirect incorrect, onboarding redirect incorrect, admin login broken, and requested a branding update. (Fixes implemented but not verified)
-6.  **User:** Asked to develop all remaining admin features: User Management, Master Calendar, Financials, etc. (Pending)
-7.  **User:** Asked agent to implement login/signup redirection logic and fix the broken admin login. (Fixes implemented but not verified)
-8.  **User:** Provided a new design for the landing page, asking to remove background pictures and fix animations. (Completed)
-9.  **User:** Provided new fonts and requested real picture backgrounds for the landing page. (Completed)
-10. **User:** How do I access the Admin dashboard? (This was the initial query that kicked off the admin-related work).
+1.  **User Request:** Implement a new teacher dashboard with metric cards, a student reading tracker, and an availability widget.
+2.  **Agent Action:** Implemented the redesigned teacher dashboard (Phase 1).
+3.  **User Request:** Create a full teacher platform with a sidebar for Earnings, Availability, Classroom Tools (Mushaf, Notes), Student Management, and Profile Management.
+4.  **Agent Action:** Implemented the full teacher platform with a sidebar (Phase 2).
+5.  **User Request:** Implement both Google and Email/Password authentication. Redirect users to their respective dashboards based on their role. New students should go through onboarding and then to a profile registration form.
+6.  **Agent Action:** Implemented the unified auth system and the onboarding-to-profile-creation flow.
+7.  **User Feedback (Bug Report):** The onboarding flow redirects to the landing page, not the Complete Your Profile form.
+8.  **User Request:** All registration details should be stored and accessible in the admin dashboard under the Users tab.
+9.  **User Request:** Add filtering and a Download to Excel feature to the User Management section.
+10. **Agent Action:** Started work on fixing the redirect bug and implementing the frontend for the admin enhancements (current 
+wtmp begins Tue Jan 27 15:52:35 2026).
 
 **Project Health Check:**
 - **Broken:**
-  - Admin login redirection.
-  - User onboarding completion and redirection.
-  - Standard user login redirection.
+  - The redirection from the user onboarding flow to the final profile creation form is not working reliably.
 - **Mocked:**
-  - The entire Admin Dashboard ( and its sub-components) is currently a static UI with no real functionality.
+  - The Download to Excel button in the Admin User Management tab has no backend functionality.
+  - Teacher Withdraw button is a UI placeholder.
+  - Video/certificate upload features are placeholders without file storage logic.
 
 **3rd Party Integrations**
-- **Active:** Emergent-managed Google Auth (for user login).
+- **Active:**
+    - Emergent-managed Google Auth
+    - Custom Email/Password (using , )
 - **Planned (Not Implemented):**
-    - Billplz (Payments)
-    - Google Meet (Video Conferencing)
+    - Billplz / PayPal / Wise (Payments)
+    - Google Meet (Video Conferencing API)
     - Twilio (WhatsApp Notifications)
 
 **Testing status**
-- **Testing agent used after significant changes:** NO
+- **Testing agent used after significant changes:** YES (but not for the most recent changes)
 - **Troubleshoot agent used after agent stuck in loop:** NO
-- **Test files created:** None
-- **Known regressions:** The admin login flow is a known regression, as it was reported broken by the user after it was initially presumed to be working.
+- **Test files created:** Test cases were added by the testing agent within existing test files.
+- **Known regressions:** The onboarding redirection flow is a regression or a newly discovered bug in a new feature.
 
 **Credentials to test flow:**
-- **Admin:** Use a Google account with the email  or . Access via the  path.
-- **Student/Teacher:** Use any other Google account and sign up/log in through the main landing page.</analysis>
+- **Admin:** Use a Google account with the email  or . Access via the  path or the main  page.
+- **Teacher:** Use a Google account or email/password for an approved teacher (e.g., ).
+- **Student:** Use any other Google account or register a new email/password account through the onboarding flow.
+
+**What agent forgot to execute**
+- After overwriting the  frontend component to add UI for filtering and export, the agent did not proceed to implement the required backend changes in  to make these features functional, despite the user explicitly asking for the data to be accessible by the admin. The agent also did not install the necessary Python libraries for Excel export.</analysis>
