@@ -835,7 +835,9 @@ function StudentManagement({ teacherData, students, setStudents }) {
 
   const getLastLessonStatus = (lastSession) => {
     if (!lastSession) return 'never';
-    const daysSince = Math.floor((Date.now() - new Date(lastSession).getTime()) / (1000 * 60 * 60 * 24));
+    const now = new Date();
+    const sessionDate = new Date(lastSession);
+    const daysSince = Math.floor((now.getTime() - sessionDate.getTime()) / (1000 * 60 * 60 * 24));
     if (daysSince > 14) return 'inactive';
     if (daysSince > 7) return 'warning';
     return 'active';
