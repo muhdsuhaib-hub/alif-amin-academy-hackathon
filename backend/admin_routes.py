@@ -45,18 +45,34 @@ class ManualBooking(BaseModel):
 
 # User Management Endpoints
 @admin_router.get("/users/all")
-async def get_all_users(role: Optional[str] = None, search: Optional[str] = None, page: int = 1, limit: int = 20):
+async def get_all_users(
+    role: Optional[str] = None, 
+    search: Optional[str] = None, 
+    status: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
+    page: int = 1, 
+    limit: int = 20
+):
     query = {}
     if role:
         query["role"] = role
     if search:
         query["$or"] = [
             {"name": {"$regex": search, "$options": "i"}},
-            {"email": {"$regex": search, "$options": "i"}}
+            {"email": {"$regex": search, "$options": "i"}},
+            {"phone": {"$regex": search, "$options": "i"}}
         ]
+    if date_from:
+        query["created_at"] = {"$gte": date_from}
+    if date_to:
+        if "created_at" in query:
+            query["created_at"]["$lte"] = date_to
+        else:
+            query["created_at"] = {"$lte": date_to}
     
     skip = (page - 1) * limit
-    users = await db.users.find(query, {"_id": 0}).skip(skip).limit(limit).to_list(limit)
+    users = await db.users.find(query, {"_id": 0, "password_hash": 0}).skip(skip).limit(limit).to_list(limit)
     total = await db.users.count_documents(query)
     
     # Enrich with additional data
@@ -65,10 +81,19 @@ async def get_all_users(role: Optional[str] = None, search: Optional[str] = None
             student = await db.students.find_one({"user_id": user["user_id"]}, {"_id": 0})
             if student:
                 user["student_info"] = student
+                # Add student-specific fields to the user object for easier export
+                user["subscription_status"] = student.get("subscription_status")
+                user["current_level"] = student.get("current_level")
+                user["schedule_preference"] = student.get("schedule_preference") or user.get("schedule_preference")
+                user["reading_level"] = student.get("reading_level") or user.get("reading_level")
         elif user.get("role") == "teacher":
             teacher = await db.teachers.find_one({"user_id": user["user_id"]}, {"_id": 0})
             if teacher:
                 user["teacher_info"] = teacher
+                # Add teacher-specific fields
+                user["teacher_status"] = teacher.get("approval_status")
+                user["hourly_rate"] = teacher.get("hourly_rate")
+                user["specializations"] = teacher.get("specializations")
     
     return {
         "users": users,
