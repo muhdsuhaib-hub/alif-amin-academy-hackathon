@@ -10,6 +10,7 @@ import AdminLogin from './pages/AdminLogin';
 import BrowseTeachers from './pages/BrowseTeachers';
 import BookClass from './pages/BookClass';
 import TeacherSignup from './pages/TeacherSignup';
+import Auth from './pages/Auth';
 import { Toaster } from './components/ui/sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -29,7 +30,7 @@ function AuthCallback() {
       const sessionId = params.get('session_id');
 
       if (!sessionId) {
-        navigate('/onboarding');
+        navigate('/auth');
         return;
       }
 
