@@ -39,6 +39,9 @@ export default function Onboarding() {
       schedule: answers.preference
     };
     
+    // Store onboarding data in localStorage as backup
+    localStorage.setItem('onboardingData', JSON.stringify(onboardingData));
+    
     // Check if user is already authenticated
     try {
       const response = await fetch(`${API}/auth/me`, {
@@ -57,6 +60,7 @@ export default function Onboarding() {
           body: JSON.stringify(onboardingData)
         });
         
+        localStorage.removeItem('onboardingData');
         // Redirect to student dashboard
         navigate('/student/dashboard', { state: { user: userData } });
       } else {
@@ -65,7 +69,8 @@ export default function Onboarding() {
           state: { 
             fromOnboarding: true, 
             onboardingData 
-          } 
+          },
+          replace: true
         });
       }
     } catch (error) {
@@ -74,7 +79,8 @@ export default function Onboarding() {
         state: { 
           fromOnboarding: true, 
           onboardingData 
-        } 
+        },
+        replace: true
       });
     }
   };
