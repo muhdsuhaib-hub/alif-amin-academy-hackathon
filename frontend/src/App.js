@@ -188,6 +188,7 @@ function AppRouter() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/auth" element={<Auth />} />
       <Route path="/teacher-signup" element={<TeacherSignup />} />
       <Route path="/auth/admin" element={<AdminLogin />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
