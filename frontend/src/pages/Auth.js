@@ -145,6 +145,9 @@ export default function Auth() {
       // Set session cookie
       document.cookie = `session_token=${data.session_token}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=none`;
       
+      // Clear onboarding data from localStorage
+      localStorage.removeItem('onboardingData');
+      
       toast.success('Registration successful! Welcome to Alif Amin Academy!');
       navigate(data.redirect_to, { state: { user: data.user }, replace: true });
       
