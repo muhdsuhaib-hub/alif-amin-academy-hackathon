@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, BookOpen, LogOut, Users, Clock, TrendingUp, Video } from 'lucide-react';
 import { toast } from 'sonner';
+import NotificationBell from '../components/NotificationBell';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -77,6 +78,7 @@ export default function StudentDashboard({ user }) {
             <span className="text-2xl font-medium" style={{ color: '#0F3D2E' }}>Alif Amin Academy</span>
           </div>
           <div className="flex items-center gap-4">
+            <NotificationBell userId={user?.user_id} userRole="student" />
             <span className="text-sm" style={{ color: '#5A5A5A' }}>{user?.name}</span>
             <button
               data-testid="logout-button"
