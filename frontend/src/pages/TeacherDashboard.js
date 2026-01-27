@@ -18,7 +18,7 @@ function TeacherSidebar({ activeSection, setActiveSection, isCollapsed, setIsCol
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'wallet', label: 'Earnings Wallet', icon: Wallet },
     { id: 'availability', label: 'Availability', icon: Calendar },
-    { id: 'classroom', label: 'Classroom Tools', icon: BookMarker },
+    { id: 'classroom', label: 'Classroom Tools', icon: Book },
     { id: 'students', label: 'Student Management', icon: Users },
     { id: 'profile', label: 'Profile', icon: User },
   ];
