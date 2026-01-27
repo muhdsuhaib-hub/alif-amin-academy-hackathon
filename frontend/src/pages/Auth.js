@@ -110,6 +110,11 @@ export default function Auth() {
       toast.error('Please fill in all required fields');
       return;
     }
+
+    if (!formData.phoneNumber) {
+      toast.error('Phone number is required');
+      return;
+    }
     
     if (formData.password.length < 6) {
       toast.error('Password must be at least 6 characters');
@@ -120,6 +125,8 @@ export default function Auth() {
       toast.error('Passwords do not match');
       return;
     }
+
+    const fullPhone = `${formData.countryCode}${formData.phoneNumber}`;
     
     setLoading(true);
     try {
@@ -130,7 +137,7 @@ export default function Auth() {
           email: formData.email,
           password: formData.password,
           full_name: formData.fullName,
-          phone: formData.phone,
+          phone: fullPhone,
           role: 'student',
           schedule_preference: formData.schedulePreference,
           reading_level: formData.readingLevel,
