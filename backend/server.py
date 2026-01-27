@@ -10,6 +10,8 @@ from datetime import datetime, timezone, timedelta
 import uuid
 import httpx
 from typing import Optional, List, Dict, Any
+from passlib.context import CryptContext
+from pydantic import BaseModel, EmailStr
 from models import (
     User, UserSession, Teacher, TeacherCreate, Student, StudentCreate,
     AvailabilitySlot, AvailabilityCreate, Booking, BookingCreate,
@@ -24,10 +26,30 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 logging.basicConfig(level=logging.INFO)
+
+
+# Auth Models
+class EmailRegister(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: str
+    phone: Optional[str] = None
+    role: str = "student"
+    schedule_preference: Optional[str] = None
+    reading_level: Optional[str] = None
+    goals: Optional[List[str]] = None
+
+
+class EmailLogin(BaseModel):
+    email: EmailStr
+    password: str
 logger = logging.getLogger(__name__)
 
 
