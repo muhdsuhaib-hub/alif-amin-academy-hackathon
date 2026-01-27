@@ -462,14 +462,17 @@ async def get_teacher_students(teacher_id: str, current_user: User = Depends(get
                 {"_id": 0},
                 sort=[("start_time_utc", -1)]
             )
-            # Get progress
-            progress = await db.progress.find_one({"student_id": student_id}, {"_id": 0})
+            
+            # Get reading level from student profile (from onboarding) or user doc
+            reading_level = student.get("current_level") or user.get("reading_level") if user else None
+            if not reading_level:
+                reading_level = "Not Set"
             
             students.append({
                 "student_id": student_id,
                 "name": user.get("name", "Unknown") if user else "Unknown",
                 "email": user.get("email") if user else None,
-                "current_level": progress.get("current_surah", student.get("current_level", "Beginner")) if progress else student.get("current_level", "Beginner"),
+                "current_level": reading_level,
                 "last_session": last_booking.get("start_time_utc") if last_booking else None,
                 "status": "active" if student.get("subscription_status") in ["trial", "active"] else "inactive"
             })
