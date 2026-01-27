@@ -47,12 +47,25 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 - [x] Classroom: Join Class button
   - [x] Google Meet link displayed for upcoming classes
   - [x] Visual indication when class is joinable
-- [x] **Teacher Signup Flow** (NEW)
+- [x] **Teacher Signup Flow**
   - [x] Selecting "Teacher" in onboarding redirects to `/teacher-signup`
   - [x] Teacher signup page with Google login
   - [x] Teacher profile created with pending approval status
   - [x] Pending approval banner in teacher dashboard
   - [x] Dashboard hides stats/tabs until approved
+- [x] **Admin Teacher Approvals**
+  - [x] "Approvals" tab in Admin Dashboard
+  - [x] List pending teachers with approve/reject buttons
+  - [x] Approve sets is_active=true and approval_status='approved'
+  - [x] Reject reverts user role and sets rejection reason
+- [x] **Comprehensive Teacher Dashboard** (NEW)
+  - [x] Header with Online/Offline status toggle and notifications
+  - [x] Metric cards: Total Earnings (with Withdraw), Active Students, Classes Today, Rating
+  - [x] Student Reading Tracker with expandable Quick Log form
+  - [x] Quick Log: Surah/Book, Ayat/Page range, Fluency Rating, Tajweed Comments
+  - [x] Today's Schedule sidebar with Edit Availability modal
+  - [x] This Month stats summary
+  - [x] Fixed footer with "Enter Live Classroom" CTA
 
 ### 🔜 P3 - Future Tasks (NOT STARTED)
 - [ ] **Integrations**
