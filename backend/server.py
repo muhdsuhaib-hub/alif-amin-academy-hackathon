@@ -90,6 +90,145 @@ async def root():
     return {"message": "Alif Amin Academy API", "version": "1.0"}
 
 
+# Email/Password Registration
+@api_router.post("/auth/register")
+async def register_with_email(data: EmailRegister):
+    """Register a new user with email and password"""
+    # Check if email already exists
+    existing_user = await db.users.find_one({"email": data.email}, {"_id": 0})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered. Please login instead.")
+    
+    # Hash the password
+    hashed_password = pwd_context.hash(data.password)
+    
+    # Create user
+    user_id = f"user_{uuid.uuid4().hex[:12]}"
+    user_doc = {
+        "user_id": user_id,
+        "email": data.email,
+        "name": data.full_name,
+        "password_hash": hashed_password,
+        "picture": None,
+        "role": data.role,
+        "phone": data.phone,
+        "timezone": "UTC",
+        "auth_provider": "email",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.users.insert_one(user_doc)
+    
+    # Create student profile if role is student
+    if data.role == "student":
+        student_id = f"student_{uuid.uuid4().hex[:12]}"
+        student_doc = {
+            "student_id": student_id,
+            "user_id": user_id,
+            "parent_name": None,
+            "parent_email": None,
+            "parent_phone": data.phone,
+            "current_level": data.reading_level or "beginner",
+            "schedule_preference": data.schedule_preference,
+            "goals": data.goals,
+            "subscription_status": "trial",
+            "subscription_plan": None,
+            "next_billing_date": None
+        }
+        await db.students.insert_one(student_doc)
+        
+        # Create progress tracking
+        progress_id = f"progress_{uuid.uuid4().hex[:12]}"
+        progress_doc = {
+            "progress_id": progress_id,
+            "student_id": student_id,
+            "current_surah": "Al-Fatiha",
+            "current_surah_number": 1,
+            "verses_completed": 0,
+            "total_verses_in_surah": 7,
+            "completion_percentage": 0.0,
+            "total_classes_taken": 0,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.progress.insert_one(progress_doc)
+    
+    # Create session
+    session_token = f"session_{uuid.uuid4().hex}"
+    expires_at = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+    await db.user_sessions.insert_one({
+        "user_id": user_id,
+        "session_token": session_token,
+        "created_at": datetime.now(timezone.utc),
+        "expires_at": expires_at
+    })
+    
+    # Return user without password
+    user_response = {k: v for k, v in user_doc.items() if k != "password_hash"}
+    
+    return {
+        "message": "Registration successful",
+        "user": user_response,
+        "session_token": session_token,
+        "redirect_to": f"/{data.role}/dashboard"
+    }
+
+
+# Email/Password Login
+@api_router.post("/auth/login")
+async def login_with_email(data: EmailLogin):
+    """Login with email and password"""
+    user_doc = await db.users.find_one({"email": data.email})
+    if not user_doc:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Check if user has a password (email registered)
+    if not user_doc.get("password_hash"):
+        raise HTTPException(status_code=400, detail="This account uses Google login. Please sign in with Google.")
+    
+    # Verify password
+    if not pwd_context.verify(data.password, user_doc["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    # Create session
+    session_token = f"session_{uuid.uuid4().hex}"
+    expires_at = (datetime.now(timezone.utc) + timedelta(days=7)).isoformat()
+    await db.user_sessions.insert_one({
+        "user_id": user_doc["user_id"],
+        "session_token": session_token,
+        "created_at": datetime.now(timezone.utc),
+        "expires_at": expires_at
+    })
+    
+    # Return user without password
+    user_response = {k: v for k, v in user_doc.items() if k not in ["password_hash", "_id"]}
+    
+    # Determine redirect based on role
+    role = user_doc.get("role", "student")
+    redirect_to = f"/{role}/dashboard"
+    if role == "admin":
+        redirect_to = "/admin/dashboard"
+    
+    return {
+        "message": "Login successful",
+        "user": user_response,
+        "session_token": session_token,
+        "redirect_to": redirect_to
+    }
+
+
+# Check if email exists (for showing login vs register)
+@api_router.get("/auth/check-email")
+async def check_email(email: str):
+    """Check if email is already registered"""
+    user = await db.users.find_one({"email": email}, {"_id": 0, "password_hash": 0})
+    if user:
+        return {
+            "exists": True,
+            "auth_provider": user.get("auth_provider", "google"),
+            "role": user.get("role", "student")
+        }
+    return {"exists": False}
+
+
 @api_router.get("/auth/session-data")
 async def get_session_data(request: Request):
     session_id = request.headers.get("X-Session-ID")
