@@ -16,9 +16,12 @@ export default function Auth() {
   const [emailExists, setEmailExists] = useState(null);
   const [authProvider, setAuthProvider] = useState(null);
   
-  // Get onboarding data from location state
-  const onboardingData = location.state?.onboardingData || {};
-  const isFromOnboarding = location.state?.fromOnboarding || false;
+  // Get onboarding data from location state or localStorage
+  const stateOnboardingData = location.state?.onboardingData || {};
+  const storedData = typeof window !== 'undefined' ? localStorage.getItem('onboardingData') : null;
+  const localOnboardingData = storedData ? JSON.parse(storedData) : {};
+  const onboardingData = Object.keys(stateOnboardingData).length > 0 ? stateOnboardingData : localOnboardingData;
+  const isFromOnboarding = location.state?.fromOnboarding || Object.keys(localOnboardingData).length > 0;
   
   // Form data
   const [formData, setFormData] = useState({
