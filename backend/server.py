@@ -277,6 +277,79 @@ async def get_teacher(teacher_id: str):
     return {**teacher, "user": user_doc}
 
 
+@api_router.get("/teachers/{teacher_id}/students")
+async def get_teacher_students(teacher_id: str, current_user: User = Depends(get_current_user)):
+    """Get all students who have booked classes with this teacher"""
+    # Get unique student IDs from bookings
+    bookings = await db.bookings.find(
+        {"teacher_id": teacher_id},
+        {"student_id": 1, "_id": 0}
+    ).to_list(1000)
+    
+    student_ids = list(set(b["student_id"] for b in bookings))
+    
+    students = []
+    for student_id in student_ids:
+        student = await db.students.find_one({"student_id": student_id}, {"_id": 0})
+        if student:
+            # Get user info
+            user = await db.users.find_one({"user_id": student["user_id"]}, {"_id": 0})
+            # Get last booking
+            last_booking = await db.bookings.find_one(
+                {"student_id": student_id, "teacher_id": teacher_id},
+                {"_id": 0},
+                sort=[("start_time_utc", -1)]
+            )
+            # Get progress
+            progress = await db.progress.find_one({"student_id": student_id}, {"_id": 0})
+            
+            students.append({
+                "student_id": student_id,
+                "name": user.get("name", "Unknown") if user else "Unknown",
+                "email": user.get("email") if user else None,
+                "current_level": progress.get("current_surah", student.get("current_level", "Beginner")) if progress else student.get("current_level", "Beginner"),
+                "last_session": last_booking.get("start_time_utc") if last_booking else None,
+                "status": "active" if student.get("subscription_status") in ["trial", "active"] else "inactive"
+            })
+    
+    return {"students": students}
+
+
+@api_router.post("/teachers/log-progress")
+async def log_student_progress(log_data: dict, current_user: User = Depends(get_current_user)):
+    """Log a student's reading progress"""
+    if current_user.role != "teacher":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    log_id = f"log_{uuid.uuid4().hex[:12]}"
+    log_entry = {
+        "log_id": log_id,
+        "student_id": log_data.get("student_id"),
+        "teacher_id": log_data.get("teacher_id"),
+        "current_book": log_data.get("currentBook"),
+        "start_page": log_data.get("startPage"),
+        "end_page": log_data.get("endPage"),
+        "fluency_rating": log_data.get("fluencyRating"),
+        "tajweed_notes": log_data.get("tajweedNotes"),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.progress_logs.insert_one(log_entry)
+    
+    # Update student's current level in progress
+    if log_data.get("currentBook"):
+        await db.progress.update_one(
+            {"student_id": log_data.get("student_id")},
+            {"$set": {
+                "current_surah": log_data.get("currentBook"),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }},
+            upsert=True
+        )
+    
+    return {"message": "Progress logged successfully", "log_id": log_id}
+
+
 @api_router.get("/teachers/{teacher_id}/availability")
 async def get_teacher_availability(teacher_id: str, start_date: Optional[str] = None, end_date: Optional[str] = None):
     query = {"teacher_id": teacher_id, "is_booked": False}
