@@ -66,6 +66,13 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
   - [x] Today's Schedule sidebar with Edit Availability modal
   - [x] This Month stats summary
   - [x] Fixed footer with "Enter Live Classroom" CTA
+- [x] **Teacher Platform Sidebar Navigation** (EXPANDED)
+  - [x] Sidebar with Dashboard, Earnings Wallet, Availability, Classroom Tools, Student Management, Profile
+  - [x] **Earnings Wallet**: Balance display, Withdraw button with bank selection (Maybank/CIMB/PayPal/Wise), Transaction history
+  - [x] **Availability Calendar**: Date range selection, time slots, auto timezone converter, quick time slot presets
+  - [x] **Classroom Tools**: Digital Mushaf with Uthmani script (604 pages, 114 surahs, 30 juz), Live pointer, Lesson Notes per student
+  - [x] **Student Management**: Active/Warning/Inactive stats, Last lesson indicator, Send Reminder button, Report Card PDF generator
+  - [x] **Profile Management**: Editable bio, hourly rate, Google Meet link, specialties tags, Video intro upload, Ijazah/Certificate upload
 
 ### 🔜 P3 - Future Tasks (NOT STARTED)
 - [ ] **Integrations**
