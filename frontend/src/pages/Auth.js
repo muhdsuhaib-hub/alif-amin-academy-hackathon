@@ -509,18 +509,53 @@ export default function Auth() {
 
                   {/* Phone */}
                   <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Phone Number</label>
-                    <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="e.g., +60 12-345 6789"
-                        className="w-full h-12 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                      />
+                    <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Phone Number *</label>
+                    <div className="flex gap-2">
+                      <select
+                        value={formData.countryCode || '+60'}
+                        onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
+                        className="h-12 px-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E] bg-white"
+                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)', minWidth: '100px' }}
+                        required
+                      >
+                        <option value="+60">🇲🇾 +60</option>
+                        <option value="+65">🇸🇬 +65</option>
+                        <option value="+62">🇮🇩 +62</option>
+                        <option value="+66">🇹🇭 +66</option>
+                        <option value="+63">🇵🇭 +63</option>
+                        <option value="+84">🇻🇳 +84</option>
+                        <option value="+91">🇮🇳 +91</option>
+                        <option value="+92">🇵🇰 +92</option>
+                        <option value="+880">🇧🇩 +880</option>
+                        <option value="+971">🇦🇪 +971</option>
+                        <option value="+966">🇸🇦 +966</option>
+                        <option value="+974">🇶🇦 +974</option>
+                        <option value="+973">🇧🇭 +973</option>
+                        <option value="+968">🇴🇲 +968</option>
+                        <option value="+965">🇰🇼 +965</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+61">🇦🇺 +61</option>
+                      </select>
+                      <div className="relative flex-1">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="tel"
+                          value={formData.phoneNumber || ''}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            setFormData({ ...formData, phoneNumber: value, phone: `${formData.countryCode || '+60'}${value}` });
+                          }}
+                          placeholder="123456789"
+                          required
+                          pattern="[0-9]*"
+                          inputMode="numeric"
+                          className="w-full h-12 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                          style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                        />
+                      </div>
                     </div>
+                    <p className="text-xs text-gray-400 mt-1">Numbers only, no spaces or dashes</p>
                   </div>
 
                   {/* Password (if not already set from previous step) */}
