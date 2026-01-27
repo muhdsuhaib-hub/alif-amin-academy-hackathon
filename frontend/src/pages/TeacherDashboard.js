@@ -634,7 +634,7 @@ function ClassroomTools({ teacherData, students }) {
             onClick={() => setShowMushaf(true)}
             className="flex items-center gap-2 h-10 px-4 rounded-xl bg-[#0F3D2E] text-white font-medium transition-all hover:opacity-90"
           >
-            <BookMarker className="w-4 h-4" />
+            <Book className="w-4 h-4" />
             Open Mushaf
           </button>
         </div>
