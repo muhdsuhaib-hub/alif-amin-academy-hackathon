@@ -138,10 +138,7 @@ export default function AdminDashboard({ user }) {
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="relative p-2 rounded-full hover:bg-gray-100 transition-all">
-              <Bell className="w-5 h-5" style={{ color: '#5A5A5A' }} />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            <NotificationBell userId={user?.user_id} userRole="admin" />
             <div className="flex items-center gap-3 pl-4 border-l" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
               <div className="text-right">
                 <p className="text-sm font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>{user?.name}</p>
