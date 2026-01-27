@@ -886,75 +886,121 @@ function StudentManagement({ teacherData, students, setStudents }) {
           <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Student List</h3>
         </div>
         
-        <div className="divide-y" style={{ borderColor: 'rgba(15, 61, 46, 0.05)' }}>
-          {students.map(student => {
-            const status = getLastLessonStatus(student.last_session);
-            return (
-              <div key={student.student_id} className="p-4 flex items-center justify-between hover:bg-gray-50">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white font-medium">
-                    {student.name?.charAt(0) || 'S'}
-                  </div>
-                  <div>
-                    <p className="font-medium" style={{ color: '#1F2933' }}>{student.name}</p>
-                    <p className="text-sm text-gray-500">{student.current_level}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  {/* Last Lesson Indicator */}
-                  <div className="text-right mr-2">
-                    <p className="text-xs text-gray-500">Last lesson</p>
-                    <p className={`text-sm font-medium ${
-                      status === 'active' ? 'text-green-600' :
-                      status === 'warning' ? 'text-yellow-600' :
-                      status === 'inactive' ? 'text-red-500' : 'text-gray-400'
-                    }`}>
-                      {student.last_session ? new Date(student.last_session).toLocaleDateString() : 'Never'}
-                    </p>
-                  </div>
-
-                  {/* Status Badge */}
-                  {status === 'warning' && (
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-50 text-yellow-600 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      7+ days
-                    </span>
-                  )}
-                  {status === 'inactive' && (
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      14+ days
-                    </span>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-2">
-                    {(status === 'warning' || status === 'inactive') && (
-                      <button
-                        onClick={() => sendReminder(student)}
-                        className="h-8 px-3 rounded-lg text-xs font-medium bg-[#D4AF37] text-white transition-all hover:opacity-90"
-                      >
-                        Send Reminder
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        setSelectedStudentForReport(student);
-                        setShowReportModal(true);
-                      }}
-                      className="h-8 px-3 rounded-lg text-xs font-medium border transition-all hover:bg-gray-50"
-                      style={{ borderColor: 'rgba(15, 61, 46, 0.2)', color: '#0F3D2E' }}
-                    >
-                      <FileText className="w-3 h-3 inline mr-1" />
-                      Report
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        {/* Table Header */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)', backgroundColor: '#F9FAFB' }}>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Full Name</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Reading Level</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Last Lesson</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y" style={{ borderColor: 'rgba(15, 61, 46, 0.05)' }}>
+              {students.map(student => {
+                const status = getLastLessonStatus(student.last_session);
+                return (
+                  <tr key={student.student_id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+                          {student.name?.charAt(0) || 'S'}
+                        </div>
+                        <span className="font-medium text-sm" style={{ color: '#1F2933' }}>{student.name || 'Unknown'}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm text-gray-600">{student.email || '-'}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-medium capitalize" style={{
+                        backgroundColor: student.current_level === 'beginner' ? 'rgba(59, 130, 246, 0.1)' :
+                                        student.current_level === 'slow' ? 'rgba(245, 158, 11, 0.1)' :
+                                        student.current_level === 'comfortable' ? 'rgba(34, 197, 94, 0.1)' :
+                                        student.current_level === 'advanced' ? 'rgba(139, 92, 246, 0.1)' : 'rgba(107, 114, 128, 0.1)',
+                        color: student.current_level === 'beginner' ? '#3B82F6' :
+                               student.current_level === 'slow' ? '#F59E0B' :
+                               student.current_level === 'comfortable' ? '#22C55E' :
+                               student.current_level === 'advanced' ? '#8B5CF6' : '#6B7280'
+                      }}>
+                        {student.current_level === 'beginner' ? 'Just Starting' :
+                         student.current_level === 'slow' ? 'Reads Slowly' :
+                         student.current_level === 'comfortable' ? 'Comfortable' :
+                         student.current_level === 'advanced' ? 'Advanced' : student.current_level || 'Not Set'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-sm font-medium ${
+                        status === 'active' ? 'text-green-600' :
+                        status === 'warning' ? 'text-yellow-600' :
+                        status === 'inactive' ? 'text-red-500' : 'text-gray-400'
+                      }`}>
+                        {student.last_session ? new Date(student.last_session).toLocaleDateString() : 'Never'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {status === 'active' && (
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600">
+                          Active
+                        </span>
+                      )}
+                      {status === 'warning' && (
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-50 text-yellow-600 flex items-center gap-1 w-fit">
+                          <AlertCircle className="w-3 h-3" />
+                          7+ days
+                        </span>
+                      )}
+                      {status === 'inactive' && (
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 flex items-center gap-1 w-fit">
+                          <AlertCircle className="w-3 h-3" />
+                          14+ days
+                        </span>
+                      )}
+                      {status === 'never' && (
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                          New
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {(status === 'warning' || status === 'inactive') && (
+                          <button
+                            onClick={() => sendReminder(student)}
+                            className="h-8 px-3 rounded-lg text-xs font-medium bg-[#D4AF37] text-white transition-all hover:opacity-90"
+                          >
+                            Send Reminder
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setSelectedStudentForReport(student);
+                            setShowReportModal(true);
+                          }}
+                          className="h-8 px-3 rounded-lg text-xs font-medium border transition-all hover:bg-gray-50"
+                          style={{ borderColor: 'rgba(15, 61, 46, 0.2)', color: '#0F3D2E' }}
+                        >
+                          <FileText className="w-3 h-3 inline mr-1" />
+                          Report
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
+        
+        {students.length === 0 && (
+          <div className="p-8 text-center">
+            <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="text-gray-500">No students yet</p>
+          </div>
+        )}
       </div>
 
       {/* Report Card Modal */}
