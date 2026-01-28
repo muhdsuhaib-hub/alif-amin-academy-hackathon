@@ -230,6 +230,166 @@ async def check_email(email: str):
     return {"exists": False}
 
 
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
+
+
+@api_router.get("/auth/google/callback")
+async def google_oauth_callback(request: Request, code: str, state: Optional[str] = None):
+    """Handle Google OAuth callback - exchange code for tokens and create/login user"""
+    
+    # Get the redirect URI (must match what was registered in Google Cloud Console)
+    redirect_uri = str(request.base_url).rstrip('/') + "/api/auth/google/callback"
+    # For production, use the external URL
+    if "preview.emergentagent.com" in str(request.url):
+        redirect_uri = f"https://qurantutor-5.preview.emergentagent.com/api/auth/google/callback"
+    
+    # Exchange authorization code for tokens
+    async with httpx.AsyncClient() as client:
+        token_response = await client.post(
+            GOOGLE_TOKEN_URL,
+            data={
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "code": code,
+                "grant_type": "authorization_code",
+                "redirect_uri": redirect_uri
+            },
+            timeout=10.0
+        )
+        
+        if token_response.status_code != 200:
+            logger.error(f"Token exchange failed: {token_response.text}")
+            # Redirect to frontend with error
+            return Response(
+                status_code=302,
+                headers={"Location": "/auth?error=google_auth_failed"}
+            )
+        
+        tokens = token_response.json()
+        access_token = tokens.get("access_token")
+        
+        # Get user info from Google
+        userinfo_response = await client.get(
+            GOOGLE_USERINFO_URL,
+            headers={"Authorization": f"Bearer {access_token}"},
+            timeout=10.0
+        )
+        
+        if userinfo_response.status_code != 200:
+            logger.error(f"Userinfo fetch failed: {userinfo_response.text}")
+            return Response(
+                status_code=302,
+                headers={"Location": "/auth?error=google_userinfo_failed"}
+            )
+        
+        user_info = userinfo_response.json()
+    
+    # Extract user data
+    email = user_info.get("email")
+    name = user_info.get("name")
+    picture = user_info.get("picture")
+    
+    if not email:
+        return Response(
+            status_code=302,
+            headers={"Location": "/auth?error=no_email"}
+        )
+    
+    # Check if user exists
+    existing_user = await db.users.find_one({"email": email}, {"_id": 0})
+    
+    if existing_user:
+        user_id = existing_user["user_id"]
+        # Update user info
+        await db.users.update_one(
+            {"user_id": user_id},
+            {"$set": {
+                "name": name,
+                "picture": picture,
+                "auth_provider": "google"
+            }}
+        )
+        role = existing_user.get("role", "student")
+    else:
+        # Create new user
+        user_id = f"user_{uuid.uuid4().hex[:12]}"
+        role = "student"  # Default role for new users
+        
+        # Check if this is an admin email
+        admin_emails = ["muhdsuhaib@gmail.com", "hello.alifamin@gmail.com"]
+        if email in admin_emails:
+            role = "admin"
+        
+        new_user = {
+            "user_id": user_id,
+            "email": email,
+            "name": name,
+            "picture": picture,
+            "role": role,
+            "timezone": "UTC",
+            "auth_provider": "google",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(new_user)
+        
+        # Create student profile for new students
+        if role == "student":
+            student_id = f"student_{uuid.uuid4().hex[:12]}"
+            student_doc = {
+                "student_id": student_id,
+                "user_id": user_id,
+                "parent_name": None,
+                "parent_email": None,
+                "parent_phone": None,
+                "current_level": "beginner",
+                "subscription_status": "trial",
+                "subscription_plan": None,
+                "next_billing_date": None
+            }
+            await db.students.insert_one(student_doc)
+    
+    # Create session
+    session_token = f"session_{uuid.uuid4().hex}"
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    
+    await db.user_sessions.delete_many({"user_id": user_id})
+    await db.user_sessions.insert_one({
+        "user_id": user_id,
+        "session_token": session_token,
+        "expires_at": expires_at.isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    # Determine redirect based on role
+    if role == "admin":
+        redirect_path = "/admin/dashboard"
+    elif role == "teacher":
+        redirect_path = "/teacher/dashboard"
+    else:
+        redirect_path = "/student/dashboard"
+    
+    # Redirect to frontend with session token in cookie
+    response = Response(
+        status_code=302,
+        headers={"Location": redirect_path}
+    )
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        max_age=7 * 24 * 60 * 60,
+        httponly=False,
+        secure=True,
+        samesite="none",
+        path="/"
+    )
+    
+    return response
+
+
 @api_router.get("/auth/session-data")
 async def get_session_data(request: Request):
     session_id = request.headers.get("X-Session-ID")
