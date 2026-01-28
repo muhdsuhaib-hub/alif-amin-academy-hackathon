@@ -304,7 +304,7 @@ export default function Auth() {
 
   const handleGoogleLogin = () => {
     setLoading(true);
-    const clientId = '106062879766-bcqobu5k23tasfale3j0qiqd6roag58l.apps.googleusercontent.com';
+    const clientId = '106062879766-o4frbkk9tuhlmve4tc51g9hrpnu94dhf.apps.googleusercontent.com';
     const redirectUri = `${BACKEND_URL}/api/auth/google/callback`;
     const scope = 'email profile';
     
