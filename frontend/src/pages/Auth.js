@@ -188,6 +188,83 @@ const COUNTRY_CODES = [
   { code: '+263', flag: '🇿🇼', name: 'Zimbabwe' }
 ];
 
+// Custom Country Code Selector Component - shows only flag when collapsed
+function CountryCodeSelector({ value, onChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const dropdownRef = React.useRef(null);
+  
+  const selectedCountry = COUNTRY_CODES.find(c => c.code === value) || COUNTRY_CODES.find(c => c.code === '+60');
+  
+  const filteredCountries = COUNTRY_CODES.filter(country => 
+    country.name.toLowerCase().includes(search.toLowerCase()) ||
+    country.code.includes(search)
+  );
+
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="h-12 px-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E] bg-white flex items-center gap-2 min-w-[90px]"
+        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+      >
+        <span className="text-2xl leading-none">{selectedCountry.flag}</span>
+        <span className="text-sm text-gray-600">{selectedCountry.code}</span>
+        <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1 w-72 bg-white rounded-xl border shadow-lg z-50 overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+          <div className="p-2 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search country..."
+              className="w-full h-9 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+              style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+              autoFocus
+            />
+          </div>
+          <div className="max-h-60 overflow-y-auto">
+            {filteredCountries.map((country) => (
+              <button
+                key={`${country.code}-${country.name}`}
+                type="button"
+                onClick={() => {
+                  onChange(country.code);
+                  setIsOpen(false);
+                  setSearch('');
+                }}
+                className={`w-full px-3 py-2 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
+                  value === country.code ? 'bg-[#0F3D2E]/5' : ''
+                }`}
+              >
+                <span className="text-xl leading-none">{country.flag}</span>
+                <span className="text-sm text-gray-800 flex-1 text-left">{country.name}</span>
+                <span className="text-sm text-gray-500">{country.code}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
