@@ -25,6 +25,8 @@ export default function Landing() {
   };
 
   const handleLogin = () => {
+    // Clear any onboarding data so user goes to login, not profile completion
+    localStorage.removeItem('onboardingData');
     navigate('/auth');
   };
 
