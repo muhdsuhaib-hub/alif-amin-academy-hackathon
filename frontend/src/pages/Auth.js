@@ -7,10 +7,191 @@ import { toast } from 'sonner';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Complete list of country codes with flags
+const COUNTRY_CODES = [
+  { code: '+93', flag: '🇦🇫', name: 'Afghanistan' },
+  { code: '+355', flag: '🇦🇱', name: 'Albania' },
+  { code: '+213', flag: '🇩🇿', name: 'Algeria' },
+  { code: '+376', flag: '🇦🇩', name: 'Andorra' },
+  { code: '+244', flag: '🇦🇴', name: 'Angola' },
+  { code: '+54', flag: '🇦🇷', name: 'Argentina' },
+  { code: '+374', flag: '🇦🇲', name: 'Armenia' },
+  { code: '+61', flag: '🇦🇺', name: 'Australia' },
+  { code: '+43', flag: '🇦🇹', name: 'Austria' },
+  { code: '+994', flag: '🇦🇿', name: 'Azerbaijan' },
+  { code: '+973', flag: '🇧🇭', name: 'Bahrain' },
+  { code: '+880', flag: '🇧🇩', name: 'Bangladesh' },
+  { code: '+375', flag: '🇧🇾', name: 'Belarus' },
+  { code: '+32', flag: '🇧🇪', name: 'Belgium' },
+  { code: '+501', flag: '🇧🇿', name: 'Belize' },
+  { code: '+229', flag: '🇧🇯', name: 'Benin' },
+  { code: '+975', flag: '🇧🇹', name: 'Bhutan' },
+  { code: '+591', flag: '🇧🇴', name: 'Bolivia' },
+  { code: '+387', flag: '🇧🇦', name: 'Bosnia' },
+  { code: '+267', flag: '🇧🇼', name: 'Botswana' },
+  { code: '+55', flag: '🇧🇷', name: 'Brazil' },
+  { code: '+673', flag: '🇧🇳', name: 'Brunei' },
+  { code: '+359', flag: '🇧🇬', name: 'Bulgaria' },
+  { code: '+226', flag: '🇧🇫', name: 'Burkina Faso' },
+  { code: '+257', flag: '🇧🇮', name: 'Burundi' },
+  { code: '+855', flag: '🇰🇭', name: 'Cambodia' },
+  { code: '+237', flag: '🇨🇲', name: 'Cameroon' },
+  { code: '+1', flag: '🇨🇦', name: 'Canada' },
+  { code: '+238', flag: '🇨🇻', name: 'Cape Verde' },
+  { code: '+236', flag: '🇨🇫', name: 'Central African Republic' },
+  { code: '+235', flag: '🇹🇩', name: 'Chad' },
+  { code: '+56', flag: '🇨🇱', name: 'Chile' },
+  { code: '+86', flag: '🇨🇳', name: 'China' },
+  { code: '+57', flag: '🇨🇴', name: 'Colombia' },
+  { code: '+269', flag: '🇰🇲', name: 'Comoros' },
+  { code: '+242', flag: '🇨🇬', name: 'Congo' },
+  { code: '+506', flag: '🇨🇷', name: 'Costa Rica' },
+  { code: '+385', flag: '🇭🇷', name: 'Croatia' },
+  { code: '+53', flag: '🇨🇺', name: 'Cuba' },
+  { code: '+357', flag: '🇨🇾', name: 'Cyprus' },
+  { code: '+420', flag: '🇨🇿', name: 'Czech Republic' },
+  { code: '+45', flag: '🇩🇰', name: 'Denmark' },
+  { code: '+253', flag: '🇩🇯', name: 'Djibouti' },
+  { code: '+593', flag: '🇪🇨', name: 'Ecuador' },
+  { code: '+20', flag: '🇪🇬', name: 'Egypt' },
+  { code: '+503', flag: '🇸🇻', name: 'El Salvador' },
+  { code: '+240', flag: '🇬🇶', name: 'Equatorial Guinea' },
+  { code: '+291', flag: '🇪🇷', name: 'Eritrea' },
+  { code: '+372', flag: '🇪🇪', name: 'Estonia' },
+  { code: '+251', flag: '🇪🇹', name: 'Ethiopia' },
+  { code: '+679', flag: '🇫🇯', name: 'Fiji' },
+  { code: '+358', flag: '🇫🇮', name: 'Finland' },
+  { code: '+33', flag: '🇫🇷', name: 'France' },
+  { code: '+241', flag: '🇬🇦', name: 'Gabon' },
+  { code: '+220', flag: '🇬🇲', name: 'Gambia' },
+  { code: '+995', flag: '🇬🇪', name: 'Georgia' },
+  { code: '+49', flag: '🇩🇪', name: 'Germany' },
+  { code: '+233', flag: '🇬🇭', name: 'Ghana' },
+  { code: '+30', flag: '🇬🇷', name: 'Greece' },
+  { code: '+502', flag: '🇬🇹', name: 'Guatemala' },
+  { code: '+224', flag: '🇬🇳', name: 'Guinea' },
+  { code: '+592', flag: '🇬🇾', name: 'Guyana' },
+  { code: '+509', flag: '🇭🇹', name: 'Haiti' },
+  { code: '+504', flag: '🇭🇳', name: 'Honduras' },
+  { code: '+852', flag: '🇭🇰', name: 'Hong Kong' },
+  { code: '+36', flag: '🇭🇺', name: 'Hungary' },
+  { code: '+354', flag: '🇮🇸', name: 'Iceland' },
+  { code: '+91', flag: '🇮🇳', name: 'India' },
+  { code: '+62', flag: '🇮🇩', name: 'Indonesia' },
+  { code: '+98', flag: '🇮🇷', name: 'Iran' },
+  { code: '+964', flag: '🇮🇶', name: 'Iraq' },
+  { code: '+353', flag: '🇮🇪', name: 'Ireland' },
+  { code: '+972', flag: '🇮🇱', name: 'Israel' },
+  { code: '+39', flag: '🇮🇹', name: 'Italy' },
+  { code: '+225', flag: '🇨🇮', name: 'Ivory Coast' },
+  { code: '+1876', flag: '🇯🇲', name: 'Jamaica' },
+  { code: '+81', flag: '🇯🇵', name: 'Japan' },
+  { code: '+962', flag: '🇯🇴', name: 'Jordan' },
+  { code: '+7', flag: '🇰🇿', name: 'Kazakhstan' },
+  { code: '+254', flag: '🇰🇪', name: 'Kenya' },
+  { code: '+965', flag: '🇰🇼', name: 'Kuwait' },
+  { code: '+996', flag: '🇰🇬', name: 'Kyrgyzstan' },
+  { code: '+856', flag: '🇱🇦', name: 'Laos' },
+  { code: '+371', flag: '🇱🇻', name: 'Latvia' },
+  { code: '+961', flag: '🇱🇧', name: 'Lebanon' },
+  { code: '+266', flag: '🇱🇸', name: 'Lesotho' },
+  { code: '+231', flag: '🇱🇷', name: 'Liberia' },
+  { code: '+218', flag: '🇱🇾', name: 'Libya' },
+  { code: '+423', flag: '🇱🇮', name: 'Liechtenstein' },
+  { code: '+370', flag: '🇱🇹', name: 'Lithuania' },
+  { code: '+352', flag: '🇱🇺', name: 'Luxembourg' },
+  { code: '+853', flag: '🇲🇴', name: 'Macau' },
+  { code: '+261', flag: '🇲🇬', name: 'Madagascar' },
+  { code: '+265', flag: '🇲🇼', name: 'Malawi' },
+  { code: '+60', flag: '🇲🇾', name: 'Malaysia' },
+  { code: '+960', flag: '🇲🇻', name: 'Maldives' },
+  { code: '+223', flag: '🇲🇱', name: 'Mali' },
+  { code: '+356', flag: '🇲🇹', name: 'Malta' },
+  { code: '+222', flag: '🇲🇷', name: 'Mauritania' },
+  { code: '+230', flag: '🇲🇺', name: 'Mauritius' },
+  { code: '+52', flag: '🇲🇽', name: 'Mexico' },
+  { code: '+373', flag: '🇲🇩', name: 'Moldova' },
+  { code: '+377', flag: '🇲🇨', name: 'Monaco' },
+  { code: '+976', flag: '🇲🇳', name: 'Mongolia' },
+  { code: '+382', flag: '🇲🇪', name: 'Montenegro' },
+  { code: '+212', flag: '🇲🇦', name: 'Morocco' },
+  { code: '+258', flag: '🇲🇿', name: 'Mozambique' },
+  { code: '+95', flag: '🇲🇲', name: 'Myanmar' },
+  { code: '+264', flag: '🇳🇦', name: 'Namibia' },
+  { code: '+977', flag: '🇳🇵', name: 'Nepal' },
+  { code: '+31', flag: '🇳🇱', name: 'Netherlands' },
+  { code: '+64', flag: '🇳🇿', name: 'New Zealand' },
+  { code: '+505', flag: '🇳🇮', name: 'Nicaragua' },
+  { code: '+227', flag: '🇳🇪', name: 'Niger' },
+  { code: '+234', flag: '🇳🇬', name: 'Nigeria' },
+  { code: '+850', flag: '🇰🇵', name: 'North Korea' },
+  { code: '+389', flag: '🇲🇰', name: 'North Macedonia' },
+  { code: '+47', flag: '🇳🇴', name: 'Norway' },
+  { code: '+968', flag: '🇴🇲', name: 'Oman' },
+  { code: '+92', flag: '🇵🇰', name: 'Pakistan' },
+  { code: '+970', flag: '🇵🇸', name: 'Palestine' },
+  { code: '+507', flag: '🇵🇦', name: 'Panama' },
+  { code: '+675', flag: '🇵🇬', name: 'Papua New Guinea' },
+  { code: '+595', flag: '🇵🇾', name: 'Paraguay' },
+  { code: '+51', flag: '🇵🇪', name: 'Peru' },
+  { code: '+63', flag: '🇵🇭', name: 'Philippines' },
+  { code: '+48', flag: '🇵🇱', name: 'Poland' },
+  { code: '+351', flag: '🇵🇹', name: 'Portugal' },
+  { code: '+1787', flag: '🇵🇷', name: 'Puerto Rico' },
+  { code: '+974', flag: '🇶🇦', name: 'Qatar' },
+  { code: '+40', flag: '🇷🇴', name: 'Romania' },
+  { code: '+7', flag: '🇷🇺', name: 'Russia' },
+  { code: '+250', flag: '🇷🇼', name: 'Rwanda' },
+  { code: '+966', flag: '🇸🇦', name: 'Saudi Arabia' },
+  { code: '+221', flag: '🇸🇳', name: 'Senegal' },
+  { code: '+381', flag: '🇷🇸', name: 'Serbia' },
+  { code: '+248', flag: '🇸🇨', name: 'Seychelles' },
+  { code: '+232', flag: '🇸🇱', name: 'Sierra Leone' },
+  { code: '+65', flag: '🇸🇬', name: 'Singapore' },
+  { code: '+421', flag: '🇸🇰', name: 'Slovakia' },
+  { code: '+386', flag: '🇸🇮', name: 'Slovenia' },
+  { code: '+677', flag: '🇸🇧', name: 'Solomon Islands' },
+  { code: '+252', flag: '🇸🇴', name: 'Somalia' },
+  { code: '+27', flag: '🇿🇦', name: 'South Africa' },
+  { code: '+82', flag: '🇰🇷', name: 'South Korea' },
+  { code: '+211', flag: '🇸🇸', name: 'South Sudan' },
+  { code: '+34', flag: '🇪🇸', name: 'Spain' },
+  { code: '+94', flag: '🇱🇰', name: 'Sri Lanka' },
+  { code: '+249', flag: '🇸🇩', name: 'Sudan' },
+  { code: '+597', flag: '🇸🇷', name: 'Suriname' },
+  { code: '+46', flag: '🇸🇪', name: 'Sweden' },
+  { code: '+41', flag: '🇨🇭', name: 'Switzerland' },
+  { code: '+963', flag: '🇸🇾', name: 'Syria' },
+  { code: '+886', flag: '🇹🇼', name: 'Taiwan' },
+  { code: '+992', flag: '🇹🇯', name: 'Tajikistan' },
+  { code: '+255', flag: '🇹🇿', name: 'Tanzania' },
+  { code: '+66', flag: '🇹🇭', name: 'Thailand' },
+  { code: '+670', flag: '🇹🇱', name: 'Timor-Leste' },
+  { code: '+228', flag: '🇹🇬', name: 'Togo' },
+  { code: '+676', flag: '🇹🇴', name: 'Tonga' },
+  { code: '+1868', flag: '🇹🇹', name: 'Trinidad and Tobago' },
+  { code: '+216', flag: '🇹🇳', name: 'Tunisia' },
+  { code: '+90', flag: '🇹🇷', name: 'Turkey' },
+  { code: '+993', flag: '🇹🇲', name: 'Turkmenistan' },
+  { code: '+256', flag: '🇺🇬', name: 'Uganda' },
+  { code: '+380', flag: '🇺🇦', name: 'Ukraine' },
+  { code: '+971', flag: '🇦🇪', name: 'United Arab Emirates' },
+  { code: '+44', flag: '🇬🇧', name: 'United Kingdom' },
+  { code: '+1', flag: '🇺🇸', name: 'United States' },
+  { code: '+598', flag: '🇺🇾', name: 'Uruguay' },
+  { code: '+998', flag: '🇺🇿', name: 'Uzbekistan' },
+  { code: '+678', flag: '🇻🇺', name: 'Vanuatu' },
+  { code: '+58', flag: '🇻🇪', name: 'Venezuela' },
+  { code: '+84', flag: '🇻🇳', name: 'Vietnam' },
+  { code: '+967', flag: '🇾🇪', name: 'Yemen' },
+  { code: '+260', flag: '🇿🇲', name: 'Zambia' },
+  { code: '+263', flag: '🇿🇼', name: 'Zimbabwe' }
+];
+
 export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [mode, setMode] = useState('login'); // 'login', 'register', 'profile'
+  const [mode, setMode] = useState('login'); // 'login', 'profile'
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [emailExists, setEmailExists] = useState(null);
@@ -57,9 +238,8 @@ export default function Auth() {
       const data = await response.json();
       setEmailExists(data.exists);
       setAuthProvider(data.auth_provider);
-      if (data.exists && mode === 'register') {
-        setMode('login');
-        toast.info('Account found! Please login instead.');
+      if (data.exists && mode === 'profile') {
+        toast.info('Account already exists! Please log in instead.');
       }
     } catch (error) {
       console.error('Error checking email:', error);
@@ -225,7 +405,7 @@ export default function Auth() {
             style={{ color: '#5A5A5A' }}
           >
             <ArrowLeft className="w-4 h-4" />
-            Back
+            {mode === 'profile' ? 'Back to questions' : 'Back to home'}
           </button>
 
           {/* Mobile Logo */}
@@ -250,7 +430,7 @@ export default function Auth() {
                 <h2 className="text-3xl font-bold mb-2" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
                   Welcome Back
                 </h2>
-                <p className="text-gray-500 mb-8">Sign in to continue your learning journey</p>
+                <p className="text-gray-500 mb-8">Log in to continue your learning journey</p>
 
                 <form onSubmit={handleEmailLogin} className="space-y-4">
                   {/* Email */}
@@ -305,7 +485,7 @@ export default function Auth() {
                     {loading ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      'Sign In'
+                      'Log In'
                     )}
                   </button>
                 </form>
@@ -333,11 +513,11 @@ export default function Auth() {
                   Continue with Google
                 </button>
 
-                {/* Switch to Register */}
+                {/* Switch to Sign Up - goes to onboarding */}
                 <p className="text-center mt-6 text-gray-500">
                   Don&apos;t have an account?{' '}
                   <button
-                    onClick={() => setMode('register')}
+                    onClick={() => navigate('/onboarding')}
                     className="font-medium hover:underline"
                     style={{ color: '#0F3D2E' }}
                   >
@@ -347,126 +527,7 @@ export default function Auth() {
               </motion.div>
             )}
 
-            {/* Register Form */}
-            {mode === 'register' && (
-              <motion.div
-                key="register"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-              >
-                <h2 className="text-3xl font-bold mb-2" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
-                  Create Account
-                </h2>
-                <p className="text-gray-500 mb-8">Start your Quran learning journey today</p>
-
-                <form onSubmit={(e) => { e.preventDefault(); setMode('profile'); }} className="space-y-4">
-                  {/* Email */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Email *</label>
-                    <div className="relative">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        onBlur={(e) => checkEmail(e.target.value)}
-                        placeholder="Enter your email"
-                        required
-                        className="w-full h-12 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Password */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Password *</label>
-                    <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        placeholder="Create a password (min 6 characters)"
-                        required
-                        minLength={6}
-                        className="w-full h-12 pl-12 pr-12 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2"
-                      >
-                        {showPassword ? <EyeOff className="w-5 h-5 text-gray-400" /> : <Eye className="w-5 h-5 text-gray-400" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Confirm Password */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Confirm Password *</label>
-                    <div className="relative">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={formData.confirmPassword}
-                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                        placeholder="Confirm your password"
-                        required
-                        className="w-full h-12 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Continue to Profile */}
-                  <button
-                    type="submit"
-                    className="w-full h-12 rounded-xl bg-[#0F3D2E] text-white font-medium transition-all hover:opacity-90"
-                  >
-                    Continue
-                  </button>
-                </form>
-
-                {/* Divider */}
-                <div className="flex items-center gap-4 my-6">
-                  <div className="flex-1 h-px bg-gray-200" />
-                  <span className="text-sm text-gray-400">or</span>
-                  <div className="flex-1 h-px bg-gray-200" />
-                </div>
-
-                {/* Google Signup */}
-                <button
-                  onClick={handleGoogleLogin}
-                  className="w-full h-12 rounded-xl border flex items-center justify-center gap-3 font-medium transition-all hover:bg-gray-50"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)', color: '#1F2933' }}
-                >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  Sign up with Google
-                </button>
-
-                {/* Switch to Login */}
-                <p className="text-center mt-6 text-gray-500">
-                  Already have an account?{' '}
-                  <button
-                    onClick={() => setMode('login')}
-                    className="font-medium hover:underline"
-                    style={{ color: '#0F3D2E' }}
-                  >
-                    Sign in
-                  </button>
-                </p>
-              </motion.div>
-            )}
-
-            {/* Profile Registration Form (for new students) */}
+            {/* Profile Registration Form (for new students from onboarding) */}
             {mode === 'profile' && (
               <motion.div
                 key="profile"
@@ -497,63 +558,54 @@ export default function Auth() {
                     </div>
                   </div>
 
-                  {/* Email (if not already filled) */}
-                  {!formData.email && (
-                    <div>
-                      <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Email *</label>
-                      <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          placeholder="Enter your email"
-                          required
-                          className="w-full h-12 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                          style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                        />
-                      </div>
+                  {/* Email - Always show */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Email *</label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        onBlur={(e) => checkEmail(e.target.value)}
+                        placeholder="Enter your email"
+                        required
+                        className="w-full h-12 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                      />
                     </div>
-                  )}
+                    {emailExists && (
+                      <p className="text-xs text-amber-600 mt-1">
+                        This email is already registered. <button onClick={() => setMode('login')} className="underline">Log in instead?</button>
+                      </p>
+                    )}
+                  </div>
 
                   {/* Phone */}
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Phone Number *</label>
                     <div className="flex gap-2">
                       <select
-                        value={formData.countryCode || '+60'}
+                        value={formData.countryCode}
                         onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                        className="h-12 px-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E] bg-white"
-                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)', minWidth: '100px' }}
+                        className="h-12 px-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E] bg-white text-sm"
+                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)', minWidth: '140px' }}
                         required
                       >
-                        <option value="+60">🇲🇾 +60</option>
-                        <option value="+65">🇸🇬 +65</option>
-                        <option value="+62">🇮🇩 +62</option>
-                        <option value="+66">🇹🇭 +66</option>
-                        <option value="+63">🇵🇭 +63</option>
-                        <option value="+84">🇻🇳 +84</option>
-                        <option value="+91">🇮🇳 +91</option>
-                        <option value="+92">🇵🇰 +92</option>
-                        <option value="+880">🇧🇩 +880</option>
-                        <option value="+971">🇦🇪 +971</option>
-                        <option value="+966">🇸🇦 +966</option>
-                        <option value="+974">🇶🇦 +974</option>
-                        <option value="+973">🇧🇭 +973</option>
-                        <option value="+968">🇴🇲 +968</option>
-                        <option value="+965">🇰🇼 +965</option>
-                        <option value="+44">🇬🇧 +44</option>
-                        <option value="+1">🇺🇸 +1</option>
-                        <option value="+61">🇦🇺 +61</option>
+                        {COUNTRY_CODES.map((country) => (
+                          <option key={`${country.code}-${country.name}`} value={country.code}>
+                            {country.flag} {country.name} ({country.code})
+                          </option>
+                        ))}
                       </select>
                       <div className="relative flex-1">
                         <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
                           type="tel"
-                          value={formData.phoneNumber || ''}
+                          value={formData.phoneNumber}
                           onChange={(e) => {
                             const value = e.target.value.replace(/[^0-9]/g, '');
-                            setFormData({ ...formData, phoneNumber: value, phone: `${formData.countryCode || '+60'}${value}` });
+                            setFormData({ ...formData, phoneNumber: value, phone: `${formData.countryCode}${value}` });
                           }}
                           placeholder="123456789"
                           required
@@ -567,49 +619,47 @@ export default function Auth() {
                     <p className="text-xs text-gray-400 mt-1">Numbers only, no spaces or dashes</p>
                   </div>
 
-                  {/* Password (if not already set from previous step) */}
-                  {!formData.password && (
-                    <>
-                      <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Password *</label>
-                        <div className="relative">
-                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <input
-                            type={showPassword ? 'text' : 'password'}
-                            value={formData.password}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            placeholder="Create a password"
-                            required
-                            minLength={6}
-                            className="w-full h-12 pl-12 pr-12 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                            style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-1/2 -translate-y-1/2"
-                          >
-                            {showPassword ? <EyeOff className="w-5 h-5 text-gray-400" /> : <Eye className="w-5 h-5 text-gray-400" />}
-                          </button>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Confirm Password *</label>
-                        <div className="relative">
-                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                          <input
-                            type={showPassword ? 'text' : 'password'}
-                            value={formData.confirmPassword}
-                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                            placeholder="Confirm your password"
-                            required
-                            className="w-full h-12 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                            style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                          />
-                        </div>
-                      </div>
-                    </>
-                  )}
+                  {/* Password - Always show */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Password *</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        placeholder="Create a password (min 6 characters)"
+                        required
+                        minLength={6}
+                        className="w-full h-12 pl-12 pr-12 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5 text-gray-400" /> : <Eye className="w-5 h-5 text-gray-400" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Confirm Password - Always show */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Confirm Password *</label>
+                    <div className="relative">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={formData.confirmPassword}
+                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                        placeholder="Confirm your password"
+                        required
+                        className="w-full h-12 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
+                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                      />
+                    </div>
+                  </div>
 
                   {/* Submit */}
                   <button
@@ -625,10 +675,10 @@ export default function Auth() {
                   </button>
                 </form>
 
-                {/* Back to register */}
+                {/* Back to onboarding */}
                 <p className="text-center mt-6 text-gray-500">
                   <button
-                    onClick={() => setMode('register')}
+                    onClick={() => navigate('/onboarding')}
                     className="font-medium hover:underline"
                     style={{ color: '#0F3D2E' }}
                   >
