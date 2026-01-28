@@ -585,19 +585,10 @@ export default function Auth() {
                   <div>
                     <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Phone Number *</label>
                     <div className="flex gap-2">
-                      <select
+                      <CountryCodeSelector 
                         value={formData.countryCode}
-                        onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                        className="h-12 px-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E] bg-white text-sm"
-                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)', minWidth: '140px' }}
-                        required
-                      >
-                        {COUNTRY_CODES.map((country) => (
-                          <option key={`${country.code}-${country.name}`} value={country.code}>
-                            {country.flag} {country.name} ({country.code})
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(code) => setFormData({ ...formData, countryCode: code })}
+                      />
                       <div className="relative flex-1">
                         <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
