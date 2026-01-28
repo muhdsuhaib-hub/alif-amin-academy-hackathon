@@ -299,30 +299,68 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
             headers={"Location": "/auth?error=no_email"}
         )
     
+    # Check if this is a teacher signup (from state parameter)
+    is_teacher_signup = state == "teacher_signup"
+    
     # Check if user exists
     existing_user = await db.users.find_one({"email": email}, {"_id": 0})
     
     if existing_user:
         user_id = existing_user["user_id"]
-        # Update user info
-        await db.users.update_one(
-            {"user_id": user_id},
-            {"$set": {
-                "name": name,
-                "picture": picture,
-                "auth_provider": "google"
-            }}
-        )
         role = existing_user.get("role", "student")
+        
+        # If existing user is signing up as teacher and isn't already a teacher
+        if is_teacher_signup and role == "student":
+            # Update role to teacher
+            role = "teacher"
+            await db.users.update_one(
+                {"user_id": user_id},
+                {"$set": {
+                    "name": name,
+                    "picture": picture,
+                    "role": "teacher",
+                    "auth_provider": "google"
+                }}
+            )
+            # Create teacher profile with pending status
+            teacher_id = f"teacher_{uuid.uuid4().hex[:12]}"
+            teacher_doc = {
+                "teacher_id": teacher_id,
+                "user_id": user_id,
+                "bio": "",
+                "hourly_rate": 80.0,
+                "experience_years": 0,
+                "specializations": [],
+                "languages": ["Malay", "English"],
+                "rating": 0.0,
+                "total_reviews": 0,
+                "is_active": False,
+                "approval_status": "pending",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.teachers.insert_one(teacher_doc)
+        else:
+            # Just update user info
+            await db.users.update_one(
+                {"user_id": user_id},
+                {"$set": {
+                    "name": name,
+                    "picture": picture,
+                    "auth_provider": "google"
+                }}
+            )
     else:
         # Create new user
         user_id = f"user_{uuid.uuid4().hex[:12]}"
-        role = "student"  # Default role for new users
         
         # Check if this is an admin email
         admin_emails = ["muhdsuhaib@gmail.com", "hello.alifamin@gmail.com"]
         if email in admin_emails:
             role = "admin"
+        elif is_teacher_signup:
+            role = "teacher"
+        else:
+            role = "student"
         
         new_user = {
             "user_id": user_id,
@@ -336,7 +374,7 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
         }
         await db.users.insert_one(new_user)
         
-        # Create student profile for new students
+        # Create appropriate profile based on role
         if role == "student":
             student_id = f"student_{uuid.uuid4().hex[:12]}"
             student_doc = {
@@ -351,6 +389,23 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
                 "next_billing_date": None
             }
             await db.students.insert_one(student_doc)
+        elif role == "teacher":
+            teacher_id = f"teacher_{uuid.uuid4().hex[:12]}"
+            teacher_doc = {
+                "teacher_id": teacher_id,
+                "user_id": user_id,
+                "bio": "",
+                "hourly_rate": 80.0,
+                "experience_years": 0,
+                "specializations": [],
+                "languages": ["Malay", "English"],
+                "rating": 0.0,
+                "total_reviews": 0,
+                "is_active": False,
+                "approval_status": "pending",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.teachers.insert_one(teacher_doc)
     
     # Create session
     session_token = f"session_{uuid.uuid4().hex}"
