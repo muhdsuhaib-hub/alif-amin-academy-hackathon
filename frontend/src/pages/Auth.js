@@ -304,8 +304,19 @@ export default function Auth() {
 
   const handleGoogleLogin = () => {
     setLoading(true);
-    const redirectUrl = window.location.origin + '/auth/callback';
-    window.location.href = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
+    const clientId = '106062879766-bcqobu5k23tasfale3j0qiqd6roag58l.apps.googleusercontent.com';
+    const redirectUri = `${BACKEND_URL}/api/auth/google/callback`;
+    const scope = 'email profile';
+    
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${clientId}` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&response_type=code` +
+      `&scope=${encodeURIComponent(scope)}` +
+      `&access_type=offline` +
+      `&prompt=consent`;
+    
+    window.location.href = googleAuthUrl;
   };
 
   const checkEmail = async (email) => {
