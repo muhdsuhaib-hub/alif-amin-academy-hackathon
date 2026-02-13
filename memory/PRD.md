@@ -262,30 +262,47 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 │   ├── admin_routes.py        # Admin API endpoints
 │   ├── notification_routes.py # Notification API endpoints
 │   ├── wallet_routes.py       # Student wallet API endpoints
-│   ├── commission_routes.py   # Commission tier API endpoints
-│   ├── tutor_earnings_routes.py # Tutor earnings wallet API endpoints (NEW)
+│   ├── commission_routes.py   # Commission tier API endpoints (uses service module)
+│   ├── tutor_earnings_routes.py # Tutor earnings wallet API endpoints
+│   ├── services/              # Modular service layer (NEW)
+│   │   ├── __init__.py
+│   │   └── commission_service.py  # Standalone commission calculation service
 │   └── tests/
 │       ├── test_notifications_and_admin.py
 │       ├── test_wallet_system.py
-│       └── test_tutor_earnings.py (NEW)
+│       └── test_tutor_earnings.py
 ├── frontend/
 │   └── src/
 │       ├── App.js             # Main routing
-│       ├── pages/             # Page components
+│       ├── pages/             # Page components (refactored to smaller files)
 │       │   ├── Landing.js
 │       │   ├── Onboarding.js
-│       │   ├── Auth.js        # Unified login/signup page
-│       │   ├── StudentDashboard.js  # Includes WalletPage component
-│       │   ├── TeacherDashboard.js  # Includes EarningsWallet component
+│       │   ├── Auth.js
+│       │   ├── StudentDashboard.js  # ~1000 lines (reduced from 1437)
+│       │   ├── TeacherDashboard.js  # ~250 lines (reduced from 1838)
 │       │   ├── AdminDashboard.js
 │       │   ├── BrowseTeachers.js
 │       │   └── BookClass.js
 │       └── components/
-│           ├── NotificationBell.js    # Reusable notification component
+│           ├── NotificationBell.js
+│           ├── teacher/       # Teacher dashboard components (NEW)
+│           │   ├── index.js
+│           │   ├── TeacherSidebar.js
+│           │   ├── EarningsWallet.js
+│           │   ├── AvailabilityCalendar.js
+│           │   ├── ClassroomTools.js
+│           │   ├── StudentManagement.js
+│           │   ├── ProfileManagement.js
+│           │   └── DashboardOverview.js
+│           ├── student/       # Student dashboard components (NEW)
+│           │   ├── index.js
+│           │   ├── StudentSidebar.js
+│           │   ├── StudentHeader.js
+│           │   └── WalletPage.js
 │           └── admin/
-│               ├── UserManagement.js  # With CSV export
+│               ├── UserManagement.js
 │               ├── TeacherApprovals.js
-│               ├── WithdrawalManagement.js (NEW)
+│               ├── WithdrawalManagement.js
 │               └── ...
 └── memory/
     └── PRD.md
