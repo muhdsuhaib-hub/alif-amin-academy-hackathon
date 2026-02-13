@@ -14,7 +14,7 @@ from datetime import datetime, timezone, timedelta
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 if not BASE_URL:
-    BASE_URL = "https://alif-classes.preview.emergentagent.com"
+    BASE_URL = "https://one-on-one-quran.preview.emergentagent.com"
 
 # Test credentials from main agent
 TEST_STUDENT_EMAIL = "test@example.com"

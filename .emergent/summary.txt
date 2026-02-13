@@ -1,178 +1,149 @@
 <analysis>**original_problem_statement:**
 The user wants to build a web-based platform for an online Quran Academy named Alif Amin Academy. The platform connects students with qualified Quran teachers for 1-on-1 video lessons.
 
-**LATEST USER REQUEST:**
-- **Simplified Booking:** Remove the feature for teachers to set their own rates.
-- **Standardized Sessions:** Students can only book sessions for fixed durations: 15, 30, or 60 minutes.
-- **Fix Booking Flow:** The current booking process is broken. Bookings don't appear in the student's schedule (Upcoming Class or My Schedule), and credits are not deducted from the student's wallet.
-- **Booking Management:**
-    - Students must be able to edit or cancel their bookings from the My Schedule page.
-    - **Cancellation Policy:**
-        - **24+ Hours Notice:** If a student cancels more than 24 hours before the class, the booking is cancelled, the teacher is notified, and the full credit amount is returned to the student's wallet.
-        - **Less than 24 Hours Notice:** If a student attempts to cancel within 24 hours of the class, a confirmation prompt must appear (e.g., Are you sure you want to cancel? Your credits for this session will not be refunded.). If confirmed, the booking is cancelled, but the credits are still deducted.
+**LATEST USER REQUESTS:**
+1.  **Admin Dashboard Changes:**
+    *   In Trials Expiring Soon, display student names instead of IDs and remove the Level indicator.
+    *   In Revenue Recognition, remove the descriptive subheadings (From student top-ups, 20% of completed sessions, etc.).
+    *   Review the Admin Dashboard for any frontend features without a backend and implement the necessary backend logic.
+2.  **Google Login:** The user reported being unable to log in with Google.
+3.  **Booking System Overhaul (Completed in this session):**
+    *   Simplified booking with fixed durations (15, 30, 60 mins).
+    *   Fixed the broken booking flow (credits not deducting, bookings not saving).
+    *   Implemented booking management (edit/cancel) with a 24-hour refund policy.
 
 **PRODUCT REQUIREMENTS (Overall):**
-- **User Roles:** Student/Parent, Teacher, and Super Admin.
-- **Authentication:** Google OAuth and Email/Password login.
-- **Dashboards:** Role-based dashboards for Admin, Teacher, and Student.
-- **Financial System:**
-    - A credit-based wallet for students (supporting paid vs. bonus credits).
-    - A tiered commission system for tutors.
-    - An earnings wallet for tutors with a withdrawal request system and admin approval workflow.
-- **Booking System:** A pop-up modal for booking that includes date, time, duration, and teacher selection.
+*   **User Roles:** Student/Parent, Teacher, and Super Admin.
+*   **Authentication:** Google OAuth and Email/Password login.
+*   **Dashboards:** Role-based dashboards for Admin, Teacher, and Student.
+*   **Financial System:** A credit-based wallet for students, a tiered commission system for tutors, and a tutor earnings wallet with a withdrawal workflow.
+*   **Booking System:** A pop-up modal for booking sessions.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application (React, FastAPI, MongoDB) with role-based authentication and functional dashboards for all user types.
-
-The core financial backend is robust, featuring:
-- A complete Student Wallet system that handles paid/bonus credits and transactions.
-- A dynamic, automated tiered commission engine for tutors.
-- A complete Tutor Earnings Wallet system, allowing tutors to view earnings, request withdrawals, and admins to manage payout requests. This was tested and verified.
-
-The frontend has been significantly refactored:
-- The commission logic was moved into a standalone backend service module for better maintainability.
-- , a monolithic 1800+ line file, was successfully broken down into 7 smaller, manageable components.
--  has been partially refactored by extracting the  component, reducing its line count.
+A full-stack application (React, FastAPI, MongoDB) with role-based authentication and dashboards. The core financial systems (student wallet, tutor commissions, tutor earnings/withdrawals) are robust. The booking system has been completely overhauled and is now functional. Both the Teacher and Student dashboards have been fully refactored into smaller, maintainable components. A critical  bug in the Google OAuth flow has been fixed.
 
 **Last working item**:
-- **Last item agent was working:** The agent had just finished refactoring the backend commission logic and the frontend dashboards ( and partially ). The user then provided a new, large feature request to overhaul the booking system. The agent has not started working on this new request.
-- **Status:** NOT STARTED
-- **Agent Testing Done:** N/A (New request)
-- **Which testing method agent to use?** both. This involves significant changes to backend booking/cancellation logic, credit deduction, and frontend UI (booking modal, schedule management). End-to-end testing will be critical.
+- **Last item agent was working:** The agent began investigating the user's new request to update the Admin Dashboard. This involves UI cleanup and implementing backend logic for any frontend-only features. The agent was viewing  to assess the work required.
+- **Status:** IN PROGRESS
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** both. UI changes require the screenshot tool. Backend implementation will require  commands for API validation. If the backend work is substantial (e.g., implementing multiple new features), the testing agent should be used.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- **Issue 1 (P0):** Implement the new, simplified booking and cancellation system.
-- **Issue 2 (P1):** Complete the refactoring of .
+- **Issue 1 (P0):** Implement Admin Dashboard changes.
 
 **Issues Detail:**
-- **Issue 1: Implement New Booking & Cancellation System**
-    - **Attempted fixes:** None. This is a new request.
+- **Issue 1: Implement Admin Dashboard Changes**
+    - **Attempted fixes:** None. The agent was in the discovery phase, reading the relevant admin dashboard file.
     - **Next debug checklist:**
-        1.  **Backend:**
-            - Modify booking creation endpoint: remove teacher rate logic and accept a fixed duration (15, 30, 60 mins).
-            - Fix the booking logic to correctly deduct credits and save the session to the database so it appears on schedules.
-            - Create a new endpoint for cancelling a booking ().
-            - Implement the 24-hour cancellation rule within this new endpoint, refunding credits only if the cancellation is made with sufficient notice.
-            - (Future) Add a notification trigger to inform the teacher of the cancellation.
-        2.  **Frontend:**
-            - Update the booking modal to remove rate inputs and use a dropdown/selector for the fixed durations.
-            - Modify the My Schedule component to include Edit and Cancel buttons for each booking.
-            - Implement the fetch call to the new cancellation endpoint.
-            - Add a confirmation modal ( or similar) for cancellations, especially for the less than 24 hours scenario.
-    - **Why fix this issue and what will be achieved with the fix?** The core booking functionality is currently broken and does not align with the user's desired simplified business model. This fix is essential for the platform to be usable.
+        1.  **Student Names:** Modify the backend endpoint that serves the Trials Expiring Soon data (likely in ) to perform a lookup/join to fetch and return the student's full name instead of just the ID. Update the frontend in  to display this name.
+        2.  **Revenue UI:** Locate the Revenue Recognition JSX in  and remove the unnecessary subheading elements.
+        3.  **Backend Implementation:** Analyze all sections of  to identify features backed by mock data or with non-functional buttons. Plan and create the required API endpoints in  and connect the frontend components to them.
+    - **Why fix this issue and what will be achieved with the fix?** To improve the usability of the Admin Dashboard and make its features fully functional.
     - **Status:** NOT STARTED
     - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Both
 
-- **Issue 2: Complete  Refactoring**
-    - **Attempted fixes:** The  component was successfully extracted into . However, other sections like , , and  remain as inline functional components within the main file.
-    - **Next debug checklist:**
-        1. Create new component files for , , and  inside .
-        2. Migrate the corresponding JSX and logic into these new files.
-        3. Update  to import and render these new components, removing the inline definitions.
-    - **Why fix this issue and what will be achieved with the fix?** The  file is still over 1000 lines long, making it difficult to read and maintain. Completing the refactor will improve code quality and developer velocity.
-    - **Status:** IN PROGRESS
-    - **Is recurring issue?** Y (Carried over from previous sessions)
-    - **Should Test frontend/backend/both after fix?** Frontend
-
 **In progress Task List**:
-- **Task 1:  Refactoring**
-    - **Where to resume:** The  has been extracted. The next step is to extract the remaining inline components (, , ) into their own files within  and update the main  file.
-    - **What will be achieved with this?** A fully modular, maintainable .
+- **Task 1: Admin Dashboard Implementation**
+    - **Where to resume:** The agent has viewed . The next step is to begin implementing the requested UI changes, starting with the simple ones (Revenue Recognition text removal) and then tackling the data fetching change for Trials Expiring Soon.
+    - **What will be achieved with this?** A functional and cleaner Admin Dashboard that meets the user's specifications.
     - **Status:** IN PROGRESS
-    - **Should Test frontend/backend/both after fix?** Frontend
+    - **Should Test frontend/backend/both after fix?** Both
+    - **Blocked on something:** No
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks (P1):**
     - **Implement Real Stripe Payments:** Replace the mocked payment logic in  with a full Stripe integration.
     - **Real-time Classroom Features:** Implement the Live Pen/Pointer for the Digital Mushaf using WebSockets.
-    - **File Storage:** Implement file uploads (e.g., S3) for teacher profile videos and verification certificates.
+    - **File Storage:** Implement file uploads (e.g., for teacher profile videos and verification certificates).
 - **Future Tasks (P2):**
     - **Google Meet API Integration:** Automate the creation of Google Meet links for classes.
-    - **Notifications:** Integrate Twilio for SMS/WhatsApp notifications (partially relevant to the new cancellation feature).
+    - **Notifications:** Integrate a service like Twilio for SMS/WhatsApp notifications.
     - **PDF Report Card Generator:** Implement the Report Card Generator feature.
 
 **Completed work in this session**
-- **Tutor Earnings Wallet System:** Successfully implemented the entire feature, including backend models (, ), API routes for earnings and withdrawals, and frontend UI for both the Teacher Dashboard and the Admin Dashboard. Verified with the testing agent.
-- **Commission Logic Refactor:** The backend commission calculation logic was extracted from  into a dedicated, reusable service module at .
-- ** Refactor:** The monolithic  file (1800+ lines) was broken down into 7 smaller, reusable components located in . The main dashboard file is now only ~250 lines.
-- **Partial  Refactor:** The  component was extracted from , reducing its size by over 400 lines.
+- **Booking System Overhaul (P0 Task):**
+    - Successfully implemented the entire simplified booking system: creation, cancellation (with 24hr refund policy), and editing.
+    - Created backend endpoints in .
+    - Created frontend components (, , ) and integrated them into the Student Dashboard.
+    - Verified complete functionality with the testing agent ().
+- ** Refactor (P1 Task):**
+    - Fully refactored the monolithic  file (originally 1000+ lines) into a lean container (~170 lines) that imports modular components from .
+- **Google OAuth Bug Fix:**
+    - Diagnosed and resolved a  error by modifying the backend auth logic in  to correctly handle the  header from the ingress.
 
 **Earlier issues found/mentioned but not fixed**
-- **Issue 1:  Refactor**: A very large component (currently 1000+ lines) that needs to be fully broken down for maintainability. This is now .
+- None. All major issues from the previous session were addressed.
 
 **Known issue recurrence from previous fork**
-- **Issue recurrence in previous fork:** Onboarding redirection bug.
-- **Recurrence count:** 1
-- **Status:** RESOLVED (Did not recur in this session).
+- None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Frontend:** React, React Router, Tailwind CSS, .
+- **Frontend:** React, React Router, Tailwind CSS, , Shadcn UI.
 - **Backend:** FastAPI (Python), MongoDB with .
 - **Authentication:** JWT-based Email/Password and a custom Google OAuth 2.0 flow.
-- **Business Logic:** Server-side logic for tiered commissions, wallet management, and withdrawal workflows.
-- **Code Structure:** Refactoring towards a service-oriented backend and component-based frontend.
+- **Business Logic:** Server-side logic for tiered commissions, wallet management, booking, and cancellation policies.
 
 **key DB schema**
-- **users, teachers, students, student_wallets, wallet_transactions, class_sessions:** (Unchanged from previous state but now part of a larger system)
-- **TutorEarnings:**  (New)
-- **WithdrawalRequest:**  (New)
+- **class_sessions:** Schema was implicitly updated to handle fixed durations and store booking details.
+- **TutorEarnings:** 
+- **WithdrawalRequest:** 
 
 **changes in tech stack**
 - None.
 
 **All files of reference**
-- : Updated with  and  models.
-- : New file for tutor-specific endpoints (earnings, withdrawals).
-- : New file containing refactored commission logic.
-- : Updated to credit tutor earnings upon session completion.
-- : Updated to include the new .
-- : Major refactor to use new components.
-- : All new component files created from the refactor.
-- : Partially refactored to use the new  component.
-- : New component file.
-- : Updated to include the  management tab.
-- : New component for the admin withdrawal queue.
+- : Created for all new booking, editing, and cancellation logic.
+- : Updated to fix the Google OAuth  error.
+- : Updated to register the new .
+- : Completely rewritten to use new modular components for booking and scheduling.
+- : Contains all the new components extracted from  and the new booking modals.
+- : The file currently being investigated for the next set of tasks.
 
 **Areas that need refactoring**:
-- : Still over 1000 lines. The remaining inline components (, , ) need to be extracted into separate files.
+- None. Major refactoring of  and  is complete.
 
 **key api endpoints**
-- : Fetches earnings data for the logged-in tutor.
-- : Allows a tutor to request a withdrawal.
-- : Fetches all withdrawal requests for the admin.
-- : Approves a withdrawal request.
-- : Rejects a withdrawal request.
+- : Creates a new class session and deducts credits.
+- : Edits an existing session and adjusts credits.
+- : Cancels a session, refunding credits based on the 24-hour rule.
+- : Fetches all bookings for the logged-in student.
+- : Initiates Google OAuth flow.
+- : Handles the callback from Google, now fixed.
 
 **Critical Info for New Agent**
-- **The immediate and highest priority (P0) is to implement the new simplified booking system as detailed in the user's latest request.** The current booking flow is considered broken by the user.
-- **The  refactor is incomplete.** While  was extracted, other large components are still inline. This is the next priority (P1) after the booking system is fixed.
-- All financial systems (Stripe payments, tutor withdrawals) are still **mocked** on the backend. Do not attempt to implement real payment processing unless it becomes the priority task.
+- **The immediate P0 priority is to implement the user's requests for the Admin Dashboard.**
+- The booking system and Student Dashboard have been completely overhauled and verified. Do not modify them unless requested.
+- The Google OAuth login issue is resolved. The key was to use the  header on the backend to construct the correct .
 
 **documents and test reports created in this job**
 - 
--  (Updated)
+-  (Report for the new booking system tests)
 
 **Last 10 User Messages and any pending HUMAN messages**
-- **User:** Refactor commission logic into a standalone service and refactor both  and . (COMPLETED/IN PROGRESS)
-- **Agent:** Acknowledged and started implementation. (COMPLETED)
-- **Agent:** Completed the commission service refactor and the full refactor of . (COMPLETED)
-- **Agent:** Partially completed the refactor of  by extracting the  component. (COMPLETED)
-- **Agent:** Finished the tasks, updated . (COMPLETED)
-- **User:** **(PENDING)** Provided a large new request to overhaul the booking system. Specified that teacher rates should be removed, session durations should be fixed (15, 30, 60 mins), the broken booking flow must be fixed (bookings not saving, credits not deducting), and a new cancellation/edit feature with a 24-hour refund policy needs to be implemented.
+1. **User:** I'm having a problem logging in via Google. Why? (PENDING - Investigation started)
+2. **Agent:** Updated PRD.md and prepared to finish. (COMPLETED)
+3. **User:** *(Feedback implied by screenshot)* The refactored Student Dashboard looks correct. (COMPLETED)
+4. **Agent:** Completed Student Dashboard refactor and took a screenshot for verification. (COMPLETED)
+5. **Agent:** Started and completed the full refactor of . (COMPLETED)
+6. **Testing Agent:** All tests passed for the new booking system. (COMPLETED)
+7. **Agent:** Called the testing agent to validate the new booking system. (COMPLETED)
+8. **Agent:** Took a screenshot of the new booking UI, which looked correct. (COMPLETED)
+9. **Agent:** Completed all backend and frontend work for the new booking system. (COMPLETED)
+10. **User:** **(PENDING)** Now for Admin Platform: 1. Trials Expiring Soon should show the student name, not Student ID... 2. Under Revenue Recognition, remove subheadings... 3. Implement the backend of all features...
 
 **Project Health Check:**
 - **Broken:**
-  - **Booking System:** The core functionality of booking a class is broken according to the user. Bookings are not being saved, and credits are not being deducted.
+  - Potentially some features on the **Admin Dashboard** are frontend-only and thus non-functional. This is the current area of investigation.
 - **Mocked:**
   - Stripe payment processing.
-  - Tutor withdrawal payouts (the system tracks requests, but no real money moves).
+  - Tutor withdrawal payouts (the workflow exists, but no real money is transferred).
   - Join Class button functionality.
   - File storage for teacher profile media.
 
@@ -181,22 +152,21 @@ The frontend has been significantly refactored:
     - Custom Google OAuth
     - Custom Email/Password (, )
 - **Planned (Partially Implemented):**
-    - Stripe (Backend structure and mock endpoints are ready)
+    - Stripe (Backend mock endpoints are ready)
 - **Planned (Not Implemented):**
     - Google Meet (Video Conferencing API)
     - Twilio (WhatsApp Notifications)
 
 **Testing status**
-- **Testing agent used after significant changes:** YES. The agent was used to validate the Tutor Earnings Wallet system.
+- **Testing agent used after significant changes:** YES (For the booking system overhaul).
 - **Troubleshoot agent used after agent stuck in loop:** NO
-- **Test files created:** None in this session.
-- **Known regressions:** The core booking flow is now considered a regression/broken based on user feedback.
+- **Test files created:** None.
+- **Known regressions:** None. The major regression (broken booking flow) was fixed.
 
 **Credentials to test flow:**
 - **Admin:** Use a Google account with the email  or .
 - **Teacher:** Use an approved teacher account.
-- **Student:** Register a new account or use the test student ( / ).
+- **Student:** Register a new account (e.g.,  / ) as was done in the session.
 
 **What agent forgot to execute**
-- The agent has not started the new P0 task of fixing and overhauling the booking system.
-- The agent did not fully complete the refactoring of ; several large components remain inline within the file.</analysis>
+- The agent correctly pivoted from finishing the job to addressing the user's two new, high-priority requests: the Google login bug and the Admin Dashboard changes. Work on the Admin Dashboard is now the primary focus.</analysis>
