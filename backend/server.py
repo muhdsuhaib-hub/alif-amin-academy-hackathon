@@ -335,7 +335,6 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
                 "teacher_id": teacher_id,
                 "user_id": user_id,
                 "bio": "",
-                "hourly_rate": 80.0,
                 "experience_years": 0,
                 "specializations": [],
                 "languages": ["Malay", "English"],
@@ -402,7 +401,6 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
                 "teacher_id": teacher_id,
                 "user_id": user_id,
                 "bio": "",
-                "hourly_rate": 80.0,
                 "experience_years": 0,
                 "specializations": [],
                 "languages": ["Malay", "English"],
@@ -572,7 +570,6 @@ async def register_teacher(current_user: User = Depends(get_current_user)):
         "user_id": current_user.user_id,
         "bio": "",
         "specializations": [],
-        "hourly_rate": 50,  # Default rate
         "rating": 5.0,
         "total_classes": 0,
         "is_active": False,  # Pending approval
@@ -641,7 +638,7 @@ async def get_teacher_dashboard(current_user: User = Depends(get_current_user)):
         "start_time_utc": {"$gte": month_start.isoformat()}
     })
     
-    estimated_earnings = completed_this_month * teacher_doc.get("hourly_rate", 0)
+    estimated_earnings = completed_this_month * 15  # RM15 per credit (platform standard rate)
     
     return {
         "teacher": teacher_doc,
@@ -754,9 +751,8 @@ async def get_teacher_transactions(teacher_id: str, current_user: User = Depends
         if student:
             user = await db.users.find_one({"user_id": student.get("user_id")}, {"_id": 0})
         
-        # Get teacher rate
-        teacher = await db.teachers.find_one({"teacher_id": teacher_id}, {"_id": 0})
-        rate = teacher.get("hourly_rate", 50) if teacher else 50
+        # Use platform standard credit pricing
+        rate = 15  # RM15 per credit (platform standard)
         
         transactions.append({
             "id": booking.get("booking_id"),
@@ -798,8 +794,6 @@ async def update_teacher_profile(teacher_id: str, profile_data: dict, current_us
     update_fields = {}
     if "bio" in profile_data:
         update_fields["bio"] = profile_data["bio"]
-    if "hourlyRate" in profile_data:
-        update_fields["hourly_rate"] = profile_data["hourlyRate"]
     if "meetLink" in profile_data:
         update_fields["meet_link"] = profile_data["meetLink"]
     if "specializations" in profile_data:
@@ -1228,7 +1222,6 @@ async def create_teacher_profile(teacher: TeacherCreate, current_user: User = De
         "teacher_id": teacher_id,
         "user_id": teacher.user_id,
         "bio": teacher.bio,
-        "hourly_rate": teacher.hourly_rate,
         "meet_link": teacher.meet_link,
         "specializations": teacher.specializations,
         "years_experience": teacher.years_experience,
