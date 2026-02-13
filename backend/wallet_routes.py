@@ -34,8 +34,9 @@ SESSION_BASE_PRICES = {
     60: 50.00,   # 60 mins = RM50
 }
 
-# Default commission rate
-DEFAULT_COMMISSION_RATE = 0.20  # 20% platform commission
+# Default commission rate - DEPRECATED: Use commission_routes.get_tutor_commission_rate()
+# This is kept for backwards compatibility but tiered commission is now the standard
+DEFAULT_COMMISSION_RATE = 0.30  # 30% platform commission (New Tutor default)
 
 # Credit pricing (individual purchase - no bonus)
 CREDIT_PRICING = {
