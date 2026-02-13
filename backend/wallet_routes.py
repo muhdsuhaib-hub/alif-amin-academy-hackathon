@@ -995,5 +995,100 @@ async def stripe_webhook(request: Request, stripe_signature: str = Header(None))
                         payment_amount=0,
                         reference_id=intent["payment_intent_id"]
                     )
+                    
+                    # Create bonus credit batch for expiry tracking
+                    await create_bonus_credit_batch(
+                        wallet_id=intent["wallet_id"],
+                        student_id=intent["student_id"],
+                        credit_amount=bonus_credits,
+                        source="topup_bonus",
+                        reference_id=intent["payment_intent_id"]
+                    )
     
     return {"received": True}
+
+
+# ============== BONUS CREDIT EXPIRY ENDPOINTS ==============
+
+@wallet_router.get("/bonus-credits")
+async def get_bonus_credit_details(user_id: str):
+    """Get detailed breakdown of bonus credits including expiry dates"""
+    student = await db.students.find_one({"user_id": user_id}, {"_id": 0})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    
+    wallet = await get_or_create_wallet(student["student_id"], user_id)
+    
+    # Get all bonus credit batches for this wallet
+    batches = await db.bonus_credit_batches.find(
+        {"wallet_id": wallet["wallet_id"]},
+        {"_id": 0}
+    ).sort("expires_at", 1).to_list(100)
+    
+    # Separate active and expired batches
+    active_batches = [b for b in batches if not b.get("is_expired", False) and b.get("remaining_credits", 0) > 0]
+    expired_batches = [b for b in batches if b.get("is_expired", False)]
+    
+    # Find nearest expiry
+    nearest_expiry = None
+    if active_batches:
+        nearest_expiry = active_batches[0].get("expires_at")
+    
+    return {
+        "total_bonus_credits": wallet.get("bonus_credits", 0),
+        "active_batches": active_batches,
+        "expired_batches": expired_batches,
+        "nearest_expiry": nearest_expiry,
+        "expiry_policy_months": BONUS_CREDIT_EXPIRY_MONTHS
+    }
+
+
+@wallet_router.post("/admin/expire-bonus-credits")
+async def run_bonus_credit_expiry():
+    """Admin: Manually run the bonus credit expiry job"""
+    result = await expire_bonus_credits()
+    return {
+        "success": True,
+        "result": result
+    }
+
+
+@wallet_router.get("/admin/bonus-credit-batches")
+async def get_all_bonus_credit_batches(
+    include_expired: bool = False,
+    limit: int = 100,
+    offset: int = 0
+):
+    """Admin: Get all bonus credit batches across all students"""
+    query = {}
+    if not include_expired:
+        query["is_expired"] = False
+    
+    batches = await db.bonus_credit_batches.find(
+        query,
+        {"_id": 0}
+    ).sort("expires_at", 1).skip(offset).limit(limit).to_list(limit)
+    
+    total = await db.bonus_credit_batches.count_documents(query)
+    
+    # Summary stats
+    pipeline = [
+        {"$match": {"is_expired": False}},
+        {"$group": {
+            "_id": None,
+            "total_active_bonus": {"$sum": "$remaining_credits"},
+            "total_batches": {"$sum": 1}
+        }}
+    ]
+    summary_result = await db.bonus_credit_batches.aggregate(pipeline).to_list(1)
+    summary = summary_result[0] if summary_result else {"total_active_bonus": 0, "total_batches": 0}
+    
+    return {
+        "batches": batches,
+        "total": total,
+        "summary": {
+            "total_active_bonus_credits": summary.get("total_active_bonus", 0),
+            "total_active_batches": summary.get("total_batches", 0),
+            "expiry_policy_months": BONUS_CREDIT_EXPIRY_MONTHS
+        }
+    }
