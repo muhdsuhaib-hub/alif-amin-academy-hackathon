@@ -16,8 +16,8 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, user, onLogout })
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'schedule', label: 'My Schedule', icon: Calendar },
+    { id: 'wallet', label: 'Wallet', icon: CreditCard },
     { id: 'account', label: 'Account', icon: User },
-    { id: 'payment', label: 'Payment', icon: CreditCard },
   ];
 
   return (
