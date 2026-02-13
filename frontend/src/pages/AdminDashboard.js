@@ -76,6 +76,42 @@ export default function AdminDashboard({ user }) {
     }
   };
 
+  const [commissionSummary, setCommissionSummary] = useState(null);
+
+  useEffect(() => {
+    fetchCommissionSummary();
+  }, []);
+
+  const fetchCommissionSummary = async () => {
+    try {
+      const response = await fetch(`${API}/commission/admin/summary`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCommissionSummary(data);
+      }
+    } catch (error) {
+      console.error('Error fetching commission summary:', error);
+    }
+  };
+
+  const runTierEvaluation = async () => {
+    try {
+      const response = await fetch(`${API}/commission/evaluate-all`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        fetchCommissionSummary();
+        alert(`Tier evaluation complete!\nUpgraded: ${data.upgraded?.length || 0}\nDowngraded: ${data.downgraded?.length || 0}\nUnchanged: ${data.unchanged?.length || 0}`);
+      }
+    } catch (error) {
+      console.error('Error running tier evaluation:', error);
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await fetch(`${API}/auth/logout`, {
