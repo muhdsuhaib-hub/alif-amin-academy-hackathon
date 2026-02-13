@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request, Cookie
 from datetime import datetime, timezone, timedelta
 import uuid
 import os
@@ -10,10 +10,19 @@ admin_router = APIRouter(prefix="/api/admin")
 
 # Database will be injected from server.py
 db = None
+get_current_user = None
 
-def init_admin_routes(database):
-    global db
+def init_admin_routes(database, auth_dependency=None):
+    global db, get_current_user
     db = database
+    get_current_user = auth_dependency
+
+
+async def require_admin():
+    """Dependency that requires admin role"""
+    if get_current_user is None:
+        raise HTTPException(status_code=500, detail="Auth not configured")
+    return get_current_user
 
 
 class SupportTicket(BaseModel):
