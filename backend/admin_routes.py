@@ -520,6 +520,13 @@ async def get_subscriptions_overview():
         "trial_end_date": {"$lte": three_days_later}
     }, {"_id": 0}).to_list(50)
     
+    # Enrich with student names from users collection
+    for student in trials_expiring:
+        user = await db.users.find_one({"user_id": student.get("user_id")}, {"_id": 0, "name": 1, "email": 1})
+        if user:
+            student["student_name"] = user.get("name", "Unknown")
+            student["student_email"] = user.get("email", "")
+    
     return {
         "active_subscriptions": active,
         "trial_subscriptions": trial,
