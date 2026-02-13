@@ -116,7 +116,9 @@ function EarningsWallet({ teacherData, commissionInfo }) {
   };
 
   const totalEarnings = transactions.reduce((sum, t) => sum + t.amount, 0);
-  const availableBalance = totalEarnings * 0.85; // 15% platform fee
+  const commissionRate = commissionInfo?.commission_rate || 0.30;
+  const tutorRate = 1 - commissionRate;
+  const availableBalance = totalEarnings * tutorRate;
 
   return (
     <div className="space-y-6">
@@ -145,6 +147,58 @@ function EarningsWallet({ teacherData, commissionInfo }) {
         </div>
       </div>
 
+      {/* Tier & Commission Info */}
+      {commissionInfo && (
+        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ 
+                  backgroundColor: commissionInfo.tier_level === 'elite' ? 'rgba(15, 61, 46, 0.1)' : 
+                                   commissionInfo.tier_level === 'rated' ? 'rgba(212, 175, 55, 0.15)' : 
+                                   'rgba(107, 114, 128, 0.1)'
+                }}
+              >
+                {commissionInfo.tier_level === 'elite' && <Award className="w-5 h-5" style={{ color: '#0F3D2E' }} />}
+                {commissionInfo.tier_level === 'rated' && <Star className="w-5 h-5" style={{ color: '#D4AF37' }} />}
+                {commissionInfo.tier_level === 'new' && <Circle className="w-5 h-5" style={{ color: '#6B7280' }} />}
+              </div>
+              <div>
+                <p className="font-semibold" style={{ color: '#0F3D2E' }}>{commissionInfo.tier_name}</p>
+                <p className="text-xs text-gray-500">Your earnings: {Math.round(tutorRate * 100)}% of session fee</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-gray-500">Platform Fee</p>
+              <p className="text-lg font-semibold" style={{ color: '#E76F51' }}>{Math.round(commissionRate * 100)}%</p>
+            </div>
+          </div>
+          
+          {/* Next Tier Progress */}
+          {commissionInfo.next_tier?.next_tier && (
+            <div className="mt-4 pt-4 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+              <p className="text-xs text-gray-500 mb-2">Progress to {commissionInfo.next_tier.next_tier_name}</p>
+              {commissionInfo.next_tier.requirements.rating_needed > 0 && (
+                <p className="text-xs" style={{ color: '#5A5A5A' }}>
+                  Need {commissionInfo.next_tier.requirements.rating_needed?.toFixed(1)} more rating points
+                </p>
+              )}
+              {commissionInfo.next_tier.requirements.reviews_needed > 0 && (
+                <p className="text-xs" style={{ color: '#5A5A5A' }}>
+                  Need {commissionInfo.next_tier.requirements.reviews_needed} more reviews
+                </p>
+              )}
+              {commissionInfo.next_tier.requirements.sessions_needed > 0 && (
+                <p className="text-xs" style={{ color: '#5A5A5A' }}>
+                  Need {commissionInfo.next_tier.requirements.sessions_needed} more completed sessions
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
@@ -152,8 +206,8 @@ function EarningsWallet({ teacherData, commissionInfo }) {
           <p className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>RM {totalEarnings.toFixed(2)}</p>
         </div>
         <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-          <p className="text-xs text-gray-500 mb-1">Platform Fee (15%)</p>
-          <p className="text-xl font-semibold" style={{ color: '#E76F51' }}>RM {(totalEarnings * 0.15).toFixed(2)}</p>
+          <p className="text-xs text-gray-500 mb-1">Platform Fee ({Math.round(commissionRate * 100)}%)</p>
+          <p className="text-xl font-semibold" style={{ color: '#E76F51' }}>RM {(totalEarnings * commissionRate).toFixed(2)}</p>
         </div>
         <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
           <p className="text-xs text-gray-500 mb-1">Classes This Month</p>
