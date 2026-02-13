@@ -10,7 +10,7 @@ const DURATIONS = [
   { value: 60, label: '60 min', credits: 4 },
 ];
 
-export default function BookingModal({ isOpen, onClose, onSuccess, preSelectedDate, preSelectedTime }) {
+export default function BookingModal({ isOpen, onClose, onSuccess, user, preSelectedDate, preSelectedTime }) {
   const [step, setStep] = useState(1); // 1=select teacher+time, 2=confirm
   const [teachers, setTeachers] = useState([]);
   const [loadingTeachers, setLoadingTeachers] = useState(false);
@@ -58,8 +58,9 @@ export default function BookingModal({ isOpen, onClose, onSuccess, preSelectedDa
   };
 
   const fetchWalletBalance = async () => {
+    if (!user?.user_id) return;
     try {
-      const res = await fetch(`${API}/wallet/balance?user_id=${encodeURIComponent(document.cookie.split('session_token=')[1]?.split(';')[0] || '')}`, { credentials: 'include' });
+      const res = await fetch(`${API}/wallet/balance?user_id=${user.user_id}`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
         setWalletBalance(data.wallet);
