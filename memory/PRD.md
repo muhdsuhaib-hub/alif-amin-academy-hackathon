@@ -77,7 +77,7 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
     - Accounting summary (gross revenue, net platform revenue, marketing cost)
     - Revenue recognition policy notice
     - Last 30 days comparison data
-  - [x] **Tiered Commission Engine (NEW)**
+  - [x] **Tiered Commission Engine**
     - Level 1 (New Tutor): 30% platform commission (default)
     - Level 2 (Rated Tutor): 25% commission (4.5+ rating, 20+ reviews)
     - Level 3 (Elite Tutor): 20% commission (100+ sessions, 4.7+ rating)
@@ -87,6 +87,33 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
     - Tier badges displayed on Teacher Dashboard (New/Rated/Elite)
     - Admin Dashboard shows Commission Tier Summary with distribution
     - Tier history tracking for audit
+- [x] **Tutor Earnings Wallet System (NEW - Feb 13, 2026)**
+  - [x] **Balance Tracking:**
+    - Total earnings (lifetime, after commission)
+    - Pending earnings (from recent sessions)
+    - Withdrawable balance (available for withdrawal)
+    - Pending withdrawal (amount in pending requests)
+    - Total withdrawn (lifetime withdrawn)
+  - [x] **Withdrawal Request System:**
+    - Bank selection (Maybank, CIMB, RHB, Public Bank, PayPal, Wise)
+    - Account number and holder name
+    - Minimum/maximum validation
+    - Duplicate pending request prevention
+  - [x] **Admin Approval Workflow:**
+    - View pending withdrawal requests with tutor info
+    - Approve (mark as paid) or Reject with reason
+    - Admin notes for internal tracking
+    - Withdrawal history with status filter
+  - [x] **Payout History:**
+    - Transaction history for tutors (earnings, withdrawals)
+    - Withdrawal history with status tracking
+  - [x] **Commission Pre-deducted:**
+    - Commission deducted before earnings credited to wallet
+    - Uses dynamic tier-based commission rates
+  - [x] **Admin Commission Tracking:**
+    - Total platform commission earned
+    - Outstanding tutor balance
+    - Pending vs completed withdrawals
 
 ### ✅ P1 - High Priority (COMPLETED)
 - [x] Admin Dashboard functionality
@@ -97,6 +124,7 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
   - [x] Support Tickets (create, update status)
   - [x] Subscription Management (pause, resume, cancel, extend trial)
   - [x] **Credit Liability Tracker Widget** - Financial exposure reporting
+  - [x] **Withdrawals Management Tab** - View/approve/reject tutor withdrawals
 - [x] **Notification System for All Platforms**
   - [x] Notification Bell component in Student/Teacher/Admin dashboards
   - [x] Automatic notifications generated based on user role
@@ -145,7 +173,13 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
   - [x] Fixed footer with "Enter Live Classroom" CTA
 - [x] **Teacher Platform Sidebar Navigation**
   - [x] Sidebar with Dashboard, Earnings Wallet, Availability, Classroom Tools, Student Management, Profile
-  - [x] **Earnings Wallet**: Balance display, Withdraw button with bank selection (Maybank/CIMB/PayPal/Wise), Transaction history
+  - [x] **Earnings Wallet (UPDATED - Connected to Backend)**: 
+    - [x] Real-time balance from backend API
+    - [x] Withdrawable balance, pending withdrawal, total withdrawn stats
+    - [x] Commission tier display with progress to next tier
+    - [x] Withdrawal request form with bank details
+    - [x] Transaction history from backend
+    - [x] Withdrawal history with status
   - [x] **Availability Calendar**: Date range selection, time slots, auto timezone converter, quick time slot presets
   - [x] **Classroom Tools**: Digital Mushaf with Uthmani script (604 pages, 114 surahs, 30 juz), Live pointer, Lesson Notes per student
   - [x] **Student Management**: Active/Warning/Inactive stats, Student List table with Full Name, Email, Reading Level columns, Last lesson indicator, Send Reminder button, Report Card PDF generator
@@ -153,6 +187,7 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 
 ### 🔜 P3 - Future Tasks (NOT STARTED)
 - [ ] **Real Stripe Payment Integration** - Replace mocked payment confirmation
+- [ ] **Real Bank Transfer Integration** - Replace mocked withdrawal approval
 - [ ] **Connect Booking to Wallet** - Deduct credits on class completion
 - [ ] **Integrations**
   - [ ] Billplz/PayPal payment integration for teacher withdrawals
@@ -178,7 +213,7 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 
 ### Database Collections
 - `users` - User accounts with roles
-- `teachers` - Teacher profiles with rates, specializations
+- `teachers` - Teacher profiles with rates, specializations, commission tier
 - `students` - Student profiles with subscription status
 - `availability_slots` - Teacher availability
 - `bookings` - Class bookings
@@ -193,6 +228,9 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 - `bonus_credit_batches` - Bonus credit batches with expiry dates
 - `payment_intents` - Payment intent records
 - `session_payment_records` - Session payment/commission tracking
+- `tutor_earnings` - Tutor earnings wallet (NEW)
+- `tutor_earnings_transactions` - Tutor earnings transaction history (NEW)
+- `withdrawal_requests` - Tutor withdrawal requests (NEW)
 
 ### Key API Endpoints
 - `/api/auth/*` - Authentication (register, login, session-data, me, logout, complete-onboarding)
@@ -203,6 +241,15 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 - `/api/admin/*` - Admin operations (users, stats, finance, support, teacher approvals)
 - `/api/notifications/*` - Notification management and generation
 - `/api/wallet/*` - Wallet operations (balance, packages, topup, transactions, deduct, bonus-credits)
+- `/api/commission/*` - Commission tier management
+- `/api/tutor-earnings/*` - Tutor earnings wallet operations (NEW)
+  - `GET /balance` - Get tutor balance
+  - `GET /transactions` - Get transaction history
+  - `POST /withdraw` - Create withdrawal request
+  - `GET /withdrawals` - Get withdrawal history
+  - `GET /admin/pending-withdrawals` - Admin: pending requests
+  - `GET /admin/commission-earned` - Admin: commission stats
+  - `POST /admin/withdrawals/{id}/process` - Admin: approve/reject
 
 ---
 
@@ -211,13 +258,16 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 /app/
 ├── backend/
 │   ├── server.py              # Main FastAPI app
-│   ├── models.py              # Pydantic models (User, StudentWallet, BonusCreditBatch, etc.)
+│   ├── models.py              # Pydantic models (User, StudentWallet, TutorEarnings, etc.)
 │   ├── admin_routes.py        # Admin API endpoints
 │   ├── notification_routes.py # Notification API endpoints
-│   ├── wallet_routes.py       # Wallet API endpoints
+│   ├── wallet_routes.py       # Student wallet API endpoints
+│   ├── commission_routes.py   # Commission tier API endpoints
+│   ├── tutor_earnings_routes.py # Tutor earnings wallet API endpoints (NEW)
 │   └── tests/
 │       ├── test_notifications_and_admin.py
-│       └── test_wallet_system.py
+│       ├── test_wallet_system.py
+│       └── test_tutor_earnings.py (NEW)
 ├── frontend/
 │   └── src/
 │       ├── App.js             # Main routing
@@ -226,7 +276,7 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 │       │   ├── Onboarding.js
 │       │   ├── Auth.js        # Unified login/signup page
 │       │   ├── StudentDashboard.js  # Includes WalletPage component
-│       │   ├── TeacherDashboard.js
+│       │   ├── TeacherDashboard.js  # Includes EarningsWallet component
 │       │   ├── AdminDashboard.js
 │       │   ├── BrowseTeachers.js
 │       │   └── BookClass.js
@@ -235,6 +285,7 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 │           └── admin/
 │               ├── UserManagement.js  # With CSV export
 │               ├── TeacherApprovals.js
+│               ├── WithdrawalManagement.js (NEW)
 │               └── ...
 └── memory/
     └── PRD.md
@@ -251,12 +302,19 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 | RM300  | 24          | +3    | 27 credits    |
 | RM500  | 40          | +6    | 46 credits    |
 
-### Commission Calculation (Base Session Prices)
-| Duration | Base Price | Commission (20%) | Tutor Payout |
-|----------|-----------|-----------------|--------------|
-| 15 min   | RM15      | RM3             | RM12         |
-| 30 min   | RM27      | RM5.40          | RM21.60      |
-| 60 min   | RM50      | RM10            | RM40         |
+### Commission Tiers (Tutor Payout Rates)
+| Tier         | Commission | Tutor Rate | Requirements                    |
+|--------------|-----------|------------|---------------------------------|
+| New Tutor    | 30%       | 70%        | Default for all new tutors      |
+| Rated Tutor  | 25%       | 75%        | 4.5+ rating, 20+ reviews        |
+| Elite Tutor  | 20%       | 80%        | 100+ sessions, 4.7+ rating      |
+
+### Session Pricing (Base)
+| Duration | Base Price | Commission (varies) | Example Tutor Payout (New) |
+|----------|-----------|--------------------|-----------------------------|
+| 15 min   | RM15      | RM4.50 (30%)       | RM10.50                     |
+| 30 min   | RM27      | RM8.10 (30%)       | RM18.90                     |
+| 60 min   | RM50      | RM15 (30%)         | RM35                        |
 
 ### Transaction Types
 - `topup_paid` - Paid credits from top-up
@@ -265,6 +323,14 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 - `refund_paid` / `refund_bonus` - Credit refunds
 - `bonus_reward` - Promotional bonus credits
 - `bonus_expired` - Expired bonus credits
+
+### Tutor Earnings Transaction Types
+- `session_earning` - Earnings from completed session (after commission)
+- `withdrawal_request` - Withdrawal request created
+- `withdrawal_approved` - Withdrawal paid out
+- `withdrawal_rejected` - Withdrawal rejected (funds returned)
+- `pending_to_available` - Pending earnings become available
+- `adjustment` - Manual adjustment by admin
 
 ---
 
@@ -284,8 +350,8 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 
 ## Mocked Features
 - **Stripe Payment Processing** - `/api/wallet/topup/confirm` immediately confirms without real Stripe integration
+- **Bank Transfer for Withdrawals** - Withdrawal approval marks as 'completed' without actual bank transfer
 - **"Join Class" Button** - UI placeholder, not connected to real video conferencing
-- **Teacher Withdraw** - UI only, not connected to real payment provider
 - **File Storage** - Teacher profile videos and certificates upload UI only
 
 ---
