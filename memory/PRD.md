@@ -44,7 +44,13 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 - [x] **Full StudentDashboard.js Refactoring (COMPLETED Feb 13, 2026)**
   - [x] Main file: 170 lines (from original 1437 lines)
   - [x] Extracted: DashboardHome, MySchedule, AccountPage, BookingModal, CancelBookingDialog, EditBookingModal, WalletPage
-- [x] **Admin Dashboard Improvements (COMPLETED Feb 13, 2026)**
+- [x] **Hourly Rate Removal (COMPLETED Feb 13, 2026)**
+  - [x] Removed hourly_rate from Teacher model, all backend routes, seed data, and notifications
+  - [x] Payroll now uses session_payment_records (actual tutor payouts) instead of hourly_rate × hours
+  - [x] Payroll table shows Commission Tier instead of Hourly Rate/Hours columns
+  - [x] Teacher profile form no longer has hourly rate input
+  - [x] BrowseTeachers and BookClass pages updated to show credits instead of RM rates
+  - [x] DB migration ran to remove hourly_rate from 7 existing teacher documents
   - [x] Trials Expiring Soon: Shows student names + emails (not IDs), removed Level indicator
   - [x] Revenue Recognition: Removed descriptive subheadings from revenue cards
   - [x] Replaced hardcoded mock chart data with real DB-backed data (user growth, revenue trend, attendance)
