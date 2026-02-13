@@ -1301,8 +1301,8 @@ export default function StudentDashboard({ user }) {
     switch (activeTab) {
       case 'dashboard': return 'Dashboard';
       case 'schedule': return 'My Schedule';
+      case 'wallet': return 'Wallet & Credits';
       case 'account': return 'Account Settings';
-      case 'payment': return 'Payment & Wallet';
       default: return 'Dashboard';
     }
   };
