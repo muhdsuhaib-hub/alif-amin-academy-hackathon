@@ -298,8 +298,8 @@ export default function AdminDashboard({ user }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-green-500" />
-                  <span className="text-sm font-medium text-green-500" style={{ fontFamily: 'Cal Sans' }}>+3.2%</span>
-                  <span className="text-sm" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>vs last month</span>
+                  <span className="text-sm font-medium text-green-500" style={{ fontFamily: 'Cal Sans' }}>Active</span>
+                  <span className="text-sm" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>trial to paid</span>
                 </div>
               </div>
             </div>
