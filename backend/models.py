@@ -255,3 +255,18 @@ class SessionPaymentRecord(BaseModel):
     platform_commission: float  # base_session_price × commission_rate
     platform_marketing_cost: float  # Value of bonus credits used (absorbed by platform)
     created_at: datetime
+
+
+# Bonus Credit Tracking (for expiry management)
+class BonusCreditBatch(BaseModel):
+    batch_id: str
+    wallet_id: str
+    student_id: str
+    credit_amount: float  # Original bonus credits in this batch
+    remaining_credits: float  # Credits not yet used or expired
+    source: str  # "topup_bonus", "bonus_reward", etc.
+    reference_id: Optional[str] = None  # payment_intent_id, promo_code, etc.
+    issued_at: datetime
+    expires_at: datetime  # 12 months from issued_at
+    is_expired: bool = False
+    expired_credits: float = 0.0  # Credits that expired without being used
