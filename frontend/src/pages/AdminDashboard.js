@@ -401,6 +401,128 @@ export default function AdminDashboard({ user }) {
                 </p>
               </div>
             </div>
+
+            {/* Credit Liability Section */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border mt-8" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(212, 175, 55, 0.15)' }}>
+                    <Wallet className="w-5 h-5" style={{ color: '#D4AF37' }} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+                      Credit Liability Tracker
+                    </h3>
+                    <p className="text-sm" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+                      Outstanding wallet credits & tutor payout exposure
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={fetchLiability}
+                  className="text-sm px-4 py-2 rounded-lg transition-all hover:bg-gray-50"
+                  style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}
+                >
+                  Refresh
+                </button>
+              </div>
+
+              {liability ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Total Paid Credits Outstanding */}
+                  <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F5EF' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <CreditCard className="w-4 h-4" style={{ color: '#0F3D2E' }} />
+                      <p className="text-xs font-medium" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans' }}>
+                        Paid Credits Outstanding
+                      </p>
+                    </div>
+                    <p className="text-2xl font-bold mb-1" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+                      {Math.floor(liability?.credit_liability?.total_paid_credits_outstanding || 0)}
+                    </p>
+                    <p className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+                      RM {(liability?.credit_liability?.paid_credits_monetary_value || 0).toLocaleString()} value
+                    </p>
+                  </div>
+
+                  {/* Total Bonus Credits Outstanding */}
+                  <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(212, 175, 55, 0.1)' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <PiggyBank className="w-4 h-4" style={{ color: '#D4AF37' }} />
+                      <p className="text-xs font-medium" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans' }}>
+                        Bonus Credits Outstanding
+                      </p>
+                    </div>
+                    <p className="text-2xl font-bold mb-1" style={{ color: '#D4AF37', fontFamily: 'Cal Sans' }}>
+                      {Math.floor(liability?.credit_liability?.total_bonus_credits_outstanding || 0)}
+                    </p>
+                    <p className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+                      RM {(liability?.marketing_liability?.bonus_credits_value || 0).toLocaleString()} marketing cost
+                    </p>
+                  </div>
+
+                  {/* Estimated Tutor Payout */}
+                  <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(231, 111, 81, 0.1)' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <DollarSign className="w-4 h-4" style={{ color: '#E76F51' }} />
+                      <p className="text-xs font-medium" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans' }}>
+                        Tutor Payout Exposure
+                      </p>
+                    </div>
+                    <p className="text-2xl font-bold mb-1" style={{ color: '#E76F51', fontFamily: 'Cal Sans' }}>
+                      RM {(liability?.tutor_payout_exposure?.total_exposure || 0).toLocaleString()}
+                    </p>
+                    <p className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+                      If all credits used ({Math.round((liability?.base_rates?.tutor_rate || 0.8) * 100)}% payout rate)
+                    </p>
+                  </div>
+
+                  {/* Total Revenue Collected */}
+                  <div className="p-4 rounded-xl" style={{ backgroundColor: 'rgba(46, 182, 160, 0.1)' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="w-4 h-4" style={{ color: '#2EB6A0' }} />
+                      <p className="text-xs font-medium" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans' }}>
+                        Total Top-up Revenue
+                      </p>
+                    </div>
+                    <p className="text-2xl font-bold mb-1" style={{ color: '#2EB6A0', fontFamily: 'Cal Sans' }}>
+                      RM {(liability?.wallet_summary?.total_topup_revenue || 0).toLocaleString()}
+                    </p>
+                    <p className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+                      From {liability?.wallet_summary?.wallets_with_balance || 0} active wallets
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F3D2E]"></div>
+                </div>
+              )}
+
+              {/* Additional Stats Row */}
+              {liability && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                    <span className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>Platform Commission (potential)</span>
+                    <span className="text-sm font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+                      RM {(liability?.platform_commission?.potential_commission || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                    <span className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>Sessions Completed</span>
+                    <span className="text-sm font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+                      {liability?.historical_usage?.total_sessions_completed || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                    <span className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>Tutor Payouts Made</span>
+                    <span className="text-sm font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+                      RM {(liability?.historical_usage?.total_tutor_payouts_made || 0).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
           </>
         )}
 
