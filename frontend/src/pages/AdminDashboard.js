@@ -126,34 +126,10 @@ export default function AdminDashboard({ user }) {
     }
   };
 
-  // Mock data for charts
-  const userGrowthData = [
-    { month: 'Jan', users: 45 },
-    { month: 'Feb', users: 52 },
-    { month: 'Mar', users: 61 },
-    { month: 'Apr', users: 73 },
-    { month: 'May', users: 89 },
-    { month: 'Jun', users: 98 }
-  ];
-
-  const revenueData = [
-    { month: 'Jan', revenue: 3200 },
-    { month: 'Feb', revenue: 3800 },
-    { month: 'Mar', revenue: 4100 },
-    { month: 'Apr', revenue: 4600 },
-    { month: 'May', revenue: 5200 },
-    { month: 'Jun', revenue: 5800 }
-  ];
-
-  const attendanceData = [
-    { day: 'Mon', rate: 92 },
-    { day: 'Tue', rate: 88 },
-    { day: 'Wed', rate: 95 },
-    { day: 'Thu', rate: 90 },
-    { day: 'Fri', rate: 87 },
-    { day: 'Sat', rate: 94 },
-    { day: 'Sun', rate: 91 }
-  ];
+  // Chart data from backend (real data)
+  const userGrowthData = stats?.charts?.user_growth || [];
+  const revenueData = stats?.charts?.revenue_trend || [];
+  const attendanceData = stats?.charts?.attendance || [];
 
   if (loading) {
     return (
@@ -246,8 +222,14 @@ export default function AdminDashboard({ user }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
-                  <span className="text-sm font-medium text-green-500" style={{ fontFamily: 'Cal Sans' }}>+12%</span>
+                  {(stats?.trends?.user_trend || 0) >= 0 ? (
+                    <TrendingUp className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 text-red-500" />
+                  )}
+                  <span className={`text-sm font-medium ${(stats?.trends?.user_trend || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`} style={{ fontFamily: 'Cal Sans' }}>
+                    {(stats?.trends?.user_trend || 0) >= 0 ? '+' : ''}{stats?.trends?.user_trend || 0}%
+                  </span>
                   <span className="text-sm" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>vs last month</span>
                 </div>
               </div>
@@ -265,8 +247,14 @@ export default function AdminDashboard({ user }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
-                  <span className="text-sm font-medium text-green-500" style={{ fontFamily: 'Cal Sans' }}>+8%</span>
+                  {(stats?.trends?.student_trend || 0) >= 0 ? (
+                    <TrendingUp className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 text-red-500" />
+                  )}
+                  <span className={`text-sm font-medium ${(stats?.trends?.student_trend || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`} style={{ fontFamily: 'Cal Sans' }}>
+                    {(stats?.trends?.student_trend || 0) >= 0 ? '+' : ''}{stats?.trends?.student_trend || 0}%
+                  </span>
                   <span className="text-sm" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>vs last month</span>
                 </div>
               </div>
@@ -284,8 +272,14 @@ export default function AdminDashboard({ user }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
-                  <span className="text-sm font-medium text-green-500" style={{ fontFamily: 'Cal Sans' }}>+24%</span>
+                  {(stats?.trends?.revenue_trend || 0) >= 0 ? (
+                    <TrendingUp className="w-4 h-4 text-green-500" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 text-red-500" />
+                  )}
+                  <span className={`text-sm font-medium ${(stats?.trends?.revenue_trend || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`} style={{ fontFamily: 'Cal Sans' }}>
+                    {(stats?.trends?.revenue_trend || 0) >= 0 ? '+' : ''}{stats?.trends?.revenue_trend || 0}%
+                  </span>
                   <span className="text-sm" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>vs last month</span>
                 </div>
               </div>
