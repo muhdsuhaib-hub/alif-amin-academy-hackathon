@@ -316,3 +316,65 @@ class BonusCreditBatch(BaseModel):
     expires_at: datetime  # 12 months from issued_at
     is_expired: bool = False
     expired_credits: float = 0.0  # Credits that expired without being used
+
+
+# ============== TUTOR EARNINGS WALLET MODELS ==============
+
+class TutorEarnings(BaseModel):
+    """
+    Tracks tutor earnings from completed sessions.
+    Commission is ALREADY deducted before earnings are added.
+    """
+    earnings_id: str
+    teacher_id: str
+    user_id: str
+    total_earnings: float = 0.0  # Total lifetime earnings (after commission)
+    pending_earnings: float = 0.0  # Earnings from sessions not yet withdrawable (e.g., 7-day hold)
+    withdrawable_balance: float = 0.0  # Available for withdrawal
+    total_withdrawn: float = 0.0  # Total amount withdrawn
+    pending_withdrawal: float = 0.0  # Amount in pending withdrawal requests
+    created_at: datetime
+    updated_at: datetime
+
+
+class TutorEarningsTransaction(BaseModel):
+    """
+    Transaction record for tutor earnings wallet.
+    """
+    transaction_id: str
+    earnings_id: str
+    teacher_id: str
+    transaction_type: Literal[
+        "session_earning",  # Earnings from a completed session
+        "withdrawal_request",  # Withdrawal request created
+        "withdrawal_approved",  # Withdrawal paid out
+        "withdrawal_rejected",  # Withdrawal rejected (funds returned)
+        "pending_to_available",  # Pending earnings become available
+        "adjustment"  # Manual adjustment by admin
+    ]
+    amount: float  # Positive for additions, negative for deductions
+    balance_after: float  # Withdrawable balance after this transaction
+    description: str
+    reference_id: Optional[str] = None  # booking_id, withdrawal_id, etc.
+    session_payment_record_id: Optional[str] = None  # Link to session payment
+    created_at: datetime
+
+
+class WithdrawalRequest(BaseModel):
+    """
+    Withdrawal request from tutor.
+    """
+    withdrawal_id: str
+    teacher_id: str
+    user_id: str
+    amount: float
+    bank_name: str
+    account_number: str
+    account_holder_name: str
+    status: Literal["pending", "approved", "rejected", "processing", "completed"] = "pending"
+    admin_notes: Optional[str] = None
+    rejection_reason: Optional[str] = None
+    processed_by: Optional[str] = None  # Admin user_id who processed
+    processed_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
