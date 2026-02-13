@@ -201,6 +201,137 @@ async def add_transaction(
     return transaction_id
 
 
+async def create_bonus_credit_batch(
+    wallet_id: str,
+    student_id: str,
+    credit_amount: float,
+    source: str,
+    reference_id: Optional[str] = None
+):
+    """Create a bonus credit batch with 12-month expiry"""
+    batch_id = f"bcb_{uuid.uuid4().hex[:12]}"
+    issued_at = datetime.now(timezone.utc)
+    expires_at = issued_at + timedelta(days=BONUS_CREDIT_EXPIRY_MONTHS * 30)  # Approx 12 months
+    
+    batch = {
+        "batch_id": batch_id,
+        "wallet_id": wallet_id,
+        "student_id": student_id,
+        "credit_amount": credit_amount,
+        "remaining_credits": credit_amount,
+        "source": source,
+        "reference_id": reference_id,
+        "issued_at": issued_at.isoformat(),
+        "expires_at": expires_at.isoformat(),
+        "is_expired": False,
+        "expired_credits": 0.0
+    }
+    await db.bonus_credit_batches.insert_one(batch)
+    return batch_id
+
+
+async def deduct_from_bonus_batches(wallet_id: str, amount_to_deduct: float):
+    """
+    Deduct bonus credits from batches in FIFO order (oldest first).
+    Returns the actual amount deducted.
+    """
+    batches = await db.bonus_credit_batches.find(
+        {
+            "wallet_id": wallet_id,
+            "remaining_credits": {"$gt": 0},
+            "is_expired": False
+        },
+        {"_id": 0}
+    ).sort("issued_at", 1).to_list(100)  # FIFO: oldest first
+    
+    total_deducted = 0.0
+    remaining_to_deduct = amount_to_deduct
+    
+    for batch in batches:
+        if remaining_to_deduct <= 0:
+            break
+            
+        deduct_from_batch = min(batch["remaining_credits"], remaining_to_deduct)
+        new_remaining = batch["remaining_credits"] - deduct_from_batch
+        
+        await db.bonus_credit_batches.update_one(
+            {"batch_id": batch["batch_id"]},
+            {"$set": {"remaining_credits": new_remaining}}
+        )
+        
+        total_deducted += deduct_from_batch
+        remaining_to_deduct -= deduct_from_batch
+    
+    return total_deducted
+
+
+async def expire_bonus_credits():
+    """
+    Scheduled job to expire bonus credits older than 12 months.
+    Returns summary of expired credits.
+    """
+    now = datetime.now(timezone.utc)
+    
+    # Find all non-expired batches that have passed their expiry date
+    expired_batches = await db.bonus_credit_batches.find(
+        {
+            "is_expired": False,
+            "expires_at": {"$lt": now.isoformat()},
+            "remaining_credits": {"$gt": 0}
+        },
+        {"_id": 0}
+    ).to_list(1000)
+    
+    total_expired = 0.0
+    wallets_affected = set()
+    
+    for batch in expired_batches:
+        expired_amount = batch["remaining_credits"]
+        total_expired += expired_amount
+        wallets_affected.add(batch["wallet_id"])
+        
+        # Mark batch as expired
+        await db.bonus_credit_batches.update_one(
+            {"batch_id": batch["batch_id"]},
+            {"$set": {
+                "is_expired": True,
+                "expired_credits": expired_amount,
+                "remaining_credits": 0
+            }}
+        )
+        
+        # Update wallet balance
+        wallet = await db.student_wallets.find_one({"wallet_id": batch["wallet_id"]}, {"_id": 0})
+        if wallet:
+            new_bonus = max(0, wallet.get("bonus_credits", 0) - expired_amount)
+            new_balance = wallet.get("paid_credits", 0) + new_bonus
+            
+            await db.student_wallets.update_one(
+                {"wallet_id": batch["wallet_id"]},
+                {"$set": {
+                    "bonus_credits": new_bonus,
+                    "credit_balance": new_balance,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Add expiry transaction
+            await add_transaction(
+                wallet_id=batch["wallet_id"],
+                student_id=batch["student_id"],
+                transaction_type="bonus_expired",
+                credit_amount=-expired_amount,
+                description=f"Bonus credits expired (12-month expiry)",
+                reference_id=batch["batch_id"]
+            )
+    
+    return {
+        "total_expired": total_expired,
+        "batches_expired": len(expired_batches),
+        "wallets_affected": len(wallets_affected)
+    }
+
+
 # ============== API ENDPOINTS ==============
 
 @wallet_router.get("/balance")
