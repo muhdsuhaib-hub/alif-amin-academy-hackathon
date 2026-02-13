@@ -753,6 +753,113 @@ export default function AdminDashboard({ user }) {
                 </div>
               )}
             </div>
+
+            {/* Commission Tier Summary */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border mt-8" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(15, 61, 46, 0.1)' }}>
+                    <UserCheck className="w-5 h-5" style={{ color: '#0F3D2E' }} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+                      Tutor Commission Tiers
+                    </h3>
+                    <p className="text-sm" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+                      Tiered commission based on performance
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={runTierEvaluation}
+                  className="text-sm px-4 py-2 rounded-lg transition-all bg-[#0F3D2E] text-white hover:opacity-90"
+                  style={{ fontFamily: 'Cal Sans' }}
+                >
+                  Run Monthly Evaluation
+                </button>
+              </div>
+
+              {commissionSummary ? (
+                <>
+                  {/* Tier Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    {/* New Tutor */}
+                    <div className="p-4 rounded-xl border" style={{ borderColor: 'rgba(107, 114, 128, 0.2)', backgroundColor: 'rgba(107, 114, 128, 0.05)' }}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                          <Circle className="w-4 h-4 text-gray-500" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>New Tutor</p>
+                          <p className="text-xs text-gray-500">30% commission</p>
+                        </div>
+                      </div>
+                      <p className="text-3xl font-bold mb-1" style={{ color: '#6B7280', fontFamily: 'Cal Sans' }}>
+                        {commissionSummary?.tier_distribution?.new?.count || 0}
+                      </p>
+                      <p className="text-xs text-gray-500">tutors</p>
+                    </div>
+
+                    {/* Rated Tutor */}
+                    <div className="p-4 rounded-xl border" style={{ borderColor: 'rgba(212, 175, 55, 0.3)', backgroundColor: 'rgba(212, 175, 55, 0.05)' }}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(212, 175, 55, 0.2)' }}>
+                          <Star className="w-4 h-4" style={{ color: '#D4AF37' }} />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Rated Tutor</p>
+                          <p className="text-xs" style={{ color: '#D4AF37' }}>25% commission</p>
+                        </div>
+                      </div>
+                      <p className="text-3xl font-bold mb-1" style={{ color: '#D4AF37', fontFamily: 'Cal Sans' }}>
+                        {commissionSummary?.tier_distribution?.rated?.count || 0}
+                      </p>
+                      <p className="text-xs text-gray-500">4.5+ rating, 20+ reviews</p>
+                    </div>
+
+                    {/* Elite Tutor */}
+                    <div className="p-4 rounded-xl border" style={{ borderColor: 'rgba(15, 61, 46, 0.3)', backgroundColor: 'rgba(15, 61, 46, 0.05)' }}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(15, 61, 46, 0.2)' }}>
+                          <Award className="w-4 h-4" style={{ color: '#0F3D2E' }} />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-sm" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Elite Tutor</p>
+                          <p className="text-xs" style={{ color: '#0F3D2E' }}>20% commission</p>
+                        </div>
+                      </div>
+                      <p className="text-3xl font-bold mb-1" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+                        {commissionSummary?.tier_distribution?.elite?.count || 0}
+                      </p>
+                      <p className="text-xs text-gray-500">100+ sessions, 4.7+ rating</p>
+                    </div>
+                  </div>
+
+                  {/* Commission Rules */}
+                  <div className="p-4 rounded-lg bg-gray-50">
+                    <p className="text-sm font-semibold mb-2" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>Commission Tier Rules</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
+                      <div>
+                        <p className="mb-1"><strong>Upgrade Criteria:</strong></p>
+                        <ul className="list-disc list-inside text-xs space-y-1">
+                          <li>New → Rated: 4.5+ rating with 20+ reviews</li>
+                          <li>Rated → Elite: 100+ sessions with 4.7+ rating</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="mb-1"><strong>Downgrade Rule:</strong></p>
+                        <p className="text-xs">If rating falls below 4.3 → reverts to New Tutor (30%)</p>
+                        <p className="text-xs mt-2"><strong>Total Tutors:</strong> {commissionSummary?.total_active_tutors || 0}</p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F3D2E]"></div>
+                </div>
+              )}
+            </div>
           </>
         )}
 
