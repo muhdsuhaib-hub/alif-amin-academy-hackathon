@@ -101,7 +101,6 @@ async def get_all_users(
                 user["teacher_info"] = teacher
                 # Add teacher-specific fields
                 user["teacher_status"] = teacher.get("approval_status")
-                user["hourly_rate"] = teacher.get("hourly_rate")
                 user["specializations"] = teacher.get("specializations")
     
     return {
@@ -337,10 +336,8 @@ async def get_revenue_report(
             trial_classes += 1
         else:
             paid_classes += 1
-            # Get teacher rate or use default
-            teacher = await db.teachers.find_one({"teacher_id": booking["teacher_id"]}, {"_id": 0})
-            rate = teacher.get("hourly_rate", 80) if teacher else 80
-            total_revenue += rate
+            # Use platform standard credit pricing (RM15 per credit, 4 credits per hour)
+            total_revenue += 60  # Standard 1-hour session value (4 credits × RM15)
     
     # Get active subscriptions
     active_subscriptions = await db.students.count_documents({"subscription_status": "active"})

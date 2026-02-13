@@ -51,7 +51,6 @@ class Teacher(BaseModel):
     teacher_id: str
     user_id: str
     bio: Optional[str] = None
-    hourly_rate: float
     meet_link: Optional[str] = None
     specializations: List[str] = []
     years_experience: int = 0
@@ -81,7 +80,6 @@ class TierEvaluationResult(BaseModel):
 class TeacherCreate(BaseModel):
     user_id: str
     bio: Optional[str] = None
-    hourly_rate: float
     meet_link: Optional[str] = None
     specializations: List[str] = []
     years_experience: int = 0
