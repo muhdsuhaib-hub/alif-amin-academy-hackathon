@@ -19,6 +19,7 @@ from models import (
 )
 from admin_routes import admin_router, init_admin_routes
 from notification_routes import notification_router, init_notification_routes
+from wallet_routes import wallet_router, init_wallet_routes
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
