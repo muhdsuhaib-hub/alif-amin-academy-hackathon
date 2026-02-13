@@ -1202,6 +1202,10 @@ app.include_router(wallet_router)
 init_commission_routes(db)
 app.include_router(commission_router)
 
+# Initialize tutor earnings routes with database
+init_tutor_earnings_routes(db)
+app.include_router(tutor_earnings_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
