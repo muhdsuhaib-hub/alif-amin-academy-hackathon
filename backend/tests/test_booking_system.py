@@ -67,7 +67,12 @@ class TestBookingAPIAuth:
         response = requests.get(f"{BASE_URL}/api/booking/my-bookings")
         assert response.status_code == 401
         
-        response = requests.post(f"{BASE_URL}/api/booking/create", json={})
+        # POST /create may return 422 (validation error) before auth check if body is invalid
+        # So we test with a valid-looking body structure
+        response = requests.post(
+            f"{BASE_URL}/api/booking/create",
+            json={"teacher_id": "test", "start_time_utc": "2030-01-01T00:00:00Z", "duration_minutes": 30}
+        )
         assert response.status_code == 401
 
 
