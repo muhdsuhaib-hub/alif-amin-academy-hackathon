@@ -1210,11 +1210,14 @@ const WalletPage = ({ user }) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className={`font-semibold ${tx.credits > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {tx.credits > 0 ? '+' : ''}{tx.credits} credits
+                    <p className={`font-semibold ${getTransactionColor(tx.transaction_type, tx.credit_amount)}`}>
+                      {tx.credit_amount > 0 ? '+' : ''}{tx.credit_amount?.toFixed(1) || tx.credits} credits
                     </p>
-                    {tx.amount_myr && (
-                      <p className="text-xs text-gray-400">RM {tx.amount_myr}</p>
+                    {tx.payment_amount > 0 && (
+                      <p className="text-xs text-gray-400">RM {tx.payment_amount}</p>
+                    )}
+                    {tx.transaction_type === 'topup_bonus' && (
+                      <p className="text-xs text-[#D4AF37]">Bonus</p>
                     )}
                   </div>
                 </div>
@@ -1234,10 +1237,20 @@ const WalletPage = ({ user }) => {
               <div className="p-4 bg-gray-50 rounded-xl text-center">
                 <p className="text-sm text-gray-500 mb-1">{selectedPackage.name}</p>
                 <p className="text-4xl font-bold mb-1" style={{ color: '#0F3D2E' }}>
-                  {selectedPackage.credits} credits
+                  {selectedPackage.total_credits || selectedPackage.credits} credits
                 </p>
-                <p className="text-sm text-gray-400">
-                  = {selectedPackage.credits * 15} minutes of class time
+                <div className="flex justify-center gap-2 mt-2">
+                  <span className="text-xs bg-gray-200 px-2 py-1 rounded">
+                    {selectedPackage.paid_credits?.toFixed(1)} paid
+                  </span>
+                  {selectedPackage.bonus_credits > 0 && (
+                    <span className="text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded font-medium">
+                      +{selectedPackage.bonus_credits?.toFixed(1)} bonus
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-400 mt-2">
+                  = {(selectedPackage.total_credits || selectedPackage.credits) * 15} minutes of class time
                 </p>
               </div>
 
