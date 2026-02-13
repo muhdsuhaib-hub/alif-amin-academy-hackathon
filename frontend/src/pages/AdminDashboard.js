@@ -385,10 +385,10 @@ export default function AdminDashboard({ user }) {
                     {stats?.trial_students?.slice(0, 3).map((student, idx) => (
                       <div key={idx} className="p-3 rounded-lg" style={{ backgroundColor: '#FFF9E6' }}>
                         <p className="text-sm font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
-                          Student ID: {student.student_id.slice(0, 12)}...
+                          {student.student_name || 'Unknown Student'}
                         </p>
                         <p className="text-xs" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
-                          Level: {student.current_level}
+                          {student.student_email || ''}
                         </p>
                       </div>
                     )) || <p className="text-sm" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>No expiring trials</p>}
