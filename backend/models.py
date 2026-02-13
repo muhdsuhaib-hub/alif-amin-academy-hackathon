@@ -21,6 +21,32 @@ class UserSession(BaseModel):
     created_at: datetime
 
 # Teacher Models
+
+# Commission Tier Levels
+COMMISSION_TIERS = {
+    "new": {
+        "level": 1,
+        "name": "New Tutor",
+        "commission_rate": 0.30,
+        "badge": "new",
+        "requirements": "Default tier for all new tutors"
+    },
+    "rated": {
+        "level": 2,
+        "name": "Rated Tutor",
+        "commission_rate": 0.25,
+        "badge": "rated",
+        "requirements": "4.5+ rating with 20+ reviews"
+    },
+    "elite": {
+        "level": 3,
+        "name": "Elite Tutor",
+        "commission_rate": 0.20,
+        "badge": "elite",
+        "requirements": "100+ sessions with 4.7+ rating"
+    }
+}
+
 class Teacher(BaseModel):
     teacher_id: str
     user_id: str
@@ -32,6 +58,25 @@ class Teacher(BaseModel):
     is_active: bool = True
     rating: float = 0.0
     total_classes: int = 0
+    # Commission Tier Fields
+    tier_level: Literal["new", "rated", "elite"] = "new"
+    commission_rate: float = 0.30  # Default 30%
+    total_completed_sessions: int = 0
+    average_rating: float = 0.0
+    total_reviews: int = 0
+    tier_last_evaluated: Optional[datetime] = None
+    tier_history: List[dict] = []  # Track tier changes for audit
+
+
+class TierEvaluationResult(BaseModel):
+    teacher_id: str
+    previous_tier: str
+    new_tier: str
+    previous_commission: float
+    new_commission: float
+    reason: str
+    metrics: dict
+    evaluated_at: datetime
 
 class TeacherCreate(BaseModel):
     user_id: str
