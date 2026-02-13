@@ -14,6 +14,7 @@ import FinancialReports from '../components/admin/FinancialReports';
 import SupportTickets from '../components/admin/SupportTickets';
 import SubscriptionManagement from '../components/admin/SubscriptionManagement';
 import TeacherApprovals from '../components/admin/TeacherApprovals';
+import WithdrawalManagement from '../components/admin/WithdrawalManagement';
 import NotificationBell from '../components/NotificationBell';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
