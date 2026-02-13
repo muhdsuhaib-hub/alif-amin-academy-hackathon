@@ -4,7 +4,8 @@ import {
   Users, Calendar, DollarSign, TrendingUp, TrendingDown, 
   LogOut, Clock, AlertCircle, CheckCircle, XCircle,
   BookOpen, UserPlus, CreditCard, BarChart3, Settings,
-  Bell, Search, Filter, Download, UserCheck, Wallet, PiggyBank
+  Bell, Search, Filter, Download, UserCheck, Wallet, PiggyBank,
+  Award, Star, Circle
 } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import UserManagement from '../components/admin/UserManagement';
