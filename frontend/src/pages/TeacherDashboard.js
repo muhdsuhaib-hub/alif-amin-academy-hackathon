@@ -1380,13 +1380,34 @@ function ProfileManagement({ teacherData, user }) {
 }
 
 // Dashboard Overview Section (simplified from original)
-function DashboardOverview({ teacherData, students, user }) {
+function DashboardOverview({ teacherData, students, user, commissionInfo }) {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
       <div className="bg-gradient-to-br from-[#0F3D2E] to-[#1a5c47] rounded-2xl p-6 text-white">
-        <h1 className="text-2xl font-bold mb-2">Welcome back, {user?.name?.split(' ')[0]}!</h1>
-        <p className="opacity-80">Here&apos;s your teaching overview for today</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">Welcome back, {user?.name?.split(' ')[0]}!</h1>
+            <p className="opacity-80">Here&apos;s your teaching overview for today</p>
+          </div>
+          {/* Tier Badge in Welcome Banner */}
+          {commissionInfo && (
+            <div 
+              className="flex items-center gap-2 px-4 py-2 rounded-xl"
+              style={{ 
+                backgroundColor: 'rgba(255, 255, 255, 0.2)'
+              }}
+            >
+              {commissionInfo.tier_level === 'elite' && <Award className="w-5 h-5" />}
+              {commissionInfo.tier_level === 'rated' && <Star className="w-5 h-5" />}
+              {commissionInfo.tier_level === 'new' && <Circle className="w-5 h-5" />}
+              <div>
+                <p className="text-sm font-semibold">{commissionInfo.tier_name}</p>
+                <p className="text-xs opacity-80">{Math.round((1 - commissionInfo.commission_rate) * 100)}% earnings rate</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Quick Stats */}
