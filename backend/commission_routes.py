@@ -202,32 +202,14 @@ async def evaluate_and_update_tutor_tier(teacher_id: str) -> dict:
 
 
 # ============== COMMISSION CALCULATION ==============
+# Now delegates to CommissionService
 
 def calculate_commission(session_price: float, commission_rate: float) -> dict:
     """
     Calculate commission split between platform and tutor.
-    SERVER-SIDE ONLY - prevents manipulation from frontend.
-    
-    Args:
-        session_price: Base price of the session (e.g., RM27 for 30 min)
-        commission_rate: Tutor's current commission rate (e.g., 0.30 for 30%)
-    
-    Returns:
-        dict: {platform_earnings, tutor_earnings, commission_rate}
+    Delegates to CommissionService.calculate_split()
     """
-    platform_earnings = round(session_price * commission_rate, 2)
-    tutor_earnings = round(session_price * (1 - commission_rate), 2)
-    
-    return {
-        "session_price": session_price,
-        "commission_rate": commission_rate,
-        "platform_earnings": platform_earnings,
-        "tutor_earnings": tutor_earnings,
-        "formula": {
-            "tutor_earnings": f"{session_price} × (1 - {commission_rate}) = {tutor_earnings}",
-            "platform_earnings": f"{session_price} × {commission_rate} = {platform_earnings}"
-        }
-    }
+    return CommissionService.calculate_split(session_price, commission_rate)
 
 
 async def get_tutor_commission_rate(teacher_id: str) -> float:
@@ -237,9 +219,10 @@ async def get_tutor_commission_rate(teacher_id: str) -> float:
     """
     teacher = await db.teachers.find_one({"teacher_id": teacher_id}, {"_id": 0})
     if not teacher:
-        return 0.30  # Default to 30% if teacher not found
+        return CommissionService.get_commission_rate("new")  # Default to new tier
     
-    return teacher.get("commission_rate", 0.30)
+    tier_level = teacher.get("tier_level", "new")
+    return CommissionService.get_commission_rate(tier_level)
 
 
 # ============== API ENDPOINTS ==============
