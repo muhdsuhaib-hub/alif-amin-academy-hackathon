@@ -44,6 +44,12 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 - [x] **Full StudentDashboard.js Refactoring (COMPLETED Feb 13, 2026)**
   - [x] Main file: 170 lines (from original 1437 lines)
   - [x] Extracted: DashboardHome, MySchedule, AccountPage, BookingModal, CancelBookingDialog, EditBookingModal, WalletPage
+- [x] **Admin Dashboard Improvements (COMPLETED Feb 13, 2026)**
+  - [x] Trials Expiring Soon: Shows student names + emails (not IDs), removed Level indicator
+  - [x] Revenue Recognition: Removed descriptive subheadings from revenue cards
+  - [x] Replaced hardcoded mock chart data with real DB-backed data (user growth, revenue trend, attendance)
+  - [x] Replaced hardcoded KPI trend percentages with real calculated trends
+  - [x] Added auth protection to subscriptions/overview and revenue/recognition endpoints
 
 ### Completed Refactoring
 - [x] Commission Service Module (`/app/backend/services/commission_service.py`)
