@@ -69,7 +69,7 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
     - Platform commission potential (credits × RM15 × 20%)
     - Total top-up revenue collected
     - Historical usage (sessions completed, payouts made)
-  - [x] **Revenue Recognition Tracking (Admin Dashboard) - NEW**
+  - [x] **Revenue Recognition Tracking (Admin Dashboard)**
     - Cash collected (from student top-ups)
     - Platform commission earned (only from COMPLETED sessions)
     - Tutor payable amount (paid vs pending breakdown)
@@ -77,6 +77,16 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
     - Accounting summary (gross revenue, net platform revenue, marketing cost)
     - Revenue recognition policy notice
     - Last 30 days comparison data
+  - [x] **Tiered Commission Engine (NEW)**
+    - Level 1 (New Tutor): 30% platform commission (default)
+    - Level 2 (Rated Tutor): 25% commission (4.5+ rating, 20+ reviews)
+    - Level 3 (Elite Tutor): 20% commission (100+ sessions, 4.7+ rating)
+    - Downgrade rule: If rating < 4.3 → revert to 30%
+    - Server-side commission calculation (prevents manipulation)
+    - Monthly tier evaluation job
+    - Tier badges displayed on Teacher Dashboard (New/Rated/Elite)
+    - Admin Dashboard shows Commission Tier Summary with distribution
+    - Tier history tracking for audit
 
 ### ✅ P1 - High Priority (COMPLETED)
 - [x] Admin Dashboard functionality
