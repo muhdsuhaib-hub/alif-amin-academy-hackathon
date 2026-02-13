@@ -986,7 +986,7 @@ const WalletPage = ({ user }) => {
       
       if (confirmResponse.ok) {
         const result = await confirmResponse.json();
-        toast.success(`Successfully added ${result.credits_added} credits!`);
+        toast.success(`Successfully added ${result.paid_credits_added?.toFixed(1) || 0} paid + ${result.bonus_credits_added?.toFixed(1) || 0} bonus credits!`);
         setShowTopupModal(false);
         setSelectedPackage(null);
         fetchWalletData();
