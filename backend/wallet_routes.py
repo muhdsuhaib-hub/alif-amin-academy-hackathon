@@ -658,6 +658,22 @@ async def deduct_credits(request: DeductCreditsRequest, user_id: str):
         reference_id=request.booking_id
     )
     
+    # CREDIT TUTOR EARNINGS (commission already deducted)
+    from tutor_earnings_routes import credit_tutor_earnings
+    
+    # Get teacher's user_id
+    if teacher_data:
+        teacher_user_id = teacher_data.get("user_id")
+        if teacher_user_id:
+            await credit_tutor_earnings(
+                teacher_id=request.teacher_id,
+                user_id=teacher_user_id,
+                amount=tutor_payout,
+                booking_id=request.booking_id,
+                session_payment_record_id=record_id,
+                description=f"Session earning ({request.duration_minutes} mins) - {teacher_tier} tier @ {int((1 - commission_rate) * 100)}%"
+            )
+    
     return {
         "success": True,
         "deduction": {
