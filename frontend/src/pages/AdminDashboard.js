@@ -539,6 +539,184 @@ export default function AdminDashboard({ user }) {
                 </div>
               )}
             </div>
+
+            {/* Revenue Recognition Section */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border mt-8" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(46, 182, 160, 0.15)' }}>
+                    <BarChart3 className="w-5 h-5" style={{ color: '#2EB6A0' }} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+                      Revenue Recognition
+                    </h3>
+                    <p className="text-sm" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+                      Commission recognized only when sessions completed
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={fetchRevenue}
+                  className="text-sm px-4 py-2 rounded-lg transition-all hover:bg-gray-50"
+                  style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}
+                >
+                  Refresh
+                </button>
+              </div>
+
+              {revenue ? (
+                <>
+                  {/* Main Revenue Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    {/* Cash Collected */}
+                    <div className="p-5 rounded-xl border-2 border-[#2EB6A0]/20" style={{ backgroundColor: 'rgba(46, 182, 160, 0.05)' }}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <DollarSign className="w-5 h-5" style={{ color: '#2EB6A0' }} />
+                        <p className="text-sm font-medium" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
+                          Cash Collected
+                        </p>
+                      </div>
+                      <p className="text-3xl font-bold mb-1" style={{ color: '#2EB6A0', fontFamily: 'Cal Sans' }}>
+                        RM {(revenue?.cash_flow?.total_cash_collected || 0).toLocaleString()}
+                      </p>
+                      <p className="text-xs" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans' }}>
+                        From student top-ups
+                      </p>
+                      <div className="mt-3 pt-3 border-t border-[#2EB6A0]/20">
+                        <p className="text-xs" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
+                          Last 30 days: <span className="font-semibold">RM {(revenue?.cash_flow?.last_30_days || 0).toLocaleString()}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Commission Earned */}
+                    <div className="p-5 rounded-xl border-2 border-[#0F3D2E]/20" style={{ backgroundColor: 'rgba(15, 61, 46, 0.05)' }}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <TrendingUp className="w-5 h-5" style={{ color: '#0F3D2E' }} />
+                        <p className="text-sm font-medium" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
+                          Commission Earned
+                        </p>
+                      </div>
+                      <p className="text-3xl font-bold mb-1" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+                        RM {(revenue?.revenue_recognition?.commission_earned || 0).toLocaleString()}
+                      </p>
+                      <p className="text-xs" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans' }}>
+                        {Math.round((revenue?.revenue_recognition?.commission_rate || 0.2) * 100)}% of completed sessions
+                      </p>
+                      <div className="mt-3 pt-3 border-t border-[#0F3D2E]/20">
+                        <p className="text-xs" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
+                          Last 30 days: <span className="font-semibold">RM {(revenue?.revenue_recognition?.last_30_days || 0).toLocaleString()}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Tutor Payable */}
+                    <div className="p-5 rounded-xl border-2 border-[#E76F51]/20" style={{ backgroundColor: 'rgba(231, 111, 81, 0.05)' }}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <Users className="w-5 h-5" style={{ color: '#E76F51' }} />
+                        <p className="text-sm font-medium" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
+                          Tutor Payable
+                        </p>
+                      </div>
+                      <p className="text-3xl font-bold mb-1" style={{ color: '#E76F51', fontFamily: 'Cal Sans' }}>
+                        RM {(revenue?.tutor_payable?.total_payable || 0).toLocaleString()}
+                      </p>
+                      <p className="text-xs" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans' }}>
+                        {Math.round((revenue?.tutor_payable?.payout_rate || 0.8) * 100)}% of completed sessions
+                      </p>
+                      <div className="mt-3 pt-3 border-t border-[#E76F51]/20">
+                        <div className="flex justify-between text-xs" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
+                          <span>Paid: RM {(revenue?.tutor_payable?.already_paid || 0).toLocaleString()}</span>
+                          <span className="font-semibold text-[#E76F51]">Pending: RM {(revenue?.tutor_payable?.pending_payment || 0).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Deferred Revenue & Accounting Summary */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Deferred Revenue */}
+                    <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Clock className="w-4 h-4" style={{ color: '#D4AF37' }} />
+                        <p className="text-sm font-semibold" style={{ color: '#92400E', fontFamily: 'Cal Sans' }}>
+                          Deferred Revenue (Liability)
+                        </p>
+                      </div>
+                      <p className="text-2xl font-bold mb-2" style={{ color: '#92400E', fontFamily: 'Cal Sans' }}>
+                        RM {(revenue?.deferred_revenue?.amount || 0).toLocaleString()}
+                      </p>
+                      <p className="text-xs mb-3" style={{ color: '#92400E', fontFamily: 'Cal Sans', opacity: 0.8 }}>
+                        Cash collected but not yet earned
+                      </p>
+                      <div className="text-xs space-y-1" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
+                        <div className="flex justify-between">
+                          <span>Cash Collected:</span>
+                          <span>RM {(revenue?.deferred_revenue?.breakdown?.cash_collected || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>− Revenue Recognized:</span>
+                          <span>RM {(revenue?.deferred_revenue?.breakdown?.minus_revenue_recognized || 0).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between font-semibold pt-1 border-t border-amber-300">
+                          <span>= Deferred:</span>
+                          <span>RM {(revenue?.deferred_revenue?.breakdown?.equals_deferred || 0).toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Accounting Summary */}
+                    <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F5EF' }}>
+                      <p className="text-sm font-semibold mb-3" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+                        Accounting Summary
+                      </p>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>Gross Revenue (Sessions)</span>
+                          <span className="text-sm font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+                            RM {(revenue?.accounting_summary?.gross_revenue || 0).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>Net Platform Revenue</span>
+                          <span className="text-sm font-semibold" style={{ color: '#2EB6A0', fontFamily: 'Cal Sans' }}>
+                            RM {(revenue?.accounting_summary?.net_platform_revenue || 0).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>Marketing Cost (Bonus Used)</span>
+                          <span className="text-sm font-semibold" style={{ color: '#E76F51', fontFamily: 'Cal Sans' }}>
+                            RM {(revenue?.marketing_expense?.realized || 0).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center pt-2 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+                          <span className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>Sessions Completed</span>
+                          <span className="text-sm font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+                            {revenue?.session_summary?.total_completed || 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Revenue Recognition Notice */}
+                  <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-blue-800" style={{ fontFamily: 'Cal Sans' }}>
+                        <strong>Revenue Recognition Policy:</strong> Platform commission is only recognized as earned revenue when sessions are completed. 
+                        Cash collected from top-ups is held as deferred revenue (liability) until services are delivered.
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F3D2E]"></div>
+                </div>
+              )}
+            </div>
           </>
         )}
 
