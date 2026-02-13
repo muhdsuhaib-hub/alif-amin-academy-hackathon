@@ -1051,7 +1051,7 @@ const WalletPage = ({ user }) => {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <p className="text-white/70 text-sm mb-1">Total Credits</p>
-                <p className="text-5xl font-bold">{walletData?.credit_balance?.toFixed(1) || '0'}</p>
+                <p className="text-5xl font-bold">{Math.floor(walletData?.credit_balance || 0)}</p>
                 <p className="text-white/60 text-sm mt-1">credits available</p>
               </div>
               <div className="text-right">
@@ -1065,27 +1065,27 @@ const WalletPage = ({ user }) => {
             <div className="grid grid-cols-2 gap-4 mt-4 mb-4">
               <div className="bg-white/10 rounded-xl p-3">
                 <p className="text-white/60 text-xs mb-1">Paid Credits</p>
-                <p className="text-2xl font-bold">{walletData?.paid_credits?.toFixed(1) || '0'}</p>
+                <p className="text-2xl font-bold">{Math.floor(walletData?.paid_credits || 0)}</p>
               </div>
               <div className="bg-[#D4AF37]/30 rounded-xl p-3">
                 <p className="text-white/60 text-xs mb-1">Bonus Credits</p>
-                <p className="text-2xl font-bold">{walletData?.bonus_credits?.toFixed(1) || '0'}</p>
-                <p className="text-white/50 text-xs">Free promotional</p>
+                <p className="text-2xl font-bold">{Math.floor(walletData?.bonus_credits || 0)}</p>
+                <p className="text-white/50 text-xs">Expires in 12 months</p>
               </div>
             </div>
             
             <div className="flex items-center gap-6 pt-4 border-t border-white/20">
               <div>
                 <p className="text-white/60 text-xs">Paid Purchased</p>
-                <p className="text-lg font-semibold">{walletData?.total_paid_credits_purchased?.toFixed(1) || '0'}</p>
+                <p className="text-lg font-semibold">{Math.floor(walletData?.total_paid_credits_purchased || 0)}</p>
               </div>
               <div>
                 <p className="text-white/60 text-xs">Bonus Received</p>
-                <p className="text-lg font-semibold">{walletData?.total_bonus_credits_received?.toFixed(1) || '0'}</p>
+                <p className="text-lg font-semibold">{Math.floor(walletData?.total_bonus_credits_received || 0)}</p>
               </div>
               <div>
                 <p className="text-white/60 text-xs">Total Used</p>
-                <p className="text-lg font-semibold">{walletData?.total_credits_used?.toFixed(1) || '0'}</p>
+                <p className="text-lg font-semibold">{Math.floor(walletData?.total_credits_used || 0)}</p>
               </div>
               <div>
                 <p className="text-white/60 text-xs">Top-up Amount</p>
