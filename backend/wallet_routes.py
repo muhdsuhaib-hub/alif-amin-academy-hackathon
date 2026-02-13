@@ -321,7 +321,7 @@ async def expire_bonus_credits():
                 student_id=batch["student_id"],
                 transaction_type="bonus_expired",
                 credit_amount=-expired_amount,
-                description=f"Bonus credits expired (12-month expiry)",
+                description="Bonus credits expired (12-month expiry)",
                 reference_id=batch["batch_id"]
             )
     
