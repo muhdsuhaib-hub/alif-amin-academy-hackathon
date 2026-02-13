@@ -6,6 +6,9 @@ import uuid
 import json
 import os
 
+# Import commission service for session pricing
+from services.commission_service import CommissionService, SESSION_PRICES
+
 wallet_router = APIRouter(prefix="/api/wallet")
 
 # Database will be injected from server.py
@@ -17,7 +20,7 @@ def init_wallet_routes(database):
 
 
 # ============== CREDIT SYSTEM CONSTANTS ==============
-# Base pricing - ALWAYS used for commission calculations
+# Base pricing - uses commission service for consistency
 BASE_CREDIT_PRICE = 15.0  # RM15 per credit (base rate)
 
 # Credit to minutes conversion
@@ -27,11 +30,10 @@ CREDITS_TO_MINUTES = {
     4: 60,   # 4 credits = 60 minutes
 }
 
-# Base session pricing (used for commission calculations)
+# Base session pricing - delegates to commission service
 SESSION_BASE_PRICES = {
-    15: 15.00,   # 15 mins = RM15
-    30: 27.00,   # 30 mins = RM27
-    60: 50.00,   # 60 mins = RM50
+    duration: CommissionService.get_session_price(duration)
+    for duration in [15, 30, 60]
 }
 
 # Default commission rate - DEPRECATED: Use commission_routes.get_tutor_commission_rate()
