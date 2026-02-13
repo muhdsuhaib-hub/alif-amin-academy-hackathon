@@ -4,7 +4,7 @@ import {
   Users, Calendar, DollarSign, TrendingUp, TrendingDown, 
   LogOut, Clock, AlertCircle, CheckCircle, XCircle,
   BookOpen, UserPlus, CreditCard, BarChart3, Settings,
-  Bell, Search, Filter, Download, UserCheck
+  Bell, Search, Filter, Download, UserCheck, Wallet, PiggyBank
 } from 'lucide-react';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import UserManagement from '../components/admin/UserManagement';
@@ -21,11 +21,13 @@ const API = `${BACKEND_URL}/api`;
 export default function AdminDashboard({ user }) {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
+  const [liability, setLiability] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
     fetchStats();
+    fetchLiability();
   }, []);
 
   const fetchStats = async () => {
@@ -41,6 +43,20 @@ export default function AdminDashboard({ user }) {
       console.error('Error fetching stats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLiability = async () => {
+    try {
+      const response = await fetch(`${API}/admin/wallet/liability`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setLiability(data);
+      }
+    } catch (error) {
+      console.error('Error fetching liability:', error);
     }
   };
 
