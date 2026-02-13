@@ -1192,6 +1192,10 @@ app.include_router(admin_router)
 init_notification_routes(db)
 app.include_router(notification_router)
 
+# Initialize wallet routes with database
+init_wallet_routes(db)
+app.include_router(wallet_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
