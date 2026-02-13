@@ -1535,14 +1535,33 @@ export default function TeacherDashboard({ user }) {
         {/* Top Header */}
         <header className="bg-white border-b sticky top-0 z-30 px-6 py-4" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>
-              {activeSection === 'dashboard' && 'Dashboard'}
-              {activeSection === 'wallet' && 'Earnings Wallet'}
-              {activeSection === 'availability' && 'Availability Calendar'}
-              {activeSection === 'classroom' && 'Classroom Tools'}
-              {activeSection === 'students' && 'Student Management'}
-              {activeSection === 'profile' && 'Profile Settings'}
-            </h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>
+                {activeSection === 'dashboard' && 'Dashboard'}
+                {activeSection === 'wallet' && 'Earnings Wallet'}
+                {activeSection === 'availability' && 'Availability Calendar'}
+                {activeSection === 'classroom' && 'Classroom Tools'}
+                {activeSection === 'students' && 'Student Management'}
+                {activeSection === 'profile' && 'Profile Settings'}
+              </h1>
+              {/* Tier Badge */}
+              {commissionInfo && (
+                <div 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium"
+                  style={{ 
+                    backgroundColor: commissionInfo.tier_level === 'elite' ? 'rgba(15, 61, 46, 0.1)' : 
+                                     commissionInfo.tier_level === 'rated' ? 'rgba(212, 175, 55, 0.15)' : 
+                                     'rgba(107, 114, 128, 0.1)',
+                    color: commissionInfo.tier_color || '#6B7280'
+                  }}
+                >
+                  {commissionInfo.tier_level === 'elite' && <Award className="w-4 h-4" />}
+                  {commissionInfo.tier_level === 'rated' && <Star className="w-4 h-4" />}
+                  {commissionInfo.tier_level === 'new' && <Circle className="w-4 h-4" />}
+                  <span>{commissionInfo.tier_name}</span>
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-4">
               <NotificationBell userId={user?.user_id} userRole="teacher" />
               <div className="flex items-center gap-3">
@@ -1563,10 +1582,10 @@ export default function TeacherDashboard({ user }) {
         {/* Content Area */}
         <div className="p-6">
           {activeSection === 'dashboard' && (
-            <DashboardOverview teacherData={dashboardData} students={students} user={user} />
+            <DashboardOverview teacherData={dashboardData} students={students} user={user} commissionInfo={commissionInfo} />
           )}
           {activeSection === 'wallet' && (
-            <EarningsWallet teacherData={dashboardData?.teacher} />
+            <EarningsWallet teacherData={dashboardData?.teacher} commissionInfo={commissionInfo} />
           )}
           {activeSection === 'availability' && (
             <AvailabilityCalendar teacherData={dashboardData?.teacher} />
