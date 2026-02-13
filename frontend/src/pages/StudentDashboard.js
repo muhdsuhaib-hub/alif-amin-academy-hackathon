@@ -586,6 +586,7 @@ export default function StudentDashboard({ user }) {
         isOpen={bookingModalOpen}
         onClose={() => setBookingModalOpen(false)}
         onSuccess={fetchBookings}
+        user={user}
       />
 
       {/* Cancel Dialog */}
