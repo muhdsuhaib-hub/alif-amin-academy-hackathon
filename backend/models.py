@@ -203,6 +203,7 @@ class WalletTransaction(BaseModel):
         "refund_paid",  # Refund of paid credits
         "refund_bonus",  # Refund of bonus credits
         "bonus_reward",  # Promotional bonus credits
+        "bonus_expired",  # Expired bonus credits
         "subscription_credit"  # Subscription-based credits
     ]
     credit_amount: float  # Positive for additions, negative for deductions
