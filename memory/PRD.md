@@ -62,6 +62,13 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
   - [x] Server-side credit deduction validation
   - [x] Stripe-compatible payment structure with webhooks (MOCKED)
   - [x] Prevent negative balance
+  - [x] **Credit Liability Tracking (Admin Dashboard) - NEW**
+    - Total paid credits outstanding
+    - Total bonus credits outstanding
+    - Estimated tutor payout exposure (credits × RM15 × 80%)
+    - Platform commission potential (credits × RM15 × 20%)
+    - Total top-up revenue collected
+    - Historical usage (sessions completed, payouts made)
 
 ### ✅ P1 - High Priority (COMPLETED)
 - [x] Admin Dashboard functionality
@@ -71,6 +78,7 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
   - [x] Financial Reports (revenue, MRR, payroll)
   - [x] Support Tickets (create, update status)
   - [x] Subscription Management (pause, resume, cancel, extend trial)
+  - [x] **Credit Liability Tracker Widget** - Financial exposure reporting
 - [x] **Notification System for All Platforms**
   - [x] Notification Bell component in Student/Teacher/Admin dashboards
   - [x] Automatic notifications generated based on user role
