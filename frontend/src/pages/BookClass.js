@@ -158,14 +158,10 @@ export default function BookClass({ user }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
+            <div className="grid grid-cols-1 gap-4 p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
               <div>
                 <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Experience</p>
                 <p className="font-medium" style={{ color: '#0F3D2E' }}>{teacher.years_experience} years</p>
-              </div>
-              <div>
-                <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Hourly Rate</p>
-                <p className="font-medium" style={{ color: '#0F3D2E' }}>RM {teacher.hourly_rate}</p>
               </div>
             </div>
           </div>
@@ -196,7 +192,7 @@ export default function BookClass({ user }) {
               }`}
             >
               <h3 className="text-lg font-medium mb-1" style={{ color: '#0F3D2E' }}>Regular Class</h3>
-              <p className="text-sm" style={{ color: '#5A5A5A' }}>1-hour lesson (RM {teacher?.hourly_rate})</p>
+              <p className="text-sm" style={{ color: '#5A5A5A' }}>1-hour lesson (4 credits)</p>
             </button>
           </div>
         </div>

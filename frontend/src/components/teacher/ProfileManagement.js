@@ -8,7 +8,6 @@ const API = `${BACKEND_URL}/api`;
 export default function ProfileManagement({ teacherData, user }) {
   const [profile, setProfile] = useState({
     bio: teacherData?.bio || '',
-    hourlyRate: teacherData?.hourly_rate || 50,
     meetLink: teacherData?.meet_link || '',
     specializations: teacherData?.specializations || [],
     yearsExperience: teacherData?.years_experience || 0
@@ -127,17 +126,6 @@ export default function ProfileManagement({ teacherData, user }) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Hourly Rate (RM)</label>
-              <input
-                type="number"
-                value={profile.hourlyRate}
-                onChange={(e) => setProfile({ ...profile, hourlyRate: parseFloat(e.target.value) })}
-                className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
-                data-testid="hourly-rate-input"
-              />
-            </div>
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-700">Years of Experience</label>
               <input

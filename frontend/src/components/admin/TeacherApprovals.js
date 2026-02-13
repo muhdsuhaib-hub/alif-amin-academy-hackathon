@@ -176,9 +176,6 @@ export default function TeacherApprovals() {
                         <AlertCircle className="w-3 h-3" />
                         Pending Review
                       </span>
-                      <span className="text-xs" style={{ color: '#9CA3AF' }}>
-                        Hourly Rate: RM {teacher.hourly_rate || 50}
-                      </span>
                     </div>
                   </div>
                 </div>

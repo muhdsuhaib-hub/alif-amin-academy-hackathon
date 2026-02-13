@@ -124,9 +124,6 @@ export default function BrowseTeachers({ user }) {
                     <p className="text-sm" style={{ color: '#5A5A5A' }}>
                       <span className="font-medium">Experience:</span> {teacher.years_experience} years
                     </p>
-                    <p className="text-sm" style={{ color: '#5A5A5A' }}>
-                      <span className="font-medium">Rate:</span> RM {teacher.hourly_rate}/hour
-                    </p>
                   </div>
 
                   <button
