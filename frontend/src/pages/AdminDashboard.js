@@ -613,9 +613,6 @@ export default function AdminDashboard({ user }) {
                       <p className="text-3xl font-bold mb-1" style={{ color: '#2EB6A0', fontFamily: 'Cal Sans' }}>
                         RM {(revenue?.cash_flow?.total_cash_collected || 0).toLocaleString()}
                       </p>
-                      <p className="text-xs" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans' }}>
-                        From student top-ups
-                      </p>
                       <div className="mt-3 pt-3 border-t border-[#2EB6A0]/20">
                         <p className="text-xs" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
                           Last 30 days: <span className="font-semibold">RM {(revenue?.cash_flow?.last_30_days || 0).toLocaleString()}</span>
@@ -634,9 +631,6 @@ export default function AdminDashboard({ user }) {
                       <p className="text-3xl font-bold mb-1" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
                         RM {(revenue?.revenue_recognition?.commission_earned || 0).toLocaleString()}
                       </p>
-                      <p className="text-xs" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans' }}>
-                        {Math.round((revenue?.revenue_recognition?.commission_rate || 0.2) * 100)}% of completed sessions
-                      </p>
                       <div className="mt-3 pt-3 border-t border-[#0F3D2E]/20">
                         <p className="text-xs" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
                           Last 30 days: <span className="font-semibold">RM {(revenue?.revenue_recognition?.last_30_days || 0).toLocaleString()}</span>
@@ -654,9 +648,6 @@ export default function AdminDashboard({ user }) {
                       </div>
                       <p className="text-3xl font-bold mb-1" style={{ color: '#E76F51', fontFamily: 'Cal Sans' }}>
                         RM {(revenue?.tutor_payable?.total_payable || 0).toLocaleString()}
-                      </p>
-                      <p className="text-xs" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans' }}>
-                        {Math.round((revenue?.tutor_payable?.payout_rate || 0.8) * 100)}% of completed sessions
                       </p>
                       <div className="mt-3 pt-3 border-t border-[#E76F51]/20">
                         <div className="flex justify-between text-xs" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
