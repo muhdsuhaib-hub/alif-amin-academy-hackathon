@@ -1197,6 +1197,10 @@ app.include_router(notification_router)
 init_wallet_routes(db)
 app.include_router(wallet_router)
 
+# Initialize commission routes with database
+init_commission_routes(db)
+app.include_router(commission_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
