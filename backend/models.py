@@ -174,3 +174,53 @@ class NotificationCreate(BaseModel):
     message: str
     notification_type: str
     related_id: Optional[str] = None
+
+
+# Wallet and Credit System Models
+class StudentWallet(BaseModel):
+    wallet_id: str
+    student_id: str
+    user_id: str
+    credit_balance: float = 0.0  # Credits available
+    total_topup_amount: float = 0.0  # Total RM topped up ever
+    total_credits_purchased: float = 0.0  # Total credits ever purchased
+    total_credits_used: float = 0.0  # Total credits ever used
+    created_at: datetime
+    updated_at: datetime
+
+
+class WalletTransaction(BaseModel):
+    transaction_id: str
+    wallet_id: str
+    student_id: str
+    transaction_type: Literal["topup", "session_deduction", "refund", "bonus", "subscription_credit"]
+    credits: float  # Positive for additions, negative for deductions
+    amount_myr: Optional[float] = None  # RM amount for top-ups
+    description: str
+    reference_id: Optional[str] = None  # booking_id, payment_id, etc.
+    status: Literal["pending", "completed", "failed", "refunded"] = "completed"
+    created_at: datetime
+
+
+class TopupPackage(BaseModel):
+    package_id: str
+    name: str
+    price_myr: float
+    credits: float
+    bonus_credits: float = 0.0
+    is_active: bool = True
+
+
+class StripePaymentIntent(BaseModel):
+    payment_intent_id: str
+    wallet_id: str
+    student_id: str
+    amount_myr: float
+    credits_to_add: float
+    package_id: Optional[str] = None
+    stripe_payment_intent_id: Optional[str] = None
+    stripe_client_secret: Optional[str] = None
+    status: Literal["created", "processing", "succeeded", "failed", "cancelled"] = "created"
+    created_at: datetime
+    completed_at: Optional[datetime] = None
+
