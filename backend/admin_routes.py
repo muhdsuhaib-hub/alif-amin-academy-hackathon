@@ -389,10 +389,19 @@ async def get_payroll_report(month: Optional[int] = None, year: Optional[int] = 
             }
         })
         
-        # Calculate payment
-        hourly_rate = teacher.get("hourly_rate", 80)
-        total_hours = completed_classes  # Assuming 1 hour per class
-        payment = total_hours * hourly_rate
+        # Calculate payment from session payment records (actual tutor payouts)
+        payment_pipeline = [
+            {"$match": {
+                "teacher_id": teacher["teacher_id"],
+                "created_at": {"$gte": month_start.isoformat(), "$lt": month_end.isoformat()}
+            }},
+            {"$group": {
+                "_id": None,
+                "total_payout": {"$sum": "$tutor_payout"}
+            }}
+        ]
+        payment_result = await db.session_payment_records.aggregate(payment_pipeline).to_list(1)
+        payment = payment_result[0]["total_payout"] if payment_result else 0
         total_payroll += payment
         
         # Get teacher user info
@@ -402,9 +411,8 @@ async def get_payroll_report(month: Optional[int] = None, year: Optional[int] = 
             "teacher_id": teacher["teacher_id"],
             "teacher_name": user.get("name") if user else "Unknown",
             "email": user.get("email") if user else "",
-            "hourly_rate": hourly_rate,
+            "commission_tier": teacher.get("tier_level", "new"),
             "completed_classes": completed_classes,
-            "total_hours": total_hours,
             "payment_due": payment
         })
     
