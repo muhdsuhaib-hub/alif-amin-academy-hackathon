@@ -1242,17 +1242,22 @@ const WalletPage = ({ user }) => {
                 </p>
                 <div className="flex justify-center gap-2 mt-2">
                   <span className="text-xs bg-gray-200 px-2 py-1 rounded">
-                    {selectedPackage.paid_credits?.toFixed(1)} paid
+                    {selectedPackage.paid_credits} paid
                   </span>
                   {selectedPackage.bonus_credits > 0 && (
                     <span className="text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded font-medium">
-                      +{selectedPackage.bonus_credits?.toFixed(1)} bonus
+                      +{selectedPackage.bonus_credits} bonus
                     </span>
                   )}
                 </div>
                 <p className="text-sm text-gray-400 mt-2">
                   = {(selectedPackage.total_credits || selectedPackage.credits) * 15} minutes of class time
                 </p>
+                {selectedPackage.bonus_credits > 0 && (
+                  <p className="text-xs text-[#D4AF37] mt-1">
+                    Bonus credits expire in 12 months
+                  </p>
+                )}
               </div>
 
               <div className="p-4 bg-[#D4AF37]/10 rounded-xl border border-[#D4AF37]/20">
@@ -1262,7 +1267,7 @@ const WalletPage = ({ user }) => {
                     RM {selectedPackage.price_myr}
                   </span>
                 </div>
-                <p className="text-xs text-green-600 mt-1">{selectedPackage.savings}</p>
+                <p className="text-xs text-green-600 mt-1">{selectedPackage.savings_display || selectedPackage.savings}</p>
               </div>
             </div>
 
