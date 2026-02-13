@@ -986,7 +986,7 @@ const WalletPage = ({ user }) => {
       
       if (confirmResponse.ok) {
         const result = await confirmResponse.json();
-        toast.success(`Successfully added ${result.paid_credits_added?.toFixed(1) || 0} paid + ${result.bonus_credits_added?.toFixed(1) || 0} bonus credits!`);
+        toast.success(`Successfully added ${result.paid_credits_added || 0} paid + ${result.bonus_credits_added || 0} bonus credits!`);
         setShowTopupModal(false);
         setSelectedPackage(null);
         fetchWalletData();
@@ -1014,13 +1014,15 @@ const WalletPage = ({ user }) => {
         return <RefreshCw className="w-5 h-5 text-blue-600" />;
       case 'bonus_reward':
         return <Star className="w-5 h-5 text-[#D4AF37]" />;
+      case 'bonus_expired':
+        return <AlertCircle className="w-5 h-5 text-orange-500" />;
       default:
         return <CreditCard className="w-5 h-5 text-gray-600" />;
     }
   };
 
   const getTransactionColor = (type, amount) => {
-    if (type.includes('deduction')) return 'text-red-600';
+    if (type.includes('deduction') || type.includes('expired')) return 'text-red-600';
     if (type.includes('bonus') || type === 'topup_bonus') return 'text-[#D4AF37]';
     if (amount > 0) return 'text-green-600';
     return 'text-red-600';
