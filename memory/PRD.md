@@ -31,12 +31,20 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 - [x] **Profile Registration for New Students**
   - [x] After onboarding, redirects to profile form
   - [x] Collects: Full Name, Email, Phone (with country code), Password
-  - [x] Phone number is mandatory with country code dropdown (18 countries)
+  - [x] Phone number is mandatory with country code dropdown (170+ countries)
   - [x] Phone input only allows numbers (no spaces/dashes)
   - [x] Reading level stored in student profile from onboarding
 - [x] Onboarding flow for new users
 - [x] Admin access for specific emails (muhdsuhaib@gmail.com, hello.alifamin@gmail.com)
 - [x] Admin Dashboard UI with functional backend connections
+- [x] **Credit Wallet System**
+  - [x] Credit-based payment system (1 credit = 15 mins)
+  - [x] Top-up packages: RM100→9 credits, RM300→29 credits, RM500→50 credits
+  - [x] Individual credit pricing: 1=RM15, 2=RM27, 4=RM50
+  - [x] Wallet balance tracking with transaction history
+  - [x] Server-side credit deduction validation
+  - [x] Stripe-compatible payment structure with webhooks
+  - [x] Prevent negative balance
 
 ### ✅ P1 - High Priority (COMPLETED)
 - [x] Admin Dashboard functionality
