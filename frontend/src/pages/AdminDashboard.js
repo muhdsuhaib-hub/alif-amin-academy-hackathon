@@ -185,6 +185,7 @@ export default function AdminDashboard({ user }) {
                 { id: 'approvals', label: 'Approvals', icon: UserCheck },
                 { id: 'users', label: 'Users', icon: Users },
                 { id: 'bookings', label: 'Bookings', icon: Calendar },
+                { id: 'withdrawals', label: 'Withdrawals', icon: Wallet },
                 { id: 'subscriptions', label: 'Subscriptions', icon: CreditCard },
                 { id: 'finance', label: 'Finance', icon: DollarSign },
                 { id: 'support', label: 'Support', icon: Bell }
