@@ -188,10 +188,10 @@ export default function SubscriptionManagement() {
             {overview.trials_expiring_soon.slice(0, 5).map((student, idx) => (
               <div key={idx} className="p-3 rounded-lg bg-white">
                 <p className="text-sm font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
-                  Student ID: {student.student_id}
+                  {student.student_name || 'Unknown Student'}
                 </p>
                 <p className="text-xs" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
-                  Level: {student.current_level}
+                  {student.student_email || ''}
                 </p>
               </div>
             ))}
