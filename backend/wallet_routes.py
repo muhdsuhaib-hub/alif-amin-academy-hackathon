@@ -3,8 +3,6 @@ from datetime import datetime, timezone
 from typing import Optional, List
 from pydantic import BaseModel
 import uuid
-import hmac
-import hashlib
 import json
 import os
 
@@ -19,6 +17,9 @@ def init_wallet_routes(database):
 
 
 # ============== CREDIT SYSTEM CONSTANTS ==============
+# Base pricing - ALWAYS used for commission calculations
+BASE_CREDIT_PRICE = 15.0  # RM15 per credit (base rate)
+
 # Credit to minutes conversion
 CREDITS_TO_MINUTES = {
     1: 15,   # 1 credit = 15 minutes
@@ -26,45 +27,60 @@ CREDITS_TO_MINUTES = {
     4: 60,   # 4 credits = 60 minutes
 }
 
-# Credit pricing (individual purchase)
-CREDIT_PRICING = {
-    1: 15.00,   # 1 credit = RM15
-    2: 27.00,   # 2 credits = RM27
-    4: 50.00,   # 4 credits = RM50
+# Base session pricing (used for commission calculations)
+SESSION_BASE_PRICES = {
+    15: 15.00,   # 15 mins = RM15
+    30: 27.00,   # 30 mins = RM27
+    60: 50.00,   # 60 mins = RM50
 }
 
-# Top-up packages
+# Default commission rate
+DEFAULT_COMMISSION_RATE = 0.20  # 20% platform commission
+
+# Credit pricing (individual purchase - no bonus)
+CREDIT_PRICING = {
+    1: 15.00,   # 1 credit = RM15 (0 bonus)
+    2: 27.00,   # 2 credits = RM27 (0 bonus)
+    4: 50.00,   # 4 credits = RM50 (0 bonus)
+}
+
+# Top-up packages with SEPARATE paid and bonus credits
+# Paid credits = price / BASE_CREDIT_PRICE
+# Bonus credits = total - paid (absorbed as marketing cost)
 TOPUP_PACKAGES = [
     {
         "package_id": "pkg_100",
         "name": "Starter Pack",
         "price_myr": 100.00,
-        "credits": 9,
-        "bonus_credits": 0,
-        "savings": "Save RM35",
+        "paid_credits": 6.67,  # RM100 / RM15 = 6.67 paid credits
+        "bonus_credits": 2.33,  # 9 - 6.67 = 2.33 bonus credits (marketing cost)
+        "total_credits": 9,
+        "savings_display": "Get 2 bonus credits",
         "popular": False
     },
     {
         "package_id": "pkg_300",
         "name": "Value Pack",
         "price_myr": 300.00,
-        "credits": 29,
-        "bonus_credits": 0,
-        "savings": "Save RM135",
+        "paid_credits": 20.00,  # RM300 / RM15 = 20 paid credits
+        "bonus_credits": 9.00,  # 29 - 20 = 9 bonus credits (marketing cost)
+        "total_credits": 29,
+        "savings_display": "Get 9 bonus credits",
         "popular": True
     },
     {
         "package_id": "pkg_500",
         "name": "Premium Pack",
         "price_myr": 500.00,
-        "credits": 50,
-        "bonus_credits": 0,
-        "savings": "Save RM250",
+        "paid_credits": 33.33,  # RM500 / RM15 = 33.33 paid credits
+        "bonus_credits": 16.67,  # 50 - 33.33 = 16.67 bonus credits (marketing cost)
+        "total_credits": 50,
+        "savings_display": "Get 17 bonus credits",
         "popular": False
     }
 ]
 
-# Session duration to credits
+
 def get_credits_for_duration(minutes: int) -> float:
     """Calculate credits needed for a session duration"""
     if minutes <= 15:
@@ -74,30 +90,37 @@ def get_credits_for_duration(minutes: int) -> float:
     elif minutes <= 60:
         return 4
     else:
-        # For longer sessions, calculate based on 15-min blocks
         return (minutes // 15) * 1
+
+
+def get_base_session_price(minutes: int) -> float:
+    """Get the base session price for commission calculation"""
+    if minutes <= 15:
+        return SESSION_BASE_PRICES[15]
+    elif minutes <= 30:
+        return SESSION_BASE_PRICES[30]
+    elif minutes <= 60:
+        return SESSION_BASE_PRICES[60]
+    else:
+        # For longer sessions, calculate proportionally
+        return (minutes / 60) * SESSION_BASE_PRICES[60]
 
 
 # ============== REQUEST/RESPONSE MODELS ==============
 class TopupRequest(BaseModel):
     package_id: str
-    payment_method: str = "stripe"  # stripe, fpx, etc.
-
-
-class CreditPurchaseRequest(BaseModel):
-    credits: int  # 1, 2, or 4
     payment_method: str = "stripe"
 
 
 class DeductCreditsRequest(BaseModel):
     booking_id: str
-    credits: float
-    description: Optional[str] = None
+    duration_minutes: int
+    teacher_id: str
+    commission_rate: Optional[float] = None  # Defaults to DEFAULT_COMMISSION_RATE
 
 
 class RefundCreditsRequest(BaseModel):
     booking_id: str
-    credits: float
     reason: str
 
 
@@ -113,13 +136,32 @@ async def get_or_create_wallet(student_id: str, user_id: str):
             "student_id": student_id,
             "user_id": user_id,
             "credit_balance": 0.0,
+            "paid_credits": 0.0,
+            "bonus_credits": 0.0,
             "total_topup_amount": 0.0,
-            "total_credits_purchased": 0.0,
+            "total_paid_credits_purchased": 0.0,
+            "total_bonus_credits_received": 0.0,
             "total_credits_used": 0.0,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
         }
         await db.student_wallets.insert_one(wallet)
+    else:
+        # Migrate old wallets to new structure
+        if "paid_credits" not in wallet:
+            wallet["paid_credits"] = wallet.get("credit_balance", 0.0)
+            wallet["bonus_credits"] = 0.0
+            wallet["total_paid_credits_purchased"] = wallet.get("total_credits_purchased", 0.0)
+            wallet["total_bonus_credits_received"] = 0.0
+            await db.student_wallets.update_one(
+                {"wallet_id": wallet["wallet_id"]},
+                {"$set": {
+                    "paid_credits": wallet["paid_credits"],
+                    "bonus_credits": wallet["bonus_credits"],
+                    "total_paid_credits_purchased": wallet["total_paid_credits_purchased"],
+                    "total_bonus_credits_received": wallet["total_bonus_credits_received"]
+                }}
+            )
     
     return wallet
 
@@ -128,9 +170,10 @@ async def add_transaction(
     wallet_id: str,
     student_id: str,
     transaction_type: str,
-    credits: float,
+    credit_amount: float,
     description: str,
-    amount_myr: Optional[float] = None,
+    monetary_value: Optional[float] = None,
+    payment_amount: Optional[float] = None,
     reference_id: Optional[str] = None,
     status: str = "completed"
 ):
@@ -141,8 +184,9 @@ async def add_transaction(
         "wallet_id": wallet_id,
         "student_id": student_id,
         "transaction_type": transaction_type,
-        "credits": credits,
-        "amount_myr": amount_myr,
+        "credit_amount": credit_amount,
+        "monetary_value": monetary_value,  # RM value at base rate
+        "payment_amount": payment_amount,  # Actual RM paid
         "description": description,
         "reference_id": reference_id,
         "status": status,
@@ -156,23 +200,22 @@ async def add_transaction(
 
 @wallet_router.get("/balance")
 async def get_wallet_balance(user_id: str):
-    """Get student's wallet balance and info"""
-    # Get student
+    """Get student's wallet balance with paid/bonus breakdown"""
     student = await db.students.find_one({"user_id": user_id}, {"_id": 0})
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
     wallet = await get_or_create_wallet(student["student_id"], user_id)
     
-    # Remove _id if present
     if "_id" in wallet:
         del wallet["_id"]
     
     return {
         "wallet": wallet,
-        "credit_value": {
-            "per_credit_minutes": 15,
-            "pricing": CREDIT_PRICING
+        "credit_info": {
+            "base_price_per_credit": BASE_CREDIT_PRICE,
+            "minutes_per_credit": 15,
+            "session_prices": SESSION_BASE_PRICES
         }
     }
 
@@ -201,30 +244,29 @@ async def get_transactions(user_id: str, limit: int = 50, offset: int = 0):
 
 @wallet_router.get("/packages")
 async def get_topup_packages():
-    """Get available top-up packages"""
+    """Get available top-up packages with paid/bonus breakdown"""
     return {
         "packages": TOPUP_PACKAGES,
         "credit_pricing": CREDIT_PRICING,
-        "credit_to_minutes": CREDITS_TO_MINUTES
+        "credit_to_minutes": CREDITS_TO_MINUTES,
+        "base_credit_price": BASE_CREDIT_PRICE,
+        "note": "Bonus credits are promotional - commission is always calculated from base session price"
     }
 
 
 @wallet_router.post("/topup/create-intent")
 async def create_topup_intent(request: TopupRequest, user_id: str):
     """Create a payment intent for topping up credits"""
-    # Find the package
     package = next((p for p in TOPUP_PACKAGES if p["package_id"] == request.package_id), None)
     if not package:
         raise HTTPException(status_code=400, detail="Invalid package")
     
-    # Get student
     student = await db.students.find_one({"user_id": user_id}, {"_id": 0})
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
     wallet = await get_or_create_wallet(student["student_id"], user_id)
     
-    # Create payment intent record (Stripe-compatible structure)
     intent_id = f"pi_{uuid.uuid4().hex[:24]}"
     payment_intent = {
         "payment_intent_id": intent_id,
@@ -232,10 +274,12 @@ async def create_topup_intent(request: TopupRequest, user_id: str):
         "student_id": student["student_id"],
         "user_id": user_id,
         "amount_myr": package["price_myr"],
-        "credits_to_add": package["credits"] + package.get("bonus_credits", 0),
+        "paid_credits_to_add": package["paid_credits"],
+        "bonus_credits_to_add": package["bonus_credits"],
+        "total_credits": package["total_credits"],
         "package_id": request.package_id,
         "package_name": package["name"],
-        "stripe_payment_intent_id": None,  # Will be set when Stripe is integrated
+        "stripe_payment_intent_id": None,
         "stripe_client_secret": None,
         "status": "created",
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -244,25 +288,20 @@ async def create_topup_intent(request: TopupRequest, user_id: str):
     
     await db.payment_intents.insert_one(payment_intent)
     
-    # In production, this would create a Stripe PaymentIntent
-    # For now, return mock client secret for testing
     return {
         "payment_intent_id": intent_id,
         "amount_myr": package["price_myr"],
-        "credits": package["credits"] + package.get("bonus_credits", 0),
-        "client_secret": f"mock_secret_{intent_id}",  # Replace with Stripe client_secret
+        "paid_credits": package["paid_credits"],
+        "bonus_credits": package["bonus_credits"],
+        "total_credits": package["total_credits"],
+        "client_secret": f"mock_secret_{intent_id}",
         "package": package
     }
 
 
 @wallet_router.post("/topup/confirm")
 async def confirm_topup(payment_intent_id: str, user_id: str):
-    """
-    Confirm a top-up payment (called after successful payment).
-    In production, this would be called by Stripe webhook.
-    For testing, this can be called directly.
-    """
-    # Find the payment intent
+    """Confirm a top-up payment - adds SEPARATE paid and bonus credits"""
     intent = await db.payment_intents.find_one(
         {"payment_intent_id": payment_intent_id},
         {"_id": 0}
@@ -274,11 +313,9 @@ async def confirm_topup(payment_intent_id: str, user_id: str):
     if intent["status"] == "succeeded":
         raise HTTPException(status_code=400, detail="Payment already processed")
     
-    # Verify user owns this intent
     if intent["user_id"] != user_id:
         raise HTTPException(status_code=403, detail="Unauthorized")
     
-    # Update wallet
     wallet = await db.student_wallets.find_one(
         {"wallet_id": intent["wallet_id"]},
         {"_id": 0}
@@ -287,21 +324,31 @@ async def confirm_topup(payment_intent_id: str, user_id: str):
     if not wallet:
         raise HTTPException(status_code=404, detail="Wallet not found")
     
-    new_balance = wallet["credit_balance"] + intent["credits_to_add"]
+    paid_credits = intent.get("paid_credits_to_add", intent.get("credits_to_add", 0))
+    bonus_credits = intent.get("bonus_credits_to_add", 0)
+    total_credits = paid_credits + bonus_credits
+    
+    # Update wallet with SEPARATE paid and bonus credits
+    new_paid = wallet.get("paid_credits", wallet.get("credit_balance", 0)) + paid_credits
+    new_bonus = wallet.get("bonus_credits", 0) + bonus_credits
+    new_balance = new_paid + new_bonus
     new_total_topup = wallet["total_topup_amount"] + intent["amount_myr"]
-    new_total_credits = wallet["total_credits_purchased"] + intent["credits_to_add"]
+    new_total_paid = wallet.get("total_paid_credits_purchased", wallet.get("total_credits_purchased", 0)) + paid_credits
+    new_total_bonus = wallet.get("total_bonus_credits_received", 0) + bonus_credits
     
     await db.student_wallets.update_one(
         {"wallet_id": intent["wallet_id"]},
         {"$set": {
             "credit_balance": new_balance,
+            "paid_credits": new_paid,
+            "bonus_credits": new_bonus,
             "total_topup_amount": new_total_topup,
-            "total_credits_purchased": new_total_credits,
+            "total_paid_credits_purchased": new_total_paid,
+            "total_bonus_credits_received": new_total_bonus,
             "updated_at": datetime.now(timezone.utc).isoformat()
         }}
     )
     
-    # Update payment intent status
     await db.payment_intents.update_one(
         {"payment_intent_id": payment_intent_id},
         {"$set": {
@@ -310,21 +357,40 @@ async def confirm_topup(payment_intent_id: str, user_id: str):
         }}
     )
     
-    # Add transaction record
+    # Add SEPARATE transaction records for paid and bonus credits
     await add_transaction(
         wallet_id=intent["wallet_id"],
         student_id=intent["student_id"],
-        transaction_type="topup",
-        credits=intent["credits_to_add"],
-        description=f"Top-up: {intent.get('package_name', 'Credit Package')}",
-        amount_myr=intent["amount_myr"],
+        transaction_type="topup_paid",
+        credit_amount=paid_credits,
+        description=f"Top-up: {intent.get('package_name', 'Credit Package')} (Paid Credits)",
+        monetary_value=paid_credits * BASE_CREDIT_PRICE,
+        payment_amount=intent["amount_myr"],
         reference_id=payment_intent_id
     )
     
+    if bonus_credits > 0:
+        await add_transaction(
+            wallet_id=intent["wallet_id"],
+            student_id=intent["student_id"],
+            transaction_type="topup_bonus",
+            credit_amount=bonus_credits,
+            description=f"Bonus: {intent.get('package_name', 'Credit Package')} (Promotional Credits)",
+            monetary_value=bonus_credits * BASE_CREDIT_PRICE,  # Marketing cost absorbed by platform
+            payment_amount=0,  # Bonus = no payment
+            reference_id=payment_intent_id
+        )
+    
     return {
         "success": True,
-        "credits_added": intent["credits_to_add"],
-        "new_balance": new_balance,
+        "paid_credits_added": paid_credits,
+        "bonus_credits_added": bonus_credits,
+        "total_credits_added": total_credits,
+        "new_balance": {
+            "total": new_balance,
+            "paid": new_paid,
+            "bonus": new_bonus
+        },
         "amount_paid": intent["amount_myr"]
     }
 
@@ -332,21 +398,29 @@ async def confirm_topup(payment_intent_id: str, user_id: str):
 @wallet_router.post("/deduct")
 async def deduct_credits(request: DeductCreditsRequest, user_id: str):
     """
-    Deduct credits from wallet (called when session is completed).
-    This should only be called by server-side processes.
+    Deduct credits from wallet after session completion.
+    ALWAYS calculates commission from base session price, NOT from credit cost.
+    Deducts from paid_credits FIRST, then bonus_credits.
     """
-    # Get student
     student = await db.students.find_one({"user_id": user_id}, {"_id": 0})
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
     wallet = await get_or_create_wallet(student["student_id"], user_id)
     
+    # Calculate credits needed
+    credits_needed = get_credits_for_duration(request.duration_minutes)
+    
+    # Get available credits
+    paid_available = wallet.get("paid_credits", wallet.get("credit_balance", 0))
+    bonus_available = wallet.get("bonus_credits", 0)
+    total_available = paid_available + bonus_available
+    
     # Validate sufficient balance
-    if wallet["credit_balance"] < request.credits:
+    if total_available < credits_needed:
         raise HTTPException(
             status_code=400, 
-            detail=f"Insufficient credits. Balance: {wallet['credit_balance']}, Required: {request.credits}"
+            detail=f"Insufficient credits. Balance: {total_available}, Required: {credits_needed}"
         )
     
     # Verify booking exists and is completed
@@ -358,41 +432,94 @@ async def deduct_credits(request: DeductCreditsRequest, user_id: str):
         raise HTTPException(status_code=400, detail="Credits can only be deducted for completed sessions")
     
     # Check if already deducted
-    existing_txn = await db.wallet_transactions.find_one({
-        "reference_id": request.booking_id,
-        "transaction_type": "session_deduction"
+    existing_record = await db.session_payment_records.find_one({
+        "booking_id": request.booking_id
     })
-    if existing_txn:
+    if existing_record:
         raise HTTPException(status_code=400, detail="Credits already deducted for this session")
     
-    # Deduct credits
-    new_balance = wallet["credit_balance"] - request.credits
-    new_total_used = wallet["total_credits_used"] + request.credits
+    # DEDUCT FROM PAID CREDITS FIRST, THEN BONUS
+    paid_to_deduct = min(paid_available, credits_needed)
+    bonus_to_deduct = credits_needed - paid_to_deduct
+    
+    # Calculate commission from BASE SESSION PRICE (not from credit cost!)
+    base_session_price = get_base_session_price(request.duration_minutes)
+    commission_rate = request.commission_rate or DEFAULT_COMMISSION_RATE
+    
+    tutor_payout = base_session_price * (1 - commission_rate)
+    platform_commission = base_session_price * commission_rate
+    
+    # Calculate marketing cost (value of bonus credits used - absorbed by platform)
+    platform_marketing_cost = bonus_to_deduct * BASE_CREDIT_PRICE
+    
+    # Update wallet
+    new_paid = paid_available - paid_to_deduct
+    new_bonus = bonus_available - bonus_to_deduct
+    new_balance = new_paid + new_bonus
+    new_total_used = wallet.get("total_credits_used", 0) + credits_needed
     
     await db.student_wallets.update_one(
         {"wallet_id": wallet["wallet_id"]},
         {"$set": {
             "credit_balance": new_balance,
+            "paid_credits": new_paid,
+            "bonus_credits": new_bonus,
             "total_credits_used": new_total_used,
             "updated_at": datetime.now(timezone.utc).isoformat()
         }}
     )
     
+    # Create session payment record for commission tracking
+    record_id = f"spr_{uuid.uuid4().hex[:12]}"
+    session_payment_record = {
+        "record_id": record_id,
+        "booking_id": request.booking_id,
+        "student_id": student["student_id"],
+        "teacher_id": request.teacher_id,
+        "duration_minutes": request.duration_minutes,
+        "credits_used": credits_needed,
+        "paid_credits_used": paid_to_deduct,
+        "bonus_credits_used": bonus_to_deduct,
+        "base_session_price": base_session_price,
+        "commission_rate": commission_rate,
+        "tutor_payout": tutor_payout,
+        "platform_commission": platform_commission,
+        "platform_marketing_cost": platform_marketing_cost,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.session_payment_records.insert_one(session_payment_record)
+    
     # Add transaction record
-    description = request.description or f"Session with teacher"
     await add_transaction(
         wallet_id=wallet["wallet_id"],
         student_id=student["student_id"],
         transaction_type="session_deduction",
-        credits=-request.credits,
-        description=description,
+        credit_amount=-credits_needed,
+        description=f"Session ({request.duration_minutes} mins) - {paid_to_deduct:.1f} paid + {bonus_to_deduct:.1f} bonus credits",
+        monetary_value=base_session_price,
         reference_id=request.booking_id
     )
     
     return {
         "success": True,
-        "credits_deducted": request.credits,
-        "new_balance": new_balance
+        "deduction": {
+            "total_credits": credits_needed,
+            "paid_credits_used": paid_to_deduct,
+            "bonus_credits_used": bonus_to_deduct
+        },
+        "new_balance": {
+            "total": new_balance,
+            "paid": new_paid,
+            "bonus": new_bonus
+        },
+        "commission_breakdown": {
+            "base_session_price": base_session_price,
+            "commission_rate": commission_rate,
+            "tutor_payout": tutor_payout,
+            "platform_commission": platform_commission,
+            "platform_marketing_cost": platform_marketing_cost,
+            "note": "Commission calculated from base session price, NOT from discounted credit cost"
+        }
     }
 
 
@@ -403,51 +530,100 @@ async def refund_credits(request: RefundCreditsRequest, user_id: str):
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
+    # Find the original session payment record
+    session_record = await db.session_payment_records.find_one(
+        {"booking_id": request.booking_id},
+        {"_id": 0}
+    )
+    
+    if not session_record:
+        raise HTTPException(status_code=404, detail="No payment record found for this booking")
+    
     wallet = await get_or_create_wallet(student["student_id"], user_id)
     
-    # Add credits back
-    new_balance = wallet["credit_balance"] + request.credits
+    # Refund SEPARATELY - paid credits back to paid, bonus back to bonus
+    paid_to_refund = session_record.get("paid_credits_used", 0)
+    bonus_to_refund = session_record.get("bonus_credits_used", 0)
+    total_refund = paid_to_refund + bonus_to_refund
+    
+    new_paid = wallet.get("paid_credits", 0) + paid_to_refund
+    new_bonus = wallet.get("bonus_credits", 0) + bonus_to_refund
+    new_balance = new_paid + new_bonus
     
     await db.student_wallets.update_one(
         {"wallet_id": wallet["wallet_id"]},
         {"$set": {
             "credit_balance": new_balance,
+            "paid_credits": new_paid,
+            "bonus_credits": new_bonus,
             "updated_at": datetime.now(timezone.utc).isoformat()
         }}
     )
     
-    # Add transaction record
-    await add_transaction(
-        wallet_id=wallet["wallet_id"],
-        student_id=student["student_id"],
-        transaction_type="refund",
-        credits=request.credits,
-        description=f"Refund: {request.reason}",
-        reference_id=request.booking_id
+    # Add refund transactions
+    if paid_to_refund > 0:
+        await add_transaction(
+            wallet_id=wallet["wallet_id"],
+            student_id=student["student_id"],
+            transaction_type="refund_paid",
+            credit_amount=paid_to_refund,
+            description=f"Refund (Paid Credits): {request.reason}",
+            monetary_value=paid_to_refund * BASE_CREDIT_PRICE,
+            reference_id=request.booking_id
+        )
+    
+    if bonus_to_refund > 0:
+        await add_transaction(
+            wallet_id=wallet["wallet_id"],
+            student_id=student["student_id"],
+            transaction_type="refund_bonus",
+            credit_amount=bonus_to_refund,
+            description=f"Refund (Bonus Credits): {request.reason}",
+            monetary_value=bonus_to_refund * BASE_CREDIT_PRICE,
+            reference_id=request.booking_id
+        )
+    
+    # Mark session payment record as refunded
+    await db.session_payment_records.update_one(
+        {"booking_id": request.booking_id},
+        {"$set": {"refunded": True, "refund_reason": request.reason}}
     )
     
     return {
         "success": True,
-        "credits_refunded": request.credits,
-        "new_balance": new_balance
+        "refund": {
+            "paid_credits": paid_to_refund,
+            "bonus_credits": bonus_to_refund,
+            "total": total_refund
+        },
+        "new_balance": {
+            "total": new_balance,
+            "paid": new_paid,
+            "bonus": new_bonus
+        }
     }
 
 
 @wallet_router.post("/add-bonus")
 async def add_bonus_credits(user_id: str, credits: float, description: str):
-    """Add bonus credits (admin function)"""
+    """Add promotional bonus credits (admin function)"""
     student = await db.students.find_one({"user_id": user_id}, {"_id": 0})
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
     wallet = await get_or_create_wallet(student["student_id"], user_id)
     
-    new_balance = wallet["credit_balance"] + credits
+    # Add to BONUS credits only (not paid)
+    new_bonus = wallet.get("bonus_credits", 0) + credits
+    new_balance = wallet.get("paid_credits", 0) + new_bonus
+    new_total_bonus = wallet.get("total_bonus_credits_received", 0) + credits
     
     await db.student_wallets.update_one(
         {"wallet_id": wallet["wallet_id"]},
         {"$set": {
             "credit_balance": new_balance,
+            "bonus_credits": new_bonus,
+            "total_bonus_credits_received": new_total_bonus,
             "updated_at": datetime.now(timezone.utc).isoformat()
         }}
     )
@@ -455,15 +631,21 @@ async def add_bonus_credits(user_id: str, credits: float, description: str):
     await add_transaction(
         wallet_id=wallet["wallet_id"],
         student_id=student["student_id"],
-        transaction_type="bonus",
-        credits=credits,
-        description=description
+        transaction_type="bonus_reward",
+        credit_amount=credits,
+        description=description,
+        monetary_value=credits * BASE_CREDIT_PRICE  # Marketing cost
     )
     
     return {
         "success": True,
-        "credits_added": credits,
-        "new_balance": new_balance
+        "bonus_credits_added": credits,
+        "new_balance": {
+            "total": new_balance,
+            "paid": wallet.get("paid_credits", 0),
+            "bonus": new_bonus
+        },
+        "note": "Bonus credits are promotional - absorbed as platform marketing cost"
     }
 
 
@@ -477,37 +659,126 @@ async def check_balance_for_booking(user_id: str, duration_minutes: int):
     wallet = await get_or_create_wallet(student["student_id"], user_id)
     
     required_credits = get_credits_for_duration(duration_minutes)
-    has_sufficient = wallet["credit_balance"] >= required_credits
+    total_available = wallet.get("credit_balance", 0)
+    has_sufficient = total_available >= required_credits
     
     return {
         "has_sufficient_credits": has_sufficient,
-        "current_balance": wallet["credit_balance"],
+        "balance": {
+            "total": total_available,
+            "paid": wallet.get("paid_credits", 0),
+            "bonus": wallet.get("bonus_credits", 0)
+        },
         "required_credits": required_credits,
-        "duration_minutes": duration_minutes
+        "duration_minutes": duration_minutes,
+        "base_session_price": get_base_session_price(duration_minutes)
     }
 
 
-# ============== STRIPE WEBHOOK (Production Ready) ==============
+@wallet_router.get("/calculate-cost")
+async def calculate_session_cost(duration_minutes: int):
+    """Calculate the credit cost and commission breakdown for a session"""
+    credits = get_credits_for_duration(duration_minutes)
+    base_price = get_base_session_price(duration_minutes)
+    
+    return {
+        "duration_minutes": duration_minutes,
+        "credits_required": credits,
+        "base_session_price": base_price,
+        "commission_breakdown": {
+            "commission_rate": DEFAULT_COMMISSION_RATE,
+            "tutor_payout": base_price * (1 - DEFAULT_COMMISSION_RATE),
+            "platform_commission": base_price * DEFAULT_COMMISSION_RATE
+        },
+        "note": "Commission is ALWAYS calculated from base session price, regardless of how credits were obtained"
+    }
+
+
+# ============== ADMIN ENDPOINTS ==============
+
+@wallet_router.get("/admin/session-records")
+async def get_session_payment_records(limit: int = 50, offset: int = 0):
+    """Admin: Get all session payment records with commission breakdown"""
+    records = await db.session_payment_records.find(
+        {},
+        {"_id": 0}
+    ).sort("created_at", -1).skip(offset).limit(limit).to_list(limit)
+    
+    total = await db.session_payment_records.count_documents({})
+    
+    # Calculate totals
+    pipeline = [
+        {"$group": {
+            "_id": None,
+            "total_tutor_payouts": {"$sum": "$tutor_payout"},
+            "total_platform_commission": {"$sum": "$platform_commission"},
+            "total_marketing_cost": {"$sum": "$platform_marketing_cost"},
+            "total_sessions": {"$sum": 1}
+        }}
+    ]
+    
+    summary_result = await db.session_payment_records.aggregate(pipeline).to_list(1)
+    summary = summary_result[0] if summary_result else {
+        "total_tutor_payouts": 0,
+        "total_platform_commission": 0,
+        "total_marketing_cost": 0,
+        "total_sessions": 0
+    }
+    
+    return {
+        "records": records,
+        "total": total,
+        "summary": {
+            "total_tutor_payouts": summary.get("total_tutor_payouts", 0),
+            "total_platform_commission": summary.get("total_platform_commission", 0),
+            "total_marketing_cost": summary.get("total_marketing_cost", 0),
+            "net_platform_revenue": summary.get("total_platform_commission", 0) - summary.get("total_marketing_cost", 0),
+            "total_sessions": summary.get("total_sessions", 0)
+        }
+    }
+
+
+@wallet_router.get("/admin/marketing-cost-report")
+async def get_marketing_cost_report():
+    """Admin: Get report on bonus credits (marketing cost)"""
+    # Total bonus credits given
+    wallet_pipeline = [
+        {"$group": {
+            "_id": None,
+            "total_bonus_given": {"$sum": "$total_bonus_credits_received"}
+        }}
+    ]
+    wallet_result = await db.student_wallets.aggregate(wallet_pipeline).to_list(1)
+    total_bonus_given = wallet_result[0]["total_bonus_given"] if wallet_result else 0
+    
+    # Bonus credits used in sessions
+    session_pipeline = [
+        {"$group": {
+            "_id": None,
+            "total_bonus_used": {"$sum": "$bonus_credits_used"},
+            "total_marketing_cost": {"$sum": "$platform_marketing_cost"}
+        }}
+    ]
+    session_result = await db.session_payment_records.aggregate(session_pipeline).to_list(1)
+    
+    return {
+        "bonus_credits": {
+            "total_given": total_bonus_given,
+            "total_used": session_result[0]["total_bonus_used"] if session_result else 0,
+            "marketing_cost_realized": session_result[0]["total_marketing_cost"] if session_result else 0,
+            "value_at_base_rate": total_bonus_given * BASE_CREDIT_PRICE
+        },
+        "base_credit_price": BASE_CREDIT_PRICE,
+        "note": "Marketing cost = bonus credits × base credit price (RM15/credit)"
+    }
+
+
+# ============== STRIPE WEBHOOK ==============
 @wallet_router.post("/webhook/stripe")
 async def stripe_webhook(request: Request, stripe_signature: str = Header(None)):
-    """
-    Stripe webhook endpoint for payment confirmations.
-    In production, verify the signature using Stripe's webhook secret.
-    """
+    """Stripe webhook for payment confirmations"""
     payload = await request.body()
     
-    # In production, verify the webhook signature
-    # stripe_webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
-    # try:
-    #     event = stripe.Webhook.construct_event(
-    #         payload, stripe_signature, stripe_webhook_secret
-    #     )
-    # except ValueError as e:
-    #     raise HTTPException(status_code=400, detail="Invalid payload")
-    # except stripe.error.SignatureVerificationError as e:
-    #     raise HTTPException(status_code=400, detail="Invalid signature")
-    
-    # For now, parse the payload directly (development mode)
     try:
         event = json.loads(payload)
     except json.JSONDecodeError:
@@ -519,76 +790,65 @@ async def stripe_webhook(request: Request, stripe_signature: str = Header(None))
         payment_intent = event["data"]["object"]
         stripe_pi_id = payment_intent["id"]
         
-        # Find our payment intent record
         intent = await db.payment_intents.find_one(
             {"stripe_payment_intent_id": stripe_pi_id},
             {"_id": 0}
         )
         
         if intent and intent["status"] != "succeeded":
-            # Process the top-up
             wallet = await db.student_wallets.find_one(
                 {"wallet_id": intent["wallet_id"]},
                 {"_id": 0}
             )
             
             if wallet:
-                new_balance = wallet["credit_balance"] + intent["credits_to_add"]
-                new_total_topup = wallet["total_topup_amount"] + intent["amount_myr"]
-                new_total_credits = wallet["total_credits_purchased"] + intent["credits_to_add"]
+                paid_credits = intent.get("paid_credits_to_add", 0)
+                bonus_credits = intent.get("bonus_credits_to_add", 0)
+                
+                new_paid = wallet.get("paid_credits", 0) + paid_credits
+                new_bonus = wallet.get("bonus_credits", 0) + bonus_credits
+                new_balance = new_paid + new_bonus
                 
                 await db.student_wallets.update_one(
                     {"wallet_id": intent["wallet_id"]},
                     {"$set": {
                         "credit_balance": new_balance,
-                        "total_topup_amount": new_total_topup,
-                        "total_credits_purchased": new_total_credits,
+                        "paid_credits": new_paid,
+                        "bonus_credits": new_bonus,
+                        "total_topup_amount": wallet["total_topup_amount"] + intent["amount_myr"],
+                        "total_paid_credits_purchased": wallet.get("total_paid_credits_purchased", 0) + paid_credits,
+                        "total_bonus_credits_received": wallet.get("total_bonus_credits_received", 0) + bonus_credits,
                         "updated_at": datetime.now(timezone.utc).isoformat()
                     }}
                 )
                 
                 await db.payment_intents.update_one(
                     {"payment_intent_id": intent["payment_intent_id"]},
-                    {"$set": {
-                        "status": "succeeded",
-                        "completed_at": datetime.now(timezone.utc).isoformat()
-                    }}
+                    {"$set": {"status": "succeeded", "completed_at": datetime.now(timezone.utc).isoformat()}}
                 )
                 
+                # Add separate transactions for paid and bonus
                 await add_transaction(
                     wallet_id=intent["wallet_id"],
                     student_id=intent["student_id"],
-                    transaction_type="topup",
-                    credits=intent["credits_to_add"],
-                    description=f"Top-up: {intent.get('package_name', 'Credit Package')}",
-                    amount_myr=intent["amount_myr"],
+                    transaction_type="topup_paid",
+                    credit_amount=paid_credits,
+                    description=f"Top-up: {intent.get('package_name', 'Package')} (Paid)",
+                    monetary_value=paid_credits * BASE_CREDIT_PRICE,
+                    payment_amount=intent["amount_myr"],
                     reference_id=intent["payment_intent_id"]
                 )
-    
-    elif event_type == "payment_intent.payment_failed":
-        payment_intent = event["data"]["object"]
-        stripe_pi_id = payment_intent["id"]
-        
-        await db.payment_intents.update_one(
-            {"stripe_payment_intent_id": stripe_pi_id},
-            {"$set": {"status": "failed"}}
-        )
+                
+                if bonus_credits > 0:
+                    await add_transaction(
+                        wallet_id=intent["wallet_id"],
+                        student_id=intent["student_id"],
+                        transaction_type="topup_bonus",
+                        credit_amount=bonus_credits,
+                        description=f"Bonus: {intent.get('package_name', 'Package')} (Promotional)",
+                        monetary_value=bonus_credits * BASE_CREDIT_PRICE,
+                        payment_amount=0,
+                        reference_id=intent["payment_intent_id"]
+                    )
     
     return {"received": True}
-
-
-# ============== HELPER ENDPOINT FOR CALCULATING SESSION COST ==============
-@wallet_router.get("/calculate-cost")
-async def calculate_session_cost(duration_minutes: int):
-    """Calculate the credit cost for a session duration"""
-    credits = get_credits_for_duration(duration_minutes)
-    
-    return {
-        "duration_minutes": duration_minutes,
-        "credits_required": credits,
-        "equivalent_rm": credits * 15,  # Base rate RM15 per credit
-        "breakdown": {
-            "15_min_blocks": duration_minutes // 15,
-            "credits_per_block": 1
-        }
-    }
