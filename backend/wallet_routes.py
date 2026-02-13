@@ -516,6 +516,15 @@ async def confirm_topup(payment_intent_id: str, user_id: str):
             payment_amount=0,  # Bonus = no payment
             reference_id=payment_intent_id
         )
+        
+        # Create bonus credit batch for expiry tracking (12-month expiry)
+        await create_bonus_credit_batch(
+            wallet_id=intent["wallet_id"],
+            student_id=intent["student_id"],
+            credit_amount=bonus_credits,
+            source="topup_bonus",
+            reference_id=payment_intent_id
+        )
     
     return {
         "success": True,
