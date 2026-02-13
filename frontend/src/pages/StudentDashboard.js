@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Calendar, Home, User, CreditCard, Bell, Menu, X, ChevronRight, 
   Video, Clock, Star, Search, ChevronLeft, MoreVertical, 
-  BookOpen, ArrowRight, RefreshCw, AlertCircle, Check, LogOut
+  BookOpen, ArrowRight, RefreshCw, AlertCircle, Check, LogOut,
+  Edit2, Trash2, Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
 import NotificationBell from '../components/NotificationBell';
-import { WalletPage } from '../components/student';
+import { WalletPage, BookingModal, CancelBookingDialog, EditBookingModal } from '../components/student';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -23,34 +24,25 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, user, onLogout })
 
   return (
     <>
-      {/* Mobile Overlay */}
       {isOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
-      
-      {/* Sidebar */}
       <aside className={`
         fixed top-0 left-0 h-full bg-white z-50 transition-transform duration-300 ease-in-out
         w-72 lg:translate-x-0 shadow-xl lg:shadow-none border-r
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `} style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-        {/* Logo */}
         <div className="h-16 flex items-center justify-between px-6 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
           <span className="text-xl font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
             Alif Amin
           </span>
-          <button 
-            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
-            onClick={() => setIsOpen(false)}
-          >
+          <button className="lg:hidden p-2 hover:bg-gray-100 rounded-lg" onClick={() => setIsOpen(false)}>
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
-
-        {/* User Info */}
         <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white font-medium">
@@ -62,8 +54,6 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, user, onLogout })
             </div>
           </div>
         </div>
-
-        {/* Navigation */}
         <nav className="p-4 space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -71,14 +61,10 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, user, onLogout })
             return (
               <button
                 key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setIsOpen(false);
-                }}
+                onClick={() => { setActiveTab(item.id); setIsOpen(false); }}
+                data-testid={`sidebar-${item.id}`}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                  isActive 
-                    ? 'bg-[#0F3D2E]/10 text-[#0F3D2E]' 
-                    : 'text-gray-600 hover:bg-gray-50'
+                  isActive ? 'bg-[#0F3D2E]/10 text-[#0F3D2E]' : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
                 <Icon className={`w-5 h-5 ${isActive ? 'text-[#0F3D2E]' : 'text-gray-400'}`} />
@@ -88,11 +74,10 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, user, onLogout })
             );
           })}
         </nav>
-
-        {/* Logout */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
           <button
             onClick={onLogout}
+            data-testid="sidebar-logout"
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-red-50 hover:text-red-600 transition-all"
           >
             <LogOut className="w-5 h-5" />
@@ -108,10 +93,7 @@ const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, user, onLogout })
 const Header = ({ title, user, onMenuClick }) => (
   <header className="h-16 bg-white border-b flex items-center justify-between px-4 lg:px-8" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
     <div className="flex items-center gap-4">
-      <button 
-        className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
-        onClick={onMenuClick}
-      >
+      <button className="lg:hidden p-2 hover:bg-gray-100 rounded-lg" onClick={onMenuClick}>
         <Menu className="w-5 h-5 text-gray-600" />
       </button>
       <div>
@@ -128,8 +110,8 @@ const Header = ({ title, user, onMenuClick }) => (
   </header>
 );
 
-// Countdown Timer Component
-const CountdownTimer = ({ targetTime }) => {
+// Countdown Timer Hook
+const useCountdownTimer = (targetTime) => {
   const [timeLeft, setTimeLeft] = useState('');
   const [canJoin, setCanJoin] = useState(false);
 
@@ -138,7 +120,6 @@ const CountdownTimer = ({ targetTime }) => {
       const now = new Date();
       const target = new Date(targetTime);
       const diff = target - now;
-      
       if (diff <= 5 * 60 * 1000 && diff > -60 * 60 * 1000) {
         setCanJoin(true);
         setTimeLeft('Ready to join');
@@ -146,19 +127,14 @@ const CountdownTimer = ({ targetTime }) => {
         setCanJoin(false);
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        if (hours > 0) {
-          setTimeLeft(`Starts in ${hours}h ${mins}m`);
-        } else {
-          setTimeLeft(`Starts in ${mins}m`);
-        }
+        setTimeLeft(hours > 0 ? `Starts in ${hours}h ${mins}m` : `Starts in ${mins}m`);
       } else {
         setCanJoin(false);
         setTimeLeft('Class ended');
       }
     };
-
     updateTimer();
-    const interval = setInterval(updateTimer, 1000);
+    const interval = setInterval(updateTimer, 30000);
     return () => clearInterval(interval);
   }, [targetTime]);
 
@@ -166,88 +142,29 @@ const CountdownTimer = ({ targetTime }) => {
 };
 
 // Dashboard Home View
-const DashboardHome = ({ dashboardData, navigate, onBookTeacher }) => {
-  const nextClass = dashboardData?.upcoming_classes?.[0];
-  const recentClasses = dashboardData?.past_classes?.slice(0, 3) || [];
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTime, setSelectedTime] = useState('20:00');
+const DashboardHome = ({ bookings, onOpenBooking, onRefresh }) => {
+  const upcomingBookings = bookings.filter(b => b.status === 'scheduled' && new Date(b.start_time_utc) > new Date());
+  const pastBookings = bookings.filter(b => b.status === 'completed').slice(0, 3);
+  const nextClass = upcomingBookings[0];
 
-  // Generate next 7 days
-  const dates = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() + i);
-    return date;
-  });
-
-  const times = ['08:00', '09:00', '10:00', '14:00', '15:00', '16:00', '19:00', '20:00', '21:00'];
-
-  const formatDate = (date) => {
-    return date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
-  };
-
-  const { timeLeft, canJoin } = nextClass 
-    ? CountdownTimer({ targetTime: nextClass.start_time_utc })
+  const { timeLeft, canJoin } = nextClass
+    ? { timeLeft: '', canJoin: false } // will use inline
     : { timeLeft: '', canJoin: false };
 
   return (
-    <div className="p-4 lg:p-8 space-y-6">
-      {/* Section A: Upcoming Class Hero Card */}
+    <div className="p-4 lg:p-8 space-y-6" data-testid="dashboard-home">
+      {/* Next Class Hero */}
       <section>
         <h2 className="text-lg font-semibold mb-4" style={{ color: '#0F3D2E' }}>Next Class</h2>
         {nextClass ? (
-          <div className="bg-gradient-to-br from-[#0F3D2E] to-[#1a5c47] rounded-2xl p-6 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
-            <div className="relative z-10">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-white/70 text-sm mb-1">Upcoming Session</p>
-                  <h3 className="text-2xl font-bold">{nextClass.teacher_name || 'Your Teacher'}</h3>
-                </div>
-                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                  <BookOpen className="w-6 h-6" />
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-white/70" />
-                  <span>{new Date(nextClass.start_time_utc).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-white/70" />
-                  <span>{new Date(nextClass.start_time_utc).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-white/80 text-sm">{timeLeft}</span>
-                {nextClass.meet_link ? (
-                  <a
-                    href={canJoin ? nextClass.meet_link : '#'}
-                    target={canJoin ? '_blank' : '_self'}
-                    rel="noopener noreferrer"
-                    onClick={(e) => !canJoin && e.preventDefault()}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
-                      canJoin 
-                        ? 'bg-[#22C55E] hover:bg-[#16a34a] cursor-pointer' 
-                        : 'bg-white/20 cursor-not-allowed'
-                    }`}
-                  >
-                    <Video className="w-5 h-5" />
-                    {canJoin ? 'Join Class' : timeLeft}
-                  </a>
-                ) : (
-                  <span className="text-white/60 text-sm">Link will be available soon</span>
-                )}
-              </div>
-            </div>
-          </div>
+          <NextClassCard booking={nextClass} />
         ) : (
           <div className="bg-white rounded-2xl p-8 border text-center" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p className="text-gray-500 mb-4">No upcoming classes scheduled</p>
             <button
-              onClick={() => onBookTeacher()}
+              onClick={onOpenBooking}
+              data-testid="book-first-class-btn"
               className="px-6 py-3 rounded-xl bg-[#0F3D2E] text-white font-medium hover:opacity-90 transition-all"
             >
               Book Your First Class
@@ -256,109 +173,42 @@ const DashboardHome = ({ dashboardData, navigate, onBookTeacher }) => {
         )}
       </section>
 
-      {/* Section B: Quick Book Widget */}
+      {/* Quick Book CTA */}
       <section className="bg-white rounded-2xl p-6 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-        <h2 className="text-lg font-semibold mb-4" style={{ color: '#0F3D2E' }}>Book a New Class</h2>
-        
-        {/* Date Picker */}
-        <div className="mb-4">
-          <p className="text-sm text-gray-500 mb-3">Select Date</p>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {dates.map((date, idx) => {
-              const isSelected = date.toDateString() === selectedDate.toDateString();
-              const isToday = date.toDateString() === new Date().toDateString();
-              return (
-                <button
-                  key={idx}
-                  onClick={() => setSelectedDate(date)}
-                  className={`flex-shrink-0 w-16 py-3 rounded-xl text-center transition-all ${
-                    isSelected 
-                      ? 'bg-[#0F3D2E] text-white' 
-                      : 'bg-gray-50 hover:bg-gray-100'
-                  }`}
-                >
-                  <p className={`text-xs ${isSelected ? 'text-white/70' : 'text-gray-400'}`}>
-                    {isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' })}
-                  </p>
-                  <p className={`text-lg font-semibold ${isSelected ? '' : 'text-gray-700'}`}>
-                    {date.getDate()}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold" style={{ color: '#0F3D2E' }}>Book a New Class</h2>
         </div>
-
-        {/* Time Picker */}
-        <div className="mb-6">
-          <p className="text-sm text-gray-500 mb-3">Select Time</p>
-          <select 
-            value={selectedTime}
-            onChange={(e) => setSelectedTime(e.target.value)}
-            className="w-full h-12 px-4 rounded-xl border bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-            style={{ borderColor: 'rgba(15, 61, 46, 0.15)' }}
-          >
-            {times.map(time => (
-              <option key={time} value={time}>
-                {new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Find Teachers Button */}
+        <p className="text-sm text-gray-500 mb-4">Choose your teacher, date, time and session duration.</p>
         <button
-          onClick={() => onBookTeacher(selectedDate, selectedTime)}
+          onClick={onOpenBooking}
+          data-testid="quick-book-btn"
           className="w-full h-14 rounded-xl bg-[#D4AF37] text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-all"
         >
-          <Search className="w-5 h-5" />
-          Find Available Teachers
+          <Plus className="w-5 h-5" />
+          Book a Session
         </button>
       </section>
 
-      {/* Section C: Recent History */}
+      {/* Recent History */}
       <section className="bg-white rounded-2xl p-6 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold" style={{ color: '#0F3D2E' }}>Recent Classes</h2>
-          <button className="text-sm text-[#0F3D2E] font-medium">View All</button>
-        </div>
-
-        {recentClasses.length === 0 ? (
+        <h2 className="text-lg font-semibold mb-4" style={{ color: '#0F3D2E' }}>Recent Classes</h2>
+        {pastBookings.length === 0 ? (
           <div className="text-center py-8">
             <Clock className="w-10 h-10 mx-auto mb-3 text-gray-300" />
             <p className="text-gray-500">No past classes yet</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {recentClasses.map((classItem, idx) => (
-              <div 
-                key={idx} 
-                className="p-4 rounded-xl bg-gray-50 border border-gray-100"
-              >
-                <div className="flex items-start justify-between mb-3">
+          <div className="space-y-3">
+            {pastBookings.map((b) => (
+              <div key={b.booking_id} className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-medium" style={{ color: '#1F2933' }}>
-                      {new Date(classItem.start_time_utc).toLocaleDateString('en-US', { 
-                        weekday: 'short', month: 'short', day: 'numeric' 
-                      })}
+                    <p className="font-medium text-sm" style={{ color: '#1F2933' }}>
+                      {new Date(b.start_time_utc).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                     </p>
-                    <p className="text-sm text-gray-500">{classItem.teacher_name || 'Ustaz Ahmad'}</p>
+                    <p className="text-sm text-gray-500">{b.teacher_name || 'Teacher'} &middot; {b.duration_minutes || 30} min</p>
                   </div>
-                  <button 
-                    onClick={() => onBookTeacher()}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#0F3D2E]/10 text-[#0F3D2E] text-sm font-medium hover:bg-[#0F3D2E]/20 transition-all"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    Rebook
-                  </button>
-                </div>
-                
-                {/* Teacher Notes */}
-                <div className="p-3 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/20">
-                  <p className="text-xs font-medium text-[#D4AF37] mb-1">Teacher Notes</p>
-                  <p className="text-sm text-gray-700">
-                    {classItem.notes || "Focus on Tajweed rules for Surah Al-Falak next time. Practice Qalqalah sounds."}
-                  </p>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">Completed</span>
                 </div>
               </div>
             ))}
@@ -369,206 +219,72 @@ const DashboardHome = ({ dashboardData, navigate, onBookTeacher }) => {
   );
 };
 
-// Booking Results Component
-const BookingResults = ({ selectedDate, selectedTime, onBack, onBook }) => {
-  const [teachers, setTeachers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [selectedTeacher, setSelectedTeacher] = useState(null);
-
-  // Mock teachers data
-  useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setTeachers([
-        { id: 1, name: 'Ustaz Ahmad', expertise: 'Hifz & Tajweed', rating: 4.9, reviews: 124, price: 80, avatar: 'A' },
-        { id: 2, name: 'Ustazah Fatimah', expertise: 'Quran Reading', rating: 4.8, reviews: 98, price: 75, avatar: 'F' },
-        { id: 3, name: 'Ustaz Muhammad', expertise: 'Tajweed', rating: 4.7, reviews: 86, price: 70, avatar: 'M' },
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, [selectedDate, selectedTime]);
-
-  const handleBookTeacher = (teacher) => {
-    setSelectedTeacher(teacher);
-    setShowConfirmModal(true);
-  };
-
-  const confirmBooking = () => {
-    toast.success(`Booking confirmed with ${selectedTeacher.name}!`);
-    setShowConfirmModal(false);
-    onBook();
-  };
-
-  const formatDisplayDate = () => {
-    if (!selectedDate) return '';
-    return selectedDate.toLocaleDateString('en-US', { 
-      weekday: 'long', month: 'long', day: 'numeric' 
-    });
-  };
-
-  const formatDisplayTime = () => {
-    if (!selectedTime) return '';
-    return new Date(`2000-01-01T${selectedTime}`).toLocaleTimeString('en-US', { 
-      hour: 'numeric', minute: '2-digit', hour12: true 
-    });
-  };
+// Next Class Card with countdown
+const NextClassCard = ({ booking }) => {
+  const { timeLeft, canJoin } = useCountdownTimer(booking.start_time_utc);
 
   return (
-    <div className="p-4 lg:p-8">
-      {/* Context Bar */}
-      <div className="bg-[#0F3D2E] text-white rounded-xl p-4 mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Calendar className="w-5 h-5 text-white/70" />
-          <span>
-            Showing teachers available on <strong>{formatDisplayDate()}</strong> at <strong>{formatDisplayTime()}</strong>
-          </span>
-        </div>
-        <button 
-          onClick={onBack}
-          className="text-sm text-white/80 hover:text-white underline"
-        >
-          Change Time
-        </button>
-      </div>
-
-      {/* Teachers Grid */}
-      {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0F3D2E]" />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teachers.map((teacher) => (
-            <div 
-              key={teacher.id}
-              className="bg-white rounded-2xl p-6 border hover:shadow-lg transition-all"
-              style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-14 h-14 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white text-xl font-semibold">
-                  {teacher.avatar}
-                </div>
-                <div>
-                  <h3 className="font-semibold" style={{ color: '#1F2933' }}>{teacher.name}</h3>
-                  <p className="text-sm text-gray-500">{teacher.expertise}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 text-[#D4AF37] fill-current" />
-                  <span className="font-medium">{teacher.rating}</span>
-                  <span className="text-gray-400 text-sm">({teacher.reviews})</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }}>RM {teacher.price}</p>
-                  <p className="text-xs text-gray-400">per class</p>
-                </div>
-                <button
-                  onClick={() => handleBookTeacher(teacher)}
-                  className="px-5 py-2.5 rounded-xl bg-[#0F3D2E] text-white font-medium hover:opacity-90 transition-all"
-                >
-                  Book This Teacher
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Confirmation Modal */}
-      {showConfirmModal && selectedTeacher && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4" style={{ color: '#0F3D2E' }}>Confirm Booking</h3>
-            
-            <div className="space-y-4 mb-6">
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                <div className="w-12 h-12 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white font-semibold">
-                  {selectedTeacher.avatar}
-                </div>
-                <div>
-                  <p className="font-medium">{selectedTeacher.name}</p>
-                  <p className="text-sm text-gray-500">{selectedTeacher.expertise}</p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
-                  <span>{formatDisplayDate()}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <span>{formatDisplayTime()}</span>
-                </div>
-              </div>
-
-              <div className="p-4 bg-[#D4AF37]/10 rounded-xl border border-[#D4AF37]/20">
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Class Fee</span>
-                  <span className="font-semibold" style={{ color: '#0F3D2E' }}>RM {selectedTeacher.price}</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">Will be deducted from your wallet balance</p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowConfirmModal(false)}
-                className="flex-1 py-3 rounded-xl border font-medium hover:bg-gray-50 transition-all"
-                style={{ borderColor: 'rgba(15, 61, 46, 0.2)', color: '#0F3D2E' }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmBooking}
-                className="flex-1 py-3 rounded-xl bg-[#0F3D2E] text-white font-medium hover:opacity-90 transition-all"
-              >
-                Confirm Booking
-              </button>
-            </div>
+    <div className="bg-gradient-to-br from-[#0F3D2E] to-[#1a5c47] rounded-2xl p-6 text-white relative overflow-hidden" data-testid="next-class-card">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
+      <div className="relative z-10">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <p className="text-white/70 text-sm mb-1">Upcoming Session</p>
+            <h3 className="text-2xl font-bold">{booking.teacher_name || 'Your Teacher'}</h3>
+          </div>
+          <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full text-sm">
+            <Clock className="w-3.5 h-3.5" />
+            {booking.duration_minutes || 30} min
           </div>
         </div>
-      )}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-white/70" />
+            <span>{new Date(booking.start_time_utc).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-white/70" />
+            <span>{new Date(booking.start_time_utc).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-white/80 text-sm">{timeLeft}</span>
+          {booking.meet_link ? (
+            <a
+              href={canJoin ? booking.meet_link : '#'}
+              target={canJoin ? '_blank' : '_self'}
+              rel="noopener noreferrer"
+              onClick={(e) => !canJoin && e.preventDefault()}
+              data-testid="join-class-btn"
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
+                canJoin ? 'bg-[#22C55E] hover:bg-[#16a34a] cursor-pointer' : 'bg-white/20 cursor-not-allowed'
+              }`}
+            >
+              <Video className="w-5 h-5" />
+              {canJoin ? 'Join Class' : timeLeft}
+            </a>
+          ) : (
+            <span className="text-white/60 text-sm">Link will be available soon</span>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
 
 // My Schedule Component
-const MySchedule = ({ dashboardData }) => {
+const MySchedule = ({ bookings, onOpenBooking, onEdit, onCancel }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
-  const [showActionMenu, setShowActionMenu] = useState(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(null);
 
-  const allClasses = [
-    ...(dashboardData?.upcoming_classes || []).map(c => ({ ...c, status: 'scheduled' })),
-    ...(dashboardData?.past_classes || []).map(c => ({ ...c, status: 'completed' })),
-  ];
-
-  // Generate calendar days
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const days = [];
-
-    // Add empty slots for days before the first day
-    for (let i = 0; i < firstDay.getDay(); i++) {
-      days.push(null);
-    }
-
-    // Add all days in the month
-    for (let i = 1; i <= lastDay.getDate(); i++) {
-      days.push(new Date(year, month, i));
-    }
-
+    for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
+    for (let i = 1; i <= lastDay.getDate(); i++) days.push(new Date(year, month, i));
     return days;
   };
 
@@ -576,268 +292,174 @@ const MySchedule = ({ dashboardData }) => {
 
   const getClassesForDay = (day) => {
     if (!day) return [];
-    return allClasses.filter(c => {
-      const classDate = new Date(c.start_time_utc);
-      return classDate.toDateString() === day.toDateString();
+    return bookings.filter(b => {
+      const d = new Date(b.start_time_utc);
+      return d.toDateString() === day.toDateString();
     });
   };
 
-  const hasScheduledClass = (day) => {
-    return getClassesForDay(day).some(c => c.status === 'scheduled');
-  };
-
-  const hasCancelledClass = (day) => {
-    return getClassesForDay(day).some(c => c.status === 'cancelled');
-  };
-
-  const prevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-  };
-
-  const nextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
-  };
-
-  const handleAction = (action, classItem) => {
-    setShowActionMenu(null);
-    if (action === 'details') {
-      setShowDetailsModal(classItem);
-    } else if (action === 'reschedule') {
-      toast.info('Reschedule feature coming soon');
-    } else if (action === 'cancel') {
-      if (confirm('Are you sure? Refunds are processed to your wallet.')) {
-        toast.success('Class cancelled. Refund will be processed within 24 hours.');
-      }
-    }
-  };
-
-  const filteredClasses = selectedDay 
-    ? getClassesForDay(selectedDay)
-    : allClasses;
+  const filteredClasses = selectedDay ? getClassesForDay(selectedDay) : bookings;
 
   return (
-    <div className="p-4 lg:p-8">
+    <div className="p-4 lg:p-8" data-testid="my-schedule-page">
+      {/* Book New button */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>My Schedule</h2>
+        <button
+          onClick={onOpenBooking}
+          data-testid="schedule-book-btn"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0F3D2E] text-white font-medium text-sm hover:opacity-90 transition-all"
+        >
+          <Plus className="w-4 h-4" />
+          New Booking
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}
         <div className="lg:col-span-2 bg-white rounded-2xl p-6 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-          {/* Calendar Header */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>
+            <h3 className="text-lg font-semibold" style={{ color: '#0F3D2E' }}>
               {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-            </h2>
+            </h3>
             <div className="flex gap-2">
-              <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-lg">
+              <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-2 hover:bg-gray-100 rounded-lg">
                 <ChevronLeft className="w-5 h-5 text-gray-600" />
               </button>
-              <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-lg">
+              <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="p-2 hover:bg-gray-100 rounded-lg">
                 <ChevronRight className="w-5 h-5 text-gray-600" />
               </button>
             </div>
           </div>
 
-          {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-1 mb-2">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="text-center text-xs font-medium text-gray-400 py-2">
-                {day}
-              </div>
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+              <div key={d} className="text-center text-xs font-medium text-gray-400 py-2">{d}</div>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((day, idx) => {
               if (!day) return <div key={idx} className="aspect-square" />;
-              
               const isToday = day.toDateString() === new Date().toDateString();
               const isSelected = selectedDay && day.toDateString() === selectedDay.toDateString();
-              const hasClass = hasScheduledClass(day);
-              const hasCancelled = hasCancelledClass(day);
+              const dayClasses = getClassesForDay(day);
+              const hasScheduled = dayClasses.some(c => c.status === 'scheduled');
+              const hasCancelled = dayClasses.some(c => c.status === 'cancelled');
 
               return (
                 <button
                   key={idx}
                   onClick={() => setSelectedDay(isSelected ? null : day)}
                   className={`aspect-square rounded-lg flex flex-col items-center justify-center relative transition-all ${
-                    isSelected 
-                      ? 'bg-[#0F3D2E] text-white' 
-                      : isToday 
-                        ? 'bg-[#0F3D2E]/10' 
-                        : 'hover:bg-gray-50'
+                    isSelected ? 'bg-[#0F3D2E] text-white' : isToday ? 'bg-[#0F3D2E]/10' : 'hover:bg-gray-50'
                   }`}
                 >
-                  <span className={`text-sm ${isSelected ? 'font-semibold' : ''}`}>
-                    {day.getDate()}
-                  </span>
+                  <span className={`text-sm ${isSelected ? 'font-semibold' : ''}`}>{day.getDate()}</span>
                   <div className="flex gap-0.5 mt-1">
-                    {hasClass && (
-                      <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-[#22C55E]'}`} />
-                    )}
-                    {hasCancelled && (
-                      <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-red-300' : 'bg-red-500'}`} />
-                    )}
+                    {hasScheduled && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-[#22C55E]'}`} />}
+                    {hasCancelled && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-red-300' : 'bg-red-500'}`} />}
                   </div>
                 </button>
               );
             })}
           </div>
 
-          {/* Legend */}
           <div className="flex items-center gap-4 mt-4 pt-4 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#22C55E]" />
-              <span className="text-xs text-gray-500">Scheduled</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-              <span className="text-xs text-gray-500">Cancelled</span>
-            </div>
+            <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[#22C55E]" /><span className="text-xs text-gray-500">Scheduled</span></div>
+            <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-red-500" /><span className="text-xs text-gray-500">Cancelled</span></div>
           </div>
         </div>
 
-        {/* Agenda List */}
+        {/* Agenda */}
         <div className="bg-white rounded-2xl p-6 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
           <h3 className="text-lg font-semibold mb-4" style={{ color: '#0F3D2E' }}>
-            {selectedDay 
-              ? selectedDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-              : 'All Classes'
-            }
+            {selectedDay ? selectedDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'All Bookings'}
           </h3>
 
           {filteredClasses.length === 0 ? (
             <div className="text-center py-8">
               <Calendar className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-              <p className="text-gray-500 text-sm">No classes {selectedDay ? 'on this day' : 'scheduled'}</p>
+              <p className="text-gray-500 text-sm">No classes {selectedDay ? 'on this day' : 'found'}</p>
             </div>
           ) : (
-            <div className="space-y-3 max-h-[400px] overflow-y-auto">
-              {filteredClasses.map((classItem, idx) => (
-                <div 
-                  key={idx}
-                  className={`p-4 rounded-xl border relative ${
-                    classItem.status === 'cancelled' ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100'
-                  }`}
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-medium text-sm" style={{ color: '#1F2933' }}>
-                        {new Date(classItem.start_time_utc).toLocaleDateString('en-US', {
-                          weekday: 'short', month: 'short', day: 'numeric'
-                        })}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(classItem.start_time_utc).toLocaleTimeString('en-US', {
-                          hour: 'numeric', minute: '2-digit', hour12: true
-                        })}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">{classItem.teacher_name || 'Ustaz Ahmad'}</p>
-                    </div>
-                    
-                    <div className="relative">
-                      <button 
-                        onClick={() => setShowActionMenu(showActionMenu === idx ? null : idx)}
-                        className="p-1.5 hover:bg-gray-200 rounded-lg"
-                      >
-                        <MoreVertical className="w-4 h-4 text-gray-400" />
-                      </button>
-                      
-                      {showActionMenu === idx && (
-                        <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border py-1 z-10">
-                          <button 
-                            onClick={() => handleAction('details', classItem)}
-                            className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                          >
-                            View Details
-                          </button>
-                          {classItem.status === 'scheduled' && (
-                            <>
-                              <button 
-                                onClick={() => handleAction('reschedule', classItem)}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                              >
-                                Reschedule
-                              </button>
-                              <button 
-                                onClick={() => handleAction('cancel', classItem)}
-                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
-                              >
-                                Cancel Class
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <span className={`inline-block mt-2 text-xs px-2 py-0.5 rounded-full ${
-                    classItem.status === 'scheduled' 
-                      ? 'bg-[#22C55E]/20 text-[#22C55E]' 
-                      : classItem.status === 'cancelled'
-                        ? 'bg-red-100 text-red-600'
-                        : 'bg-gray-200 text-gray-600'
-                  }`}>
-                    {classItem.status === 'scheduled' ? 'Upcoming' : classItem.status === 'cancelled' ? 'Cancelled' : 'Completed'}
-                  </span>
-                </div>
+            <div className="space-y-3 max-h-[500px] overflow-y-auto">
+              {filteredClasses.map((b) => (
+                <ScheduleCard key={b.booking_id} booking={b} onEdit={onEdit} onCancel={onCancel} />
               ))}
             </div>
           )}
         </div>
       </div>
+    </div>
+  );
+};
 
-      {/* Details Modal */}
-      {showDetailsModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4" style={{ color: '#0F3D2E' }}>Class Details</h3>
-            
-            <div className="space-y-4 mb-6">
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <p className="text-sm text-gray-500 mb-1">Date & Time</p>
-                <p className="font-medium">
-                  {new Date(showDetailsModal.start_time_utc).toLocaleDateString('en-US', {
-                    weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit'
-                  })}
-                </p>
-              </div>
-              
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <p className="text-sm text-gray-500 mb-1">Teacher</p>
-                <p className="font-medium">{showDetailsModal.teacher_name || 'Ustaz Ahmad'}</p>
-              </div>
+// Single schedule card with edit/cancel
+const ScheduleCard = ({ booking, onEdit, onCancel }) => {
+  const isScheduled = booking.status === 'scheduled';
+  const isFuture = new Date(booking.start_time_utc) > new Date();
 
-              {showDetailsModal.meet_link && (
-                <div className="p-4 bg-gray-50 rounded-xl">
-                  <p className="text-sm text-gray-500 mb-1">Meeting Link</p>
-                  <a href={showDetailsModal.meet_link} target="_blank" rel="noopener noreferrer" className="text-[#0F3D2E] underline text-sm">
-                    {showDetailsModal.meet_link}
-                  </a>
-                </div>
-              )}
-
-              {showDetailsModal.notes && (
-                <div className="p-4 bg-[#D4AF37]/10 rounded-xl border border-[#D4AF37]/20">
-                  <p className="text-sm text-[#D4AF37] font-medium mb-1">Teacher Notes</p>
-                  <p className="text-sm text-gray-700">{showDetailsModal.notes}</p>
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={() => setShowDetailsModal(null)}
-              className="w-full py-3 rounded-xl bg-[#0F3D2E] text-white font-medium hover:opacity-90 transition-all"
-            >
-              Close
-            </button>
-          </div>
+  return (
+    <div
+      className={`p-4 rounded-xl border ${
+        booking.status === 'cancelled' ? 'bg-red-50 border-red-100' : 'bg-gray-50 border-gray-100'
+      }`}
+      data-testid={`schedule-card-${booking.booking_id}`}
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="font-medium text-sm" style={{ color: '#1F2933' }}>
+            {new Date(booking.start_time_utc).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+          </p>
+          <p className="text-xs text-gray-500">
+            {new Date(booking.start_time_utc).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+            {' '}&middot; {booking.duration_minutes || 30} min
+          </p>
+          <p className="text-xs text-gray-400 mt-1">{booking.teacher_name || 'Teacher'}</p>
+          {booking.credits_charged > 0 && (
+            <p className="text-xs text-gray-400">{booking.credits_charged} credit{booking.credits_charged > 1 ? 's' : ''}</p>
+          )}
         </div>
-      )}
+
+        {/* Status Badge + Actions */}
+        <div className="flex flex-col items-end gap-2">
+          <span className={`text-xs px-2 py-0.5 rounded-full ${
+            booking.status === 'scheduled' ? 'bg-[#22C55E]/20 text-[#22C55E]'
+            : booking.status === 'cancelled' ? 'bg-red-100 text-red-600'
+            : 'bg-gray-200 text-gray-600'
+          }`}>
+            {booking.status === 'scheduled' ? 'Upcoming' : booking.status === 'cancelled' ? 'Cancelled' : 'Completed'}
+          </span>
+
+          {isScheduled && isFuture && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => onEdit(booking)}
+                data-testid={`edit-btn-${booking.booking_id}`}
+                className="p-1.5 hover:bg-white rounded-lg text-gray-500 hover:text-[#0F3D2E] transition-all"
+                title="Edit"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => onCancel(booking)}
+                data-testid={`cancel-btn-${booking.booking_id}`}
+                className="p-1.5 hover:bg-red-50 rounded-lg text-gray-500 hover:text-red-600 transition-all"
+                title="Cancel"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
 
 // Account Page Component
 const AccountPage = ({ user }) => (
-  <div className="p-4 lg:p-8">
+  <div className="p-4 lg:p-8" data-testid="account-page">
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-2xl p-6 border mb-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
         <div className="flex items-center gap-4 mb-6">
@@ -849,39 +471,21 @@ const AccountPage = ({ user }) => (
             <p className="text-gray-500">{user?.email}</p>
           </div>
         </div>
-
         <div className="space-y-4">
           <div>
             <label className="block text-sm text-gray-500 mb-1">Full Name</label>
-            <input 
-              type="text" 
-              defaultValue={user?.name}
-              className="w-full h-12 px-4 rounded-xl border bg-gray-50"
-              style={{ borderColor: 'rgba(15, 61, 46, 0.15)' }}
-            />
+            <input type="text" defaultValue={user?.name} className="w-full h-12 px-4 rounded-xl border bg-gray-50" style={{ borderColor: 'rgba(15, 61, 46, 0.15)' }} data-testid="account-name-input" />
           </div>
           <div>
             <label className="block text-sm text-gray-500 mb-1">Email</label>
-            <input 
-              type="email" 
-              defaultValue={user?.email}
-              disabled
-              className="w-full h-12 px-4 rounded-xl border bg-gray-100 text-gray-500"
-              style={{ borderColor: 'rgba(15, 61, 46, 0.15)' }}
-            />
+            <input type="email" defaultValue={user?.email} disabled className="w-full h-12 px-4 rounded-xl border bg-gray-100 text-gray-500" style={{ borderColor: 'rgba(15, 61, 46, 0.15)' }} data-testid="account-email-input" />
           </div>
           <div>
             <label className="block text-sm text-gray-500 mb-1">Phone</label>
-            <input 
-              type="tel" 
-              defaultValue={user?.phone || ''}
-              className="w-full h-12 px-4 rounded-xl border bg-gray-50"
-              style={{ borderColor: 'rgba(15, 61, 46, 0.15)' }}
-            />
+            <input type="tel" defaultValue={user?.phone || ''} className="w-full h-12 px-4 rounded-xl border bg-gray-50" style={{ borderColor: 'rgba(15, 61, 46, 0.15)' }} data-testid="account-phone-input" />
           </div>
         </div>
-
-        <button className="w-full mt-6 h-12 rounded-xl bg-[#0F3D2E] text-white font-medium hover:opacity-90 transition-all">
+        <button className="w-full mt-6 h-12 rounded-xl bg-[#0F3D2E] text-white font-medium hover:opacity-90 transition-all" data-testid="save-account-btn">
           Save Changes
         </button>
       </div>
@@ -894,53 +498,39 @@ export default function StudentDashboard({ user }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [bookingMode, setBookingMode] = useState(null); // { date, time } when searching teachers
+  const [bookings, setBookings] = useState([]);
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
+  // Modal states
+  const [bookingModalOpen, setBookingModalOpen] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState(null);
+  const [editTarget, setEditTarget] = useState(null);
 
-  const fetchDashboard = async () => {
+  const fetchBookings = useCallback(async () => {
     try {
-      const response = await fetch(`${API}/students/dashboard`, {
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setDashboardData(data);
+      const res = await fetch(`${API}/booking/my-bookings`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setBookings(data.bookings || []);
       }
-    } catch (error) {
-      console.error('Error fetching dashboard:', error);
+    } catch (e) {
+      console.error('Error fetching bookings:', e);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
   const handleLogout = async () => {
     try {
-      await fetch(`${API}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include'
-      });
+      await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' });
       document.cookie = 'session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       navigate('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
-
-  const handleBookTeacher = (date, time) => {
-    if (date && time) {
-      setBookingMode({ date, time });
-    } else {
-      setBookingMode({ date: new Date(), time: '20:00' });
-    }
+    } catch (e) { console.error('Logout error:', e); }
   };
 
   const getPageTitle = () => {
-    if (bookingMode) return 'Find Teachers';
     switch (activeTab) {
       case 'dashboard': return 'Dashboard';
       case 'schedule': return 'My Schedule';
@@ -960,57 +550,59 @@ export default function StudentDashboard({ user }) {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#F7F5EF' }}>
-      <Sidebar 
+      <Sidebar
         activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          setBookingMode(null);
-        }}
+        setActiveTab={setActiveTab}
         isOpen={sidebarOpen}
         setIsOpen={setSidebarOpen}
         user={user}
         onLogout={handleLogout}
       />
 
-      {/* Main Content */}
       <div className="lg:ml-72">
-        <Header 
-          title={getPageTitle()}
-          user={user}
-          onMenuClick={() => setSidebarOpen(true)}
-        />
+        <Header title={getPageTitle()} user={user} onMenuClick={() => setSidebarOpen(true)} />
 
-        {bookingMode ? (
-          <BookingResults 
-            selectedDate={bookingMode.date}
-            selectedTime={bookingMode.time}
-            onBack={() => setBookingMode(null)}
-            onBook={() => {
-              setBookingMode(null);
-              fetchDashboard();
-            }}
+        {activeTab === 'dashboard' && (
+          <DashboardHome
+            bookings={bookings}
+            onOpenBooking={() => setBookingModalOpen(true)}
+            onRefresh={fetchBookings}
           />
-        ) : (
-          <>
-            {activeTab === 'dashboard' && (
-              <DashboardHome 
-                dashboardData={dashboardData}
-                navigate={navigate}
-                onBookTeacher={handleBookTeacher}
-              />
-            )}
-            {activeTab === 'schedule' && (
-              <MySchedule dashboardData={dashboardData} />
-            )}
-            {activeTab === 'account' && (
-              <AccountPage user={user} />
-            )}
-            {activeTab === 'wallet' && (
-              <WalletPage user={user} />
-            )}
-          </>
         )}
+        {activeTab === 'schedule' && (
+          <MySchedule
+            bookings={bookings}
+            onOpenBooking={() => setBookingModalOpen(true)}
+            onEdit={(b) => setEditTarget(b)}
+            onCancel={(b) => setCancelTarget(b)}
+          />
+        )}
+        {activeTab === 'wallet' && <WalletPage user={user} />}
+        {activeTab === 'account' && <AccountPage user={user} />}
       </div>
+
+      {/* Booking Modal */}
+      <BookingModal
+        isOpen={bookingModalOpen}
+        onClose={() => setBookingModalOpen(false)}
+        onSuccess={fetchBookings}
+      />
+
+      {/* Cancel Dialog */}
+      <CancelBookingDialog
+        isOpen={!!cancelTarget}
+        booking={cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        onSuccess={fetchBookings}
+      />
+
+      {/* Edit Modal */}
+      <EditBookingModal
+        isOpen={!!editTarget}
+        booking={editTarget}
+        onClose={() => setEditTarget(null)}
+        onSuccess={fetchBookings}
+      />
     </div>
   );
 }
