@@ -5,7 +5,8 @@ import {
   AlertCircle, CheckCircle, Bell, Star, ChevronDown, ChevronUp, 
   Wallet, Edit3, Save, User, Circle, Menu, Home, FileText, 
   Settings, CreditCard, Book, UserCheck, Download, Upload,
-  Globe, Award, Tag, MessageSquare, ChevronRight, RefreshCw
+  Globe, Award, Tag, MessageSquare, ChevronRight, RefreshCw,
+  TrendingUp, TrendingDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 import NotificationBell from '../components/NotificationBell';
