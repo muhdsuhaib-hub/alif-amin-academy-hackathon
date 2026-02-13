@@ -1207,6 +1207,10 @@ app.include_router(commission_router)
 init_tutor_earnings_routes(db)
 app.include_router(tutor_earnings_router)
 
+# Initialize booking routes with database
+init_booking_routes(db)
+app.include_router(booking_router)
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
