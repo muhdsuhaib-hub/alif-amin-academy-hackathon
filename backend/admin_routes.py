@@ -695,3 +695,215 @@ async def get_wallet_credit_liability():
             "tutor_rate": TUTOR_PAYOUT_RATE
         }
     }
+
+
+# Revenue Recognition Report
+@admin_router.get("/revenue/recognition")
+async def get_revenue_recognition():
+    """
+    Get revenue recognition data following proper accounting principles.
+    
+    Key Principle: Commission revenue is ONLY recognized when sessions are completed,
+    not when credits are purchased (cash collected ≠ revenue earned).
+    
+    Returns:
+    - Cash Collected: Total money received from top-ups (deferred revenue)
+    - Platform Commission Earned: Commission from completed sessions only
+    - Tutor Payable Amount: Amount owed to tutors from completed sessions
+    - Deferred Revenue: Cash collected but not yet earned
+    """
+    from datetime import datetime, timezone, timedelta
+    
+    BASE_CREDIT_PRICE = 15.0
+    COMMISSION_RATE = 0.20  # 20% platform commission
+    TUTOR_PAYOUT_RATE = 0.80  # 80% to tutors
+    
+    # ============== CASH COLLECTED ==============
+    # Total money received from all top-ups (this is deferred revenue until sessions completed)
+    topup_pipeline = [
+        {"$match": {"transaction_type": "topup_paid"}},
+        {"$group": {
+            "_id": None,
+            "total_cash_collected": {"$sum": "$payment_amount"},
+            "total_transactions": {"$sum": 1}
+        }}
+    ]
+    topup_result = await db.wallet_transactions.aggregate(topup_pipeline).to_list(1)
+    topup_stats = topup_result[0] if topup_result else {"total_cash_collected": 0, "total_transactions": 0}
+    
+    # Also get from wallet summary as backup
+    wallet_pipeline = [
+        {"$group": {
+            "_id": None,
+            "total_topup_amount": {"$sum": "$total_topup_amount"}
+        }}
+    ]
+    wallet_result = await db.student_wallets.aggregate(wallet_pipeline).to_list(1)
+    wallet_stats = wallet_result[0] if wallet_result else {"total_topup_amount": 0}
+    
+    # Use the larger value (wallet tracking is more reliable)
+    cash_collected = max(
+        topup_stats.get("total_cash_collected", 0) or 0,
+        wallet_stats.get("total_topup_amount", 0) or 0
+    )
+    
+    # ============== REVENUE FROM COMPLETED SESSIONS ==============
+    # Commission is ONLY recognized when session is completed
+    session_pipeline = [
+        {"$group": {
+            "_id": None,
+            "total_sessions": {"$sum": 1},
+            "total_base_session_value": {"$sum": "$base_session_price"},
+            "total_commission_earned": {"$sum": "$platform_commission"},
+            "total_tutor_payable": {"$sum": "$tutor_payout"},
+            "total_marketing_cost": {"$sum": "$platform_marketing_cost"},
+            "total_credits_used": {"$sum": "$credits_used"},
+            "total_paid_credits_used": {"$sum": "$paid_credits_used"},
+            "total_bonus_credits_used": {"$sum": "$bonus_credits_used"}
+        }}
+    ]
+    session_result = await db.session_payment_records.aggregate(session_pipeline).to_list(1)
+    session_stats = session_result[0] if session_result else {
+        "total_sessions": 0,
+        "total_base_session_value": 0,
+        "total_commission_earned": 0,
+        "total_tutor_payable": 0,
+        "total_marketing_cost": 0,
+        "total_credits_used": 0,
+        "total_paid_credits_used": 0,
+        "total_bonus_credits_used": 0
+    }
+    
+    commission_earned = session_stats.get("total_commission_earned", 0) or 0
+    tutor_payable = session_stats.get("total_tutor_payable", 0) or 0
+    marketing_cost_realized = session_stats.get("total_marketing_cost", 0) or 0
+    
+    # ============== TUTOR PAYMENT STATUS ==============
+    # Track what's been paid vs what's pending
+    # For now, assume all tutor payouts are pending until withdrawal
+    tutor_paid_pipeline = [
+        {"$match": {"transaction_type": "withdrawal", "status": "completed"}},
+        {"$group": {
+            "_id": None,
+            "total_paid": {"$sum": "$amount"}
+        }}
+    ]
+    tutor_paid_result = await db.teacher_transactions.aggregate(tutor_paid_pipeline).to_list(1)
+    tutor_paid = tutor_paid_result[0].get("total_paid", 0) if tutor_paid_result else 0
+    tutor_pending = tutor_payable - tutor_paid
+    
+    # ============== DEFERRED REVENUE CALCULATION ==============
+    # Deferred Revenue = Cash Collected - Revenue Recognized
+    # Revenue Recognized = Commission Earned + Tutor Payable (from completed sessions)
+    revenue_recognized = commission_earned + tutor_payable
+    deferred_revenue = cash_collected - revenue_recognized
+    
+    # ============== OUTSTANDING CREDITS VALUE ==============
+    # Calculate potential future revenue from outstanding credits
+    outstanding_pipeline = [
+        {"$group": {
+            "_id": None,
+            "total_paid_credits": {"$sum": "$paid_credits"},
+            "total_bonus_credits": {"$sum": "$bonus_credits"}
+        }}
+    ]
+    outstanding_result = await db.student_wallets.aggregate(outstanding_pipeline).to_list(1)
+    outstanding_stats = outstanding_result[0] if outstanding_result else {"total_paid_credits": 0, "total_bonus_credits": 0}
+    
+    outstanding_paid = outstanding_stats.get("total_paid_credits", 0) or 0
+    outstanding_bonus = outstanding_stats.get("total_bonus_credits", 0) or 0
+    outstanding_total = outstanding_paid + outstanding_bonus
+    
+    # Potential future values
+    potential_session_value = outstanding_total * BASE_CREDIT_PRICE
+    potential_commission = potential_session_value * COMMISSION_RATE
+    potential_tutor_payout = potential_session_value * TUTOR_PAYOUT_RATE
+    
+    # ============== TIME-BASED BREAKDOWN ==============
+    now = datetime.now(timezone.utc)
+    thirty_days_ago = now - timedelta(days=30)
+    
+    # Last 30 days commission
+    recent_session_pipeline = [
+        {"$match": {"created_at": {"$gte": thirty_days_ago.isoformat()}}},
+        {"$group": {
+            "_id": None,
+            "sessions": {"$sum": 1},
+            "commission": {"$sum": "$platform_commission"},
+            "tutor_payable": {"$sum": "$tutor_payout"}
+        }}
+    ]
+    recent_result = await db.session_payment_records.aggregate(recent_session_pipeline).to_list(1)
+    recent_stats = recent_result[0] if recent_result else {"sessions": 0, "commission": 0, "tutor_payable": 0}
+    
+    # Last 30 days cash collected
+    recent_topup_pipeline = [
+        {"$match": {
+            "transaction_type": "topup_paid",
+            "created_at": {"$gte": thirty_days_ago.isoformat()}
+        }},
+        {"$group": {
+            "_id": None,
+            "cash": {"$sum": "$payment_amount"}
+        }}
+    ]
+    recent_topup_result = await db.wallet_transactions.aggregate(recent_topup_pipeline).to_list(1)
+    recent_cash = recent_topup_result[0].get("cash", 0) if recent_topup_result else 0
+    
+    return {
+        "cash_flow": {
+            "total_cash_collected": cash_collected,
+            "description": "Total money received from student top-ups",
+            "last_30_days": recent_cash
+        },
+        "revenue_recognition": {
+            "commission_earned": commission_earned,
+            "description": "Platform commission from COMPLETED sessions only",
+            "commission_rate": COMMISSION_RATE,
+            "last_30_days": recent_stats.get("commission", 0),
+            "note": "Revenue recognized only when sessions are delivered"
+        },
+        "tutor_payable": {
+            "total_payable": tutor_payable,
+            "already_paid": tutor_paid,
+            "pending_payment": tutor_pending,
+            "payout_rate": TUTOR_PAYOUT_RATE,
+            "last_30_days": recent_stats.get("tutor_payable", 0),
+            "description": "Amount owed to tutors from completed sessions"
+        },
+        "deferred_revenue": {
+            "amount": max(0, deferred_revenue),
+            "description": "Cash collected but not yet earned (outstanding credits)",
+            "breakdown": {
+                "cash_collected": cash_collected,
+                "minus_revenue_recognized": revenue_recognized,
+                "equals_deferred": max(0, deferred_revenue)
+            }
+        },
+        "marketing_expense": {
+            "realized": marketing_cost_realized,
+            "description": "Cost of bonus credits used in completed sessions",
+            "note": "Platform absorbs this cost as marketing expense"
+        },
+        "outstanding_credits": {
+            "paid_credits": outstanding_paid,
+            "bonus_credits": outstanding_bonus,
+            "total_credits": outstanding_total,
+            "potential_session_value": potential_session_value,
+            "potential_commission": potential_commission,
+            "potential_tutor_payout": potential_tutor_payout
+        },
+        "session_summary": {
+            "total_completed": session_stats.get("total_sessions", 0),
+            "total_session_value": session_stats.get("total_base_session_value", 0),
+            "credits_consumed": session_stats.get("total_credits_used", 0),
+            "paid_credits_consumed": session_stats.get("total_paid_credits_used", 0),
+            "bonus_credits_consumed": session_stats.get("total_bonus_credits_used", 0),
+            "last_30_days_sessions": recent_stats.get("sessions", 0)
+        },
+        "accounting_summary": {
+            "gross_revenue": commission_earned + tutor_payable,
+            "net_platform_revenue": commission_earned - marketing_cost_realized,
+            "platform_margin_percent": round((commission_earned / (commission_earned + tutor_payable) * 100), 2) if (commission_earned + tutor_payable) > 0 else COMMISSION_RATE * 100
+        }
+    }
