@@ -1,5 +1,8 @@
 """
-Tiered Commission Engine for Alif Amin Academy
+Tiered Commission Engine API Routes for Alif Amin Academy
+
+This module provides API endpoints for commission tier management.
+All business logic is delegated to the CommissionService module.
 
 Commission Tiers:
 - Level 1 (New Tutor): 30% platform commission
@@ -17,6 +20,15 @@ from typing import Optional, List
 from pydantic import BaseModel
 import uuid
 
+# Import the modular commission service
+from services.commission_service import (
+    CommissionService,
+    TierLevel,
+    COMMISSION_CONFIG,
+    SESSION_PRICES,
+    DOWNGRADE_RATING_THRESHOLD
+)
+
 commission_router = APIRouter(prefix="/api/commission")
 
 # Database will be injected from server.py
@@ -27,47 +39,30 @@ def init_commission_routes(database):
     db = database
 
 
-# ============== COMMISSION TIER CONFIGURATION ==============
+# ============== LEGACY COMPATIBILITY ==============
+# These constants are kept for backward compatibility but delegate to service
 
 COMMISSION_TIERS = {
-    "new": {
-        "level": 1,
-        "name": "New Tutor",
-        "commission_rate": 0.30,
-        "badge": "new",
-        "icon": "seedling",
-        "color": "#6B7280",
-        "requirements": "Default tier for all new tutors"
-    },
-    "rated": {
-        "level": 2,
-        "name": "Rated Tutor",
-        "commission_rate": 0.25,
-        "badge": "rated",
-        "icon": "star",
-        "color": "#D4AF37",
-        "requirements": "4.5+ rating with 20+ reviews"
-    },
-    "elite": {
-        "level": 3,
-        "name": "Elite Tutor",
-        "commission_rate": 0.20,
-        "badge": "elite",
-        "icon": "crown",
-        "color": "#0F3D2E",
-        "requirements": "100+ sessions with 4.7+ rating"
+    tier.value: {
+        "level": COMMISSION_CONFIG[tier].level,
+        "name": COMMISSION_CONFIG[tier].name,
+        "commission_rate": COMMISSION_CONFIG[tier].commission_rate,
+        "badge": COMMISSION_CONFIG[tier].badge,
+        "icon": COMMISSION_CONFIG[tier].icon,
+        "color": COMMISSION_CONFIG[tier].color,
+        "requirements": COMMISSION_CONFIG[tier].requirements_description
     }
+    for tier in TierLevel
 }
 
-# Tier evaluation thresholds
-RATED_TUTOR_MIN_RATING = 4.5
-RATED_TUTOR_MIN_REVIEWS = 20
-ELITE_TUTOR_MIN_SESSIONS = 100
-ELITE_TUTOR_MIN_RATING = 4.7
-DOWNGRADE_RATING_THRESHOLD = 4.3
+RATED_TUTOR_MIN_RATING = COMMISSION_CONFIG[TierLevel.RATED].min_rating
+RATED_TUTOR_MIN_REVIEWS = COMMISSION_CONFIG[TierLevel.RATED].min_reviews
+ELITE_TUTOR_MIN_SESSIONS = COMMISSION_CONFIG[TierLevel.ELITE].min_sessions
+ELITE_TUTOR_MIN_RATING = COMMISSION_CONFIG[TierLevel.ELITE].min_rating
 
 
 # ============== TIER EVALUATION LOGIC ==============
+# Now delegates to CommissionService
 
 def evaluate_tier(
     total_completed_sessions: int,
@@ -77,55 +72,22 @@ def evaluate_tier(
 ) -> dict:
     """
     Evaluate which commission tier a tutor qualifies for.
-    
-    Returns:
-        dict: {tier_level, commission_rate, reason, metrics}
+    Delegates to CommissionService.evaluate_tier()
     """
-    metrics = {
-        "total_completed_sessions": total_completed_sessions,
-        "average_rating": average_rating,
-        "total_reviews": total_reviews
-    }
+    result = CommissionService.evaluate_tier(
+        total_sessions=total_completed_sessions,
+        average_rating=average_rating,
+        total_reviews=total_reviews,
+        current_tier=current_tier
+    )
     
-    # Check for downgrade first (rating below 4.3)
-    if average_rating > 0 and average_rating < DOWNGRADE_RATING_THRESHOLD:
-        return {
-            "tier_level": "new",
-            "commission_rate": COMMISSION_TIERS["new"]["commission_rate"],
-            "reason": f"Rating ({average_rating:.2f}) below {DOWNGRADE_RATING_THRESHOLD} threshold - reverted to New Tutor",
-            "metrics": metrics,
-            "changed": current_tier != "new"
-        }
-    
-    # Check for Elite Tutor (Level 3)
-    if (total_completed_sessions >= ELITE_TUTOR_MIN_SESSIONS and 
-        average_rating >= ELITE_TUTOR_MIN_RATING):
-        return {
-            "tier_level": "elite",
-            "commission_rate": COMMISSION_TIERS["elite"]["commission_rate"],
-            "reason": f"Qualified for Elite: {total_completed_sessions} sessions, {average_rating:.2f} rating",
-            "metrics": metrics,
-            "changed": current_tier != "elite"
-        }
-    
-    # Check for Rated Tutor (Level 2)
-    if (average_rating >= RATED_TUTOR_MIN_RATING and 
-        total_reviews >= RATED_TUTOR_MIN_REVIEWS):
-        return {
-            "tier_level": "rated",
-            "commission_rate": COMMISSION_TIERS["rated"]["commission_rate"],
-            "reason": f"Qualified for Rated: {average_rating:.2f} rating, {total_reviews} reviews",
-            "metrics": metrics,
-            "changed": current_tier != "rated"
-        }
-    
-    # Default to New Tutor (Level 1)
+    # Convert to legacy format for backward compatibility
     return {
-        "tier_level": "new",
-        "commission_rate": COMMISSION_TIERS["new"]["commission_rate"],
-        "reason": "Does not meet criteria for higher tiers",
-        "metrics": metrics,
-        "changed": current_tier != "new"
+        "tier_level": result["tier_level"],
+        "commission_rate": result["commission_rate"],
+        "reason": result["reason"],
+        "metrics": result["metrics"],
+        "changed": result["changed"]
     }
 
 
