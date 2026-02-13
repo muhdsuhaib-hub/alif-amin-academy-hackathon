@@ -1104,6 +1104,7 @@ const WalletPage = ({ user }) => {
               <p className="text-sm text-gray-600">
                 1 credit = 15 minutes of class time. A 30-minute session uses 2 credits (RM27), and a 60-minute session uses 4 credits (RM50). 
                 <span className="font-medium"> Paid credits are used first, then bonus credits.</span>
+                <span className="text-[#D4AF37]"> Bonus credits expire after 12 months.</span>
               </p>
             </div>
           </div>
@@ -1140,11 +1141,11 @@ const WalletPage = ({ user }) => {
                   {/* Paid vs Bonus breakdown */}
                   <div className="flex justify-center gap-2 mb-3">
                     <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                      {pkg.paid_credits?.toFixed(1) || pkg.total_credits} paid
+                      {pkg.paid_credits} paid
                     </span>
                     {pkg.bonus_credits > 0 && (
                       <span className="text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded font-medium">
-                        +{pkg.bonus_credits?.toFixed(1)} bonus
+                        +{pkg.bonus_credits} bonus
                       </span>
                     )}
                   </div>
