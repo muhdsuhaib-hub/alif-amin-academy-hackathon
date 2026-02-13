@@ -1075,6 +1075,13 @@ async def get_admin_stats(current_user: User = Depends(get_current_user)):
         "subscription_status": "trial"
     }, {"_id": 0}).to_list(100)
     
+    # Enrich trial students with names from users collection
+    for student in trial_students:
+        user = await db.users.find_one({"user_id": student.get("user_id")}, {"_id": 0, "name": 1, "email": 1})
+        if user:
+            student["student_name"] = user.get("name", "Unknown")
+            student["student_email"] = user.get("email", "")
+    
     revenue_mtd = completed_bookings * 80
     conversion_rate = (total_students / max(total_users, 1)) * 100
     
@@ -1087,6 +1094,84 @@ async def get_admin_stats(current_user: User = Depends(get_current_user)):
     })
     
     booking_trend = "up" if bookings_this_month > last_month_bookings else "down"
+    
+    # Calculate real trend percentages
+    last_month_users = await db.users.count_documents({
+        "created_at": {"$gte": last_month_start.isoformat(), "$lt": month_start.isoformat()}
+    })
+    this_month_users = await db.users.count_documents({
+        "created_at": {"$gte": month_start.isoformat()}
+    })
+    last_month_students = await db.students.count_documents({
+        "created_at": {"$gte": last_month_start.isoformat(), "$lt": month_start.isoformat()}
+    })
+    this_month_students = await db.students.count_documents({
+        "created_at": {"$gte": month_start.isoformat()}
+    })
+    last_month_completed = await db.bookings.count_documents({
+        "status": "completed",
+        "start_time_utc": {"$gte": last_month_start.isoformat(), "$lt": month_start.isoformat()}
+    })
+    this_month_completed = await db.bookings.count_documents({
+        "status": "completed",
+        "start_time_utc": {"$gte": month_start.isoformat()}
+    })
+    last_month_revenue = last_month_completed * 80
+    this_month_revenue = this_month_completed * 80
+    
+    def calc_trend(current, previous):
+        if previous == 0:
+            return 100.0 if current > 0 else 0.0
+        return round(((current - previous) / previous) * 100, 1)
+    
+    user_trend = calc_trend(this_month_users, last_month_users)
+    student_trend = calc_trend(this_month_students, last_month_students)
+    revenue_trend = calc_trend(this_month_revenue, last_month_revenue)
+    
+    # Generate chart data from real DB data (last 6 months)
+    now = datetime.now(timezone.utc)
+    user_growth_data = []
+    revenue_chart_data = []
+    for i in range(5, -1, -1):
+        target = now - timedelta(days=30 * i)
+        m_start = target.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        if m_start.month == 12:
+            m_end = m_start.replace(year=m_start.year + 1, month=1)
+        else:
+            m_end = m_start.replace(month=m_start.month + 1)
+        month_label = m_start.strftime('%b')
+        
+        u_count = await db.users.count_documents({
+            "created_at": {"$gte": m_start.isoformat(), "$lt": m_end.isoformat()}
+        })
+        user_growth_data.append({"month": month_label, "users": u_count})
+        
+        r_count = await db.bookings.count_documents({
+            "status": "completed",
+            "start_time_utc": {"$gte": m_start.isoformat(), "$lt": m_end.isoformat()}
+        })
+        revenue_chart_data.append({"month": month_label, "revenue": r_count * 80})
+    
+    # Attendance data by day of week from completed bookings
+    days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    total_by_day = {d: 0 for d in days}
+    completed_by_day = {d: 0 for d in days}
+    recent_bookings = await db.bookings.find({
+        "start_time_utc": {"$gte": (now - timedelta(days=30)).isoformat()}
+    }, {"_id": 0, "start_time_utc": 1, "status": 1}).to_list(500)
+    for b in recent_bookings:
+        try:
+            dt = datetime.fromisoformat(b["start_time_utc"].replace("Z", "+00:00"))
+            day_name = days[dt.weekday()]
+            total_by_day[day_name] += 1
+            if b.get("status") == "completed":
+                completed_by_day[day_name] += 1
+        except (ValueError, KeyError):
+            pass
+    attendance_data = []
+    for d in days:
+        rate = round((completed_by_day[d] / total_by_day[d]) * 100) if total_by_day[d] > 0 else 0
+        attendance_data.append({"day": d, "rate": rate})
     
     return {
         "total_users": total_users,
@@ -1101,7 +1186,17 @@ async def get_admin_stats(current_user: User = Depends(get_current_user)):
         "booking_trend": booking_trend,
         "todays_classes": todays_classes,
         "trial_students": trial_students[:5],
-        "completed_bookings": completed_bookings
+        "completed_bookings": completed_bookings,
+        "trends": {
+            "user_trend": user_trend,
+            "student_trend": student_trend,
+            "revenue_trend": revenue_trend,
+        },
+        "charts": {
+            "user_growth": user_growth_data,
+            "revenue_trend": revenue_chart_data,
+            "attendance": attendance_data
+        }
     }
 
 
