@@ -590,10 +590,17 @@ async def deduct_credits(request: DeductCreditsRequest, user_id: str):
     
     # Calculate commission from BASE SESSION PRICE (not from credit cost!)
     base_session_price = get_base_session_price(request.duration_minutes)
-    commission_rate = request.commission_rate or DEFAULT_COMMISSION_RATE
     
-    tutor_payout = base_session_price * (1 - commission_rate)
-    platform_commission = base_session_price * commission_rate
+    # GET TUTOR'S TIERED COMMISSION RATE (SERVER-SIDE ONLY)
+    # Import here to avoid circular imports
+    from commission_routes import get_tutor_commission_rate
+    tutor_commission_rate = await get_tutor_commission_rate(request.teacher_id)
+    
+    # Use tutor's tier-based commission rate
+    commission_rate = tutor_commission_rate
+    
+    tutor_payout = round(base_session_price * (1 - commission_rate), 2)
+    platform_commission = round(base_session_price * commission_rate, 2)
     
     # Calculate marketing cost (value of bonus credits used - absorbed by platform)
     platform_marketing_cost = bonus_to_deduct * BASE_CREDIT_PRICE
