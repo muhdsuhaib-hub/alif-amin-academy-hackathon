@@ -14,14 +14,14 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 - **Frontend**: React, Tailwind CSS, Framer Motion, Recharts, Shadcn/UI
 - **Backend**: FastAPI (Python)
 - **Database**: MongoDB with Motor async driver
-- **Authentication**: Emergent-managed Google OAuth + Email/Password with role-based access
+- **Authentication**: Custom Google OAuth 2.0 + Email/Password with role-based access
 
 ---
 
 ## Implementation Status
 
 ### ✅ P0 - Critical (COMPLETED)
-- [x] User authentication via Google OAuth
+- [x] User authentication via Custom Google OAuth 2.0
 - [x] **Email/Password Authentication**
   - [x] Email registration with password
   - [x] Email login with password
@@ -37,13 +37,30 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 - [x] Onboarding flow for new users
 - [x] Admin access for specific emails (muhdsuhaib@gmail.com, hello.alifamin@gmail.com)
 - [x] Admin Dashboard UI with functional backend connections
-- [x] **Credit Wallet System**
+- [x] **Credit Wallet System (Updated Feb 13, 2026)**
   - [x] Credit-based payment system (1 credit = 15 mins)
-  - [x] Top-up packages: RM100→9 credits, RM300→29 credits, RM500→50 credits
-  - [x] Individual credit pricing: 1=RM15, 2=RM27, 4=RM50
+  - [x] **Top-up packages with Marketing Bonus Credits:**
+    - RM100 → 9 credits (8 paid + 1 bonus)
+    - RM300 → 27 credits (24 paid + 3 bonus)
+    - RM500 → 46 credits (40 paid + 6 bonus)
+  - [x] **Separate Paid and Bonus Credits tracking**
+    - Paid credits represent real money purchased
+    - Bonus credits are marketing incentives
+  - [x] **Credit Deduction Rules:**
+    - Deduct paid credits first, then bonus credits
+    - Track deduction type in transaction history (topup_paid, topup_bonus, session_deduction)
+  - [x] **Commission Calculation from Base Session Price:**
+    - 15 min = RM15
+    - 30 min = RM27
+    - 60 min = RM50
+    - Ignores effective per-credit value for tutor payout
+  - [x] **Bonus Credit Expiry (12 months)**
+    - Bonus credits tracked in batches with expiry dates
+    - FIFO deduction from oldest batches first
+    - Admin endpoint to run expiry job
   - [x] Wallet balance tracking with transaction history
   - [x] Server-side credit deduction validation
-  - [x] Stripe-compatible payment structure with webhooks
+  - [x] Stripe-compatible payment structure with webhooks (MOCKED)
   - [x] Prevent negative balance
 
 ### ✅ P1 - High Priority (COMPLETED)
@@ -59,6 +76,15 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
   - [x] Automatic notifications generated based on user role
   - [x] Mark as read (individual and all)
   - [x] Unread count badge on bell icon
+- [x] **Complete Student Dashboard Redesign**
+  - [x] Modern, responsive layout with collapsible sidebar
+  - [x] Main dashboard with Next Class widget, Quick Book, Recent History
+  - [x] My Schedule page with monthly calendar and agenda view
+  - [x] **Wallet Page with Paid/Bonus Credit Display**
+    - [x] Total credits with paid/bonus breakdown
+    - [x] Top-up packages showing paid + bonus credits
+    - [x] Transaction history with transaction type indicators
+    - [x] "Expires in 12 months" info for bonus credits
 
 ### ✅ P2 - Medium Priority (COMPLETED)
 - [x] Teacher Portal: Schedule Management
@@ -100,6 +126,8 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
   - [x] **Profile Management**: Editable bio, hourly rate, Google Meet link, specialties tags, Video intro upload, Ijazah/Certificate upload
 
 ### 🔜 P3 - Future Tasks (NOT STARTED)
+- [ ] **Real Stripe Payment Integration** - Replace mocked payment confirmation
+- [ ] **Connect Booking to Wallet** - Deduct credits on class completion
 - [ ] **Integrations**
   - [ ] Billplz/PayPal payment integration for teacher withdrawals
   - [ ] Google Meet API for automatic link generation
@@ -114,6 +142,9 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
   - [ ] Student Report Card PDF generator
   - [ ] Visual Surah progress bar
   - [ ] Milestone achievements
+- [ ] **Code Refactoring**
+  - [ ] Break down TeacherDashboard.js (900+ lines) into smaller components
+  - [ ] Break down StudentDashboard.js (1400+ lines) into smaller components
 
 ---
 
@@ -131,14 +162,21 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 - `support_tickets` - Support requests
 - `user_sessions` - Authentication sessions
 - `notifications` - User notifications
+- `student_wallets` - Student credit wallets (paid_credits, bonus_credits)
+- `wallet_transactions` - Wallet transaction history
+- `bonus_credit_batches` - Bonus credit batches with expiry dates
+- `payment_intents` - Payment intent records
+- `session_payment_records` - Session payment/commission tracking
 
 ### Key API Endpoints
 - `/api/auth/*` - Authentication (register, login, session-data, me, logout, complete-onboarding)
+- `/api/auth/google/callback` - Custom Google OAuth callback
 - `/api/teachers/*` - Teacher operations and availability
 - `/api/bookings` - Booking management
 - `/api/students/dashboard` - Student dashboard data
 - `/api/admin/*` - Admin operations (users, stats, finance, support, teacher approvals)
 - `/api/notifications/*` - Notification management and generation
+- `/api/wallet/*` - Wallet operations (balance, packages, topup, transactions, deduct, bonus-credits)
 
 ---
 
@@ -147,11 +185,13 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 /app/
 ├── backend/
 │   ├── server.py              # Main FastAPI app
-│   ├── models.py              # Pydantic models (includes Notification)
+│   ├── models.py              # Pydantic models (User, StudentWallet, BonusCreditBatch, etc.)
 │   ├── admin_routes.py        # Admin API endpoints
-│   ├── notification_routes.py # Notification API endpoints (NEW)
+│   ├── notification_routes.py # Notification API endpoints
+│   ├── wallet_routes.py       # Wallet API endpoints
 │   └── tests/
-│       └── test_notifications_and_admin.py
+│       ├── test_notifications_and_admin.py
+│       └── test_wallet_system.py
 ├── frontend/
 │   └── src/
 │       ├── App.js             # Main routing
@@ -159,13 +199,13 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 │       │   ├── Landing.js
 │       │   ├── Onboarding.js
 │       │   ├── Auth.js        # Unified login/signup page
-│       │   ├── StudentDashboard.js
+│       │   ├── StudentDashboard.js  # Includes WalletPage component
 │       │   ├── TeacherDashboard.js
 │       │   ├── AdminDashboard.js
 │       │   ├── BrowseTeachers.js
 │       │   └── BookClass.js
 │       └── components/
-│           ├── NotificationBell.js    # Reusable notification component (NEW)
+│           ├── NotificationBell.js    # Reusable notification component
 │           └── admin/
 │               ├── UserManagement.js  # With CSV export
 │               ├── TeacherApprovals.js
@@ -173,6 +213,32 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 └── memory/
     └── PRD.md
 ```
+
+---
+
+## Wallet System Details
+
+### Top-up Packages (Updated Feb 13, 2026)
+| Top Up | Paid Credits | Bonus | Total Credits |
+|--------|-------------|-------|---------------|
+| RM100  | 8           | +1    | 9 credits     |
+| RM300  | 24          | +3    | 27 credits    |
+| RM500  | 40          | +6    | 46 credits    |
+
+### Commission Calculation (Base Session Prices)
+| Duration | Base Price | Commission (20%) | Tutor Payout |
+|----------|-----------|-----------------|--------------|
+| 15 min   | RM15      | RM3             | RM12         |
+| 30 min   | RM27      | RM5.40          | RM21.60      |
+| 60 min   | RM50      | RM10            | RM40         |
+
+### Transaction Types
+- `topup_paid` - Paid credits from top-up
+- `topup_bonus` - Bonus credits from top-up
+- `session_deduction` - Credits used for a session
+- `refund_paid` / `refund_bonus` - Credit refunds
+- `bonus_reward` - Promotional bonus credits
+- `bonus_expired` - Expired bonus credits
 
 ---
 
@@ -185,9 +251,17 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 
 ## Test Accounts
 - **Admin**: muhdsuhaib@gmail.com, hello.alifamin@gmail.com
-- **Test Student**: test.student@example.com
+- **Test Student**: test@example.com / password: password
 - **Teachers**: ustaz.ahmad@alilm.com, ustazah.fatimah@alilm.com, ustaz.muhammad@alilm.com
 
 ---
 
-*Last Updated: January 27, 2026*
+## Mocked Features
+- **Stripe Payment Processing** - `/api/wallet/topup/confirm` immediately confirms without real Stripe integration
+- **"Join Class" Button** - UI placeholder, not connected to real video conferencing
+- **Teacher Withdraw** - UI only, not connected to real payment provider
+- **File Storage** - Teacher profile videos and certificates upload UI only
+
+---
+
+*Last Updated: February 13, 2026*
