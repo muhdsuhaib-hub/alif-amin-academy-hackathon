@@ -337,7 +337,7 @@ async def cancel_booking(booking_id: str, req: CancelBookingRequest, request: Re
                 student_id=student["student_id"],
                 transaction_type="refund_paid",
                 credit_amount=credits_to_refund,
-                description=f"Refund: Cancelled booking (24+ hrs notice)",
+                description="Refund: Cancelled booking (24+ hrs notice)",
                 monetary_value=credits_to_refund * BASE_CREDIT_PRICE,
                 reference_id=booking_id
             )
