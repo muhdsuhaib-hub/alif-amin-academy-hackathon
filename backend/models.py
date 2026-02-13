@@ -181,9 +181,12 @@ class StudentWallet(BaseModel):
     wallet_id: str
     student_id: str
     user_id: str
-    credit_balance: float = 0.0  # Credits available
+    credit_balance: float = 0.0  # Total credits available (paid + bonus)
+    paid_credits: float = 0.0  # Credits from actual payments
+    bonus_credits: float = 0.0  # Marketing/promotional credits
     total_topup_amount: float = 0.0  # Total RM topped up ever
-    total_credits_purchased: float = 0.0  # Total credits ever purchased
+    total_paid_credits_purchased: float = 0.0  # Total paid credits ever purchased
+    total_bonus_credits_received: float = 0.0  # Total bonus credits ever received
     total_credits_used: float = 0.0  # Total credits ever used
     created_at: datetime
     updated_at: datetime
@@ -193,9 +196,18 @@ class WalletTransaction(BaseModel):
     transaction_id: str
     wallet_id: str
     student_id: str
-    transaction_type: Literal["topup", "session_deduction", "refund", "bonus", "subscription_credit"]
-    credits: float  # Positive for additions, negative for deductions
-    amount_myr: Optional[float] = None  # RM amount for top-ups
+    transaction_type: Literal[
+        "topup_paid",  # Paid credits from top-up
+        "topup_bonus",  # Bonus credits from top-up
+        "session_deduction",  # Credits used for a session
+        "refund_paid",  # Refund of paid credits
+        "refund_bonus",  # Refund of bonus credits
+        "bonus_reward",  # Promotional bonus credits
+        "subscription_credit"  # Subscription-based credits
+    ]
+    credit_amount: float  # Positive for additions, negative for deductions
+    monetary_value: Optional[float] = None  # RM equivalent at base rate (RM15/credit)
+    payment_amount: Optional[float] = None  # Actual RM paid (for top-ups)
     description: str
     reference_id: Optional[str] = None  # booking_id, payment_id, etc.
     status: Literal["pending", "completed", "failed", "refunded"] = "completed"
@@ -206,8 +218,9 @@ class TopupPackage(BaseModel):
     package_id: str
     name: str
     price_myr: float
-    credits: float
-    bonus_credits: float = 0.0
+    paid_credits: float  # Credits directly from payment
+    bonus_credits: float = 0.0  # Promotional bonus credits
+    total_credits: float  # paid_credits + bonus_credits
     is_active: bool = True
 
 
@@ -216,7 +229,8 @@ class StripePaymentIntent(BaseModel):
     wallet_id: str
     student_id: str
     amount_myr: float
-    credits_to_add: float
+    paid_credits_to_add: float
+    bonus_credits_to_add: float
     package_id: Optional[str] = None
     stripe_payment_intent_id: Optional[str] = None
     stripe_client_secret: Optional[str] = None
@@ -224,3 +238,20 @@ class StripePaymentIntent(BaseModel):
     created_at: datetime
     completed_at: Optional[datetime] = None
 
+
+# Session Payment Record (for commission tracking)
+class SessionPaymentRecord(BaseModel):
+    record_id: str
+    booking_id: str
+    student_id: str
+    teacher_id: str
+    duration_minutes: int
+    credits_used: float
+    paid_credits_used: float
+    bonus_credits_used: float
+    base_session_price: float  # Always calculated from duration, not from credit cost
+    commission_rate: float  # e.g., 0.20 for 20%
+    tutor_payout: float  # base_session_price × (1 - commission_rate)
+    platform_commission: float  # base_session_price × commission_rate
+    platform_marketing_cost: float  # Value of bonus credits used (absorbed by platform)
+    created_at: datetime
