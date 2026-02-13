@@ -1123,14 +1123,26 @@ const WalletPage = ({ user }) => {
                 <div className="text-center">
                   <p className="text-sm text-gray-500 mb-1">{pkg.name}</p>
                   <p className="text-3xl font-bold mb-1" style={{ color: '#0F3D2E' }}>
-                    {pkg.credits}
+                    {pkg.total_credits || pkg.credits}
                   </p>
-                  <p className="text-sm text-gray-400 mb-3">credits</p>
+                  <p className="text-sm text-gray-400 mb-2">total credits</p>
+                  
+                  {/* Paid vs Bonus breakdown */}
+                  <div className="flex justify-center gap-2 mb-3">
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      {pkg.paid_credits?.toFixed(1) || pkg.total_credits} paid
+                    </span>
+                    {pkg.bonus_credits > 0 && (
+                      <span className="text-xs bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-1 rounded font-medium">
+                        +{pkg.bonus_credits?.toFixed(1)} bonus
+                      </span>
+                    )}
+                  </div>
                   
                   <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }}>
                     RM {pkg.price_myr}
                   </p>
-                  <p className="text-xs text-green-600 font-medium mt-1">{pkg.savings}</p>
+                  <p className="text-xs text-green-600 font-medium mt-1">{pkg.savings_display || pkg.savings}</p>
                 </div>
                 
                 <button 
