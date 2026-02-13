@@ -255,9 +255,8 @@ export default function FinancialReports() {
             <thead style={{ backgroundColor: '#F7F5EF' }}>
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Teacher</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Hourly Rate</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Tier</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Classes</th>
-                <th className="px-4 py-3 text-left text-sm font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Hours</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Payment Due</th>
               </tr>
             </thead>
@@ -271,13 +270,16 @@ export default function FinancialReports() {
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <p style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>RM {teacher.hourly_rate}</p>
+                    <span className="px-2 py-1 rounded-full text-xs font-medium capitalize" style={{
+                      backgroundColor: teacher.commission_tier === 'elite' ? 'rgba(15, 61, 46, 0.1)' : teacher.commission_tier === 'rated' ? 'rgba(212, 175, 55, 0.1)' : 'rgba(156, 163, 175, 0.1)',
+                      color: teacher.commission_tier === 'elite' ? '#0F3D2E' : teacher.commission_tier === 'rated' ? '#D4AF37' : '#6B7280',
+                      fontFamily: 'Cal Sans'
+                    }}>
+                      {teacher.commission_tier || 'new'}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <p style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>{teacher.completed_classes}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>{teacher.total_hours}h</p>
                   </td>
                   <td className="px-4 py-3">
                     <p className="font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
