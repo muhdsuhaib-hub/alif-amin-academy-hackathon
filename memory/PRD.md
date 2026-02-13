@@ -20,366 +20,132 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
 
 ## Implementation Status
 
-### ✅ P0 - Critical (COMPLETED)
-- [x] User authentication via Custom Google OAuth 2.0
-- [x] **Email/Password Authentication**
-  - [x] Email registration with password
-  - [x] Email login with password
-  - [x] Email existence check API
-  - [x] Password hashing with bcrypt
-- [x] Role-based redirections (Admin → /admin/dashboard, Student → /student/dashboard, Teacher → /teacher/dashboard)
-- [x] **Profile Registration for New Students**
-  - [x] After onboarding, redirects to profile form
-  - [x] Collects: Full Name, Email, Phone (with country code), Password
-  - [x] Phone number is mandatory with country code dropdown (170+ countries)
-  - [x] Phone input only allows numbers (no spaces/dashes)
-  - [x] Reading level stored in student profile from onboarding
-- [x] Onboarding flow for new users
-- [x] Admin access for specific emails (muhdsuhaib@gmail.com, hello.alifamin@gmail.com)
-- [x] Admin Dashboard UI with functional backend connections
-- [x] **Credit Wallet System (Updated Feb 13, 2026)**
-  - [x] Credit-based payment system (1 credit = 15 mins)
-  - [x] **Top-up packages with Marketing Bonus Credits:**
-    - RM100 → 9 credits (8 paid + 1 bonus)
-    - RM300 → 27 credits (24 paid + 3 bonus)
-    - RM500 → 46 credits (40 paid + 6 bonus)
-  - [x] **Separate Paid and Bonus Credits tracking**
-    - Paid credits represent real money purchased
-    - Bonus credits are marketing incentives
-  - [x] **Credit Deduction Rules:**
-    - Deduct paid credits first, then bonus credits
-    - Track deduction type in transaction history (topup_paid, topup_bonus, session_deduction)
-  - [x] **Commission Calculation from Base Session Price:**
-    - 15 min = RM15
-    - 30 min = RM27
-    - 60 min = RM50
-    - Ignores effective per-credit value for tutor payout
-  - [x] **Bonus Credit Expiry (12 months)**
-    - Bonus credits tracked in batches with expiry dates
-    - FIFO deduction from oldest batches first
-    - Admin endpoint to run expiry job
-  - [x] Wallet balance tracking with transaction history
-  - [x] Server-side credit deduction validation
-  - [x] Stripe-compatible payment structure with webhooks (MOCKED)
-  - [x] Prevent negative balance
-  - [x] **Credit Liability Tracking (Admin Dashboard)**
-    - Total paid credits outstanding
-    - Total bonus credits outstanding
-    - Estimated tutor payout exposure (credits × RM15 × 80%)
-    - Platform commission potential (credits × RM15 × 20%)
-    - Total top-up revenue collected
-    - Historical usage (sessions completed, payouts made)
-  - [x] **Revenue Recognition Tracking (Admin Dashboard)**
-    - Cash collected (from student top-ups)
-    - Platform commission earned (only from COMPLETED sessions)
-    - Tutor payable amount (paid vs pending breakdown)
-    - Deferred revenue calculation (cash collected - revenue recognized)
-    - Accounting summary (gross revenue, net platform revenue, marketing cost)
-    - Revenue recognition policy notice
-    - Last 30 days comparison data
-  - [x] **Tiered Commission Engine**
-    - Level 1 (New Tutor): 30% platform commission (default)
-    - Level 2 (Rated Tutor): 25% commission (4.5+ rating, 20+ reviews)
-    - Level 3 (Elite Tutor): 20% commission (100+ sessions, 4.7+ rating)
-    - Downgrade rule: If rating < 4.3 → revert to 30%
-    - Server-side commission calculation (prevents manipulation)
-    - Monthly tier evaluation job
-    - Tier badges displayed on Teacher Dashboard (New/Rated/Elite)
-    - Admin Dashboard shows Commission Tier Summary with distribution
-    - Tier history tracking for audit
-- [x] **Tutor Earnings Wallet System (NEW - Feb 13, 2026)**
-  - [x] **Balance Tracking:**
-    - Total earnings (lifetime, after commission)
-    - Pending earnings (from recent sessions)
-    - Withdrawable balance (available for withdrawal)
-    - Pending withdrawal (amount in pending requests)
-    - Total withdrawn (lifetime withdrawn)
-  - [x] **Withdrawal Request System:**
-    - Bank selection (Maybank, CIMB, RHB, Public Bank, PayPal, Wise)
-    - Account number and holder name
-    - Minimum/maximum validation
-    - Duplicate pending request prevention
-  - [x] **Admin Approval Workflow:**
-    - View pending withdrawal requests with tutor info
-    - Approve (mark as paid) or Reject with reason
-    - Admin notes for internal tracking
-    - Withdrawal history with status filter
-  - [x] **Payout History:**
-    - Transaction history for tutors (earnings, withdrawals)
-    - Withdrawal history with status tracking
-  - [x] **Commission Pre-deducted:**
-    - Commission deducted before earnings credited to wallet
-    - Uses dynamic tier-based commission rates
-  - [x] **Admin Commission Tracking:**
-    - Total platform commission earned
-    - Outstanding tutor balance
-    - Pending vs completed withdrawals
+### Completed P0 - Critical
+- [x] User authentication (Google OAuth + Email/Password)
+- [x] Role-based dashboards (Admin, Teacher, Student)
+- [x] Admin access for specific emails
+- [x] Credit Wallet System (paid + bonus credits, FIFO deduction, 12-month expiry)
+- [x] Tiered Commission Engine (New/Rated/Elite tiers)
+- [x] Tutor Earnings Wallet (balance tracking, withdrawal requests, admin approval)
+- [x] **Booking System (NEW - Feb 13, 2026)**
+  - [x] Fixed-duration bookings: 15 min (1 credit), 30 min (2 credits), 60 min (4 credits)
+  - [x] Credit deduction on booking creation (paid credits first, then bonus)
+  - [x] Booking cancellation with 24-hour refund policy
+  - [x] Booking edit (change date/time, duration, teacher with credit adjustment)
+  - [x] Available teachers endpoint
+  - [x] Bookings appear in student dashboard and My Schedule
+  - [x] Teacher notifications on booking/cancellation
 
-### ✅ P1 - High Priority (COMPLETED)
-- [x] Admin Dashboard functionality
-  - [x] User Management (CRUD operations, search, filter by role/status/date)
-  - [x] **User Export to CSV/Excel** - All profile fields included
-  - [x] Master Calendar (view bookings, manual booking creation)
-  - [x] Financial Reports (revenue, MRR, payroll)
-  - [x] Support Tickets (create, update status)
-  - [x] Subscription Management (pause, resume, cancel, extend trial)
-  - [x] **Credit Liability Tracker Widget** - Financial exposure reporting
-  - [x] **Withdrawals Management Tab** - View/approve/reject tutor withdrawals
-- [x] **Notification System for All Platforms**
-  - [x] Notification Bell component in Student/Teacher/Admin dashboards
-  - [x] Automatic notifications generated based on user role
-  - [x] Mark as read (individual and all)
-  - [x] Unread count badge on bell icon
-- [x] **Complete Student Dashboard Redesign**
-  - [x] Modern, responsive layout with collapsible sidebar
-  - [x] Main dashboard with Next Class widget, Quick Book, Recent History
-  - [x] My Schedule page with monthly calendar and agenda view
-  - [x] **Wallet Page with Paid/Bonus Credit Display**
-    - [x] Total credits with paid/bonus breakdown
-    - [x] Top-up packages showing paid + bonus credits
-    - [x] Transaction history with transaction type indicators
-    - [x] "Expires in 12 months" info for bonus credits
+### Completed P1 - High Priority
+- [x] Admin Dashboard (user management, financial reports, teacher approvals, withdrawals)
+- [x] Notification System (bell component, auto-generation, mark as read)
+- [x] Complete Student Dashboard with modular components
+- [x] Teacher Dashboard with all features
+- [x] **Full StudentDashboard.js Refactoring (COMPLETED Feb 13, 2026)**
+  - [x] Main file: 170 lines (from original 1437 lines)
+  - [x] Extracted: DashboardHome, MySchedule, AccountPage, BookingModal, CancelBookingDialog, EditBookingModal, WalletPage
 
-### ✅ P2 - Medium Priority (COMPLETED)
-- [x] Teacher Portal: Schedule Management
-  - [x] View today's classes
-  - [x] Add availability slots (date, time, recurring option)
-  - [x] View existing availability with booking status
-- [x] Student Portal: Interactive Booking
-  - [x] Browse teachers with profiles and ratings
-  - [x] View teacher availability
-  - [x] Book classes (trial or paid)
-- [x] Classroom: Join Class button
-  - [x] Google Meet link displayed for upcoming classes
-  - [x] Visual indication when class is joinable
-- [x] **Teacher Signup Flow**
-  - [x] Selecting "Teacher" in onboarding redirects to `/teacher-signup`
-  - [x] Teacher signup page with Google login
-  - [x] Teacher profile created with pending approval status
-  - [x] Pending approval banner in teacher dashboard
-  - [x] Dashboard hides stats/tabs until approved
-- [x] **Admin Teacher Approvals**
-  - [x] "Approvals" tab in Admin Dashboard
-  - [x] List pending teachers with approve/reject buttons
-  - [x] Approve sets is_active=true and approval_status='approved'
-  - [x] Reject reverts user role and sets rejection reason
-- [x] **Comprehensive Teacher Dashboard**
-  - [x] Header with Online/Offline status toggle and notifications
-  - [x] Metric cards: Total Earnings (with Withdraw), Active Students, Classes Today, Rating
-  - [x] Student Reading Tracker with expandable Quick Log form
-  - [x] Quick Log: Surah/Book, Ayat/Page range, Fluency Rating, Tajweed Comments
-  - [x] Today's Schedule sidebar with Edit Availability modal
-  - [x] This Month stats summary
-  - [x] Fixed footer with "Enter Live Classroom" CTA
-- [x] **Teacher Platform Sidebar Navigation**
-  - [x] Sidebar with Dashboard, Earnings Wallet, Availability, Classroom Tools, Student Management, Profile
-  - [x] **Earnings Wallet (UPDATED - Connected to Backend)**: 
-    - [x] Real-time balance from backend API
-    - [x] Withdrawable balance, pending withdrawal, total withdrawn stats
-    - [x] Commission tier display with progress to next tier
-    - [x] Withdrawal request form with bank details
-    - [x] Transaction history from backend
-    - [x] Withdrawal history with status
-  - [x] **Availability Calendar**: Date range selection, time slots, auto timezone converter, quick time slot presets
-  - [x] **Classroom Tools**: Digital Mushaf with Uthmani script (604 pages, 114 surahs, 30 juz), Live pointer, Lesson Notes per student
-  - [x] **Student Management**: Active/Warning/Inactive stats, Student List table with Full Name, Email, Reading Level columns, Last lesson indicator, Send Reminder button, Report Card PDF generator
-  - [x] **Profile Management**: Editable bio, hourly rate, Google Meet link, specialties tags, Video intro upload, Ijazah/Certificate upload
+### Completed Refactoring
+- [x] Commission Service Module (`/app/backend/services/commission_service.py`)
+- [x] TeacherDashboard.js refactored (1838 → 249 lines)
+- [x] StudentDashboard.js fully refactored (1437 → 170 lines)
+- [x] Booking routes extracted to `/app/backend/booking_routes.py`
 
-### 🔜 P3 - Future Tasks (NOT STARTED)
-- [ ] **Real Stripe Payment Integration** - Replace mocked payment confirmation
-- [ ] **Real Bank Transfer Integration** - Replace mocked withdrawal approval
-- [ ] **Connect Booking to Wallet** - Deduct credits on class completion
-- [ ] **Integrations**
-  - [ ] Billplz/PayPal payment integration for teacher withdrawals
-  - [ ] Google Meet API for automatic link generation
-  - [ ] Email notifications (SendGrid/Resend)
-  - [ ] WhatsApp notifications (Twilio)
-- [ ] **Digital Mushaf Enhancements**
-  - [ ] Real-time Live Pointer (WebSockets)
-  - [ ] Teacher annotations capability
-- [ ] **File Storage**
-  - [ ] S3/Cloud storage for teacher videos and certificates
-- [ ] **PDF Reports**
-  - [ ] Student Report Card PDF generator
-  - [ ] Visual Surah progress bar
-  - [ ] Milestone achievements
-
-### ✅ Completed Refactoring (Feb 13, 2026)
-- [x] **Commission Service Module** - Created standalone `/app/backend/services/commission_service.py`
-  - Configurable tier definitions with `TierConfig` dataclass
-  - Session pricing configuration with `SessionPriceConfig`
-  - `CommissionService` class with static methods for all calculations
-  - Backward-compatible convenience functions
-- [x] **TeacherDashboard.js Refactored** - From 1838 lines to 249 lines
-  - Extracted: TeacherSidebar, EarningsWallet, AvailabilityCalendar, ClassroomTools, StudentManagement, ProfileManagement, DashboardOverview
-  - All components in `/app/frontend/src/components/teacher/`
-- [x] **StudentDashboard.js Refactored** - From 1437 lines to 1016 lines
-  - Extracted: StudentSidebar, StudentHeader, WalletPage
-  - All components in `/app/frontend/src/components/student/`
+### P3 - Future Tasks (NOT STARTED)
+- [ ] Real Stripe Payment Integration
+- [ ] Real Bank Transfer Integration
+- [ ] Google Meet API for automatic link generation
+- [ ] Email/WhatsApp notifications (SendGrid/Twilio)
+- [ ] Digital Mushaf real-time Live Pointer (WebSockets)
+- [ ] S3/Cloud storage for teacher videos and certificates
+- [ ] PDF Student Report Card generator
 
 ---
 
 ## Architecture
 
 ### Database Collections
-- `users` - User accounts with roles
-- `teachers` - Teacher profiles with rates, specializations, commission tier
-- `students` - Student profiles with subscription status
-- `availability_slots` - Teacher availability
-- `bookings` - Class bookings
-- `lessons` - Completed lesson records
-- `progress` - Student progress tracking
-- `progress_logs` - Teacher notes on student progress
-- `support_tickets` - Support requests
-- `user_sessions` - Authentication sessions
-- `notifications` - User notifications
-- `student_wallets` - Student credit wallets (paid_credits, bonus_credits)
-- `wallet_transactions` - Wallet transaction history
-- `bonus_credit_batches` - Bonus credit batches with expiry dates
-- `payment_intents` - Payment intent records
-- `session_payment_records` - Session payment/commission tracking
-- `tutor_earnings` - Tutor earnings wallet (NEW)
-- `tutor_earnings_transactions` - Tutor earnings transaction history (NEW)
-- `withdrawal_requests` - Tutor withdrawal requests (NEW)
+- `users`, `teachers`, `students`, `availability_slots`, `bookings`, `lessons`
+- `progress`, `progress_logs`, `support_tickets`, `user_sessions`, `notifications`
+- `student_wallets`, `wallet_transactions`, `bonus_credit_batches`, `payment_intents`
+- `session_payment_records`, `tutor_earnings`, `tutor_earnings_transactions`, `withdrawal_requests`
 
 ### Key API Endpoints
-- `/api/auth/*` - Authentication (register, login, session-data, me, logout, complete-onboarding)
-- `/api/auth/google/callback` - Custom Google OAuth callback
-- `/api/teachers/*` - Teacher operations and availability
-- `/api/bookings` - Booking management
-- `/api/students/dashboard` - Student dashboard data
-- `/api/admin/*` - Admin operations (users, stats, finance, support, teacher approvals)
-- `/api/notifications/*` - Notification management and generation
-- `/api/wallet/*` - Wallet operations (balance, packages, topup, transactions, deduct, bonus-credits)
+- `/api/auth/*` - Authentication
+- `/api/booking/create` - Create booking with credit deduction (NEW)
+- `/api/booking/my-bookings` - Get student's bookings (NEW)
+- `/api/booking/{id}/cancel` - Cancel with 24h policy (NEW)
+- `/api/booking/{id}/edit` - Edit booking (NEW)
+- `/api/booking/available-teachers` - Get active teachers (NEW)
+- `/api/wallet/*` - Wallet operations
 - `/api/commission/*` - Commission tier management
-- `/api/tutor-earnings/*` - Tutor earnings wallet operations (NEW)
-  - `GET /balance` - Get tutor balance
-  - `GET /transactions` - Get transaction history
-  - `POST /withdraw` - Create withdrawal request
-  - `GET /withdrawals` - Get withdrawal history
-  - `GET /admin/pending-withdrawals` - Admin: pending requests
-  - `GET /admin/commission-earned` - Admin: commission stats
-  - `POST /admin/withdrawals/{id}/process` - Admin: approve/reject
+- `/api/tutor-earnings/*` - Tutor earnings wallet
+- `/api/admin/*` - Admin operations
 
----
-
-## File Structure
+### File Structure
 ```
 /app/
 ├── backend/
-│   ├── server.py              # Main FastAPI app
-│   ├── models.py              # Pydantic models (User, StudentWallet, TutorEarnings, etc.)
-│   ├── admin_routes.py        # Admin API endpoints
-│   ├── notification_routes.py # Notification API endpoints
-│   ├── wallet_routes.py       # Student wallet API endpoints
-│   ├── commission_routes.py   # Commission tier API endpoints (uses service module)
-│   ├── tutor_earnings_routes.py # Tutor earnings wallet API endpoints
-│   ├── services/              # Modular service layer (NEW)
-│   │   ├── __init__.py
-│   │   └── commission_service.py  # Standalone commission calculation service
-│   └── tests/
-│       ├── test_notifications_and_admin.py
-│       ├── test_wallet_system.py
-│       └── test_tutor_earnings.py
-├── frontend/
-│   └── src/
-│       ├── App.js             # Main routing
-│       ├── pages/             # Page components (refactored to smaller files)
-│       │   ├── Landing.js
-│       │   ├── Onboarding.js
-│       │   ├── Auth.js
-│       │   ├── StudentDashboard.js  # ~1000 lines (reduced from 1437)
-│       │   ├── TeacherDashboard.js  # ~250 lines (reduced from 1838)
-│       │   ├── AdminDashboard.js
-│       │   ├── BrowseTeachers.js
-│       │   └── BookClass.js
-│       └── components/
-│           ├── NotificationBell.js
-│           ├── teacher/       # Teacher dashboard components (NEW)
-│           │   ├── index.js
-│           │   ├── TeacherSidebar.js
-│           │   ├── EarningsWallet.js
-│           │   ├── AvailabilityCalendar.js
-│           │   ├── ClassroomTools.js
-│           │   ├── StudentManagement.js
-│           │   ├── ProfileManagement.js
-│           │   └── DashboardOverview.js
-│           ├── student/       # Student dashboard components (NEW)
-│           │   ├── index.js
-│           │   ├── StudentSidebar.js
-│           │   ├── StudentHeader.js
-│           │   └── WalletPage.js
-│           └── admin/
-│               ├── UserManagement.js
-│               ├── TeacherApprovals.js
-│               ├── WithdrawalManagement.js
-│               └── ...
-└── memory/
-    └── PRD.md
+│   ├── server.py
+│   ├── models.py
+│   ├── booking_routes.py          # NEW
+│   ├── wallet_routes.py
+│   ├── commission_routes.py
+│   ├── tutor_earnings_routes.py
+│   ├── admin_routes.py
+│   ├── notification_routes.py
+│   └── services/commission_service.py
+├── frontend/src/
+│   ├── App.js
+│   ├── pages/
+│   │   ├── StudentDashboard.js    # 170 lines (refactored)
+│   │   ├── TeacherDashboard.js    # 249 lines (refactored)
+│   │   └── AdminDashboard.js
+│   └── components/
+│       ├── student/
+│       │   ├── DashboardHome.js   # NEW
+│       │   ├── MySchedule.js      # NEW
+│       │   ├── AccountPage.js     # NEW
+│       │   ├── BookingModal.js    # NEW
+│       │   ├── CancelBookingDialog.js # NEW
+│       │   ├── EditBookingModal.js    # NEW
+│       │   ├── WalletPage.js
+│       │   └── index.js
+│       ├── teacher/ (7 components)
+│       └── admin/
 ```
 
 ---
 
-## Wallet System Details
+## Booking System Details
 
-### Top-up Packages (Updated Feb 13, 2026)
-| Top Up | Paid Credits | Bonus | Total Credits |
-|--------|-------------|-------|---------------|
-| RM100  | 8           | +1    | 9 credits     |
-| RM300  | 24          | +3    | 27 credits    |
-| RM500  | 40          | +6    | 46 credits    |
+### Credit Costs
+| Duration | Credits | Base Price (RM) |
+|----------|---------|----------------|
+| 15 min   | 1       | RM15           |
+| 30 min   | 2       | RM27           |
+| 60 min   | 4       | RM50           |
 
-### Commission Tiers (Tutor Payout Rates)
-| Tier         | Commission | Tutor Rate | Requirements                    |
-|--------------|-----------|------------|---------------------------------|
-| New Tutor    | 30%       | 70%        | Default for all new tutors      |
-| Rated Tutor  | 25%       | 75%        | 4.5+ rating, 20+ reviews        |
-| Elite Tutor  | 20%       | 80%        | 100+ sessions, 4.7+ rating      |
+### Cancellation Policy
+- **24+ hours before class**: Full credit refund to wallet
+- **Less than 24 hours**: No refund (confirmation required from student)
 
-### Session Pricing (Base)
-| Duration | Base Price | Commission (varies) | Example Tutor Payout (New) |
-|----------|-----------|--------------------|-----------------------------|
-| 15 min   | RM15      | RM4.50 (30%)       | RM10.50                     |
-| 30 min   | RM27      | RM8.10 (30%)       | RM18.90                     |
-| 60 min   | RM50      | RM15 (30%)         | RM35                        |
-
-### Transaction Types
-- `topup_paid` - Paid credits from top-up
-- `topup_bonus` - Bonus credits from top-up
-- `session_deduction` - Credits used for a session
-- `refund_paid` / `refund_bonus` - Credit refunds
-- `bonus_reward` - Promotional bonus credits
-- `bonus_expired` - Expired bonus credits
-
-### Tutor Earnings Transaction Types
-- `session_earning` - Earnings from completed session (after commission)
-- `withdrawal_request` - Withdrawal request created
-- `withdrawal_approved` - Withdrawal paid out
-- `withdrawal_rejected` - Withdrawal rejected (funds returned)
-- `pending_to_available` - Pending earnings become available
-- `adjustment` - Manual adjustment by admin
-
----
-
-## Notification Types
-- **Students**: upcoming_class, no_upcoming_class, booking_confirmed, booking_cancelled
-- **Teachers**: upcoming_class, leave_note_reminder, earning_credited, withdrawal_request
-- **Admins**: teacher_pending, new_registration, class_reschedule, withdrawal_request
-
----
-
-## Test Accounts
-- **Admin**: muhdsuhaib@gmail.com, hello.alifamin@gmail.com
-- **Test Student**: test@example.com / password: password
-- **Teachers**: ustaz.ahmad@alilm.com, ustazah.fatimah@alilm.com, ustaz.muhammad@alilm.com
+### Edit Booking
+- Can change: date/time, duration, teacher
+- Duration change: credits adjusted automatically (charge more or refund)
 
 ---
 
 ## Mocked Features
-- **Stripe Payment Processing** - `/api/wallet/topup/confirm` immediately confirms without real Stripe integration
-- **Bank Transfer for Withdrawals** - Withdrawal approval marks as 'completed' without actual bank transfer
-- **"Join Class" Button** - UI placeholder, not connected to real video conferencing
-- **File Storage** - Teacher profile videos and certificates upload UI only
+- **Stripe Payment Processing** - topup/confirm works without real Stripe
+- **Bank Transfer for Withdrawals** - marks as completed without actual transfer
+- **"Join Class" Button** - UI placeholder, no real video conferencing
+- **File Storage** - Upload UI only, no cloud storage
+
+## Test Accounts
+- **Admin**: muhdsuhaib@gmail.com, hello.alifamin@gmail.com
+- **Test Student**: test@example.com / password
+- **Teachers**: Holegate, Kedai Kopi Ah Yek, Test Teacher Notif (via Google OAuth)
 
 ---
 
