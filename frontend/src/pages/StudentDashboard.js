@@ -1040,7 +1040,7 @@ const WalletPage = ({ user }) => {
           <div className="relative z-10">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <p className="text-white/70 text-sm mb-1">Credit Balance</p>
+                <p className="text-white/70 text-sm mb-1">Total Credits</p>
                 <p className="text-5xl font-bold">{walletData?.credit_balance?.toFixed(1) || '0'}</p>
                 <p className="text-white/60 text-sm mt-1">credits available</p>
               </div>
@@ -1051,17 +1051,34 @@ const WalletPage = ({ user }) => {
               </div>
             </div>
             
-            <div className="flex items-center gap-6 mt-6 pt-4 border-t border-white/20">
+            {/* Paid vs Bonus breakdown */}
+            <div className="grid grid-cols-2 gap-4 mt-4 mb-4">
+              <div className="bg-white/10 rounded-xl p-3">
+                <p className="text-white/60 text-xs mb-1">Paid Credits</p>
+                <p className="text-2xl font-bold">{walletData?.paid_credits?.toFixed(1) || '0'}</p>
+              </div>
+              <div className="bg-[#D4AF37]/30 rounded-xl p-3">
+                <p className="text-white/60 text-xs mb-1">Bonus Credits</p>
+                <p className="text-2xl font-bold">{walletData?.bonus_credits?.toFixed(1) || '0'}</p>
+                <p className="text-white/50 text-xs">Free promotional</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-6 pt-4 border-t border-white/20">
               <div>
-                <p className="text-white/60 text-xs">Total Purchased</p>
-                <p className="text-lg font-semibold">{walletData?.total_credits_purchased?.toFixed(1) || '0'} credits</p>
+                <p className="text-white/60 text-xs">Paid Purchased</p>
+                <p className="text-lg font-semibold">{walletData?.total_paid_credits_purchased?.toFixed(1) || '0'}</p>
+              </div>
+              <div>
+                <p className="text-white/60 text-xs">Bonus Received</p>
+                <p className="text-lg font-semibold">{walletData?.total_bonus_credits_received?.toFixed(1) || '0'}</p>
               </div>
               <div>
                 <p className="text-white/60 text-xs">Total Used</p>
-                <p className="text-lg font-semibold">{walletData?.total_credits_used?.toFixed(1) || '0'} credits</p>
+                <p className="text-lg font-semibold">{walletData?.total_credits_used?.toFixed(1) || '0'}</p>
               </div>
               <div>
-                <p className="text-white/60 text-xs">Total Top-up</p>
+                <p className="text-white/60 text-xs">Top-up Amount</p>
                 <p className="text-lg font-semibold">RM {walletData?.total_topup_amount?.toFixed(0) || '0'}</p>
               </div>
             </div>
@@ -1075,7 +1092,8 @@ const WalletPage = ({ user }) => {
             <div>
               <p className="font-medium text-[#0F3D2E] mb-1">How Credits Work</p>
               <p className="text-sm text-gray-600">
-                1 credit = 15 minutes of class time. A 30-minute session uses 2 credits, and a 60-minute session uses 4 credits.
+                1 credit = 15 minutes of class time. A 30-minute session uses 2 credits (RM27), and a 60-minute session uses 4 credits (RM50). 
+                <span className="font-medium"> Paid credits are used first, then bonus credits.</span>
               </p>
             </div>
           </div>
