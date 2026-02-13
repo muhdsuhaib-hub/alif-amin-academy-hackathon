@@ -1203,7 +1203,7 @@ const WalletPage = ({ user }) => {
                 <div key={tx.transaction_id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      tx.credits > 0 ? 'bg-green-100' : 'bg-red-100'
+                      tx.credit_amount > 0 ? 'bg-green-100' : 'bg-red-100'
                     }`}>
                       {getTransactionIcon(tx.transaction_type)}
                     </div>
@@ -1214,13 +1214,16 @@ const WalletPage = ({ user }) => {
                   </div>
                   <div className="text-right">
                     <p className={`font-semibold ${getTransactionColor(tx.transaction_type, tx.credit_amount)}`}>
-                      {tx.credit_amount > 0 ? '+' : ''}{tx.credit_amount?.toFixed(1) || tx.credits} credits
+                      {tx.credit_amount > 0 ? '+' : ''}{Math.floor(tx.credit_amount || tx.credits || 0)} credits
                     </p>
                     {tx.payment_amount > 0 && (
                       <p className="text-xs text-gray-400">RM {tx.payment_amount}</p>
                     )}
                     {tx.transaction_type === 'topup_bonus' && (
                       <p className="text-xs text-[#D4AF37]">Bonus</p>
+                    )}
+                    {tx.transaction_type === 'bonus_expired' && (
+                      <p className="text-xs text-orange-500">Expired</p>
                     )}
                   </div>
                 </div>
