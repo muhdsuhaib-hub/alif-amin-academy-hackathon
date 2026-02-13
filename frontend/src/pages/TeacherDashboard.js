@@ -1413,10 +1413,25 @@ export default function TeacherDashboard({ user }) {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [students, setStudents] = useState([]);
+  const [commissionInfo, setCommissionInfo] = useState(null);
 
   useEffect(() => {
     fetchDashboard();
   }, []);
+
+  const fetchCommissionInfo = async (teacherId) => {
+    try {
+      const response = await fetch(`${API}/commission/tutor/${teacherId}`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCommissionInfo(data);
+      }
+    } catch (error) {
+      console.error('Error fetching commission info:', error);
+    }
+  };
 
   const fetchDashboard = async () => {
     try {
@@ -1431,6 +1446,7 @@ export default function TeacherDashboard({ user }) {
         }
         if (data.teacher?.teacher_id && data.teacher?.is_active) {
           fetchStudents(data.teacher.teacher_id);
+          fetchCommissionInfo(data.teacher.teacher_id);
         }
       }
     } catch (error) {
