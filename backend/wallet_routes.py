@@ -623,12 +623,17 @@ async def deduct_credits(request: DeductCreditsRequest, user_id: str):
     )
     
     # Create session payment record for commission tracking
+    # Get teacher's tier info for audit
+    teacher_data = await db.teachers.find_one({"teacher_id": request.teacher_id}, {"_id": 0})
+    teacher_tier = teacher_data.get("tier_level", "new") if teacher_data else "new"
+    
     record_id = f"spr_{uuid.uuid4().hex[:12]}"
     session_payment_record = {
         "record_id": record_id,
         "booking_id": request.booking_id,
         "student_id": student["student_id"],
         "teacher_id": request.teacher_id,
+        "teacher_tier": teacher_tier,  # Track tier at time of session
         "duration_minutes": request.duration_minutes,
         "credits_used": credits_needed,
         "paid_credits_used": paid_to_deduct,
