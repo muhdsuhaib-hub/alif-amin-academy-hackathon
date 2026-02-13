@@ -732,6 +732,11 @@ async def get_revenue_recognition(request: Request, session_token: Optional[str]
     - Tutor Payable Amount: Amount owed to tutors from completed sessions
     - Deferred Revenue: Cash collected but not yet earned
     """
+    if get_current_user:
+        user = await get_current_user(request, session_token)
+        if user.role != "admin":
+            raise HTTPException(status_code=403, detail="Not authorized")
+    
     from datetime import datetime, timezone, timedelta
     
     BASE_CREDIT_PRICE = 15.0
