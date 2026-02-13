@@ -1362,8 +1362,8 @@ export default function StudentDashboard({ user }) {
             {activeTab === 'account' && (
               <AccountPage user={user} />
             )}
-            {activeTab === 'payment' && (
-              <PaymentPage user={user} />
+            {activeTab === 'wallet' && (
+              <WalletPage user={user} />
             )}
           </>
         )}
