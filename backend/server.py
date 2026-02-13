@@ -21,6 +21,7 @@ from admin_routes import admin_router, init_admin_routes
 from notification_routes import notification_router, init_notification_routes
 from wallet_routes import wallet_router, init_wallet_routes
 from commission_routes import commission_router, init_commission_routes
+from tutor_earnings_routes import tutor_earnings_router, init_tutor_earnings_routes
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
