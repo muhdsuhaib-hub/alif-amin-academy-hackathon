@@ -45,40 +45,45 @@ CREDIT_PRICING = {
 }
 
 # Top-up packages with SEPARATE paid and bonus credits
-# Paid credits = price / BASE_CREDIT_PRICE
-# Bonus credits = total - paid (absorbed as marketing cost)
+# Based on user requirements:
+# RM100 → 8 paid + 1 bonus = 9 total
+# RM300 → 24 paid + 3 bonus = 27 total  
+# RM500 → 40 paid + 6 bonus = 46 total
 TOPUP_PACKAGES = [
     {
         "package_id": "pkg_100",
         "name": "Starter Pack",
         "price_myr": 100.00,
-        "paid_credits": 6.67,  # RM100 / RM15 = 6.67 paid credits
-        "bonus_credits": 2.33,  # 9 - 6.67 = 2.33 bonus credits (marketing cost)
+        "paid_credits": 8,      # RM100 / RM12.50 = 8 paid credits
+        "bonus_credits": 1,     # +1 bonus credit (marketing incentive)
         "total_credits": 9,
-        "savings_display": "Get 2 bonus credits",
+        "savings_display": "+1 bonus credit",
         "popular": False
     },
     {
         "package_id": "pkg_300",
         "name": "Value Pack",
         "price_myr": 300.00,
-        "paid_credits": 20.00,  # RM300 / RM15 = 20 paid credits
-        "bonus_credits": 9.00,  # 29 - 20 = 9 bonus credits (marketing cost)
-        "total_credits": 29,
-        "savings_display": "Get 9 bonus credits",
+        "paid_credits": 24,     # RM300 / RM12.50 = 24 paid credits
+        "bonus_credits": 3,     # +3 bonus credits (marketing incentive)
+        "total_credits": 27,
+        "savings_display": "+3 bonus credits",
         "popular": True
     },
     {
         "package_id": "pkg_500",
         "name": "Premium Pack",
         "price_myr": 500.00,
-        "paid_credits": 33.33,  # RM500 / RM15 = 33.33 paid credits
-        "bonus_credits": 16.67,  # 50 - 33.33 = 16.67 bonus credits (marketing cost)
-        "total_credits": 50,
-        "savings_display": "Get 17 bonus credits",
+        "paid_credits": 40,     # RM500 / RM12.50 = 40 paid credits
+        "bonus_credits": 6,     # +6 bonus credits (marketing incentive)
+        "total_credits": 46,
+        "savings_display": "+6 bonus credits",
         "popular": False
     }
 ]
+
+# Bonus credit expiry (12 months from date of receipt)
+BONUS_CREDIT_EXPIRY_MONTHS = 12
 
 
 def get_credits_for_duration(minutes: int) -> float:
