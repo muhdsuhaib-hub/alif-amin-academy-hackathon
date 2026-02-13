@@ -516,7 +516,11 @@ async def manage_subscription(sub_update: SubscriptionUpdate):
 
 
 @admin_router.get("/subscriptions/overview")
-async def get_subscriptions_overview():
+async def get_subscriptions_overview(request: Request, session_token: Optional[str] = Cookie(None)):
+    if get_current_user:
+        user = await get_current_user(request, session_token)
+        if user.role != "admin":
+            raise HTTPException(status_code=403, detail="Not authorized")
     active = await db.students.count_documents({"subscription_status": "active"})
     trial = await db.students.count_documents({"subscription_status": "trial"})
     paused = await db.students.count_documents({"subscription_status": "paused"})
@@ -715,7 +719,7 @@ async def get_wallet_credit_liability():
 
 # Revenue Recognition Report
 @admin_router.get("/revenue/recognition")
-async def get_revenue_recognition():
+async def get_revenue_recognition(request: Request, session_token: Optional[str] = Cookie(None)):
     """
     Get revenue recognition data following proper accounting principles.
     

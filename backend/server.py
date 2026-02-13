@@ -1286,7 +1286,7 @@ async def create_student_profile(student: StudentCreate, current_user: User = De
 app.include_router(api_router)
 
 # Initialize admin routes with database
-init_admin_routes(db)
+init_admin_routes(db, get_current_user)
 app.include_router(admin_router)
 
 # Initialize notification routes with database
