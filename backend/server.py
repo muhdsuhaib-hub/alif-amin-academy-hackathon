@@ -245,11 +245,14 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
 async def google_oauth_callback(request: Request, code: str, state: Optional[str] = None):
     """Handle Google OAuth callback - exchange code for tokens and create/login user"""
     
-    # Get the redirect URI (must match what was registered in Google Cloud Console)
-    redirect_uri = str(request.base_url).rstrip('/') + "/api/auth/google/callback"
-    # For production, use the external URL
-    if "preview.emergentagent.com" in str(request.url):
-        redirect_uri = f"https://alif-classes.preview.emergentagent.com/api/auth/google/callback"
+    # Build redirect URI from forwarded headers (Kubernetes ingress)
+    forwarded_host = request.headers.get("x-forwarded-host", request.headers.get("host", ""))
+    forwarded_proto = request.headers.get("x-forwarded-proto", "https")
+    if forwarded_host:
+        redirect_uri = f"{forwarded_proto}://{forwarded_host}/api/auth/google/callback"
+    else:
+        redirect_uri = str(request.base_url).rstrip('/') + "/api/auth/google/callback"
+    logger.info(f"Google OAuth redirect_uri: {redirect_uri}")
     
     # Exchange authorization code for tokens
     async with httpx.AsyncClient() as client:
