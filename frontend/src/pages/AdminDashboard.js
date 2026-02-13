@@ -872,6 +872,8 @@ export default function AdminDashboard({ user }) {
 
         {activeTab === 'bookings' && <BookingCalendar />}
 
+        {activeTab === 'withdrawals' && <WithdrawalManagement />}
+
         {activeTab === 'subscriptions' && <SubscriptionManagement />}
 
         {activeTab === 'finance' && <FinancialReports />}
