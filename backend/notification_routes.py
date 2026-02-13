@@ -294,11 +294,10 @@ async def generate_teacher_notifications(user_id: str):
         })
         
         if not existing_earning:
-            hourly_rate = teacher.get("hourly_rate", 80)
             await create_notification(
                 user_id=user_id,
                 title="Earning Credited",
-                message=f"RM {hourly_rate:.2f} has been credited to your wallet for completing a class.",
+                message="Your earnings have been credited for completing a class.",
                 notification_type="earning_credited",
                 related_id=booking["booking_id"]
             )
