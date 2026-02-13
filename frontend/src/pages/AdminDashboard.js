@@ -24,10 +24,12 @@ export default function AdminDashboard({ user }) {
   const [liability, setLiability] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [revenue, setRevenue] = useState(null);
 
   useEffect(() => {
     fetchStats();
     fetchLiability();
+    fetchRevenue();
   }, []);
 
   const fetchStats = async () => {
@@ -57,6 +59,20 @@ export default function AdminDashboard({ user }) {
       }
     } catch (error) {
       console.error('Error fetching liability:', error);
+    }
+  };
+
+  const fetchRevenue = async () => {
+    try {
+      const response = await fetch(`${API}/admin/revenue/recognition`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setRevenue(data);
+      }
+    } catch (error) {
+      console.error('Error fetching revenue:', error);
     }
   };
 
