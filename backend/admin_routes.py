@@ -551,3 +551,147 @@ async def get_missed_classes_report():
             booking["teacher"] = {**teacher, "user": teacher_user}
     
     return missed_classes
+
+
+# Wallet Credit Liability Report
+@admin_router.get("/wallet/liability")
+async def get_wallet_credit_liability():
+    """
+    Get outstanding wallet credit liability for financial reporting.
+    Returns:
+    - Total paid credits outstanding (real money obligation)
+    - Total bonus credits outstanding (marketing liability)
+    - Estimated future tutor payout exposure
+    """
+    # Base session prices for payout calculation
+    # 1 credit = 15 mins = RM15, so 1 credit = RM15 base value
+    BASE_CREDIT_PRICE = 15.0
+    COMMISSION_RATE = 0.20  # 20% platform commission
+    TUTOR_PAYOUT_RATE = 1 - COMMISSION_RATE  # 80% to tutors
+    
+    # Aggregate total paid and bonus credits across all wallets
+    wallet_pipeline = [
+        {"$group": {
+            "_id": None,
+            "total_paid_credits": {"$sum": "$paid_credits"},
+            "total_bonus_credits": {"$sum": "$bonus_credits"},
+            "total_credit_balance": {"$sum": "$credit_balance"},
+            "total_wallets": {"$sum": 1},
+            "total_topup_amount": {"$sum": "$total_topup_amount"},
+            "total_credits_used": {"$sum": "$total_credits_used"}
+        }}
+    ]
+    
+    wallet_result = await db.student_wallets.aggregate(wallet_pipeline).to_list(1)
+    wallet_stats = wallet_result[0] if wallet_result else {
+        "total_paid_credits": 0,
+        "total_bonus_credits": 0,
+        "total_credit_balance": 0,
+        "total_wallets": 0,
+        "total_topup_amount": 0,
+        "total_credits_used": 0
+    }
+    
+    total_paid = wallet_stats.get("total_paid_credits", 0) or 0
+    total_bonus = wallet_stats.get("total_bonus_credits", 0) or 0
+    total_credits = total_paid + total_bonus
+    
+    # Calculate financial exposure
+    # Paid credits = real money obligation (tutor payout when used)
+    # Each credit represents a potential RM15 session value
+    paid_credits_value = total_paid * BASE_CREDIT_PRICE
+    bonus_credits_value = total_bonus * BASE_CREDIT_PRICE  # Marketing cost if used
+    
+    # Estimated tutor payout = credit value × tutor payout rate (80%)
+    estimated_tutor_payout_paid = paid_credits_value * TUTOR_PAYOUT_RATE
+    estimated_tutor_payout_bonus = bonus_credits_value * TUTOR_PAYOUT_RATE
+    total_tutor_payout_exposure = estimated_tutor_payout_paid + estimated_tutor_payout_bonus
+    
+    # Platform commission exposure
+    platform_commission_exposure = (paid_credits_value + bonus_credits_value) * COMMISSION_RATE
+    
+    # Get count of wallets with balance > 0
+    active_wallets = await db.student_wallets.count_documents({"credit_balance": {"$gt": 0}})
+    
+    # Get bonus credit expiry summary
+    expiry_pipeline = [
+        {"$match": {"is_expired": False, "remaining_credits": {"$gt": 0}}},
+        {"$group": {
+            "_id": None,
+            "total_active_bonus_batches": {"$sum": 1},
+            "total_bonus_in_batches": {"$sum": "$remaining_credits"}
+        }}
+    ]
+    expiry_result = await db.bonus_credit_batches.aggregate(expiry_pipeline).to_list(1)
+    expiry_stats = expiry_result[0] if expiry_result else {
+        "total_active_bonus_batches": 0,
+        "total_bonus_in_batches": 0
+    }
+    
+    # Get already used session payment records for comparison
+    session_pipeline = [
+        {"$group": {
+            "_id": None,
+            "total_sessions": {"$sum": 1},
+            "total_tutor_payouts": {"$sum": "$tutor_payout"},
+            "total_platform_commission": {"$sum": "$platform_commission"},
+            "total_marketing_cost_realized": {"$sum": "$platform_marketing_cost"},
+            "total_paid_credits_used": {"$sum": "$paid_credits_used"},
+            "total_bonus_credits_used": {"$sum": "$bonus_credits_used"}
+        }}
+    ]
+    session_result = await db.session_payment_records.aggregate(session_pipeline).to_list(1)
+    session_stats = session_result[0] if session_result else {
+        "total_sessions": 0,
+        "total_tutor_payouts": 0,
+        "total_platform_commission": 0,
+        "total_marketing_cost_realized": 0,
+        "total_paid_credits_used": 0,
+        "total_bonus_credits_used": 0
+    }
+    
+    return {
+        "credit_liability": {
+            "total_paid_credits_outstanding": total_paid,
+            "total_bonus_credits_outstanding": total_bonus,
+            "total_credits_outstanding": total_credits,
+            "paid_credits_monetary_value": paid_credits_value,
+            "bonus_credits_monetary_value": bonus_credits_value,
+            "total_monetary_value": paid_credits_value + bonus_credits_value
+        },
+        "tutor_payout_exposure": {
+            "from_paid_credits": estimated_tutor_payout_paid,
+            "from_bonus_credits": estimated_tutor_payout_bonus,
+            "total_exposure": total_tutor_payout_exposure,
+            "payout_rate": TUTOR_PAYOUT_RATE,
+            "note": "Amount owed to tutors if all outstanding credits are used"
+        },
+        "platform_commission": {
+            "potential_commission": platform_commission_exposure,
+            "commission_rate": COMMISSION_RATE
+        },
+        "marketing_liability": {
+            "bonus_credits_value": bonus_credits_value,
+            "active_bonus_batches": expiry_stats.get("total_active_bonus_batches", 0),
+            "note": "Cost absorbed by platform when bonus credits are used"
+        },
+        "wallet_summary": {
+            "total_wallets": wallet_stats.get("total_wallets", 0),
+            "wallets_with_balance": active_wallets,
+            "total_topup_revenue": wallet_stats.get("total_topup_amount", 0),
+            "total_credits_used_all_time": wallet_stats.get("total_credits_used", 0)
+        },
+        "historical_usage": {
+            "total_sessions_completed": session_stats.get("total_sessions", 0),
+            "total_tutor_payouts_made": session_stats.get("total_tutor_payouts", 0),
+            "total_platform_commission_earned": session_stats.get("total_platform_commission", 0),
+            "total_marketing_cost_realized": session_stats.get("total_marketing_cost_realized", 0),
+            "paid_credits_used": session_stats.get("total_paid_credits_used", 0),
+            "bonus_credits_used": session_stats.get("total_bonus_credits_used", 0)
+        },
+        "base_rates": {
+            "credit_price": BASE_CREDIT_PRICE,
+            "commission_rate": COMMISSION_RATE,
+            "tutor_rate": TUTOR_PAYOUT_RATE
+        }
+    }
