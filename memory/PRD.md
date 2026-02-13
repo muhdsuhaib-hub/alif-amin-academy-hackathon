@@ -203,9 +203,19 @@ Alif Amin Academy is a web-based platform for online Quran learning, connecting 
   - [ ] Student Report Card PDF generator
   - [ ] Visual Surah progress bar
   - [ ] Milestone achievements
-- [ ] **Code Refactoring**
-  - [ ] Break down TeacherDashboard.js (900+ lines) into smaller components
-  - [ ] Break down StudentDashboard.js (1400+ lines) into smaller components
+
+### ✅ Completed Refactoring (Feb 13, 2026)
+- [x] **Commission Service Module** - Created standalone `/app/backend/services/commission_service.py`
+  - Configurable tier definitions with `TierConfig` dataclass
+  - Session pricing configuration with `SessionPriceConfig`
+  - `CommissionService` class with static methods for all calculations
+  - Backward-compatible convenience functions
+- [x] **TeacherDashboard.js Refactored** - From 1838 lines to 249 lines
+  - Extracted: TeacherSidebar, EarningsWallet, AvailabilityCalendar, ClassroomTools, StudentManagement, ProfileManagement, DashboardOverview
+  - All components in `/app/frontend/src/components/teacher/`
+- [x] **StudentDashboard.js Refactored** - From 1437 lines to 1016 lines
+  - Extracted: StudentSidebar, StudentHeader, WalletPage
+  - All components in `/app/frontend/src/components/student/`
 
 ---
 
