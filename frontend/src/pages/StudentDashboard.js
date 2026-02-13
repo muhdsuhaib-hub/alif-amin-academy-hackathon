@@ -1003,17 +1003,27 @@ const WalletPage = ({ user }) => {
 
   const getTransactionIcon = (type) => {
     switch (type) {
-      case 'topup':
+      case 'topup_paid':
         return <ArrowRight className="w-5 h-5 text-green-600 rotate-180" />;
+      case 'topup_bonus':
+        return <Star className="w-5 h-5 text-[#D4AF37]" />;
       case 'session_deduction':
         return <BookOpen className="w-5 h-5 text-red-600" />;
-      case 'refund':
+      case 'refund_paid':
+      case 'refund_bonus':
         return <RefreshCw className="w-5 h-5 text-blue-600" />;
-      case 'bonus':
+      case 'bonus_reward':
         return <Star className="w-5 h-5 text-[#D4AF37]" />;
       default:
         return <CreditCard className="w-5 h-5 text-gray-600" />;
     }
+  };
+
+  const getTransactionColor = (type, amount) => {
+    if (type.includes('deduction')) return 'text-red-600';
+    if (type.includes('bonus') || type === 'topup_bonus') return 'text-[#D4AF37]';
+    if (amount > 0) return 'text-green-600';
+    return 'text-red-600';
   };
 
   const formatDate = (dateStr) => {
