@@ -1817,7 +1817,7 @@ export default function TeacherDashboard({ user }) {
             <DashboardOverview teacherData={dashboardData} students={students} user={user} commissionInfo={commissionInfo} />
           )}
           {activeSection === 'wallet' && (
-            <EarningsWallet teacherData={dashboardData?.teacher} commissionInfo={commissionInfo} />
+            <EarningsWallet teacherData={dashboardData?.teacher} commissionInfo={commissionInfo} user={user} />
           )}
           {activeSection === 'availability' && (
             <AvailabilityCalendar teacherData={dashboardData?.teacher} />
