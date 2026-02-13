@@ -248,7 +248,7 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
     redirect_uri = str(request.base_url).rstrip('/') + "/api/auth/google/callback"
     # For production, use the external URL
     if "preview.emergentagent.com" in str(request.url):
-        redirect_uri = f"https://commission-payouts.preview.emergentagent.com/api/auth/google/callback"
+        redirect_uri = f"https://alif-classes.preview.emergentagent.com/api/auth/google/callback"
     
     # Exchange authorization code for tokens
     async with httpx.AsyncClient() as client:

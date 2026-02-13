@@ -1,109 +1,113 @@
 <analysis>**original_problem_statement:**
 The user wants to build a web-based platform for an online Quran Academy named Alif Amin Academy. The platform connects students with qualified Quran teachers for 1-on-1 video lessons.
 
-**PRODUCT REQUIREMENTS:**
+**LATEST USER REQUEST:**
+- **Simplified Booking:** Remove the feature for teachers to set their own rates.
+- **Standardized Sessions:** Students can only book sessions for fixed durations: 15, 30, or 60 minutes.
+- **Fix Booking Flow:** The current booking process is broken. Bookings don't appear in the student's schedule (Upcoming Class or My Schedule), and credits are not deducted from the student's wallet.
+- **Booking Management:**
+    - Students must be able to edit or cancel their bookings from the My Schedule page.
+    - **Cancellation Policy:**
+        - **24+ Hours Notice:** If a student cancels more than 24 hours before the class, the booking is cancelled, the teacher is notified, and the full credit amount is returned to the student's wallet.
+        - **Less than 24 Hours Notice:** If a student attempts to cancel within 24 hours of the class, a confirmation prompt must appear (e.g., Are you sure you want to cancel? Your credits for this session will not be refunded.). If confirmed, the booking is cancelled, but the credits are still deducted.
+
+**PRODUCT REQUIREMENTS (Overall):**
 - **User Roles:** Student/Parent, Teacher, and Super Admin.
-- **Authentication:** Support for both Google OAuth and traditional Email/Password login.
-- **Role-Based Redirection:** Users directed to respective dashboards upon login.
-- **Student/Parent Portal:** Onboarding questionnaire, dashboard, teacher booking, classroom, and a credit-based wallet system.
-- **Teacher Platform:** Dashboard with sidebar, earnings wallet, availability calendar, classroom tools, profile management, and student management.
-- **Admin Dashboard:** User management, teacher approvals, booking management, and detailed financial reporting.
-- **Financial Logic (Added in this session):**
-    - **Bonus Credits:** A wallet system that differentiates between paid and bonus credits for marketing promotions.
-    - **Liability Tracking:** Admin view of outstanding paid/bonus credits and estimated tutor payout liability.
-    - **Revenue Recognition:** Separate tracking for cash collected vs. actual platform commission earned (recognized only upon session completion).
-    - **Tiered Commissions:** An automated, tiered commission engine for tutors (New, Rated, Elite) based on performance metrics like rating and completed sessions.
-    - **Tutor Earnings Wallet:** A system for tutors to view total, pending, and withdrawable earnings, with an admin approval workflow for payouts.
+- **Authentication:** Google OAuth and Email/Password login.
+- **Dashboards:** Role-based dashboards for Admin, Teacher, and Student.
+- **Financial System:**
+    - A credit-based wallet for students (supporting paid vs. bonus credits).
+    - A tiered commission system for tutors.
+    - An earnings wallet for tutors with a withdrawal request system and admin approval workflow.
+- **Booking System:** A pop-up modal for booking that includes date, time, duration, and teacher selection.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application (React, FastAPI, MongoDB) with role-based authentication (custom Google OAuth & Email/Password). All major dashboards (Admin, Teacher, Student) are functional.
+A full-stack application (React, FastAPI, MongoDB) with role-based authentication and functional dashboards for all user types.
 
-The financial backend has been significantly built out:
-- **Student Wallet:** A complete credit wallet system is implemented and tested. It handles paid vs. bonus credits, package top-ups, transaction history, and 12-month expiry for bonus credits.
-- **Admin Financial Reporting:** The Admin dashboard now features widgets for:
-    1.  **Credit Liability:** Shows total outstanding paid/bonus credits.
-    2.  **Revenue Recognition:** Separates cash collected from commission earned on completed sessions.
-    3.  **Commission Tiers:** Summarizes the number of tutors in each commission tier (New, Rated, Elite).
-- **Tiered Commission Engine:** A fully automated backend system that calculates dynamic commission rates for tutors based on their performance (ratings, reviews, sessions completed). This logic is integrated into the session payment process.
-- **Teacher Dashboard:** Updated to display the tutor's current commission tier and rate.
+The core financial backend is robust, featuring:
+- A complete Student Wallet system that handles paid/bonus credits and transactions.
+- A dynamic, automated tiered commission engine for tutors.
+- A complete Tutor Earnings Wallet system, allowing tutors to view earnings, request withdrawals, and admins to manage payout requests. This was tested and verified.
+
+The frontend has been significantly refactored:
+- The commission logic was moved into a standalone backend service module for better maintainability.
+- , a monolithic 1800+ line file, was successfully broken down into 7 smaller, manageable components.
+-  has been partially refactored by extracting the  component, reducing its line count.
 
 **Last working item**:
-- **Last item agent was working:** The user has just requested the implementation of a comprehensive Tutor Earnings Wallet System. The agent acknowledged the request and was about to begin implementation.
+- **Last item agent was working:** The agent had just finished refactoring the backend commission logic and the frontend dashboards ( and partially ). The user then provided a new, large feature request to overhaul the booking system. The agent has not started working on this new request.
 - **Status:** NOT STARTED
-- **Agent Testing Done:** N
-- **Which testing method agent to use?** both. This is a critical financial feature involving new backend logic, database models, admin approval workflows, and a new UI section for teachers. End-to-end testing is essential.
+- **Agent Testing Done:** N/A (New request)
+- **Which testing method agent to use?** both. This involves significant changes to backend booking/cancellation logic, credit deduction, and frontend UI (booking modal, schedule management). End-to-end testing will be critical.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- **Issue 1 (P0):** Implement the Tutor Earnings Wallet System.
-- **Issue 2 (P1):** The  component needs to be refactored.
-- **Issue 3 (P2):** The  component needs to be refactored.
+- **Issue 1 (P0):** Implement the new, simplified booking and cancellation system.
+- **Issue 2 (P1):** Complete the refactoring of .
 
 **Issues Detail:**
-- **Issue 1: Implement the Tutor Earnings Wallet System**
-    - **Attempted fixes:** None. This is a new feature request.
+- **Issue 1: Implement New Booking & Cancellation System**
+    - **Attempted fixes:** None. This is a new request.
     - **Next debug checklist:**
         1.  **Backend:**
-            - Update  with ,  models.
-            - Update the  function in  to credit the tutor's earnings wallet (minus commission) when a session is completed.
-            - Create new routes (e.g., in ) for fetching earnings data, requesting withdrawals.
-            - Create new admin routes for viewing, approving, and rejecting withdrawal requests.
+            - Modify booking creation endpoint: remove teacher rate logic and accept a fixed duration (15, 30, 60 mins).
+            - Fix the booking logic to correctly deduct credits and save the session to the database so it appears on schedules.
+            - Create a new endpoint for cancelling a booking ().
+            - Implement the 24-hour cancellation rule within this new endpoint, refunding credits only if the cancellation is made with sufficient notice.
+            - (Future) Add a notification trigger to inform the teacher of the cancellation.
         2.  **Frontend:**
-            - Create a new Earnings or Wallet component for the Teacher Dashboard.
-            - Display total, pending, and withdrawable balances.
-            - Implement a form/button to request a withdrawal.
-            - Show a history of withdrawals.
-            - Update the Admin Dashboard with a new section to manage pending withdrawal requests.
-    - **Why fix this issue and what will be achieved with the fix?** This is a core requirement for the platform, allowing tutors to get paid for their work and enabling admins to manage payouts.
+            - Update the booking modal to remove rate inputs and use a dropdown/selector for the fixed durations.
+            - Modify the My Schedule component to include Edit and Cancel buttons for each booking.
+            - Implement the fetch call to the new cancellation endpoint.
+            - Add a confirmation modal ( or similar) for cancellations, especially for the less than 24 hours scenario.
+    - **Why fix this issue and what will be achieved with the fix?** The core booking functionality is currently broken and does not align with the user's desired simplified business model. This fix is essential for the platform to be usable.
     - **Status:** NOT STARTED
     - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Both
 
-- **Issue 2: Refactor  into smaller components**
-    - **Attempted fixes:** None.
+- **Issue 2: Complete  Refactoring**
+    - **Attempted fixes:** The  component was successfully extracted into . However, other sections like , , and  remain as inline functional components within the main file.
     - **Next debug checklist:**
-        1. Identify functional sections (Earnings, Availability, Student List).
-        2. Create new component files in .
-        3. Migrate JSX and logic into the new components.
-        4. Import and render the new components in .
-    - **Why fix this issue and what will be achieved with the fix?** To improve code maintainability and readability. The file is over 900 lines long.
-    - **Status:** NOT STARTED
-    - **Is recurring issue?** N
+        1. Create new component files for , , and  inside .
+        2. Migrate the corresponding JSX and logic into these new files.
+        3. Update  to import and render these new components, removing the inline definitions.
+    - **Why fix this issue and what will be achieved with the fix?** The  file is still over 1000 lines long, making it difficult to read and maintain. Completing the refactor will improve code quality and developer velocity.
+    - **Status:** IN PROGRESS
+    - **Is recurring issue?** Y (Carried over from previous sessions)
     - **Should Test frontend/backend/both after fix?** Frontend
 
 **In progress Task List**:
-None.
+- **Task 1:  Refactoring**
+    - **Where to resume:** The  has been extracted. The next step is to extract the remaining inline components (, , ) into their own files within  and update the main  file.
+    - **What will be achieved with this?** A fully modular, maintainable .
+    - **Status:** IN PROGRESS
+    - **Should Test frontend/backend/both after fix?** Frontend
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks (P1):**
     - **Implement Real Stripe Payments:** Replace the mocked payment logic in  with a full Stripe integration.
-    - **Connect Booking to Wallet:** Implement the final backend logic to deduct credits from a student's wallet when a class is marked as completed (partially done, now needs to credit tutor earnings).
     - **Real-time Classroom Features:** Implement the Live Pen/Pointer for the Digital Mushaf using WebSockets.
     - **File Storage:** Implement file uploads (e.g., S3) for teacher profile videos and verification certificates.
 - **Future Tasks (P2):**
     - **Google Meet API Integration:** Automate the creation of Google Meet links for classes.
-    - **Notifications:** Integrate Twilio for SMS/WhatsApp notifications.
+    - **Notifications:** Integrate Twilio for SMS/WhatsApp notifications (partially relevant to the new cancellation feature).
     - **PDF Report Card Generator:** Implement the Report Card Generator feature.
-    - **Refactor :** Break down the large component into smaller pieces.
 
 **Completed work in this session**
-- **Wallet System Refactor:** Successfully refactored the wallet to separate  and , including updating all top-up, deduction, and history logic. Tested via .
-- **Bonus Credit Expiry:** Implemented a system to track bonus credits in batches with a 12-month expiry date and an admin endpoint to run the expiry job.
-- **Admin Credit Liability Widget:** Added a new section to the Admin Dashboard to track total outstanding paid and bonus credits across all students.
-- **Admin Revenue Recognition Widget:** Added a widget to the Admin Dashboard to distinguish between total cash collected and platform commission actually earned from completed sessions.
-- **Tiered Commission Engine:** Built and integrated a dynamic, tiered commission system for tutors (New: 30%, Rated: 25%, Elite: 20%) with an automated evaluation job.
-- **Admin & Teacher UI for Commissions:** The Admin Dashboard now shows a summary of tutors per tier, and the Teacher Dashboard displays the tutor's current tier badge and commission rate. All features were validated by the testing agent.
+- **Tutor Earnings Wallet System:** Successfully implemented the entire feature, including backend models (, ), API routes for earnings and withdrawals, and frontend UI for both the Teacher Dashboard and the Admin Dashboard. Verified with the testing agent.
+- **Commission Logic Refactor:** The backend commission calculation logic was extracted from  into a dedicated, reusable service module at .
+- ** Refactor:** The monolithic  file (1800+ lines) was broken down into 7 smaller, reusable components located in . The main dashboard file is now only ~250 lines.
+- **Partial  Refactor:** The  component was extracted from , reducing its size by over 400 lines.
 
 **Earlier issues found/mentioned but not fixed**
-- **Issue 1: Refactor **: A monolithic 900+ line component that is difficult to maintain.
-- **Issue 2: Refactor **: A monolithic 1300+ line component that is difficult to maintain.
+- **Issue 1:  Refactor**: A very large component (currently 1000+ lines) that needs to be fully broken down for maintainability. This is now .
 
 **Known issue recurrence from previous fork**
 - **Issue recurrence in previous fork:** Onboarding redirection bug.
 - **Recurrence count:** 1
-- **Status:** RESOLVED
+- **Status:** RESOLVED (Did not recur in this session).
 
 **Code Architecture**
 
@@ -111,80 +115,65 @@ None.
 **Key Technical Concepts**
 - **Frontend:** React, React Router, Tailwind CSS, .
 - **Backend:** FastAPI (Python), MongoDB with .
-- **Authentication:** JWT-based Email/Password (, ) and a custom Google OAuth 2.0 flow.
-- **Business Logic:** Server-side logic for tiered commissions, bonus credit handling, and revenue recognition.
-- **Scheduled Jobs:** Logic for monthly commission evaluation and bonus credit expiry (currently triggered via admin endpoint).
+- **Authentication:** JWT-based Email/Password and a custom Google OAuth 2.0 flow.
+- **Business Logic:** Server-side logic for tiered commissions, wallet management, and withdrawal workflows.
+- **Code Structure:** Refactoring towards a service-oriented backend and component-based frontend.
 
 **key DB schema**
-- **users:** 
-- **teachers:**  (Updated)
-- **students:** 
-- **student_wallets:** 
-- **wallet_transactions:**  (Updated)
-- **bonus_credit_batches:**  (New)
-- **class_session_payments:**  (New)
-- **class_sessions:** 
-- **notifications:** 
+- **users, teachers, students, student_wallets, wallet_transactions, class_sessions:** (Unchanged from previous state but now part of a larger system)
+- **TutorEarnings:**  (New)
+- **WithdrawalRequest:**  (New)
 
 **changes in tech stack**
 - None.
 
 **All files of reference**
-- : Updated with commission fields for , a new  model, and new transaction types.
-- : Logic heavily updated to handle bonus credits, expiry, and to call the new commission engine during credit deduction.
-- : New file containing all logic for the tiered commission engine and evaluation job.
-- : Updated to include the .
-- : Updated with new endpoints for financial reporting (liability, revenue, commission tiers).
-- : Heavily modified to fetch and display the new financial reporting widgets.
-- : Modified to fetch and display the tutor's commission tier and rate.
-- : Modified to display updated package information and handle integer credit values in the UI.
+- : Updated with  and  models.
+- : New file for tutor-specific endpoints (earnings, withdrawals).
+- : New file containing refactored commission logic.
+- : Updated to credit tutor earnings upon session completion.
+- : Updated to include the new .
+- : Major refactor to use new components.
+- : All new component files created from the refactor.
+- : Partially refactored to use the new  component.
+- : New component file.
+- : Updated to include the  management tab.
+- : New component for the admin withdrawal queue.
 
 **Areas that need refactoring**:
-- : A large component (900+ lines) that should be broken down.
-- : A very large component (1300+ lines) that should be broken into smaller, feature-specific components (, , etc.).
+- : Still over 1000 lines. The remaining inline components (, , ) need to be extracted into separate files.
 
 **key api endpoints**
-- : Handles student credit top-ups, now creates  records.
-- : Admin endpoint to trigger bonus credit expiration.
-- : Provides data for the Credit Liability widget.
-- : Provides data for the Revenue Recognition widget.
-- : Admin endpoint to run the commission tier evaluation job.
-- : Fetches tier info for a specific teacher.
-- : Provides data for the commission summary widget.
+- : Fetches earnings data for the logged-in tutor.
+- : Allows a tutor to request a withdrawal.
+- : Fetches all withdrawal requests for the admin.
+- : Approves a withdrawal request.
+- : Rejects a withdrawal request.
 
 **Critical Info for New Agent**
-- **Your immediate priority is to build the Tutor Earnings Wallet system.** This is the next logical step in the financial feature set and has been directly requested by the user.
-- The commission calculation is now **dynamic**. When a session is completed and the tutor is paid, you must fetch the tutor's  from their profile (or via the commission engine) to calculate the earnings correctly. Do not use a static commission rate.
-- The payment system () is still **mocked**. Your implementation of tutor withdrawals will also be mocked for now (i.e., marking a request as Paid without actual money transfer). A real payment integration is a high-priority upcoming task.
-- Use the  to validate this new financial feature. Given its complexity (backend logic, UI, admin workflow), thorough testing is crucial before finishing.
+- **The immediate and highest priority (P0) is to implement the new simplified booking system as detailed in the user's latest request.** The current booking flow is considered broken by the user.
+- **The  refactor is incomplete.** While  was extracted, other large components are still inline. This is the next priority (P1) after the booking system is fixed.
+- All financial systems (Stripe payments, tutor withdrawals) are still **mocked** on the backend. Do not attempt to implement real payment processing unless it becomes the priority task.
 
 **documents and test reports created in this job**
-- 
-- 
-- 
 - 
 -  (Updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1. **User Request:** Implement wallet refactor for bonus credits. (COMPLETED)
-2. **Agent Action:** Implemented and tested the wallet refactor. (COMPLETED)
-3. **User Request:** Add admin dashboard widget for outstanding wallet credit liability. (COMPLETED)
-4. **Agent Action:** Implemented and tested the liability widget. (COMPLETED)
-5. **User Request:** Add revenue recognition tracking for admins. (COMPLETED)
-6. **Agent Action:** Implemented and tested the revenue recognition widget. (COMPLETED)
-7. **User Request:** Implement a tiered commission engine for tutors. (COMPLETED)
-8. **Agent Action:** Implemented the full commission engine, including backend logic and UI updates for admin and teacher dashboards. Tested successfully. (COMPLETED)
-9. **User Request:** **(PENDING)** tutor earnings wallet system. Must include: Total earnings, Pending earnings, Withdrawable balance, Withdrawal request system, Admin approval workflow, Payout history, Commission must already be deducted before earnings are added.
-10. **Agent Action:** Acknowledged the request and was preparing to start implementation.
+- **User:** Refactor commission logic into a standalone service and refactor both  and . (COMPLETED/IN PROGRESS)
+- **Agent:** Acknowledged and started implementation. (COMPLETED)
+- **Agent:** Completed the commission service refactor and the full refactor of . (COMPLETED)
+- **Agent:** Partially completed the refactor of  by extracting the  component. (COMPLETED)
+- **Agent:** Finished the tasks, updated . (COMPLETED)
+- **User:** **(PENDING)** Provided a large new request to overhaul the booking system. Specified that teacher rates should be removed, session durations should be fixed (15, 30, 60 mins), the broken booking flow must be fixed (bookings not saving, credits not deducting), and a new cancellation/edit feature with a 24-hour refund policy needs to be implemented.
 
 **Project Health Check:**
 - **Broken:**
-  - None. All implemented features have been tested.
+  - **Booking System:** The core functionality of booking a class is broken according to the user. Bookings are not being saved, and credits are not being deducted.
 - **Mocked:**
-  - Stripe payment processing in .
-  - The Join Class button functionality.
-  - Credit deduction upon class completion (needs to be linked to the new Tutor Earnings Wallet).
-  - Teacher withdrawal system (this is the next task to be implemented, and will be mocked initially).
+  - Stripe payment processing.
+  - Tutor withdrawal payouts (the system tracks requests, but no real money moves).
+  - Join Class button functionality.
   - File storage for teacher profile media.
 
 **3rd Party Integrations**
@@ -198,15 +187,16 @@ None.
     - Twilio (WhatsApp Notifications)
 
 **Testing status**
-- **Testing agent used after significant changes:** YES. The agent was used successfully four times in this session to validate the wallet system, liability tracking, revenue recognition, and commission engine.
+- **Testing agent used after significant changes:** YES. The agent was used to validate the Tutor Earnings Wallet system.
 - **Troubleshoot agent used after agent stuck in loop:** NO
-- **Test files created:** None in this session, but previous test files exist.
-- **Known regressions:** None.
+- **Test files created:** None in this session.
+- **Known regressions:** The core booking flow is now considered a regression/broken based on user feedback.
 
 **Credentials to test flow:**
 - **Admin:** Use a Google account with the email  or .
-- **Teacher:** Use an approved teacher account to see commission info.
-- **Student:** Register a new account via the onboarding flow. A test student ( / ) exists.
+- **Teacher:** Use an approved teacher account.
+- **Student:** Register a new account or use the test student ( / ).
 
 **What agent forgot to execute**
-- The agent has not yet started implementing the most recent user request: the **Tutor Earnings Wallet system**. This is the immediate next task.</analysis>
+- The agent has not started the new P0 task of fixing and overhauling the booking system.
+- The agent did not fully complete the refactoring of ; several large components remain inline within the file.</analysis>
