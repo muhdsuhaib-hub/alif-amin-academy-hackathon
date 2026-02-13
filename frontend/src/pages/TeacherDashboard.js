@@ -67,7 +67,7 @@ function TeacherSidebar({ activeSection, setActiveSection, isCollapsed, setIsCol
 }
 
 // Earnings Wallet Section
-function EarningsWallet({ teacherData }) {
+function EarningsWallet({ teacherData, commissionInfo }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
