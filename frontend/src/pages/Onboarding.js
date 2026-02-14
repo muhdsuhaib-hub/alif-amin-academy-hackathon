@@ -115,6 +115,17 @@ export default function Onboarding() {
   const currentQuestion = questions[step];
   const fieldNames = ['userType', 'level', 'preference'];
 
+  if (isCompleting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FBFBFD]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0F3D2E] mx-auto mb-4"></div>
+          <p className="text-[15px] text-gray-500">Setting up your experience...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FBFBFD]">
       <div className="w-full max-w-2xl mx-auto px-6 py-12">
