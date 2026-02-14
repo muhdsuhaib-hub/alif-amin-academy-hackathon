@@ -14,7 +14,7 @@ import os
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://one-on-one-quran.preview.emergentagent.com"
+    BASE_URL = "https://quran-academy-54.preview.emergentagent.com"
 
 # Admin credentials from the test request
 ADMIN_SESSION_COOKIE = "session_b8ed5bf2f29c4780a8dfbe540f5f00e9"
