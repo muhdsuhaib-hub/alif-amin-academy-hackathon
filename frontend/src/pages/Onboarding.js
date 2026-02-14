@@ -124,8 +124,8 @@ export default function Onboarding() {
   const fieldNames = ['userType', 'level', 'preference'];
 
   return (
-    <div className="min-h-screen flex items-center justify-center" className="bg-[#FBFBFD]">
-      <div className="w-full max-w-3xl mx-auto px-6 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-[#FBFBFD]">
+      <div className="w-full max-w-2xl mx-auto px-6 py-12">
         <button
           onClick={handleBack}
           className="flex items-center gap-2 mb-12 text-sm font-medium"
