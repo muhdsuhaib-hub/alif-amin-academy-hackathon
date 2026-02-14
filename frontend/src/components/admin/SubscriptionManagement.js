@@ -127,7 +127,7 @@ export default function SubscriptionManagement() {
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-2xl font-semibold" style={{ color: '#1D1D1F' }}>Subscription Management</h2>
-        <p className="text-sm mt-1" className="text-gray-500">
+        <p className="text-sm mt-1 text-gray-500">
           Manage student subscriptions and trials
         </p>
       </div>
@@ -137,7 +137,7 @@ export default function SubscriptionManagement() {
         <div className="apple-card p-6" >
           <div className="flex items-center gap-3 mb-2">
             <TrendingUp className="w-5 h-5" style={{ color: '#2EB6A0' }} />
-            <p className="text-sm font-medium" className="text-gray-400">Active</p>
+            <p className="text-sm font-medium text-gray-400">Active</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F' }}>
             {overview?.active_subscriptions || 0}
@@ -147,7 +147,7 @@ export default function SubscriptionManagement() {
         <div className="apple-card p-6" >
           <div className="flex items-center gap-3 mb-2">
             <Clock className="w-5 h-5" style={{ color: '#C8A951' }} />
-            <p className="text-sm font-medium" className="text-gray-400">Trial</p>
+            <p className="text-sm font-medium text-gray-400">Trial</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F' }}>
             {overview?.trial_subscriptions || 0}
@@ -157,7 +157,7 @@ export default function SubscriptionManagement() {
         <div className="apple-card p-6" >
           <div className="flex items-center gap-3 mb-2">
             <Pause className="w-5 h-5" style={{ color: '#E76F51' }} />
-            <p className="text-sm font-medium" className="text-gray-400">Paused</p>
+            <p className="text-sm font-medium text-gray-400">Paused</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F' }}>
             {overview?.paused_subscriptions || 0}
@@ -166,8 +166,8 @@ export default function SubscriptionManagement() {
 
         <div className="apple-card p-6" >
           <div className="flex items-center gap-3 mb-2">
-            <XCircle className="w-5 h-5" className="text-gray-400" />
-            <p className="text-sm font-medium" className="text-gray-400">Cancelled</p>
+            <XCircle className="w-5 h-5 text-gray-400" />
+            <p className="text-sm font-medium text-gray-400">Cancelled</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F' }}>
             {overview?.cancelled_subscriptions || 0}
@@ -190,7 +190,7 @@ export default function SubscriptionManagement() {
                 <p className="text-sm font-medium" style={{ color: '#1D1D1F' }}>
                   {student.student_name || 'Unknown Student'}
                 </p>
-                <p className="text-xs" className="text-gray-500">
+                <p className="text-xs text-gray-500">
                   {student.student_email || ''}
                 </p>
               </div>
@@ -220,7 +220,7 @@ export default function SubscriptionManagement() {
                     <td className="px-6 py-4">
                       <div>
                         <p className="font-medium" style={{ color: '#1D1D1F' }}>{student.name}</p>
-                        <p className="text-sm" className="text-gray-400">{student.email}</p>
+                        <p className="text-sm text-gray-400">{student.email}</p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -280,7 +280,7 @@ export default function SubscriptionManagement() {
                             className="p-2 rounded-lg hover:bg-red-50 transition-all"
                             title="Cancel"
                           >
-                            <XCircle className="w-4 h-4" className="text-gray-400" />
+                            <XCircle className="w-4 h-4 text-gray-400" />
                           </button>
                         )}
                       </div>
@@ -301,10 +301,10 @@ export default function SubscriptionManagement() {
           title={`${action.charAt(0).toUpperCase() + action.slice(1).replace('_', ' ')} Subscription`}
         >
           <div className="space-y-4">
-            <div className="p-4 rounded-xl" className="bg-[#FBFBFD]">
-              <p className="text-sm mb-1" className="text-gray-400">Student</p>
+            <div className="p-4 rounded-xl bg-[#FBFBFD]">
+              <p className="text-sm mb-1 text-gray-400">Student</p>
               <p className="font-medium" style={{ color: '#1D1D1F' }}>{selectedStudent.name}</p>
-              <p className="text-sm" className="text-gray-500">{selectedStudent.email}</p>
+              <p className="text-sm text-gray-500">{selectedStudent.email}</p>
             </div>
 
             <div className="p-4 rounded-xl border-l-4" style={{ backgroundColor: '#FFF9E6', borderLeftColor: '#C8A951' }}>

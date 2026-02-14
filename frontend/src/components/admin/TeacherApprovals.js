@@ -112,7 +112,7 @@ export default function TeacherApprovals() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold" style={{ color: '#0F3D2E' }}>Teacher Approvals</h2>
-          <p className="text-sm mt-1" className="text-gray-500">
+          <p className="text-sm mt-1 text-gray-500">
             Review and approve pending teacher applications
           </p>
         </div>
@@ -156,7 +156,7 @@ export default function TeacherApprovals() {
                       {teacher.user?.name || 'Unknown'}
                     </h3>
                     
-                    <div className="flex items-center gap-4 mt-2 text-sm" className="text-gray-500">
+                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                       <div className="flex items-center gap-1">
                         <Mail className="w-4 h-4" />
                         <span>{teacher.user?.email || 'N/A'}</span>
@@ -223,7 +223,7 @@ export default function TeacherApprovals() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold" style={{ color: '#1D1D1F' }}>Reject Application</h3>
-                <p className="text-sm" className="text-gray-500">{selectedTeacher.user?.name}</p>
+                <p className="text-sm text-gray-500">{selectedTeacher.user?.name}</p>
               </div>
             </div>
 

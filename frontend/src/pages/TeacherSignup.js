@@ -37,14 +37,13 @@ export default function TeacherSignup() {
   ];
 
   return (
-    <div className="min-h-screen" className="bg-[#FBFBFD]">
+    <div className="min-h-screen bg-[#FBFBFD]">
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-6">
           <button
             onClick={() => navigate('/onboarding')}
-            className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70"
-            className="text-gray-500"
+            className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70 text-gray-500"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
@@ -82,8 +81,7 @@ export default function TeacherSignup() {
               Join as a Teacher
             </h1>
             <p 
-              className="text-lg"
-              className="text-gray-500"
+              className="text-lg text-gray-500"
             >
               Share your knowledge and make a difference in students&apos; lives
             </p>
@@ -148,8 +146,7 @@ export default function TeacherSignup() {
             </button>
 
             <p 
-              className="text-center text-sm mt-6"
-              className="text-gray-400"
+              className="text-center text-sm mt-6 text-gray-400"
             >
               By continuing, you agree to our Terms of Service
             </p>
@@ -169,7 +166,7 @@ export default function TeacherSignup() {
                 <p className="text-sm font-medium" style={{ color: '#1F2933' }}>
                   Application Review
                 </p>
-                <p className="text-sm mt-1" className="text-gray-500">
+                <p className="text-sm mt-1 text-gray-500">
                   After signing up, our team will review your application. You&apos;ll be notified once approved.
                 </p>
               </div>

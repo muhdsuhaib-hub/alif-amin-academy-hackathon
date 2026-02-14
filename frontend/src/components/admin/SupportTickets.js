@@ -141,7 +141,7 @@ export default function SupportTickets() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-semibold" style={{ color: '#1D1D1F' }}>Support Tickets</h2>
-          <p className="text-sm mt-1" className="text-gray-500">
+          <p className="text-sm mt-1 text-gray-500">
             Manage support requests and issues
           </p>
         </div>
@@ -186,7 +186,7 @@ export default function SupportTickets() {
           </div>
         ) : tickets.length === 0 ? (
           <div className="text-center py-12">
-            <MessageSquare className="w-12 h-12 mx-auto mb-4" className="text-gray-400" />
+            <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-400" />
             <p className="text-gray-500">No support tickets found</p>
           </div>
         ) : (
@@ -219,18 +219,18 @@ export default function SupportTickets() {
                           {ticket.priority}
                         </span>
                       </div>
-                      <p className="text-sm line-clamp-2" className="text-gray-500">
+                      <p className="text-sm line-clamp-2 text-gray-500">
                         {ticket.description}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       {getStatusIcon(ticket.status)}
-                      <span className="text-sm capitalize" className="text-gray-500">
+                      <span className="text-sm capitalize text-gray-500">
                         {ticket.status.replace('_', ' ')}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 text-sm" className="text-gray-400">
+                  <div className="flex items-center gap-4 text-sm text-gray-400">
                     <span>From: {ticket.user_name}</span>
                     <span>•</span>
                     <span>{formatDate(ticket.created_at)}</span>
@@ -321,19 +321,19 @@ export default function SupportTickets() {
                   {selectedTicket.priority}
                 </span>
               </div>
-              <div className="p-4 rounded-xl" className="bg-[#FBFBFD]">
+              <div className="p-4 rounded-xl bg-[#FBFBFD]">
                 <p style={{ color: '#1D1D1F' }}>{selectedTicket.description}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm mb-1" className="text-gray-400">Submitted By</p>
+                <p className="text-sm mb-1 text-gray-400">Submitted By</p>
                 <p className="font-medium" style={{ color: '#1D1D1F' }}>{selectedTicket.user_name}</p>
-                <p className="text-sm" className="text-gray-500">{selectedTicket.user_email}</p>
+                <p className="text-sm text-gray-500">{selectedTicket.user_email}</p>
               </div>
               <div>
-                <p className="text-sm mb-1" className="text-gray-400">Created</p>
+                <p className="text-sm mb-1 text-gray-400">Created</p>
                 <p className="font-medium" style={{ color: '#1D1D1F' }}>{formatDate(selectedTicket.created_at)}</p>
               </div>
             </div>

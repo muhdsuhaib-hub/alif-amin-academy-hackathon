@@ -208,17 +208,17 @@ export default function EarningsWallet({ teacherData, commissionInfo, user }) {
             <div className="mt-4 pt-4 border-t" >
               <p className="text-xs text-gray-500 mb-2">Progress to {commissionInfo.next_tier.next_tier_name}</p>
               {commissionInfo.next_tier.requirements.rating_needed > 0 && (
-                <p className="text-xs" className="text-gray-500">
+                <p className="text-xs text-gray-500">
                   Need {commissionInfo.next_tier.requirements.rating_needed?.toFixed(1)} more rating points
                 </p>
               )}
               {commissionInfo.next_tier.requirements.reviews_needed > 0 && (
-                <p className="text-xs" className="text-gray-500">
+                <p className="text-xs text-gray-500">
                   Need {commissionInfo.next_tier.requirements.reviews_needed} more reviews
                 </p>
               )}
               {commissionInfo.next_tier.requirements.sessions_needed > 0 && (
-                <p className="text-xs" className="text-gray-500">
+                <p className="text-xs text-gray-500">
                   Need {commissionInfo.next_tier.requirements.sessions_needed} more completed sessions
                 </p>
               )}

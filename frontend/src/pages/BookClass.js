@@ -121,7 +121,7 @@ export default function BookClass({ user }) {
   }
 
   return (
-    <div className="min-h-screen" className="bg-[#FBFBFD]">
+    <div className="min-h-screen bg-[#FBFBFD]">
       <nav className="bg-white border-b" style={{ borderColor: 'rgba(4, 78, 66, 0.1)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -160,7 +160,7 @@ export default function BookClass({ user }) {
 
             <div className="grid grid-cols-1 gap-4 p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
               <div>
-                <p className="text-sm mb-1" className="text-gray-500">Experience</p>
+                <p className="text-sm mb-1 text-gray-500">Experience</p>
                 <p className="font-medium" style={{ color: '#0F3D2E' }}>{teacher.years_experience} years</p>
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function BookClass({ user }) {
               }`}
             >
               <h3 className="text-lg font-medium mb-1" style={{ color: '#0F3D2E' }}>Free Trial</h3>
-              <p className="text-sm" className="text-gray-500">15-minute evaluation session</p>
+              <p className="text-sm text-gray-500">15-minute evaluation session</p>
             </button>
             <button
               data-testid="booking-type-paid"
@@ -192,7 +192,7 @@ export default function BookClass({ user }) {
               }`}
             >
               <h3 className="text-lg font-medium mb-1" style={{ color: '#0F3D2E' }}>Regular Class</h3>
-              <p className="text-sm" className="text-gray-500">1-hour lesson (4 credits)</p>
+              <p className="text-sm text-gray-500">1-hour lesson (4 credits)</p>
             </button>
           </div>
         </div>
@@ -202,7 +202,7 @@ export default function BookClass({ user }) {
 
           {availability.length === 0 ? (
             <div data-testid="no-availability" className="text-center py-8">
-              <Calendar className="w-12 h-12 mx-auto mb-4" className="text-gray-400" />
+              <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p className="text-gray-500">No available time slots at the moment</p>
             </div>
           ) : (

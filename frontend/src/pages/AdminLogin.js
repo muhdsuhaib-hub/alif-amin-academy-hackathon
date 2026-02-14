@@ -28,12 +28,11 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center" className="bg-[#FBFBFD]">
+    <div className="min-h-screen flex items-center justify-center bg-[#FBFBFD]">
       <div className="max-w-md w-full mx-6">
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 mb-8 text-sm font-medium"
-          className="text-gray-500"
+          className="flex items-center gap-2 mb-8 text-sm font-medium text-gray-500"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Home
@@ -44,7 +43,7 @@ export default function AdminLogin() {
             <h1 className="text-3xl font-semibold mb-2 tracking-tight" style={{ color: '#0F3D2E' }}>
               Admin Access
             </h1>
-            <p className="text-sm font-normal" className="text-gray-500">
+            <p className="text-sm font-normal text-gray-500">
               Alif Amin Academy
             </p>
           </div>
@@ -71,7 +70,7 @@ export default function AdminLogin() {
             )}
           </button>
 
-          <p className="text-xs text-center mt-6 font-normal" className="text-gray-400">
+          <p className="text-xs text-center mt-6 font-normal text-gray-400">
             This area is for staff and administrators only
           </p>
         </div>

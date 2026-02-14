@@ -39,7 +39,7 @@ export default function BrowseTeachers({ user }) {
   }
 
   return (
-    <div className="min-h-screen" className="bg-[#FBFBFD]">
+    <div className="min-h-screen bg-[#FBFBFD]">
       <nav className="bg-white border-b" style={{ borderColor: 'rgba(4, 78, 66, 0.1)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">
@@ -67,7 +67,7 @@ export default function BrowseTeachers({ user }) {
 
         {teachers.length === 0 ? (
           <div data-testid="no-teachers" className="text-center py-12">
-            <Users className="w-16 h-16 mx-auto mb-4" className="text-gray-400" />
+            <Users className="w-16 h-16 mx-auto mb-4 text-gray-400" />
             <p className="text-gray-500">No teachers available at the moment</p>
           </div>
         ) : (
@@ -91,7 +91,7 @@ export default function BrowseTeachers({ user }) {
                       </h3>
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4" style={{ color: '#D4AF37' }} fill="#D4AF37" />
-                        <span className="text-sm" className="text-gray-500">
+                        <span className="text-sm text-gray-500">
                           {teacher.rating.toFixed(1)} ({teacher.total_classes} classes)
                         </span>
                       </div>
@@ -99,7 +99,7 @@ export default function BrowseTeachers({ user }) {
                   </div>
 
                   {teacher.bio && (
-                    <p className="text-sm mb-4" className="text-gray-500">
+                    <p className="text-sm mb-4 text-gray-500">
                       {teacher.bio}
                     </p>
                   )}
@@ -121,7 +121,7 @@ export default function BrowseTeachers({ user }) {
                   )}
 
                   <div className="mb-4">
-                    <p className="text-sm" className="text-gray-500">
+                    <p className="text-sm text-gray-500">
                       <span className="font-medium">Experience:</span> {teacher.years_experience} years
                     </p>
                   </div>
