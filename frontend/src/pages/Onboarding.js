@@ -9,50 +9,31 @@ const API = `${BACKEND_URL}/api`;
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
+  const [isCompleting, setIsCompleting] = useState(false);
   const [answers, setAnswers] = useState({
     userType: '',
     level: '',
     preference: ''
   });
 
-  const handleAnswer = (field, value) => {
-    setAnswers(prev => ({ ...prev, [field]: value }));
-    
-    if (field === 'userType' && value === 'Teacher') {
-      navigate('/teacher-signup');
-      return;
-    }
-    
-    setTimeout(() => {
-      if (step < 2) {
-        setStep(step + 1);
-      } else {
-        handleComplete();
-      }
-    }, 300);
-  };
-
-  const handleComplete = async () => {
+  const handleComplete = async (finalAnswers) => {
+    setIsCompleting(true);
     const onboardingData = {
-      userType: answers.userType,
-      level: answers.level,
-      schedule: answers.preference
+      userType: finalAnswers.userType,
+      level: finalAnswers.level,
+      schedule: finalAnswers.preference
     };
     
-    // Store onboarding data in localStorage as backup
     localStorage.setItem('onboardingData', JSON.stringify(onboardingData));
     
-    // Check if user is already authenticated
     try {
       const response = await fetch(`${API}/auth/me`, {
         credentials: 'include'
       });
       
       if (response.ok) {
-        // User is authenticated, complete onboarding
         const userData = await response.json();
         
-        // Send onboarding data to backend
         await fetch(`${API}/auth/complete-onboarding`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -61,28 +42,39 @@ export default function Onboarding() {
         });
         
         localStorage.removeItem('onboardingData');
-        // Redirect to student dashboard
         navigate('/student/dashboard', { state: { user: userData } });
       } else {
-        // User not authenticated, redirect to Auth page with onboarding data
         navigate('/auth', { 
-          state: { 
-            fromOnboarding: true, 
-            onboardingData 
-          },
+          state: { fromOnboarding: true, onboardingData },
           replace: true
         });
       }
-    } catch (error) {
-      // If error, redirect to Auth page with onboarding data
+    } catch {
       navigate('/auth', { 
-        state: { 
-          fromOnboarding: true, 
-          onboardingData 
-        },
+        state: { fromOnboarding: true, onboardingData },
         replace: true
       });
     }
+  };
+
+  const handleAnswer = (field, value) => {
+    if (isCompleting) return;
+    
+    const updatedAnswers = { ...answers, [field]: value };
+    setAnswers(updatedAnswers);
+    
+    if (field === 'userType' && value === 'Teacher') {
+      navigate('/teacher-signup');
+      return;
+    }
+    
+    setTimeout(() => {
+      if (step < 2) {
+        setStep(prev => prev + 1);
+      } else {
+        handleComplete(updatedAnswers);
+      }
+    }, 300);
   };
 
   const handleBack = () => {
