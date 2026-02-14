@@ -1,164 +1,97 @@
 # Alif Amin Academy - Product Requirements Document
 
 ## Overview
-Alif Amin Academy is a web-based platform for online Quran learning, connecting students with qualified Quran teachers for 1-on-1 video lessons operating on an 'Academy Model'.
+**Platform:** Online Quran Academy - 1-on-1 video lessons connecting students with qualified Quran teachers.
 
-## Core Requirements
+**Tech Stack:** React + Tailwind CSS + Shadcn UI (Frontend) | FastAPI + MongoDB (Backend)
 
-### User Roles
-1. **Student/Parent** - Learn Quran through personalized 1-on-1 lessons
-2. **Teacher** - Teach Quran and manage availability
-3. **Super Admin** - Manage platform operations, users, finances
+**User Roles:** Student/Parent, Teacher, Super Admin
 
-### Tech Stack
-- **Frontend**: React, Tailwind CSS, Framer Motion, Recharts, Shadcn/UI
-- **Backend**: FastAPI (Python)
-- **Database**: MongoDB with Motor async driver
-- **Authentication**: Custom Google OAuth 2.0 + Email/Password with role-based access
+## Authentication
+- [x] JWT-based Email/Password login
+- [x] Google OAuth 2.0 (with x-forwarded-host fix for ingress)
+- [x] Role-based routing (Student, Teacher, Admin dashboards)
 
----
+## Completed Features
 
-## Implementation Status
+### Core Infrastructure
+- [x] Full auth system (login, register, Google OAuth, sessions)
+- [x] Role-based dashboards with sidebar navigation
+- [x] Notification system (bell, auto-generation, mark as read)
 
-### Completed P0 - Critical
-- [x] User authentication (Google OAuth + Email/Password)
-- [x] Role-based dashboards (Admin, Teacher, Student)
-- [x] Admin access for specific emails
-- [x] Credit Wallet System (paid + bonus credits, FIFO deduction, 12-month expiry)
-- [x] Tiered Commission Engine (New/Rated/Elite tiers)
-- [x] Tutor Earnings Wallet (balance tracking, withdrawal requests, admin approval)
-- [x] **Booking System (NEW - Feb 13, 2026)**
-  - [x] Fixed-duration bookings: 15 min (1 credit), 30 min (2 credits), 60 min (4 credits)
-  - [x] Credit deduction on booking creation (paid credits first, then bonus)
-  - [x] Booking cancellation with 24-hour refund policy
-  - [x] Booking edit (change date/time, duration, teacher with credit adjustment)
-  - [x] Available teachers endpoint
-  - [x] Bookings appear in student dashboard and My Schedule
-  - [x] Teacher notifications on booking/cancellation
+### Student Features
+- [x] Student Dashboard (home, schedule, wallet, account tabs)
+- [x] Booking System (create, edit, cancel with 24hr refund policy)
+- [x] Credit-based wallet with top-up packages
+- [x] Browse teachers and book classes
 
-### Completed P1 - High Priority
-- [x] Admin Dashboard (user management, financial reports, teacher approvals, withdrawals)
-- [x] Notification System (bell component, auto-generation, mark as read)
-- [x] Complete Student Dashboard with modular components
-- [x] Teacher Dashboard with all features
-- [x] **Full StudentDashboard.js Refactoring (COMPLETED Feb 13, 2026)**
-  - [x] Main file: 170 lines (from original 1437 lines)
-  - [x] Extracted: DashboardHome, MySchedule, AccountPage, BookingModal, CancelBookingDialog, EditBookingModal, WalletPage
-- [x] **Hourly Rate Removal (COMPLETED Feb 13, 2026)**
-  - [x] Removed hourly_rate from Teacher model, all backend routes, seed data, and notifications
-  - [x] Payroll now uses session_payment_records (actual tutor payouts) instead of hourly_rate × hours
-  - [x] Payroll table shows Commission Tier instead of Hourly Rate/Hours columns
-  - [x] Teacher profile form no longer has hourly rate input
-  - [x] BrowseTeachers and BookClass pages updated to show credits instead of RM rates
-  - [x] DB migration ran to remove hourly_rate from 7 existing teacher documents
-  - [x] Trials Expiring Soon: Shows student names + emails (not IDs), removed Level indicator
-  - [x] Revenue Recognition: Removed descriptive subheadings from revenue cards
-  - [x] Replaced hardcoded mock chart data with real DB-backed data (user growth, revenue trend, attendance)
-  - [x] Replaced hardcoded KPI trend percentages with real calculated trends
-  - [x] Added auth protection to subscriptions/overview and revenue/recognition endpoints
+### Teacher Features
+- [x] Teacher Dashboard (overview, availability, classroom, students, earnings, profile)
+- [x] Teacher registration with admin approval workflow
+- [x] Commission-based earnings wallet with withdrawal workflow
+- [x] Tiered commission system (New 30%, Rated 25%, Elite 20%)
 
-### Completed Refactoring
-- [x] Commission Service Module (`/app/backend/services/commission_service.py`)
-- [x] TeacherDashboard.js refactored (1838 → 249 lines)
-- [x] StudentDashboard.js fully refactored (1437 → 170 lines)
-- [x] Booking routes extracted to `/app/backend/booking_routes.py`
+### Admin Features
+- [x] Admin Dashboard with tab navigation (Overview, Approvals, Users, Bookings, Withdrawals, Subscriptions, Finance, Support)
+- [x] Real-time KPI stats with trend percentages from DB
+- [x] Chart data (user growth, revenue trend, attendance) from real DB queries
+- [x] Trial students show names/emails (not IDs)
+- [x] Revenue recognition without subheading descriptions
+- [x] Auth protection on all admin endpoints
+- [x] Teacher payroll uses session_payment_records (not hourly_rate)
+- [x] Commission tier display in payroll table
 
-### P3 - Future Tasks (NOT STARTED)
-- [ ] Real Stripe Payment Integration
-- [ ] Real Bank Transfer Integration
-- [ ] Google Meet API for automatic link generation
-- [ ] Email/WhatsApp notifications (SendGrid/Twilio)
-- [ ] Digital Mushaf real-time Live Pointer (WebSockets)
-- [ ] S3/Cloud storage for teacher videos and certificates
-- [ ] PDF Student Report Card generator
+### Hourly Rate Removal (Feb 13, 2026)
+- [x] Removed from Teacher model, all backend routes, seed data, notifications
+- [x] Platform uses fixed credit-based pricing (RM15/credit)
+- [x] DB migration removed hourly_rate from existing teacher documents
 
----
+### Apple-Inspired UI/UX Redesign (Feb 14, 2026)
+- [x] Inter font system (replacing Cal Sans / Great Kingdom)
+- [x] Glassmorphism navigation (backdrop-blur-xl on navbars, sidebars, modals)
+- [x] Apple-card component system (subtle shadows, rounded-2xl, hover elevation)
+- [x] Pill-shaped buttons with active:scale animation
+- [x] Soft neutral color palette (FBFBFD background, gray-200 borders)
+- [x] Stagger children animations for cards
+- [x] Mobile bottom tab navigation for Student and Teacher dashboards
+- [x] Clean segmented control tab navigation for Admin Dashboard
+- [x] Glassmorphism notification dropdown
+- [x] Redesigned Auth page with split layout
+- [x] Redesigned Landing page with minimal Apple aesthetic
+- [x] Updated Onboarding flow with clean option cards
+- [x] All existing functionality preserved (verified 100% backend + frontend tests)
 
-## Architecture
+## Upcoming Tasks (P1)
+- Implement real Stripe Payments (replace mocked wallet logic)
+- Real-time Classroom Features (Live Pen/Pointer for Digital Mushaf)
+- File Storage (teacher profile videos, verification certificates)
 
-### Database Collections
-- `users`, `teachers`, `students`, `availability_slots`, `bookings`, `lessons`
-- `progress`, `progress_logs`, `support_tickets`, `user_sessions`, `notifications`
-- `student_wallets`, `wallet_transactions`, `bonus_credit_batches`, `payment_intents`
-- `session_payment_records`, `tutor_earnings`, `tutor_earnings_transactions`, `withdrawal_requests`
+## Future Tasks (P2)
+- Google Meet API Integration (auto-generate class links)
+- Notifications (Twilio SMS/WhatsApp)
+- PDF Report Card Generator
 
-### Key API Endpoints
-- `/api/auth/*` - Authentication
-- `/api/booking/create` - Create booking with credit deduction (NEW)
-- `/api/booking/my-bookings` - Get student's bookings (NEW)
-- `/api/booking/{id}/cancel` - Cancel with 24h policy (NEW)
-- `/api/booking/{id}/edit` - Edit booking (NEW)
-- `/api/booking/available-teachers` - Get active teachers (NEW)
-- `/api/wallet/*` - Wallet operations
-- `/api/commission/*` - Commission tier management
-- `/api/tutor-earnings/*` - Tutor earnings wallet
-- `/api/admin/*` - Admin operations
+## Mocked/Placeholder Features
+- Stripe payment processing (mock endpoints exist)
+- Tutor withdrawal payouts (workflow exists, no real transfer)
+- "Join Class" button (no video integration yet)
+- File storage for teacher media
 
-### File Structure
-```
-/app/
-├── backend/
-│   ├── server.py
-│   ├── models.py
-│   ├── booking_routes.py          # NEW
-│   ├── wallet_routes.py
-│   ├── commission_routes.py
-│   ├── tutor_earnings_routes.py
-│   ├── admin_routes.py
-│   ├── notification_routes.py
-│   └── services/commission_service.py
-├── frontend/src/
-│   ├── App.js
-│   ├── pages/
-│   │   ├── StudentDashboard.js    # 170 lines (refactored)
-│   │   ├── TeacherDashboard.js    # 249 lines (refactored)
-│   │   └── AdminDashboard.js
-│   └── components/
-│       ├── student/
-│       │   ├── DashboardHome.js   # NEW
-│       │   ├── MySchedule.js      # NEW
-│       │   ├── AccountPage.js     # NEW
-│       │   ├── BookingModal.js    # NEW
-│       │   ├── CancelBookingDialog.js # NEW
-│       │   ├── EditBookingModal.js    # NEW
-│       │   ├── WalletPage.js
-│       │   └── index.js
-│       ├── teacher/ (7 components)
-│       └── admin/
-```
+## Key API Endpoints
+- `POST /api/auth/login` - Email/password login
+- `GET /api/auth/google/login` - Google OAuth flow
+- `POST /api/booking/create` - Create session (deducts credits)
+- `PUT /api/booking/edit/{id}` - Edit session (adjusts credits)
+- `DELETE /api/booking/cancel/{id}` - Cancel (24hr refund rule)
+- `GET /api/admin/stats` - Dashboard stats with trends + charts
+- `GET /api/admin/revenue/recognition` - Revenue accounting
+- `GET /api/admin/finance/payroll` - Teacher payroll
 
----
-
-## Booking System Details
-
-### Credit Costs
-| Duration | Credits | Base Price (RM) |
-|----------|---------|----------------|
-| 15 min   | 1       | RM15           |
-| 30 min   | 2       | RM27           |
-| 60 min   | 4       | RM50           |
-
-### Cancellation Policy
-- **24+ hours before class**: Full credit refund to wallet
-- **Less than 24 hours**: No refund (confirmation required from student)
-
-### Edit Booking
-- Can change: date/time, duration, teacher
-- Duration change: credits adjusted automatically (charge more or refund)
-
----
-
-## Mocked Features
-- **Stripe Payment Processing** - topup/confirm works without real Stripe
-- **Bank Transfer for Withdrawals** - marks as completed without actual transfer
-- **"Join Class" Button** - UI placeholder, no real video conferencing
-- **File Storage** - Upload UI only, no cloud storage
-
-## Test Accounts
-- **Admin**: muhdsuhaib@gmail.com, hello.alifamin@gmail.com
-- **Test Student**: test@example.com / password
-- **Teachers**: Holegate, Kedai Kopi Ah Yek, Test Teacher Notif (via Google OAuth)
-
----
-
-*Last Updated: February 13, 2026*
+## Design System
+- **Font:** Inter (300-700 weights)
+- **Primary:** #0F3D2E (deep green)
+- **Accent:** #C8A951 (gold)
+- **Background:** #FBFBFD
+- **Cards:** apple-card (bg-white rounded-2xl shadow-apple)
+- **Buttons:** apple-btn-primary (rounded-full, active:scale-[0.97])
+- **Glass:** backdrop-blur-xl + bg-white/70-80 + border-gray-200/60
