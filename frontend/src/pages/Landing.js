@@ -108,21 +108,21 @@ export default function Landing() {
             className="space-y-12"
           >
             <div className="space-y-6">
-              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933' }}>
+              <p className="text-xl md:text-2xl font-medium text-[#1D1D1F] tracking-tight">
                 Guided for beginners and families
               </p>
-              <div className="w-24 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
+              <div className="w-16 h-px mx-auto bg-gray-200"></div>
             </div>
 
             <div className="space-y-6">
-              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933' }}>
+              <p className="text-xl md:text-2xl font-medium text-[#1D1D1F] tracking-tight">
                 Personalised after just 3 simple questions
               </p>
-              <div className="w-24 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
+              <div className="w-16 h-px mx-auto bg-gray-200"></div>
             </div>
 
             <div className="space-y-6">
-              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933' }}>
+              <p className="text-xl md:text-2xl font-medium text-[#1D1D1F] tracking-tight">
                 No payment or commitment upfront
               </p>
             </div>
@@ -131,37 +131,24 @@ export default function Landing() {
       </motion.section>
 
       <motion.section 
-        className="relative py-32 overflow-hidden" 
-        style={{ backgroundColor: '#FFFFFF', opacity: opacity3 }}
+        className="relative py-32 overflow-hidden bg-white" 
+        style={{ opacity: opacity3 }}
       >
         <div className="max-w-6xl mx-auto px-6 relative z-10">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-semibold text-center mb-20 tracking-tight"
-            style={{ color: '#0F3D2E' }}
+            className="text-3xl md:text-4xl font-semibold text-center mb-20 tracking-tight text-[#0F3D2E]"
           >
             How It Starts
           </motion.h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
             {[
-              {
-                number: '1',
-                title: 'Answer 3 simple questions',
-                description: 'Tell us about yourself and your learning goals'
-              },
-              {
-                number: '2',
-                title: 'Get a personalised learning path',
-                description: 'We match you with the perfect teacher and schedule'
-              },
-              {
-                number: '3',
-                title: 'Begin your free trial',
-                description: 'Start learning with absolutely no commitment'
-              }
+              { number: '1', title: 'Answer 3 simple questions', description: 'Tell us about yourself and your learning goals' },
+              { number: '2', title: 'Get a personalised learning path', description: 'We match you with the perfect teacher and schedule' },
+              { number: '3', title: 'Begin your free trial', description: 'Start learning with absolutely no commitment' }
             ].map((step, idx) => (
               <motion.div
                 key={idx}
@@ -169,20 +156,13 @@ export default function Landing() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: idx * 0.2 }}
-                className="text-center space-y-6"
+                className="text-center space-y-5"
               >
-                <div 
-                  className="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-3xl font-bold text-white"
-                  style={{ backgroundColor: '#0F3D2E' }}
-                >
+                <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-2xl font-semibold text-white bg-[#0F3D2E]">
                   {step.number}
                 </div>
-                <h3 className="text-xl font-semibold" style={{ color: '#1F2933' }}>
-                  {step.title}
-                </h3>
-                <p className="text-base font-normal" style={{ color: '#5A5A5A' }}>
-                  {step.description}
-                </p>
+                <h3 className="text-lg font-semibold text-[#1D1D1F] tracking-tight">{step.title}</h3>
+                <p className="text-[15px] text-gray-500 leading-relaxed">{step.description}</p>
               </motion.div>
             ))}
           </div>
@@ -192,9 +172,8 @@ export default function Landing() {
               data-testid="begin-trial-button"
               onClick={handleGetStarted}
               whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="h-14 px-10 rounded-full text-white text-base font-semibold shadow-soft"
-              style={{ backgroundColor: '#0F3D2E' }}
+              whileTap={{ scale: 0.97 }}
+              className="apple-btn-primary !h-14 !px-10 !text-base"
             >
               Begin Free Trial
             </motion.button>
@@ -214,14 +193,14 @@ export default function Landing() {
             className="space-y-16"
           >
             <div className="text-center space-y-8">
-              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A' }}>
+              <p className="text-lg md:text-xl text-gray-500 italic leading-relaxed">
                 "A calm and respectful approach to learning. Perfect for our family."
               </p>
-              <div className="w-32 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
+              <div className="w-16 h-px mx-auto bg-gray-200"></div>
             </div>
 
             <div className="text-center space-y-8">
-              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A' }}>
+              <p className="text-lg md:text-xl text-gray-500 italic leading-relaxed">
                 "No pressure, just genuine guidance. Exactly what we needed."
               </p>
             </div>
