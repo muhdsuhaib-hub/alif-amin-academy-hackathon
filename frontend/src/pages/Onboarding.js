@@ -1,215 +1,150 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
+import Spinner from '../components/Spinner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+
+const questions = [
+  {
+    title: "We'd love to know who you are",
+    field: 'userType',
+    options: [
+      { label: 'Student', subtitle: 'I want to learn myself', value: 'Student' },
+      { label: 'Parent of a student', subtitle: 'For my child or children', value: 'Parent' },
+      { label: 'Teacher', subtitle: 'I want to teach Quran', value: 'Teacher' },
+    ]
+  },
+  {
+    title: 'Which best describes your Quran reading?',
+    field: 'level',
+    options: [
+      { label: 'Just starting', subtitle: "Haven't learned Arabic yet", value: 'beginner' },
+      { label: 'Read slowly with mistakes', subtitle: "Know some Arabic but need guidance", value: 'slow' },
+      { label: 'Read comfortably', subtitle: 'Can read but want to improve', value: 'comfortable' },
+      { label: 'Read well', subtitle: 'Looking for advanced tajweed', value: 'advanced' },
+    ]
+  },
+  {
+    title: 'What works best for your schedule?',
+    field: 'preference',
+    options: [
+      { label: 'Fixed weekly schedule', subtitle: 'Same time every week', value: 'fixed' },
+      { label: 'Flexible booking', subtitle: 'Book as I go', value: 'flexible' },
+    ]
+  }
+];
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
-  const [answers, setAnswers] = useState({
-    userType: '',
-    level: '',
-    preference: ''
-  });
+  const [answers, setAnswers] = useState({ userType: '', level: '', preference: '' });
 
   const handleComplete = async (finalAnswers) => {
     setIsCompleting(true);
     const onboardingData = {
       userType: finalAnswers.userType,
       level: finalAnswers.level,
-      schedule: finalAnswers.preference
+      schedule: finalAnswers.preference,
     };
-    
     localStorage.setItem('onboardingData', JSON.stringify(onboardingData));
-    
     try {
-      const response = await fetch(`${API}/auth/me`, {
-        credentials: 'include'
-      });
-      
+      const response = await fetch(`${API}/auth/me`, { credentials: 'include' });
       if (response.ok) {
         const userData = await response.json();
-        
         await fetch(`${API}/auth/complete-onboarding`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify(onboardingData)
+          body: JSON.stringify(onboardingData),
         });
-        
         localStorage.removeItem('onboardingData');
         navigate('/student/dashboard', { state: { user: userData } });
       } else {
-        navigate('/auth', { 
-          state: { fromOnboarding: true, onboardingData },
-          replace: true
-        });
+        navigate('/auth', { state: { fromOnboarding: true, onboardingData }, replace: true });
       }
     } catch {
-      navigate('/auth', { 
-        state: { fromOnboarding: true, onboardingData },
-        replace: true
-      });
+      navigate('/auth', { state: { fromOnboarding: true, onboardingData }, replace: true });
     }
   };
 
   const handleAnswer = (field, value) => {
     if (isCompleting) return;
-    
     const updatedAnswers = { ...answers, [field]: value };
     setAnswers(updatedAnswers);
-    
+
     if (field === 'userType' && value === 'Teacher') {
       navigate('/teacher-signup');
       return;
     }
-    
+
     setTimeout(() => {
-      if (step < 2) {
-        setStep(prev => prev + 1);
-      } else {
-        handleComplete(updatedAnswers);
-      }
+      if (step < 2) setStep(prev => prev + 1);
+      else handleComplete(updatedAnswers);
     }, 300);
   };
 
   const handleBack = () => {
-    if (step > 0) {
-      setStep(step - 1);
-    } else {
-      navigate('/');
-    }
+    if (step > 0) setStep(step - 1);
+    else navigate('/');
   };
 
-  const questions = [
-    {
-      title: "We'd love to know who you are",
-      options: [
-        { value: 'Student', label: 'Student', description: 'I want to learn myself' },
-        { value: 'Parent', label: 'Parent of a student', description: 'For my child or children' },
-        { value: 'Teacher', label: 'Teacher', description: 'I want to teach Quran' }
-      ]
-    },
-    {
-      title: 'Which best describes your Quran reading?',
-      options: [
-        { value: 'beginner', label: 'Just starting', description: 'Not confident yet' },
-        { value: 'slow', label: 'Read slowly with mistakes', description: 'Need practice and correction' },
-        { value: 'comfortable', label: 'Read comfortably', description: 'Want improvement' },
-        { value: 'advanced', label: 'Read well', description: 'Want deeper understanding' }
-      ]
-    },
-    {
-      title: 'Class preference?',
-      options: [
-        { value: 'fixed', label: 'Fixed schedule', description: 'Same time every week' },
-        { value: 'flexible', label: 'Flexible timing', description: 'Book as needed' }
-      ]
-    }
-  ];
-
-  const currentQuestion = questions[step];
-  const fieldNames = ['userType', 'level', 'preference'];
+  const current = questions[step];
 
   if (isCompleting) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FBFBFD]">
+      <div className="min-h-screen flex items-center justify-center bg-surface">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0F3D2E] mx-auto mb-4"></div>
-          <p className="text-[15px] text-gray-500">Setting up your experience...</p>
+          <Spinner size="lg" className="mx-auto mb-4" />
+          <p className="text-body text-ink-secondary">Setting up your experience...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FBFBFD]">
+    <div className="min-h-screen flex items-center justify-center bg-surface">
       <div className="w-full max-w-2xl mx-auto px-6 py-12">
-        <button
-          onClick={handleBack}
-          className="flex items-center gap-2 mb-12 text-[13px] font-medium text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          Back
+        <button onClick={handleBack} className="flex items-center gap-2 mb-12 text-small font-medium text-ink-tertiary hover:text-ink-secondary transition-colors">
+          <ArrowLeft className="w-3.5 h-3.5" /> Back
         </button>
 
         {step === 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
-          >
-            <p className="text-xl font-semibold mb-2 text-[#0F3D2E] tracking-tight">
-              Absolutely no payment required to begin.
-            </p>
-            <p className="text-[15px] text-gray-400">
-              Just a few questions to personalise your experience.
-            </p>
-          </motion.div>
+          <div className="text-center mb-12">
+            <p className="text-h3 font-semibold text-brand mb-2">Absolutely no payment required to begin.</p>
+            <p className="text-body text-ink-secondary">Just a few questions to personalise your experience.</p>
+          </div>
         )}
 
-        <div className="mb-8">
-          <div className="flex gap-2 mb-4">
-            {questions.map((_, idx) => (
-              <div
-                key={idx}
-                className={`h-1 flex-1 rounded-full transition-all ${
-                  idx <= step ? 'bg-[#0F3D2E]' : 'bg-gray-200'
-                }`}
-              />
-            ))}
-          </div>
-          <p className="text-[12px] text-gray-400">
-            Question {step + 1} of {questions.length}
-          </p>
+        {/* Progress */}
+        <div className="flex gap-2 mb-2">
+          {questions.map((_, i) => (
+            <div key={i} className={`flex-1 h-1 rounded-full transition-colors duration-300 ${i <= step ? 'bg-brand' : 'bg-surface-muted'}`} />
+          ))}
         </div>
+        <p className="text-caption text-ink-tertiary mb-8">Question {step + 1} of {questions.length}</p>
 
         <AnimatePresence mode="wait">
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-          >
-            <h2 className="text-3xl md:text-4xl font-semibold mb-10 text-[#1D1D1F] tracking-tight">
-              {currentQuestion.title}
-            </h2>
-
+          <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.25 }}>
+            <h2 className="text-h1 text-ink mb-8">{current.title}</h2>
             <div className="space-y-3">
-              {currentQuestion.options.map((option, idx) => (
+              {current.options.map((opt) => (
                 <motion.button
-                  key={option.value}
-                  data-testid={`option-${option.value}`}
-                  onClick={() => handleAnswer(fieldNames[step], option.value)}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.08 }}
-                  whileHover={{ scale: 1.005 }}
-                  whileTap={{ scale: 0.995 }}
-                  className={`w-full p-5 rounded-2xl text-left border transition-all ${
-                    answers[fieldNames[step]] === option.value
-                      ? 'border-[#0F3D2E] bg-[#0F3D2E]/[0.03]'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
+                  key={opt.value}
+                  data-testid={`option-${opt.value}`}
+                  onClick={() => handleAnswer(current.field, opt.value)}
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full flex items-center justify-between p-5 rounded-lg border border-ink-faint/30 bg-surface-card text-left hover:border-brand/30 hover:shadow-apple-sm transition-all duration-200"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-[17px] font-semibold mb-0.5 text-[#1D1D1F] tracking-tight">
-                        {option.label}
-                      </h3>
-                      {option.description && (
-                        <p className="text-[13px] text-gray-400">
-                          {option.description}
-                        </p>
-                      )}
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-[#0F3D2E] opacity-30" />
+                  <div>
+                    <p className="text-body font-semibold text-ink">{opt.label}</p>
+                    <p className="text-small text-ink-secondary">{opt.subtitle}</p>
                   </div>
+                  <ChevronRight className="w-5 h-5 text-ink-faint" />
                 </motion.button>
               ))}
             </div>
