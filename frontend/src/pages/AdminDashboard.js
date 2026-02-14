@@ -133,29 +133,32 @@ export default function AdminDashboard({ user }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F3D2E]"></div>
+      <div className="min-h-screen bg-[#FBFBFD] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[#0F3D2E] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-gray-400">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5EF' }}>
+    <div className="min-h-screen bg-[#FBFBFD]">
       {/* Navigation */}
-      <nav className="bg-white border-b sticky top-0 z-50" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-        <div className="max-w-full mx-auto px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+      <nav className="bg-white/70 backdrop-blur-xl border-b border-gray-200/60 sticky top-0 z-50">
+        <div className="max-w-full mx-auto px-4 lg:px-8 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2.5">
+              <span className="text-[17px] font-semibold text-[#0F3D2E] tracking-tight">
                 Alif Amin
               </span>
-              <span className="text-xs px-2 py-1 rounded-full bg-[#0F3D2E] text-white font-medium" style={{ fontFamily: 'Cal Sans' }}>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#0F3D2E] text-white font-semibold tracking-wide uppercase">
                 Admin
               </span>
             </div>
             
             {/* Tab Navigation */}
-            <div className="hidden md:flex gap-1">
+            <div className="hidden lg:flex gap-0.5 bg-gray-100/80 p-1 rounded-xl">
               {[
                 { id: 'overview', label: 'Overview', icon: BarChart3 },
                 { id: 'approvals', label: 'Approvals', icon: UserCheck },
@@ -170,41 +173,38 @@ export default function AdminDashboard({ user }) {
                   key={tab.id}
                   data-testid={`tab-${tab.id}`}
                   onClick={() => setActiveTab(tab.id)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
-                  style={{
-                    backgroundColor: activeTab === tab.id ? 'rgba(15, 61, 46, 0.1)' : 'transparent',
-                    color: activeTab === tab.id ? '#0F3D2E' : '#5A5A5A',
-                    fontFamily: 'Cal Sans'
-                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 ${
+                    activeTab === tab.id
+                      ? 'bg-white text-[#0F3D2E] shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
                 >
-                  <tab.icon className="w-4 h-4" />
+                  <tab.icon className="w-3.5 h-3.5" />
                   {tab.label}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <NotificationBell userId={user?.user_id} userRole="admin" />
-            <div className="flex items-center gap-3 pl-4 border-l" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-              <div className="text-right">
-                <p className="text-sm font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>{user?.name}</p>
-                <p className="text-xs" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>Administrator</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 h-9 px-4 rounded-full border transition-all hover:bg-gray-50"
-                style={{ borderColor: 'rgba(15, 61, 46, 0.2)', color: '#0F3D2E', fontFamily: 'Cal Sans', fontWeight: 500 }}
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
+            <div className="h-8 w-px bg-gray-200" />
+            <div className="text-right hidden sm:block">
+              <p className="text-[13px] font-semibold text-[#1D1D1F]">{user?.name}</p>
+              <p className="text-[11px] text-gray-400">Administrator</p>
             </div>
+            <button
+              onClick={handleLogout}
+              className="apple-btn-secondary !h-9 !px-4 gap-1.5 !text-[13px]"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Logout
+            </button>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-full mx-auto px-6 lg:px-8 py-8">
+      <div className="max-w-full mx-auto px-4 lg:px-8 py-6 lg:py-8">
         {activeTab === 'overview' && (
           <>
             {/* KPI Cards */}
