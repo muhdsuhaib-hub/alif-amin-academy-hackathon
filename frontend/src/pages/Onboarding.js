@@ -198,16 +198,16 @@ export default function Onboarding() {
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="text-xl font-semibold mb-1" style={{ color: '#1F2933' }}>
+                      <h3 className="text-[17px] font-semibold mb-0.5 text-[#1D1D1F] tracking-tight">
                         {option.label}
                       </h3>
                       {option.description && (
-                        <p className="text-sm font-normal" style={{ color: '#5A5A5A', fontWeight: 300 }}>
+                        <p className="text-[13px] text-gray-400">
                           {option.description}
                         </p>
                       )}
                     </div>
-                    <ArrowRight className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: '#0F3D2E' }} />
+                    <ArrowRight className="w-4 h-4 text-[#0F3D2E] opacity-30" />
                   </div>
                 </motion.button>
               ))}
