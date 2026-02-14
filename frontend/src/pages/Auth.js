@@ -436,7 +436,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex" className="bg-[#FBFBFD]">
+    <div className="min-h-screen flex bg-[#FBFBFD]">
       {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#0F3D2E] relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.06]">
