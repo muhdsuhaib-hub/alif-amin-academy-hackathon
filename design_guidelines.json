@@ -1,224 +1,182 @@
 {
-  "design_system": {
-    "identity": {
-      "name": "Al-Ilm Academy",
-      "tone": "Warm, Welcoming, Premium, Spiritual but Modern",
-      "principles": [
-        "Fusion: Islamic Heritage x Modern EdTech",
-        "Emotion: Serenity and Focus",
-        "Content: The Quran is the Hero",
-        "Zoom In: Focus on human connection (Teacher-Student)",
-        "Negative Space: Respect the sacred text with breathing room"
-      ]
+  "typography": {
+    "font_family": {
+      "heading": "\"Inter\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+      "body": "\"Inter\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+      "mono": "\"SF Mono\", \"Fira Code\", \"Fira Mono\", \"Roboto Mono\", monospace"
     },
-    "typography": {
-      "font_family": {
-        "headings": "Playfair Display, serif",
-        "body": "Manrope, sans-serif",
-        "arabic": "Amiri, serif"
-      },
-      "scale": {
-        "h1": "text-5xl md:text-7xl font-medium tracking-tight leading-tight",
-        "h2": "text-4xl md:text-5xl font-medium tracking-tight",
-        "h3": "text-2xl md:text-3xl font-medium",
-        "body_lg": "text-lg md:text-xl leading-relaxed",
-        "body_base": "text-base leading-relaxed",
-        "caption": "text-sm font-medium tracking-wide uppercase"
-      },
-      "weights": {
-        "light": 300,
-        "regular": 400,
-        "medium": 500,
-        "bold": 700
-      }
+    "scale": {
+      "h1": "text-4xl md:text-5xl font-semibold tracking-tight",
+      "h2": "text-3xl md:text-4xl font-semibold tracking-tight",
+      "h3": "text-2xl md:text-3xl font-medium tracking-tight",
+      "h4": "text-xl md:text-2xl font-medium tracking-tight",
+      "p": "text-base text-gray-500 leading-relaxed",
+      "small": "text-sm text-gray-400"
     },
-    "colors": {
-      "palette": {
-        "primary": {
-          "DEFAULT": "#044E42",
-          "foreground": "#FFFFFF",
-          "50": "#E6F7F4",
-          "100": "#C1EBE4",
-          "200": "#98DED3",
-          "300": "#6ED1C1",
-          "400": "#4BC4B0",
-          "500": "#2EB6A0",
-          "600": "#044E42",
-          "700": "#033B32",
-          "800": "#022822",
-          "900": "#011512"
-        },
-        "secondary": {
-          "DEFAULT": "#D4AF37",
-          "foreground": "#000000",
-          "50": "#FCF9E8",
-          "100": "#F8F2C6",
-          "200": "#F1E5A0",
-          "300": "#EAD87A",
-          "400": "#E3CB54",
-          "500": "#D4AF37",
-          "600": "#AA8C2C",
-          "700": "#806921",
-          "800": "#554616",
-          "900": "#2B230B"
-        },
-        "background": {
-          "DEFAULT": "#FDFBF7",
-          "paper": "#F7F3E8",
-          "dark": "#022822"
-        },
-        "text": {
-          "primary": "#1A1A1A",
-          "secondary": "#5A5A5A",
-          "muted": "#9CA3AF"
-        },
-        "accent": {
-          "DEFAULT": "#E76F51",
-          "foreground": "#FFFFFF"
-        }
-      },
-      "usage": {
-        "primary_action": "bg-primary text-white hover:bg-primary/90",
-        "secondary_action": "bg-secondary/20 text-secondary-900 hover:bg-secondary/30",
-        "surface": "bg-white border border-primary/5 shadow-sm",
-        "surface_highlight": "bg-background-paper"
-      }
-    },
-    "spacing": {
-      "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
-      "section_padding": "py-16 md:py-24 lg:py-32",
-      "card_padding": "p-6 md:p-8 lg:p-10",
-      "grid_gap": "gap-6 md:gap-8 lg:gap-12"
-    },
-    "visual_enhancers": {
-      "radius": {
-        "default": "rounded-2xl",
-        "button": "rounded-full",
-        "card": "rounded-3xl"
-      },
-      "shadows": {
-        "soft": "shadow-[0_8px_30px_rgb(0,0,0,0.04)]",
-        "hover": "shadow-[0_8px_30px_rgb(0,0,0,0.08)]",
-        "glow": "shadow-[0_0_20px_rgba(212,175,55,0.3)]"
-      },
-      "textures": {
-        "noise": "bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20",
-        "pattern": "bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] opacity-5"
-      },
-      "glass": "backdrop-blur-xl bg-white/70 border border-white/20 shadow-sm"
-    },
-    "layout_strategies": {
-      "marketing": {
-        "grid": "grid grid-cols-1 md:grid-cols-12 gap-8",
-        "hero": "min-h-[80vh] flex items-center relative overflow-hidden",
-        "feature_section": "py-24 relative"
-      },
-      "dashboard": {
-        "grid": "grid grid-cols-1 md:grid-cols-4 gap-6",
-        "sidebar": "hidden md:flex flex-col w-64 fixed inset-y-0 z-50 bg-white border-r border-primary/5",
-        "main_content": "md:pl-64 min-h-screen bg-background"
-      }
-    }
-  },
-  "components": {
-    "buttons": {
-      "primary": "h-12 px-8 rounded-full bg-primary text-white font-medium transition-all hover:scale-105 hover:shadow-lg active:scale-95",
-      "secondary": "h-12 px-8 rounded-full bg-secondary/10 text-primary-900 font-medium transition-all hover:bg-secondary/20",
-      "outline": "h-12 px-8 rounded-full border-2 border-primary/20 text-primary font-medium hover:border-primary hover:bg-primary/5"
-    },
-    "cards": {
-      "feature": "p-8 rounded-3xl bg-white border border-primary/5 shadow-soft hover:shadow-hover transition-all duration-300 group",
-      "pricing": "p-10 rounded-3xl bg-white border border-primary/10 relative overflow-hidden",
-      "dashboard_widget": "p-6 rounded-2xl bg-white border border-gray-100 shadow-sm"
-    },
-    "inputs": {
-      "default": "h-12 rounded-xl border-gray-200 focus:border-primary focus:ring-primary/20 bg-gray-50/50"
-    }
-  },
-  "assets": {
-    "images": {
-      "hero_bg": {
-        "url": "https://images.unsplash.com/photo-1600616677773-0fbd06bd2727?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Islamic geometric architecture background",
-        "usage": "Hero section background with overlay"
-      },
-      "student_learning": {
-        "url": "https://images.unsplash.com/photo-1618190405497-00f284b5dda5?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Young girl reading Quran peacefully",
-        "usage": "Landing page feature section"
-      },
-      "boy_reading": {
-        "url": "https://images.unsplash.com/photo-1545589245-a5ce759f413f?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Boy focused on reading",
-        "usage": "Student dashboard welcome or features"
-      },
-      "teacher_female": {
-        "url": "https://images.unsplash.com/photo-1547567919-07728e7d2dc5?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Professional female teacher",
-        "usage": "Teacher profile or testimonials"
-      },
-      "teacher_male": {
-        "url": "https://images.pexels.com/photos/8121775/pexels-photo-8121775.jpeg",
-        "alt": "Professional male teacher",
-        "usage": "Teacher profile or testimonials"
-      },
-      "pattern_detail": {
-        "url": "https://images.unsplash.com/photo-1635722784047-8c2c489df874?crop=entropy&cs=srgb&fm=jpg&q=85",
-        "alt": "Intricate geometric pattern",
-        "usage": "Subtle background for cards or footers"
-      }
-    },
-    "icons": {
-      "library": "lucide-react",
-      "style": "Stroke width 1.5px, rounded ends"
-    }
-  },
-  "libraries": {
-    "quran_reader": "react-quran",
-    "animations": "framer-motion",
-    "dates": "date-fns",
-    "charts": "recharts",
-    "toast": "sonner"
-  },
-  "instructions_to_main_agent": {
-    "general": [
-      "Use 'Playfair Display' for all Headings (h1-h3) to give a premium, heritage feel.",
-      "Use 'Manrope' for all body text for maximum legibility.",
-      "Implement a 'Warm Cream' (#FDFBF7) background instead of pure white to reduce eye strain and feel more organic.",
-      "Use the 'Deep Emerald' (#044E42) as the primary brand color, but use it sparingly for high-impact elements.",
-      "Use 'Gold' (#D4AF37) ONLY for accents (borders, small icons, highlights). Do not use it for large backgrounds.",
-      "Ensure all interactive elements have a hover state that lifts them slightly (-translate-y-1).",
-      "For the 'Digital Mushaf', use a dark mode interface even if the rest of the app is light mode, to simulate a focused reading environment."
-    ],
-    "layout": [
-      "Avoid standard Bootstrap grids. Use the 'Bento' grid style for the dashboard.",
-      "Add generous padding (py-24) to marketing sections.",
-      "Use 'glassmorphism' for the sticky navigation bar."
-    ],
-    "components": [
-      "Customize Shadcn components to match the 'rounded-2xl' and 'rounded-3xl' radius.",
-      "Do not use default Shadcn slate colors. Override with the custom 'Emerald' and 'Sand' palette.",
-      "Use 'Sonner' for all toast notifications."
+    "instructions": [
+      "Use 'Inter' for all text. Import it from Google Fonts in index.css.",
+      "Headings should have tight tracking (-0.02em to -0.01em).",
+      "Body text should have relaxed line-height (1.6).",
+      "Use font-weight 500 or 600 for headings, rarely 700. Apple design favors medium weights over bold.",
+      "Ensure high contrast for primary text (#1D1D1F) and accessible grey (#86868B) for secondary."
     ]
   },
-  "universal_guidelines": [
-    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
-    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
-    "Create depth through layered design elements with z-index hierarchy",
-    "Use glass-morphism effects with backdrop filters (12-24px blur)",
-    "You MUST NOT apply universal transition. Eg: transition: all. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms",
-    "You MUST NOT center align the app container, ie do not add .App { text-align: center; } in the css file. This disrupts the human natural reading flow of text",
-    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style",
-    "NEVER: use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯📚🎭🎬🎪🎉🎊🎁🎀🎂🍰🎈🎨🎰💰💵💳🏦💎🪙💸🤑📊📈📉💹🔢🏆🥇 etc for icons.",
-    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.",
-    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
-    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
-    "Main agent relies on these image URLs. Missing categories (especially sponsor logos) = main agent will use placeholder text which is FORBIDDEN",
-    "Prioritize using pre-existing components from src/components/ui when applicable",
-    "Create new components that match the style and conventions of existing components when needed",
-    "Examine existing components to understand the project's component patterns before creating new ones",
-    "Components MUST use named exports (export const ComponentName = ...)",
-    "Pages MUST use default exports (export default function PageName() {...})",
-    "Use sonner for toasts. Sonner component are located in /app/src/components/ui/sonner.tsx"
+  "colors": {
+    "palette": {
+      "primary": {
+        "DEFAULT": "#0F3D2E",
+        "foreground": "#FFFFFF",
+        "50": "#F2F7F5",
+        "100": "#E1EFE9",
+        "200": "#C3DFD3",
+        "300": "#9FCFB9",
+        "400": "#6BB092",
+        "500": "#429170",
+        "600": "#2C7356",
+        "700": "#1D5943",
+        "800": "#0F3D2E",
+        "900": "#0A2920"
+      },
+      "accent": {
+        "DEFAULT": "#C8A951",
+        "foreground": "#FFFFFF",
+        "50": "#FBF8EC",
+        "100": "#F5EFD4",
+        "200": "#ECDCA9",
+        "300": "#E2C97E",
+        "400": "#D5B35B",
+        "500": "#C8A951",
+        "600": "#A88B3D",
+        "700": "#897030",
+        "800": "#6C5828",
+        "900": "#524321"
+      },
+      "neutral": {
+        "50": "#FBFBFD",
+        "100": "#F5F5F7",
+        "200": "#E5E5EA",
+        "300": "#D1D1D6",
+        "400": "#AEAEB2",
+        "500": "#8E8E93",
+        "600": "#636366",
+        "700": "#48484A",
+        "800": "#3A3A3C",
+        "900": "#1C1C1E",
+        "950": "#121212"
+      }
+    },
+    "semantic": {
+      "background": "#FBFBFD",
+      "card": "#FFFFFF",
+      "foreground": "#1D1D1F",
+      "border": "#E5E5EA",
+      "input": "#E5E5EA",
+      "ring": "rgba(15, 61, 46, 0.15)",
+      "muted": "#F5F5F7",
+      "muted-foreground": "#86868B"
+    }
+  },
+  "shadows": {
+    "sm": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+    "md": "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+    "lg": "0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)",
+    "xl": "0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03)",
+    "glass": "0 8px 32px 0 rgba(31, 38, 135, 0.05)"
+  },
+  "radius": {
+    "sm": "0.5rem",
+    "md": "0.75rem",
+    "lg": "1rem",
+    "xl": "1.25rem",
+    "2xl": "1.5rem",
+    "full": "9999px"
+  },
+  "layout": {
+    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "sidebar": "w-64",
+    "header_height": "h-16",
+    "grid_dashboard": "grid grid-cols-1 md:grid-cols-12 gap-6"
+  },
+  "components": {
+    "Button": {
+      "base": "inline-flex items-center justify-center rounded-full text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+      "variants": {
+        "default": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg active:scale-95",
+        "secondary": "bg-white text-primary border border-gray-200 hover:bg-gray-50 hover:border-gray-300 shadow-sm",
+        "ghost": "hover:bg-gray-100 text-gray-700 hover:text-gray-900",
+        "link": "text-primary underline-offset-4 hover:underline"
+      },
+      "sizes": {
+        "default": "h-11 px-6 py-2",
+        "sm": "h-9 rounded-full px-4",
+        "lg": "h-14 rounded-full px-8 text-base",
+        "icon": "h-10 w-10"
+      }
+    },
+    "Card": {
+      "base": "rounded-2xl border border-gray-100 bg-white text-card-foreground shadow-sm transition-all hover:shadow-md"
+    },
+    "Input": {
+      "base": "flex h-11 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all"
+    },
+    "Sidebar": {
+      "container": "fixed left-0 top-0 h-full w-64 bg-white/80 backdrop-blur-xl border-r border-gray-100 z-50 flex flex-col pt-6 pb-4 shadow-[1px_0_20px_rgba(0,0,0,0.02)]",
+      "link": "flex items-center gap-3 px-4 py-3 mx-3 rounded-xl text-sm font-medium transition-colors hover:bg-gray-50/80 text-gray-600 hover:text-gray-900",
+      "link_active": "bg-primary/5 text-primary font-semibold"
+    }
+  },
+  "pages": {
+    "Landing": {
+      "hero": {
+        "style": "relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-background",
+        "elements": "Use large centered typography, subtle floating 3D elements or parallax mosque imagery, and glass cards."
+      },
+      "features": "Use 'Bento Grid' layout for feature cards.",
+      "images": "Use high-quality Islamic architecture images with white/gold overlays."
+    },
+    "Auth": {
+      "layout": "grid lg:grid-cols-2 h-screen w-full overflow-hidden",
+      "left_panel": "hidden lg:flex flex-col justify-center p-12 bg-primary/5 relative",
+      "right_panel": "flex items-center justify-center p-8 bg-white"
+    },
+    "Dashboard": {
+      "layout": "min-h-screen bg-neutral-50/50 flex",
+      "content": "flex-1 ml-64 p-8 overflow-y-auto"
+    }
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-xl bg-white/70 border border-white/20 shadow-glass",
+    "gradients": {
+      "subtle": "bg-gradient-to-b from-white to-gray-50",
+      "primary": "bg-gradient-to-br from-primary to-primary/90",
+      "gold": "bg-gradient-to-br from-accent to-accent/80"
+    }
+  },
+  "image_urls": {
+    "hero_bg": "https://images.unsplash.com/photo-1761639935258-c74c0cd2fc3a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBtb3NxdWUlMjBhcmNoaXRlY3R1cmUlMjBtaW5pbWFsJTIwd2hpdGV8ZW58MHx8fHwxNzcxMDk1MTYyfDA&ixlib=rb-4.1.0&q=85",
+    "auth_bg": "https://images.unsplash.com/photo-1761639934521-b559388f1eb0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBtb3NxdWUlMjBhcmNoaXRlY3R1cmUlMjBtaW5pbWFsJTIwd2hpdGV8ZW58MHx8fHwxNzcxMDk1MTYyfDA&ixlib=rb-4.1.0&q=85",
+    "quran_reading": "https://images.unsplash.com/photo-1685186113814-40a8cd55309c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxwZXJzb24lMjByZWFkaW5nJTIwcXVyYW4lMjBwZWFjZWZ1bCUyMGNsZWFufGVufDB8fHx8MTc3MTA5NTE2MXww&ixlib=rb-4.1.0&q=85"
+  },
+  "accessibility": {
+    "contrast": "Ensure all text meets WCAG AA standards (4.5:1 ratio).",
+    "focus": "All interactive elements must have a visible focus ring.",
+    "aria": "Use aria-labels for icon-only buttons."
+  },
+  "instructions_to_main_agent": [
+    "1. UPDATE index.css: Import 'Inter' font, set root variables for colors/radius, apply global styles for body bg (#FBFBFD) and text.",
+    "2. UPDATE tailwind.config.js: Extend theme with new colors (primary, accent, neutral), borderRadius (xl, 2xl), and boxShadow (apple-style).",
+    "3. REFACTOR COMPONENTS: Update Button, Card, Input, and Sidebar to match the 'Apple' aesthetic defined in the 'components' section.",
+    "4. REFACTOR LAYOUTS: Ensure Dashboards use the Sidebar layout with proper spacing.",
+    "5. PRESERVE FUNCTIONALITY: Do not change any logic or imports related to the backend/API.",
+    "6. USE IMAGES: Use the provided image_urls for the Landing and Auth pages to set the mood.",
+    "7. REMOVE CLUTTER: Eliminate unnecessary borders, heavy shadows, and dense grids. Use whitespace.",
+    "8. GLASSMORPHISM: Apply glass effects to sticky headers and modals."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "- Design Anti-Patterns: No purple/teal CTAs. No gradients > 20%. No Center-Everything.",
+    "- Spacing: Use 2-3x more spacing (p-8, p-12).",
+    "- Mobile-First: Images max-h-[80vh].",
+    "- Component Reuse: Prioritize Shadcn components.",
+    "- Testing: Add data-testid to all interactive elements."
   ]
 }
