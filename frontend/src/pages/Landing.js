@@ -31,26 +31,24 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen" className="bg-[#FBFBFD]">
-      <nav className="fixed top-0 w-full z-50 glass-effect">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-5 flex justify-between items-center">
+    <div className="min-h-screen bg-[#FBFBFD]">
+      <nav className="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-xl border-b border-gray-200/40">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="text-3xl font-semibold tracking-tight" style={{ color: '#0F3D2E' }}>Alif Amin Academy</div>
+            <div className="text-[17px] font-semibold tracking-tight text-[#0F3D2E]">Alif Amin Academy</div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button
               data-testid="login-button"
               onClick={handleLogin}
-              className="h-10 px-6 rounded-full text-sm font-medium transition-all hover:bg-opacity-5"
-              style={{ color: '#0F3D2E', border: '1px solid rgba(15, 61, 46, 0.2)' }}
+              className="apple-btn-ghost"
             >
               Log In
             </button>
             <button
               data-testid="signup-button"
               onClick={handleGetStarted}
-              className="h-10 px-6 rounded-full text-white text-sm font-medium transition-all hover:scale-105"
-              style={{ backgroundColor: '#0F3D2E', fontWeight: 600 }}
+              className="apple-btn-primary"
             >
               Sign Up
             </button>
@@ -67,20 +65,16 @@ export default function Landing() {
             style={{ opacity: opacity1 }}
           >
             <h1 
-              className="text-6xl md:text-8xl font-bold tracking-tight leading-tight mb-8"
-              style={{ color: '#1F2933', letterSpacing: '-0.01em' }}
+              className="text-5xl sm:text-6xl md:text-8xl font-semibold tracking-tight leading-[1.05] mb-8 text-[#1D1D1F]"
             >
               Learn the Quran.
               <br />
-              <span style={{ color: '#0F3D2E' }}>Calmly. Clearly.</span>
+              <span className="text-[#0F3D2E]">Calmly. Clearly.</span>
               <br />
               At Your Pace.
             </h1>
             
-            <p 
-              className="text-xl md:text-2xl mb-4 font-medium tracking-wide"
-              style={{ color: '#5A5A5A' }}
-            >
+            <p className="text-lg md:text-xl mb-4 text-gray-500 font-normal">
               From Alif to Amin. Guided Every Step.
             </p>
 
@@ -88,14 +82,13 @@ export default function Landing() {
               data-testid="start-free-button"
               onClick={handleGetStarted}
               whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="mt-12 h-16 px-12 rounded-full text-white text-lg font-semibold shadow-soft"
-              style={{ backgroundColor: '#0F3D2E' }}
+              whileTap={{ scale: 0.97 }}
+              className="mt-12 apple-btn-primary !h-14 !px-10 !text-base"
             >
               Start Absolutely Free
             </motion.button>
 
-            <p className="mt-4 text-sm font-normal" style={{ color: '#9CA3AF' }}>
+            <p className="mt-4 text-sm text-gray-400">
               No card required
             </p>
           </motion.div>
