@@ -14,91 +14,12 @@ import {
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Sidebar Navigation
-const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, user, onLogout }) => {
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'schedule', label: 'My Schedule', icon: Calendar },
-    { id: 'wallet', label: 'Wallet', icon: CreditCard },
-    { id: 'account', label: 'Account', icon: User },
-  ];
-
-  return (
-    <>
-      {isOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsOpen(false)} />}
-      <aside className={`
-        fixed top-0 left-0 h-full bg-white z-50 transition-transform duration-300 ease-in-out
-        w-72 lg:translate-x-0 shadow-xl lg:shadow-none border-r
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-      `} style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-        <div className="h-16 flex items-center justify-between px-6 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-          <span className="text-xl font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>Alif Amin</span>
-          <button className="lg:hidden p-2 hover:bg-gray-100 rounded-lg" onClick={() => setIsOpen(false)}>
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
-        <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white font-medium">
-              {user?.name?.charAt(0) || 'S'}
-            </div>
-            <div>
-              <p className="font-medium text-sm" style={{ color: '#1F2933' }}>{user?.name}</p>
-              <p className="text-xs text-gray-500">Student</p>
-            </div>
-          </div>
-        </div>
-        <nav className="p-4 space-y-1">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => { setActiveTab(item.id); setIsOpen(false); }}
-                data-testid={`sidebar-${item.id}`}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                  isActive ? 'bg-[#0F3D2E]/10 text-[#0F3D2E]' : 'text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                <Icon className={`w-5 h-5 ${isActive ? 'text-[#0F3D2E]' : 'text-gray-400'}`} />
-                <span className={`font-medium ${isActive ? 'text-[#0F3D2E]' : ''}`}>{item.label}</span>
-                {isActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#0F3D2E]" />}
-              </button>
-            );
-          })}
-        </nav>
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-          <button onClick={onLogout} data-testid="sidebar-logout" className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-red-50 hover:text-red-600 transition-all">
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium">Log Out</span>
-          </button>
-        </div>
-      </aside>
-    </>
-  );
-};
-
-// Header
-const Header = ({ title, user, onMenuClick }) => (
-  <header className="h-16 bg-white border-b flex items-center justify-between px-4 lg:px-8" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-    <div className="flex items-center gap-4">
-      <button className="lg:hidden p-2 hover:bg-gray-100 rounded-lg" onClick={onMenuClick}>
-        <Menu className="w-5 h-5 text-gray-600" />
-      </button>
-      <div>
-        <p className="text-xs text-gray-400 hidden sm:block">Student Portal</p>
-        <h1 className="text-lg font-semibold" style={{ color: '#0F3D2E' }}>{title}</h1>
-      </div>
-    </div>
-    <div className="flex items-center gap-3">
-      <NotificationBell userId={user?.user_id} userRole="student" />
-      <div className="w-9 h-9 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white font-medium">
-        {user?.name?.charAt(0) || 'S'}
-      </div>
-    </div>
-  </header>
-);
+const MENU_ITEMS = [
+  { id: 'dashboard', label: 'Dashboard', icon: Home },
+  { id: 'schedule', label: 'My Schedule', icon: Calendar },
+  { id: 'wallet', label: 'Wallet', icon: CreditCard },
+  { id: 'account', label: 'Account', icon: User },
+];
 
 const TAB_TITLES = {
   dashboard: 'Dashboard',
@@ -106,6 +27,112 @@ const TAB_TITLES = {
   wallet: 'Wallet & Credits',
   account: 'Account Settings',
 };
+
+// Apple-style Sidebar
+const Sidebar = ({ activeTab, setActiveTab, isOpen, setIsOpen, user, onLogout }) => (
+  <>
+    {isOpen && <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden animate-fade-in" onClick={() => setIsOpen(false)} />}
+    <aside className={`
+      fixed top-0 left-0 h-full z-50 transition-transform duration-300 ease-[cubic-bezier(0.25,0.1,0.25,1)]
+      w-[272px] lg:translate-x-0 flex flex-col
+      bg-white/80 backdrop-blur-xl border-r border-gray-200/60
+      ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+    `}>
+      <div className="h-16 flex items-center justify-between px-6">
+        <span className="text-[17px] font-semibold text-[#0F3D2E] tracking-tight">Alif Amin</span>
+        <button className="lg:hidden w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors" onClick={() => setIsOpen(false)}>
+          <X className="w-4 h-4 text-gray-400" />
+        </button>
+      </div>
+
+      <div className="px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#0F3D2E] to-[#1a5c44] flex items-center justify-center text-white text-sm font-semibold">
+            {user?.name?.charAt(0) || 'S'}
+          </div>
+          <div>
+            <p className="text-[14px] font-semibold text-[#1D1D1F] tracking-tight">{user?.name}</p>
+            <p className="text-[12px] text-gray-400">Student</p>
+          </div>
+        </div>
+      </div>
+
+      <nav className="flex-1 px-3 py-2 space-y-0.5">
+        {MENU_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => { setActiveTab(item.id); setIsOpen(false); }}
+              data-testid={`sidebar-${item.id}`}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-all duration-200 ${
+                isActive
+                  ? 'bg-[#0F3D2E]/[0.07] text-[#0F3D2E]'
+                  : 'text-gray-500 hover:bg-gray-100/70 hover:text-gray-700'
+              }`}
+            >
+              <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-[#0F3D2E]' : 'text-gray-400'}`} />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className="px-3 py-4 mt-auto">
+        <div className="h-px bg-gray-100 mb-3" />
+        <button onClick={onLogout} data-testid="sidebar-logout" className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-medium text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all duration-200">
+          <LogOut className="w-[18px] h-[18px]" />
+          <span>Log Out</span>
+        </button>
+      </div>
+    </aside>
+
+    {/* Mobile Bottom Tab Bar */}
+    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-white/80 backdrop-blur-xl border-t border-gray-200/60 safe-area-bottom">
+      <div className="flex items-center justify-around h-14">
+        {MENU_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
+                isActive ? 'text-[#0F3D2E]' : 'text-gray-400'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  </>
+);
+
+// Apple-style Header
+const Header = ({ title, subtitle, user, onMenuClick }) => (
+  <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-xl border-b border-gray-200/60">
+    <div className="h-16 flex items-center justify-between px-4 lg:px-8">
+      <div className="flex items-center gap-3">
+        <button className="lg:hidden w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors" onClick={onMenuClick}>
+          <Menu className="w-5 h-5 text-gray-600" />
+        </button>
+        <div>
+          <h1 className="text-[17px] font-semibold text-[#1D1D1F] tracking-tight">{title}</h1>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <NotificationBell userId={user?.user_id} userRole="student" />
+        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#0F3D2E] to-[#1a5c44] flex items-center justify-center text-white text-[13px] font-semibold">
+          {user?.name?.charAt(0) || 'S'}
+        </div>
+      </div>
+    </div>
+  </header>
+);
 
 export default function StudentDashboard({ user }) {
   const navigate = useNavigate();
@@ -124,11 +151,8 @@ export default function StudentDashboard({ user }) {
         const data = await res.json();
         setBookings(data.bookings || []);
       }
-    } catch (e) {
-      console.error('Error fetching bookings:', e);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error('Error fetching bookings:', e); }
+    finally { setLoading(false); }
   }, []);
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
@@ -143,23 +167,28 @@ export default function StudentDashboard({ user }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5EF' }}>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F3D2E]" />
+      <div className="min-h-screen bg-[#FBFBFD] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[#0F3D2E] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-gray-400">Loading...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5EF' }}>
+    <div className="min-h-screen bg-[#FBFBFD]">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} user={user} onLogout={handleLogout} />
 
-      <div className="lg:ml-72">
+      <div className="lg:ml-[272px] pb-20 lg:pb-0">
         <Header title={TAB_TITLES[activeTab] || 'Dashboard'} user={user} onMenuClick={() => setSidebarOpen(true)} />
 
-        {activeTab === 'dashboard' && <DashboardHome bookings={bookings} onOpenBooking={() => setBookingModalOpen(true)} />}
-        {activeTab === 'schedule' && <MySchedule bookings={bookings} onOpenBooking={() => setBookingModalOpen(true)} onEdit={setEditTarget} onCancel={setCancelTarget} />}
-        {activeTab === 'wallet' && <WalletPage user={user} />}
-        {activeTab === 'account' && <AccountPage user={user} />}
+        <main className="animate-fade-in-up">
+          {activeTab === 'dashboard' && <DashboardHome bookings={bookings} onOpenBooking={() => setBookingModalOpen(true)} />}
+          {activeTab === 'schedule' && <MySchedule bookings={bookings} onOpenBooking={() => setBookingModalOpen(true)} onEdit={setEditTarget} onCancel={setCancelTarget} />}
+          {activeTab === 'wallet' && <WalletPage user={user} />}
+          {activeTab === 'account' && <AccountPage user={user} />}
+        </main>
       </div>
 
       <BookingModal isOpen={bookingModalOpen} onClose={() => setBookingModalOpen(false)} onSuccess={fetchBookings} user={user} />
