@@ -44,7 +44,7 @@ export default function TeacherSignup() {
           <button
             onClick={() => navigate('/onboarding')}
             className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70"
-            style={{ color: '#5A5A5A' }}
+            className="text-gray-500"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
@@ -83,7 +83,7 @@ export default function TeacherSignup() {
             </h1>
             <p 
               className="text-lg"
-              style={{ color: '#5A5A5A' }}
+              className="text-gray-500"
             >
               Share your knowledge and make a difference in students&apos; lives
             </p>
@@ -149,7 +149,7 @@ export default function TeacherSignup() {
 
             <p 
               className="text-center text-sm mt-6"
-              style={{ color: '#9CA3AF' }}
+              className="text-gray-400"
             >
               By continuing, you agree to our Terms of Service
             </p>
@@ -169,7 +169,7 @@ export default function TeacherSignup() {
                 <p className="text-sm font-medium" style={{ color: '#1F2933' }}>
                   Application Review
                 </p>
-                <p className="text-sm mt-1" style={{ color: '#5A5A5A' }}>
+                <p className="text-sm mt-1" className="text-gray-500">
                   After signing up, our team will review your application. You&apos;ll be notified once approved.
                 </p>
               </div>

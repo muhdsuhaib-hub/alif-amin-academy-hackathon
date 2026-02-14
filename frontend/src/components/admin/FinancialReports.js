@@ -111,7 +111,7 @@ export default function FinancialReports() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-semibold" style={{ color: '#1D1D1F' }}>Financial Reports</h2>
-          <p className="text-sm mt-1" style={{ color: '#5A5A5A' }}>
+          <p className="text-sm mt-1" className="text-gray-500">
             Revenue tracking and teacher payroll
           </p>
         </div>
@@ -131,40 +131,40 @@ export default function FinancialReports() {
 
       {/* Revenue Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+        <div className="apple-card p-6" >
           <div className="flex items-center gap-3 mb-2">
             <DollarSign className="w-5 h-5" style={{ color: '#0F3D2E' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Total Revenue</p>
+            <p className="text-sm font-medium" className="text-gray-400">Total Revenue</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F' }}>
             RM {revenueData?.total_revenue?.toLocaleString() || 0}
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+        <div className="apple-card p-6" >
           <div className="flex items-center gap-3 mb-2">
             <TrendingUp className="w-5 h-5" style={{ color: '#2EB6A0' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>MRR</p>
+            <p className="text-sm font-medium" className="text-gray-400">MRR</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F' }}>
             RM {revenueData?.mrr?.toLocaleString() || 0}
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+        <div className="apple-card p-6" >
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-5 h-5" style={{ color: '#C8A951' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Active Subs</p>
+            <p className="text-sm font-medium" className="text-gray-400">Active Subs</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F' }}>
             {revenueData?.active_subscriptions || 0}
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+        <div className="apple-card p-6" >
           <div className="flex items-center gap-3 mb-2">
             <Calendar className="w-5 h-5" style={{ color: '#E76F51' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Paid Classes</p>
+            <p className="text-sm font-medium" className="text-gray-400">Paid Classes</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F' }}>
             {revenueData?.paid_classes || 0}
@@ -174,7 +174,7 @@ export default function FinancialReports() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+        <div className="apple-card p-6" >
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold" style={{ color: '#1D1D1F' }}>Monthly Revenue Trend</h3>
             <Button variant="ghost" size="sm" onClick={handleExportRevenue}>
@@ -194,7 +194,7 @@ export default function FinancialReports() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+        <div className="apple-card p-6" >
           <h3 className="text-lg font-semibold mb-4" style={{ color: '#1D1D1F' }}>Revenue Breakdown</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -219,11 +219,11 @@ export default function FinancialReports() {
       </div>
 
       {/* Payroll Section */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+      <div className="apple-card p-6" >
         <div className="flex justify-between items-center mb-6">
           <div>
             <h3 className="text-xl font-semibold" style={{ color: '#1D1D1F' }}>Teacher Payroll</h3>
-            <p className="text-sm mt-1" style={{ color: '#5A5A5A' }}>
+            <p className="text-sm mt-1" className="text-gray-500">
               {monthOptions.find(m => m.value === selectedMonth.toString())?.label} {selectedYear}
             </p>
           </div>
@@ -236,13 +236,13 @@ export default function FinancialReports() {
         <div className="mb-6 p-4 rounded-xl" className="bg-[#FBFBFD]">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm mb-1" style={{ color: '#9CA3AF' }}>Total Payroll</p>
+              <p className="text-sm mb-1" className="text-gray-400">Total Payroll</p>
               <p className="text-2xl font-semibold" style={{ color: '#0F3D2E' }}>
                 RM {payrollData?.total_payroll?.toLocaleString() || 0}
               </p>
             </div>
             <div>
-              <p className="text-sm mb-1" style={{ color: '#9CA3AF' }}>Teachers</p>
+              <p className="text-sm mb-1" className="text-gray-400">Teachers</p>
               <p className="text-2xl font-semibold" style={{ color: '#0F3D2E' }}>
                 {payrollData?.teacher_count || 0}
               </p>
@@ -266,7 +266,7 @@ export default function FinancialReports() {
                   <td className="px-4 py-3">
                     <div>
                       <p className="font-medium" style={{ color: '#1D1D1F' }}>{teacher.teacher_name}</p>
-                      <p className="text-xs" style={{ color: '#9CA3AF' }}>{teacher.email}</p>
+                      <p className="text-xs" className="text-gray-400">{teacher.email}</p>
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -279,7 +279,7 @@ export default function FinancialReports() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <p style={{ color: '#5A5A5A' }}>{teacher.completed_classes}</p>
+                    <p className="text-gray-500">{teacher.completed_classes}</p>
                   </td>
                   <td className="px-4 py-3">
                     <p className="font-semibold" style={{ color: '#0F3D2E' }}>

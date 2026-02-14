@@ -258,7 +258,7 @@ export default function WalletPage({ user }) {
         </div>
 
         {/* Transaction History */}
-        <div className="bg-white rounded-2xl p-6 border" >
+        <div className="apple-card p-6" >
           <h3 className="text-lg font-semibold mb-4" style={{ color: '#0F3D2E' }}>Transaction History</h3>
           
           {transactions.length === 0 ? (

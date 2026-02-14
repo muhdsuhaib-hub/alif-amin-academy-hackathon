@@ -127,47 +127,47 @@ export default function SubscriptionManagement() {
       {/* Header */}
       <div className="mb-6">
         <h2 className="text-2xl font-semibold" style={{ color: '#1D1D1F' }}>Subscription Management</h2>
-        <p className="text-sm mt-1" style={{ color: '#5A5A5A' }}>
+        <p className="text-sm mt-1" className="text-gray-500">
           Manage student subscriptions and trials
         </p>
       </div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+        <div className="apple-card p-6" >
           <div className="flex items-center gap-3 mb-2">
             <TrendingUp className="w-5 h-5" style={{ color: '#2EB6A0' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Active</p>
+            <p className="text-sm font-medium" className="text-gray-400">Active</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F' }}>
             {overview?.active_subscriptions || 0}
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+        <div className="apple-card p-6" >
           <div className="flex items-center gap-3 mb-2">
             <Clock className="w-5 h-5" style={{ color: '#C8A951' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Trial</p>
+            <p className="text-sm font-medium" className="text-gray-400">Trial</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F' }}>
             {overview?.trial_subscriptions || 0}
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+        <div className="apple-card p-6" >
           <div className="flex items-center gap-3 mb-2">
             <Pause className="w-5 h-5" style={{ color: '#E76F51' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Paused</p>
+            <p className="text-sm font-medium" className="text-gray-400">Paused</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F' }}>
             {overview?.paused_subscriptions || 0}
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+        <div className="apple-card p-6" >
           <div className="flex items-center gap-3 mb-2">
-            <XCircle className="w-5 h-5" style={{ color: '#9CA3AF' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Cancelled</p>
+            <XCircle className="w-5 h-5" className="text-gray-400" />
+            <p className="text-sm font-medium" className="text-gray-400">Cancelled</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F' }}>
             {overview?.cancelled_subscriptions || 0}
@@ -190,7 +190,7 @@ export default function SubscriptionManagement() {
                 <p className="text-sm font-medium" style={{ color: '#1D1D1F' }}>
                   {student.student_name || 'Unknown Student'}
                 </p>
-                <p className="text-xs" style={{ color: '#5A5A5A' }}>
+                <p className="text-xs" className="text-gray-500">
                   {student.student_email || ''}
                 </p>
               </div>
@@ -220,7 +220,7 @@ export default function SubscriptionManagement() {
                     <td className="px-6 py-4">
                       <div>
                         <p className="font-medium" style={{ color: '#1D1D1F' }}>{student.name}</p>
-                        <p className="text-sm" style={{ color: '#9CA3AF' }}>{student.email}</p>
+                        <p className="text-sm" className="text-gray-400">{student.email}</p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -236,12 +236,12 @@ export default function SubscriptionManagement() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <p style={{ color: '#5A5A5A' }}>
+                      <p className="text-gray-500">
                         {student.student_info.subscription_plan || 'No plan'}
                       </p>
                     </td>
                     <td className="px-6 py-4">
-                      <p style={{ color: '#5A5A5A' }}>
+                      <p className="text-gray-500">
                         {formatDate(student.student_info.next_billing_date)}
                       </p>
                     </td>
@@ -280,7 +280,7 @@ export default function SubscriptionManagement() {
                             className="p-2 rounded-lg hover:bg-red-50 transition-all"
                             title="Cancel"
                           >
-                            <XCircle className="w-4 h-4" style={{ color: '#9CA3AF' }} />
+                            <XCircle className="w-4 h-4" className="text-gray-400" />
                           </button>
                         )}
                       </div>
@@ -302,9 +302,9 @@ export default function SubscriptionManagement() {
         >
           <div className="space-y-4">
             <div className="p-4 rounded-xl" className="bg-[#FBFBFD]">
-              <p className="text-sm mb-1" style={{ color: '#9CA3AF' }}>Student</p>
+              <p className="text-sm mb-1" className="text-gray-400">Student</p>
               <p className="font-medium" style={{ color: '#1D1D1F' }}>{selectedStudent.name}</p>
-              <p className="text-sm" style={{ color: '#5A5A5A' }}>{selectedStudent.email}</p>
+              <p className="text-sm" className="text-gray-500">{selectedStudent.email}</p>
             </div>
 
             <div className="p-4 rounded-xl border-l-4" style={{ backgroundColor: '#FFF9E6', borderLeftColor: '#C8A951' }}>

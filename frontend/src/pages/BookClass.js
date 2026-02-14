@@ -154,13 +154,13 @@ export default function BookClass({ user }) {
                 <h1 className="text-3xl font-medium mb-2" style={{ color: '#0F3D2E' }}>
                   {teacher.user?.name}
                 </h1>
-                <p style={{ color: '#5A5A5A' }}>{teacher.bio || 'Experienced Quran teacher'}</p>
+                <p className="text-gray-500">{teacher.bio || 'Experienced Quran teacher'}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 p-4 rounded-xl" style={{ backgroundColor: '#F7F3E8' }}>
               <div>
-                <p className="text-sm mb-1" style={{ color: '#5A5A5A' }}>Experience</p>
+                <p className="text-sm mb-1" className="text-gray-500">Experience</p>
                 <p className="font-medium" style={{ color: '#0F3D2E' }}>{teacher.years_experience} years</p>
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function BookClass({ user }) {
               }`}
             >
               <h3 className="text-lg font-medium mb-1" style={{ color: '#0F3D2E' }}>Free Trial</h3>
-              <p className="text-sm" style={{ color: '#5A5A5A' }}>15-minute evaluation session</p>
+              <p className="text-sm" className="text-gray-500">15-minute evaluation session</p>
             </button>
             <button
               data-testid="booking-type-paid"
@@ -192,7 +192,7 @@ export default function BookClass({ user }) {
               }`}
             >
               <h3 className="text-lg font-medium mb-1" style={{ color: '#0F3D2E' }}>Regular Class</h3>
-              <p className="text-sm" style={{ color: '#5A5A5A' }}>1-hour lesson (4 credits)</p>
+              <p className="text-sm" className="text-gray-500">1-hour lesson (4 credits)</p>
             </button>
           </div>
         </div>
@@ -202,8 +202,8 @@ export default function BookClass({ user }) {
 
           {availability.length === 0 ? (
             <div data-testid="no-availability" className="text-center py-8">
-              <Calendar className="w-12 h-12 mx-auto mb-4" style={{ color: '#9CA3AF' }} />
-              <p style={{ color: '#5A5A5A' }}>No available time slots at the moment</p>
+              <Calendar className="w-12 h-12 mx-auto mb-4" className="text-gray-400" />
+              <p className="text-gray-500">No available time slots at the moment</p>
             </div>
           ) : (
             <div className="space-y-3">

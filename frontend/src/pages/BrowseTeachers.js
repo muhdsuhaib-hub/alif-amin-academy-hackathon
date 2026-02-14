@@ -62,13 +62,13 @@ export default function BrowseTeachers({ user }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-4xl font-medium mb-2" style={{ color: '#0F3D2E' }}>Our Expert Teachers</h1>
-          <p style={{ color: '#5A5A5A' }}>Choose your preferred teacher and schedule your class</p>
+          <p className="text-gray-500">Choose your preferred teacher and schedule your class</p>
         </div>
 
         {teachers.length === 0 ? (
           <div data-testid="no-teachers" className="text-center py-12">
-            <Users className="w-16 h-16 mx-auto mb-4" style={{ color: '#9CA3AF' }} />
-            <p style={{ color: '#5A5A5A' }}>No teachers available at the moment</p>
+            <Users className="w-16 h-16 mx-auto mb-4" className="text-gray-400" />
+            <p className="text-gray-500">No teachers available at the moment</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -91,7 +91,7 @@ export default function BrowseTeachers({ user }) {
                       </h3>
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4" style={{ color: '#D4AF37' }} fill="#D4AF37" />
-                        <span className="text-sm" style={{ color: '#5A5A5A' }}>
+                        <span className="text-sm" className="text-gray-500">
                           {teacher.rating.toFixed(1)} ({teacher.total_classes} classes)
                         </span>
                       </div>
@@ -99,7 +99,7 @@ export default function BrowseTeachers({ user }) {
                   </div>
 
                   {teacher.bio && (
-                    <p className="text-sm mb-4" style={{ color: '#5A5A5A' }}>
+                    <p className="text-sm mb-4" className="text-gray-500">
                       {teacher.bio}
                     </p>
                   )}
@@ -121,7 +121,7 @@ export default function BrowseTeachers({ user }) {
                   )}
 
                   <div className="mb-4">
-                    <p className="text-sm" style={{ color: '#5A5A5A' }}>
+                    <p className="text-sm" className="text-gray-500">
                       <span className="font-medium">Experience:</span> {teacher.years_experience} years
                     </p>
                   </div>

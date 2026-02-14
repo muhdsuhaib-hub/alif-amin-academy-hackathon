@@ -129,7 +129,7 @@ export default function Onboarding() {
         <button
           onClick={handleBack}
           className="flex items-center gap-2 mb-12 text-sm font-medium"
-          style={{ color: '#5A5A5A' }}
+          className="text-gray-500"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -144,7 +144,7 @@ export default function Onboarding() {
             <p className="text-2xl font-medium mb-2" style={{ color: '#0F3D2E' }}>
               Absolutely no payment required to begin.
             </p>
-            <p className="text-lg font-normal" style={{ color: '#5A5A5A' }}>
+            <p className="text-lg font-normal" className="text-gray-500">
               Just a few questions to personalise your experience.
             </p>
           </motion.div>
@@ -162,7 +162,7 @@ export default function Onboarding() {
               />
             ))}
           </div>
-          <p className="text-sm" style={{ color: '#9CA3AF' }}>
+          <p className="text-sm" className="text-gray-400">
             Question {step + 1} of {questions.length}
           </p>
         </div>

@@ -736,7 +736,7 @@ export default function Auth() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full h-12 rounded-xl bg-[#0F3D2E] text-white font-medium flex items-center justify-center gap-2 transition-all hover:opacity-90 disabled:opacity-50"
+                    className="w-full apple-btn-primary !h-12 !rounded-xl"
                   >
                     {loading ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

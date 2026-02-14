@@ -209,7 +209,7 @@ export default function AdminDashboard({ user }) {
           <>
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+              <div className="apple-card p-6" >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-sm font-medium mb-1" className="text-gray-400">Total Active Users</p>
@@ -234,7 +234,7 @@ export default function AdminDashboard({ user }) {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+              <div className="apple-card p-6" >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-sm font-medium mb-1" className="text-gray-400">Active Students</p>
@@ -259,7 +259,7 @@ export default function AdminDashboard({ user }) {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+              <div className="apple-card p-6" >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-sm font-medium mb-1" className="text-gray-400">Revenue (MTD)</p>
@@ -284,7 +284,7 @@ export default function AdminDashboard({ user }) {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+              <div className="apple-card p-6" >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-sm font-medium mb-1" className="text-gray-400">Conversion Rate</p>
@@ -306,7 +306,7 @@ export default function AdminDashboard({ user }) {
 
             {/* Mini Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+              <div className="apple-card p-6" >
                 <h3 className="text-lg font-semibold mb-4" style={{ color: '#1D1D1F' }}>User Growth</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <AreaChart data={userGrowthData}>
@@ -325,7 +325,7 @@ export default function AdminDashboard({ user }) {
                 </ResponsiveContainer>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+              <div className="apple-card p-6" >
                 <h3 className="text-lg font-semibold mb-4" style={{ color: '#1D1D1F' }}>Revenue Trend</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={revenueData}>
@@ -338,7 +338,7 @@ export default function AdminDashboard({ user }) {
                 </ResponsiveContainer>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+              <div className="apple-card p-6" >
                 <h3 className="text-lg font-semibold mb-4" style={{ color: '#1D1D1F' }}>Attendance Rate</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={attendanceData}>
@@ -368,7 +368,7 @@ export default function AdminDashboard({ user }) {
                         <p className="text-sm font-medium" style={{ color: '#1D1D1F' }}>
                           {new Date(booking.start_time_utc).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                         </p>
-                        <p className="text-xs" style={{ color: '#5A5A5A' }}>
+                        <p className="text-xs" className="text-gray-500">
                           Booking ID: {booking.booking_id.slice(0, 12)}...
                         </p>
                       </div>
@@ -387,7 +387,7 @@ export default function AdminDashboard({ user }) {
                         <p className="text-sm font-medium" style={{ color: '#1D1D1F' }}>
                           {student.student_name || 'Unknown Student'}
                         </p>
-                        <p className="text-xs" style={{ color: '#5A5A5A' }}>
+                        <p className="text-xs" className="text-gray-500">
                           {student.student_email || ''}
                         </p>
                       </div>
@@ -402,7 +402,7 @@ export default function AdminDashboard({ user }) {
                   </div>
                   <div className="p-4 rounded-lg text-center" style={{ backgroundColor: '#FFF0ED' }}>
                     <p className="text-2xl font-semibold mb-1" style={{ color: '#E76F51' }}>0</p>
-                    <p className="text-sm" style={{ color: '#5A5A5A' }}>All payments successful</p>
+                    <p className="text-sm" className="text-gray-500">All payments successful</p>
                   </div>
                 </div>
               </div>
@@ -410,7 +410,7 @@ export default function AdminDashboard({ user }) {
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+              <div className="apple-card p-6" >
                 <div className="flex items-center gap-3 mb-2">
                   <UserPlus className="w-5 h-5" style={{ color: '#0F3D2E' }} />
                   <p className="text-sm font-medium" className="text-gray-400">New Sign-ups Today</p>
@@ -420,7 +420,7 @@ export default function AdminDashboard({ user }) {
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+              <div className="apple-card p-6" >
                 <div className="flex items-center gap-3 mb-2">
                   <Calendar className="w-5 h-5" style={{ color: '#C8A951' }} />
                   <p className="text-sm font-medium" className="text-gray-400">Classes This Month</p>
@@ -430,7 +430,7 @@ export default function AdminDashboard({ user }) {
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+              <div className="apple-card p-6" >
                 <div className="flex items-center gap-3 mb-2">
                   <CheckCircle className="w-5 h-5" style={{ color: '#2EB6A0' }} />
                   <p className="text-sm font-medium" className="text-gray-400">Completed Classes</p>
@@ -440,7 +440,7 @@ export default function AdminDashboard({ user }) {
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
+              <div className="apple-card p-6" >
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-5 h-5" style={{ color: '#E76F51' }} />
                   <p className="text-sm font-medium" className="text-gray-400">Active Teachers</p>
@@ -489,7 +489,7 @@ export default function AdminDashboard({ user }) {
                     <p className="text-2xl font-bold mb-1" style={{ color: '#0F3D2E' }}>
                       {Math.floor(liability?.credit_liability?.total_paid_credits_outstanding || 0)}
                     </p>
-                    <p className="text-sm" style={{ color: '#5A5A5A' }}>
+                    <p className="text-sm" className="text-gray-500">
                       RM {(liability?.credit_liability?.paid_credits_monetary_value || 0).toLocaleString()} value
                     </p>
                   </div>
@@ -505,7 +505,7 @@ export default function AdminDashboard({ user }) {
                     <p className="text-2xl font-bold mb-1" style={{ color: '#D4AF37' }}>
                       {Math.floor(liability?.credit_liability?.total_bonus_credits_outstanding || 0)}
                     </p>
-                    <p className="text-sm" style={{ color: '#5A5A5A' }}>
+                    <p className="text-sm" className="text-gray-500">
                       RM {(liability?.marketing_liability?.bonus_credits_value || 0).toLocaleString()} marketing cost
                     </p>
                   </div>
@@ -521,7 +521,7 @@ export default function AdminDashboard({ user }) {
                     <p className="text-2xl font-bold mb-1" style={{ color: '#E76F51' }}>
                       RM {(liability?.tutor_payout_exposure?.total_exposure || 0).toLocaleString()}
                     </p>
-                    <p className="text-sm" style={{ color: '#5A5A5A' }}>
+                    <p className="text-sm" className="text-gray-500">
                       If all credits used ({Math.round((liability?.base_rates?.tutor_rate || 0.8) * 100)}% payout rate)
                     </p>
                   </div>
@@ -537,7 +537,7 @@ export default function AdminDashboard({ user }) {
                     <p className="text-2xl font-bold mb-1" style={{ color: '#2EB6A0' }}>
                       RM {(liability?.wallet_summary?.total_topup_revenue || 0).toLocaleString()}
                     </p>
-                    <p className="text-sm" style={{ color: '#5A5A5A' }}>
+                    <p className="text-sm" className="text-gray-500">
                       From {liability?.wallet_summary?.wallets_with_balance || 0} active wallets
                     </p>
                   </div>
@@ -552,19 +552,19 @@ export default function AdminDashboard({ user }) {
               {liability && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t" >
                   <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                    <span className="text-sm" style={{ color: '#5A5A5A' }}>Platform Commission (potential)</span>
+                    <span className="text-sm" className="text-gray-500">Platform Commission (potential)</span>
                     <span className="text-sm font-semibold" style={{ color: '#0F3D2E' }}>
                       RM {(liability?.platform_commission?.potential_commission || 0).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                    <span className="text-sm" style={{ color: '#5A5A5A' }}>Sessions Completed</span>
+                    <span className="text-sm" className="text-gray-500">Sessions Completed</span>
                     <span className="text-sm font-semibold" style={{ color: '#0F3D2E' }}>
                       {liability?.historical_usage?.total_sessions_completed || 0}
                     </span>
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                    <span className="text-sm" style={{ color: '#5A5A5A' }}>Tutor Payouts Made</span>
+                    <span className="text-sm" className="text-gray-500">Tutor Payouts Made</span>
                     <span className="text-sm font-semibold" style={{ color: '#0F3D2E' }}>
                       RM {(liability?.historical_usage?.total_tutor_payouts_made || 0).toLocaleString()}
                     </span>
@@ -606,7 +606,7 @@ export default function AdminDashboard({ user }) {
                     <div className="p-5 rounded-xl border-2 border-[#2EB6A0]/20" style={{ backgroundColor: 'rgba(46, 182, 160, 0.05)' }}>
                       <div className="flex items-center gap-2 mb-3">
                         <DollarSign className="w-5 h-5" style={{ color: '#2EB6A0' }} />
-                        <p className="text-sm font-medium" style={{ color: '#5A5A5A' }}>
+                        <p className="text-sm font-medium" className="text-gray-500">
                           Cash Collected
                         </p>
                       </div>
@@ -614,7 +614,7 @@ export default function AdminDashboard({ user }) {
                         RM {(revenue?.cash_flow?.total_cash_collected || 0).toLocaleString()}
                       </p>
                       <div className="mt-3 pt-3 border-t border-[#2EB6A0]/20">
-                        <p className="text-xs" style={{ color: '#5A5A5A' }}>
+                        <p className="text-xs" className="text-gray-500">
                           Last 30 days: <span className="font-semibold">RM {(revenue?.cash_flow?.last_30_days || 0).toLocaleString()}</span>
                         </p>
                       </div>
@@ -624,7 +624,7 @@ export default function AdminDashboard({ user }) {
                     <div className="p-5 rounded-xl border-2 border-[#0F3D2E]/20" style={{ backgroundColor: 'rgba(15, 61, 46, 0.05)' }}>
                       <div className="flex items-center gap-2 mb-3">
                         <TrendingUp className="w-5 h-5" style={{ color: '#0F3D2E' }} />
-                        <p className="text-sm font-medium" style={{ color: '#5A5A5A' }}>
+                        <p className="text-sm font-medium" className="text-gray-500">
                           Commission Earned
                         </p>
                       </div>
@@ -632,7 +632,7 @@ export default function AdminDashboard({ user }) {
                         RM {(revenue?.revenue_recognition?.commission_earned || 0).toLocaleString()}
                       </p>
                       <div className="mt-3 pt-3 border-t border-[#0F3D2E]/20">
-                        <p className="text-xs" style={{ color: '#5A5A5A' }}>
+                        <p className="text-xs" className="text-gray-500">
                           Last 30 days: <span className="font-semibold">RM {(revenue?.revenue_recognition?.last_30_days || 0).toLocaleString()}</span>
                         </p>
                       </div>
@@ -642,7 +642,7 @@ export default function AdminDashboard({ user }) {
                     <div className="p-5 rounded-xl border-2 border-[#E76F51]/20" style={{ backgroundColor: 'rgba(231, 111, 81, 0.05)' }}>
                       <div className="flex items-center gap-2 mb-3">
                         <Users className="w-5 h-5" style={{ color: '#E76F51' }} />
-                        <p className="text-sm font-medium" style={{ color: '#5A5A5A' }}>
+                        <p className="text-sm font-medium" className="text-gray-500">
                           Tutor Payable
                         </p>
                       </div>
@@ -650,7 +650,7 @@ export default function AdminDashboard({ user }) {
                         RM {(revenue?.tutor_payable?.total_payable || 0).toLocaleString()}
                       </p>
                       <div className="mt-3 pt-3 border-t border-[#E76F51]/20">
-                        <div className="flex justify-between text-xs" style={{ color: '#5A5A5A' }}>
+                        <div className="flex justify-between text-xs" className="text-gray-500">
                           <span>Paid: RM {(revenue?.tutor_payable?.already_paid || 0).toLocaleString()}</span>
                           <span className="font-semibold text-[#E76F51]">Pending: RM {(revenue?.tutor_payable?.pending_payment || 0).toLocaleString()}</span>
                         </div>
@@ -674,7 +674,7 @@ export default function AdminDashboard({ user }) {
                       <p className="text-xs mb-3" style={{ color: '#92400E', opacity: 0.8 }}>
                         Cash collected but not yet earned
                       </p>
-                      <div className="text-xs space-y-1" style={{ color: '#5A5A5A' }}>
+                      <div className="text-xs space-y-1" className="text-gray-500">
                         <div className="flex justify-between">
                           <span>Cash Collected:</span>
                           <span>RM {(revenue?.deferred_revenue?.breakdown?.cash_collected || 0).toLocaleString()}</span>
@@ -697,25 +697,25 @@ export default function AdminDashboard({ user }) {
                       </p>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm" style={{ color: '#5A5A5A' }}>Gross Revenue (Sessions)</span>
+                          <span className="text-sm" className="text-gray-500">Gross Revenue (Sessions)</span>
                           <span className="text-sm font-semibold" style={{ color: '#0F3D2E' }}>
                             RM {(revenue?.accounting_summary?.gross_revenue || 0).toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm" style={{ color: '#5A5A5A' }}>Net Platform Revenue</span>
+                          <span className="text-sm" className="text-gray-500">Net Platform Revenue</span>
                           <span className="text-sm font-semibold" style={{ color: '#2EB6A0' }}>
                             RM {(revenue?.accounting_summary?.net_platform_revenue || 0).toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm" style={{ color: '#5A5A5A' }}>Marketing Cost (Bonus Used)</span>
+                          <span className="text-sm" className="text-gray-500">Marketing Cost (Bonus Used)</span>
                           <span className="text-sm font-semibold" style={{ color: '#E76F51' }}>
                             RM {(revenue?.marketing_expense?.realized || 0).toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between items-center pt-2 border-t" >
-                          <span className="text-sm" style={{ color: '#5A5A5A' }}>Sessions Completed</span>
+                          <span className="text-sm" className="text-gray-500">Sessions Completed</span>
                           <span className="text-sm font-semibold" style={{ color: '#0F3D2E' }}>
                             {revenue?.session_summary?.total_completed || 0}
                           </span>
@@ -826,7 +826,7 @@ export default function AdminDashboard({ user }) {
                   {/* Commission Rules */}
                   <div className="p-4 rounded-lg bg-gray-50">
                     <p className="text-sm font-semibold mb-2" style={{ color: '#0F3D2E' }}>Commission Tier Rules</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" style={{ color: '#5A5A5A' }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" className="text-gray-500">
                       <div>
                         <p className="mb-1"><strong>Upgrade Criteria:</strong></p>
                         <ul className="list-disc list-inside text-xs space-y-1">

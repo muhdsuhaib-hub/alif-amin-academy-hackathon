@@ -160,7 +160,7 @@ export default function MySchedule({ bookings, onOpenBooking, onEdit, onCancel }
         </div>
 
         {/* Agenda */}
-        <div className="bg-white rounded-2xl p-6 border" >
+        <div className="apple-card p-6" >
           <h3 className="text-lg font-semibold mb-4" style={{ color: '#0F3D2E' }}>
             {selectedDay ? selectedDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'All Bookings'}
           </h3>
