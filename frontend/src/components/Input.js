@@ -1,11 +1,11 @@
 import React from 'react';
 
-export default function Input({ label, type = 'text', value, onChange, placeholder, required }) {
+export default function Input({ label, type = 'text', value, onChange, placeholder, required, className = '', ...props }) {
   return (
-    <div>
+    <div className="space-y-1.5">
       {label && (
-        <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
-          {label} {required && <span style={{ color: '#E76F51' }}>*</span>}
+        <label className="block text-[13px] font-medium text-gray-700 tracking-tight">
+          {label} {required && <span className="text-red-400">*</span>}
         </label>
       )}
       <input
@@ -14,12 +14,8 @@ export default function Input({ label, type = 'text', value, onChange, placehold
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         required={required}
-        className="w-full h-11 px-4 rounded-lg border transition-all focus:outline-none focus:ring-2"
-        style={{
-          borderColor: 'rgba(15, 61, 46, 0.2)',
-          fontFamily: 'Cal Sans',
-          color: '#1F2933'
-        }}
+        className={`apple-input ${className}`}
+        {...props}
       />
     </div>
   );

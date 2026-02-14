@@ -1,7 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
 export default function Modal({ isOpen, onClose, title, children, size = 'md' }) {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const sizeClasses = {
@@ -12,24 +21,30 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div 
-          className={`bg-white rounded-2xl shadow-xl w-full ${sizeClasses[size]} relative`}
-          style={{ fontFamily: 'Cal Sans' }}
-        >
-          <div className="flex justify-between items-center p-6 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-            <h3 className="text-xl font-semibold" style={{ color: '#1F2933' }}>{title}</h3>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-all"
-            >
-              <X className="w-5 h-5" style={{ color: '#5A5A5A' }} />
-            </button>
-          </div>
-          <div className="p-6">
-            {children}
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm animate-fade-in" />
+      
+      {/* Modal */}
+      <div
+        className={`relative bg-white rounded-2xl shadow-apple-lg w-full ${sizeClasses[size]} animate-modal-in overflow-hidden`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center px-6 py-5 border-b border-gray-100">
+          <h3 className="text-lg font-semibold text-[#1D1D1F] tracking-tight">{title}</h3>
+          <button
+            onClick={onClose}
+            data-testid="modal-close-btn"
+            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+          >
+            <X className="w-4 h-4 text-gray-400" />
+          </button>
+        </div>
+        
+        {/* Content */}
+        <div className="px-6 py-5 max-h-[70vh] overflow-y-auto">
+          {children}
         </div>
       </div>
     </div>
