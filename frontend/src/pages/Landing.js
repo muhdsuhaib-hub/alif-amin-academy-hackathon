@@ -208,23 +208,23 @@ export default function Landing() {
         </div>
       </motion.section>
 
-      <footer className="py-16 border-t" >
+      <footer className="py-12 border-t border-gray-200/60">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="text-2xl font-semibold tracking-tight" style={{ color: '#0F3D2E' }}>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="text-[17px] font-semibold tracking-tight text-[#0F3D2E]">
               Alif Amin
             </div>
             
-            <div className="flex gap-8 text-sm font-medium" style={{ color: '#5A5A5A' }}>
-              <a href="#" className="hover:opacity-70 transition-opacity">About</a>
-              <a href="#" className="hover:opacity-70 transition-opacity">Contact</a>
-              <a href="#" className="hover:opacity-70 transition-opacity">Privacy</a>
-              <a href="#" className="hover:opacity-70 transition-opacity">Terms</a>
+            <div className="flex gap-8 text-[13px] font-medium text-gray-500">
+              <a href="#" className="hover:text-gray-700 transition-colors">About</a>
+              <a href="#" className="hover:text-gray-700 transition-colors">Contact</a>
+              <a href="#" className="hover:text-gray-700 transition-colors">Privacy</a>
+              <a href="#" className="hover:text-gray-700 transition-colors">Terms</a>
             </div>
           </div>
 
-          <div className="text-center mt-8 text-sm font-normal" style={{ color: '#9CA3AF' }}>
-            © 2025 Alif Amin. From Alif to Amin. Guided Every Step.
+          <div className="text-center mt-8 text-[12px] text-gray-400">
+            2025 Alif Amin. From Alif to Amin. Guided Every Step.
           </div>
         </div>
       </footer>
