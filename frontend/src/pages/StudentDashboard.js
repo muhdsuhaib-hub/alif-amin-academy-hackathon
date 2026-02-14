@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Home, Wallet, Calendar, User } from 'lucide-react';
 import { PageLoader } from '../components/Spinner';
 import LayoutShell from '../components/layout/LayoutShell';
-import { DashboardHome, WalletPage, MySchedule, AccountPage, BookingModal, StudentSidebar } from '../components/student';
+import { DashboardHome, WalletPage, MySchedule, AccountPage, BookingModal } from '../components/student';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
