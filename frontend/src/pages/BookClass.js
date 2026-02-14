@@ -121,7 +121,7 @@ export default function BookClass({ user }) {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5EF' }}>
+    <div className="min-h-screen" className="bg-[#FBFBFD]">
       <nav className="bg-white border-b" style={{ borderColor: 'rgba(4, 78, 66, 0.1)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-4">

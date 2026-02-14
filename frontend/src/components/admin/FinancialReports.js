@@ -233,7 +233,7 @@ export default function FinancialReports() {
           </Button>
         </div>
 
-        <div className="mb-6 p-4 rounded-xl" style={{ backgroundColor: '#F7F5EF' }}>
+        <div className="mb-6 p-4 rounded-xl" className="bg-[#FBFBFD]">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm mb-1" style={{ color: '#9CA3AF',  }}>Total Payroll</p>
@@ -252,7 +252,7 @@ export default function FinancialReports() {
 
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead style={{ backgroundColor: '#F7F5EF' }}>
+            <thead className="bg-[#FBFBFD]">
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-semibold" style={{ color: '#1D1D1F',  }}>Teacher</th>
                 <th className="px-4 py-3 text-left text-sm font-semibold" style={{ color: '#1D1D1F',  }}>Tier</th>

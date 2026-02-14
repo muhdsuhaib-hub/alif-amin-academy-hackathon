@@ -37,7 +37,7 @@ export default function TeacherSignup() {
   ];
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5EF' }}>
+    <div className="min-h-screen" className="bg-[#FBFBFD]">
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-6">

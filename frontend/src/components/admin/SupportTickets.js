@@ -321,7 +321,7 @@ export default function SupportTickets() {
                   {selectedTicket.priority}
                 </span>
               </div>
-              <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F5EF' }}>
+              <div className="p-4 rounded-xl" className="bg-[#FBFBFD]">
                 <p style={{ color: '#1D1D1F',  }}>{selectedTicket.description}</p>
               </div>
             </div>

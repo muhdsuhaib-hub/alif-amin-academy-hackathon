@@ -124,7 +124,7 @@ export default function Onboarding() {
   const fieldNames = ['userType', 'level', 'preference'];
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5EF' }}>
+    <div className="min-h-screen flex items-center justify-center" className="bg-[#FBFBFD]">
       <div className="w-full max-w-3xl mx-auto px-6 py-12">
         <button
           onClick={handleBack}

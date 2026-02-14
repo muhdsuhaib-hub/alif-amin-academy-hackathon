@@ -436,7 +436,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: '#F7F5EF' }}>
+    <div className="min-h-screen flex" className="bg-[#FBFBFD]">
       {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#0F3D2E] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
@@ -449,10 +449,10 @@ export default function Auth() {
             <div className="w-14 h-14 rounded-xl bg-white bg-opacity-20 flex items-center justify-center">
               <BookOpen className="w-7 h-7" />
             </div>
-            <span className="text-2xl font-bold" style={{  }}>Alif Amin Academy</span>
+            <span className="text-2xl font-bold" >Alif Amin Academy</span>
           </div>
           
-          <h1 className="text-4xl font-bold mb-4" style={{  }}>
+          <h1 className="text-4xl font-bold mb-4" >
             Begin Your Quran Journey Today
           </h1>
           <p className="text-lg opacity-80 mb-8">

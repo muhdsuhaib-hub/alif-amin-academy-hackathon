@@ -203,7 +203,7 @@ export default function SubscriptionManagement() {
       <div className="bg-white rounded-2xl shadow-sm border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead style={{ backgroundColor: '#F7F5EF' }}>
+            <thead className="bg-[#FBFBFD]">
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: '#1D1D1F',  }}>Student</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: '#1D1D1F',  }}>Status</th>
@@ -301,7 +301,7 @@ export default function SubscriptionManagement() {
           title={`${action.charAt(0).toUpperCase() + action.slice(1).replace('_', ' ')} Subscription`}
         >
           <div className="space-y-4">
-            <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F5EF' }}>
+            <div className="p-4 rounded-xl" className="bg-[#FBFBFD]">
               <p className="text-sm mb-1" style={{ color: '#9CA3AF',  }}>Student</p>
               <p className="font-medium" style={{ color: '#1D1D1F',  }}>{selectedStudent.name}</p>
               <p className="text-sm" style={{ color: '#5A5A5A',  }}>{selectedStudent.email}</p>

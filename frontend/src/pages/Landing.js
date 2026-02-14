@@ -31,7 +31,7 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5EF' }}>
+    <div className="min-h-screen" className="bg-[#FBFBFD]">
       <nav className="fixed top-0 w-full z-50 glass-effect">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-5 flex justify-between items-center">
           <div className="flex items-center gap-3">

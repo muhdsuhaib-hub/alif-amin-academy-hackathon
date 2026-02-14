@@ -28,7 +28,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5EF' }}>
+    <div className="min-h-screen flex items-center justify-center" className="bg-[#FBFBFD]">
       <div className="max-w-md w-full mx-6">
         <button
           onClick={() => navigate('/')}

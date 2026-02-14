@@ -227,7 +227,7 @@ export default function AdminDashboard({ user }) {
                   ) : (
                     <TrendingDown className="w-4 h-4 text-red-500" />
                   )}
-                  <span className={`text-sm font-medium ${(stats?.trends?.user_trend || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`} style={{  }}>
+                  <span className={`text-sm font-medium ${(stats?.trends?.user_trend || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`} >
                     {(stats?.trends?.user_trend || 0) >= 0 ? '+' : ''}{stats?.trends?.user_trend || 0}%
                   </span>
                   <span className="text-sm" className="text-gray-400">vs last month</span>
@@ -252,7 +252,7 @@ export default function AdminDashboard({ user }) {
                   ) : (
                     <TrendingDown className="w-4 h-4 text-red-500" />
                   )}
-                  <span className={`text-sm font-medium ${(stats?.trends?.student_trend || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`} style={{  }}>
+                  <span className={`text-sm font-medium ${(stats?.trends?.student_trend || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`} >
                     {(stats?.trends?.student_trend || 0) >= 0 ? '+' : ''}{stats?.trends?.student_trend || 0}%
                   </span>
                   <span className="text-sm" className="text-gray-400">vs last month</span>
@@ -277,7 +277,7 @@ export default function AdminDashboard({ user }) {
                   ) : (
                     <TrendingDown className="w-4 h-4 text-red-500" />
                   )}
-                  <span className={`text-sm font-medium ${(stats?.trends?.revenue_trend || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`} style={{  }}>
+                  <span className={`text-sm font-medium ${(stats?.trends?.revenue_trend || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`} >
                     {(stats?.trends?.revenue_trend || 0) >= 0 ? '+' : ''}{stats?.trends?.revenue_trend || 0}%
                   </span>
                   <span className="text-sm" className="text-gray-400">vs last month</span>
@@ -298,7 +298,7 @@ export default function AdminDashboard({ user }) {
                 </div>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 text-green-500" />
-                  <span className="text-sm font-medium text-green-500" style={{  }}>Active</span>
+                  <span className="text-sm font-medium text-green-500" >Active</span>
                   <span className="text-sm" className="text-gray-400">trial to paid</span>
                 </div>
               </div>
@@ -364,7 +364,7 @@ export default function AdminDashboard({ user }) {
                   </div>
                   <div className="space-y-3">
                     {stats?.todays_classes?.slice(0, 3).map((booking, idx) => (
-                      <div key={idx} className="p-3 rounded-lg" style={{ backgroundColor: '#F7F5EF' }}>
+                      <div key={idx} className="p-3 rounded-lg" className="bg-[#FBFBFD]">
                         <p className="text-sm font-medium" style={{ color: '#1D1D1F',  }}>
                           {new Date(booking.start_time_utc).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                         </p>
@@ -479,7 +479,7 @@ export default function AdminDashboard({ user }) {
               {liability ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Total Paid Credits Outstanding */}
-                  <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F5EF' }}>
+                  <div className="p-4 rounded-xl" className="bg-[#FBFBFD]">
                     <div className="flex items-center gap-2 mb-2">
                       <CreditCard className="w-4 h-4" style={{ color: '#0F3D2E' }} />
                       <p className="text-xs font-medium" className="text-gray-400">
@@ -691,7 +691,7 @@ export default function AdminDashboard({ user }) {
                     </div>
 
                     {/* Accounting Summary */}
-                    <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F5EF' }}>
+                    <div className="p-4 rounded-xl" className="bg-[#FBFBFD]">
                       <p className="text-sm font-semibold mb-3" style={{ color: '#0F3D2E',  }}>
                         Accounting Summary
                       </p>
@@ -728,7 +728,7 @@ export default function AdminDashboard({ user }) {
                   <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
                     <div className="flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                      <p className="text-xs text-blue-800" style={{  }}>
+                      <p className="text-xs text-blue-800" >
                         <strong>Revenue Recognition Policy:</strong> Platform commission is only recognized as earned revenue when sessions are completed. 
                         Cash collected from top-ups is held as deferred revenue (liability) until services are delivered.
                       </p>
@@ -761,7 +761,7 @@ export default function AdminDashboard({ user }) {
                 <button 
                   onClick={runTierEvaluation}
                   className="text-sm px-4 py-2 rounded-lg transition-all bg-[#0F3D2E] text-white hover:opacity-90"
-                  style={{  }}
+                  
                 >
                   Run Monthly Evaluation
                 </button>
