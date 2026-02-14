@@ -193,8 +193,6 @@ export default function Onboarding() {
                       ? 'border-[#0F3D2E] bg-[#0F3D2E]/[0.03]'
                       : 'border-gray-200 bg-white hover:border-gray-300'
                   }`}
-                    
-                  }}
                 >
                   <div className="flex items-start justify-between">
                     <div>
