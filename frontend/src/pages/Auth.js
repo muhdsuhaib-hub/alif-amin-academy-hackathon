@@ -439,47 +439,43 @@ export default function Auth() {
     <div className="min-h-screen flex" className="bg-[#FBFBFD]">
       {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#0F3D2E] relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-white transform translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-[#D4AF37] transform -translate-x-1/2 translate-y-1/2" />
+        <div className="absolute inset-0 opacity-[0.06]">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-white transform translate-x-1/3 -translate-y-1/3" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-white transform -translate-x-1/3 translate-y-1/3" />
         </div>
         
-        <div className="relative z-10 flex flex-col justify-center px-16 text-white">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-14 h-14 rounded-xl bg-white bg-opacity-20 flex items-center justify-center">
-              <BookOpen className="w-7 h-7" />
+        <div className="relative z-10 flex flex-col justify-center px-16 xl:px-20 text-white max-w-xl">
+          <div className="flex items-center gap-3 mb-12">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center">
+              <BookOpen className="w-6 h-6" />
             </div>
-            <span className="text-2xl font-bold" >Alif Amin Academy</span>
+            <span className="text-xl font-semibold tracking-tight">Alif Amin Academy</span>
           </div>
           
-          <h1 className="text-4xl font-bold mb-4" >
+          <h1 className="text-4xl xl:text-5xl font-semibold tracking-tight leading-[1.1] mb-5">
             Begin Your Quran Journey Today
           </h1>
-          <p className="text-lg opacity-80 mb-8">
+          <p className="text-[17px] text-white/60 leading-relaxed mb-10">
             Learn from qualified teachers in personalized 1-on-1 sessions. 
             Start with a free trial class.
           </p>
           
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-[#D4AF37]" />
-              <span>Certified Quran teachers</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-[#D4AF37]" />
-              <span>Flexible scheduling</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-[#D4AF37]" />
-              <span>Progress tracking</span>
-            </div>
+            {['Certified Quran teachers', 'Flexible scheduling', 'Progress tracking'].map((item) => (
+              <div key={item} className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+                  <CheckCircle className="w-3.5 h-3.5 text-[#C8A951]" />
+                </div>
+                <span className="text-[15px] text-white/80">{item}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* Right Side - Auth Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-8 bg-[#FBFBFD]">
+        <div className="w-full max-w-[400px]">
           {/* Back Button */}
           <button
             onClick={() => {
@@ -489,19 +485,18 @@ export default function Auth() {
                 navigate('/');
               }
             }}
-            className="flex items-center gap-2 text-sm mb-8 transition-opacity hover:opacity-70"
-            style={{ color: '#5A5A5A' }}
+            className="flex items-center gap-2 text-[13px] font-medium mb-8 text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-3.5 h-3.5" />
             {mode === 'profile' ? 'Back to questions' : 'Back to home'}
           </button>
 
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-[#0F3D2E] flex items-center justify-center">
+          <div className="lg:hidden flex items-center gap-2.5 mb-8">
+            <div className="w-10 h-10 rounded-2xl bg-[#0F3D2E] flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold" style={{ color: '#0F3D2E',  }}>
+            <span className="text-lg font-semibold text-[#0F3D2E] tracking-tight">
               Alif Amin Academy
             </span>
           </div>
