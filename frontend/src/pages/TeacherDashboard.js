@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, AlertCircle, CheckCircle, Bell, Video } from 'lucide-react';
+import { LogOut, AlertCircle, CheckCircle, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import NotificationBell from '../components/NotificationBell';
-
-// Import modular components
 import {
   TeacherSidebar,
   EarningsWallet,
@@ -18,6 +16,15 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+const SECTION_TITLES = {
+  dashboard: 'Dashboard',
+  wallet: 'Earnings Wallet',
+  availability: 'Availability',
+  classroom: 'Classroom Tools',
+  students: 'Student Management',
+  profile: 'Profile',
+};
+
 export default function TeacherDashboard({ user }) {
   const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
@@ -28,62 +35,39 @@ export default function TeacherDashboard({ user }) {
   const [students, setStudents] = useState([]);
   const [commissionInfo, setCommissionInfo] = useState(null);
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
+  useEffect(() => { fetchDashboard(); }, []);
 
   const fetchCommissionInfo = async (teacherId) => {
     try {
-      const response = await fetch(`${API}/commission/tutor/${teacherId}`, {
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setCommissionInfo(data);
-      }
-    } catch (error) {
-      console.error('Error fetching commission info:', error);
-    }
+      const response = await fetch(`${API}/commission/tutor/${teacherId}`, { credentials: 'include' });
+      if (response.ok) setCommissionInfo(await response.json());
+    } catch (error) { console.error('Error fetching commission info:', error); }
   };
 
   const fetchDashboard = async () => {
     try {
-      const response = await fetch(`${API}/teachers/dashboard`, {
-        credentials: 'include'
-      });
+      const response = await fetch(`${API}/teachers/dashboard`, { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
         setDashboardData(data);
-        if (data.teacher?.approval_status === 'pending' || data.teacher?.is_active === false) {
-          setIsPendingApproval(true);
-        }
+        if (data.teacher?.approval_status === 'pending' || data.teacher?.is_active === false) setIsPendingApproval(true);
         if (data.teacher?.teacher_id && data.teacher?.is_active) {
           fetchStudents(data.teacher.teacher_id);
           fetchCommissionInfo(data.teacher.teacher_id);
         }
       }
-    } catch (error) {
-      console.error('Error fetching dashboard:', error);
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { console.error('Error fetching dashboard:', error); }
+    finally { setLoading(false); }
   };
 
   const fetchStudents = async (teacherId) => {
     try {
-      const response = await fetch(`${API}/teachers/${teacherId}/students`, {
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setStudents(data.students || []);
-      }
+      const response = await fetch(`${API}/teachers/${teacherId}/students`, { credentials: 'include' });
+      if (response.ok) { const data = await response.json(); setStudents(data.students || []); }
     } catch (error) {
-      // Mock students for demo
       setStudents([
         { student_id: '1', name: 'Ahmad bin Ali', current_level: "Iqra' Vol 4", last_session: '2026-01-25', status: 'active' },
         { student_id: '2', name: 'Sarah Abdullah', current_level: 'Juz 29', last_session: '2026-01-20', status: 'active' },
-        { student_id: '3', name: 'Muhammad Hafiz', current_level: "Iqra' Vol 2", last_session: '2026-01-10', status: 'active' },
       ]);
     }
   };
@@ -91,41 +75,38 @@ export default function TeacherDashboard({ user }) {
   const handleLogout = async () => {
     try {
       await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' });
+      document.cookie = 'session_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
       navigate('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+    } catch (error) { console.error('Logout error:', error); }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: '#F7F5EF' }}>
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F3D2E]"></div>
+      <div className="min-h-screen bg-[#FBFBFD] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[#0F3D2E] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-gray-400">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  // Pending approval view
   if (isPendingApproval) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#F7F5EF' }}>
-        <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-lg">
-          <div className="w-16 h-16 rounded-full bg-[#D4AF37] bg-opacity-10 flex items-center justify-center mx-auto mb-4">
-            <AlertCircle className="w-8 h-8" style={{ color: '#D4AF37' }} />
+      <div className="min-h-screen bg-[#FBFBFD] flex items-center justify-center p-4">
+        <div className="apple-card p-10 max-w-md text-center">
+          <div className="w-16 h-16 rounded-2xl bg-[#C8A951]/10 flex items-center justify-center mx-auto mb-5">
+            <AlertCircle className="w-7 h-7 text-[#C8A951]" />
           </div>
-          <h2 className="text-2xl font-bold mb-2" style={{ color: '#0F3D2E' }}>Application Under Review</h2>
-          <p className="text-gray-500 mb-6">
-            Thank you for registering! Your application is being reviewed by our team. 
-            You'll receive an email once approved.
+          <h2 className="text-2xl font-semibold text-[#1D1D1F] tracking-tight mb-2">Application Under Review</h2>
+          <p className="text-gray-500 text-[15px] leading-relaxed mb-6">
+            Thank you for registering! Your application is being reviewed by our team. You'll receive an email once approved.
           </p>
-          <div className="flex items-center justify-center gap-2 text-sm" style={{ color: '#2EB6A0' }}>
+          <div className="flex items-center justify-center gap-2 text-sm text-[#34C759]">
             <CheckCircle className="w-4 h-4" />
             <span>Profile created successfully</span>
           </div>
-          <button
-            onClick={handleLogout}
-            className="mt-6 text-sm text-gray-500 hover:text-gray-700"
-          >
+          <button onClick={handleLogout} className="mt-6 text-sm text-gray-400 hover:text-gray-600 transition-colors">
             Sign out
           </button>
         </div>
@@ -134,112 +115,52 @@ export default function TeacherDashboard({ user }) {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#F7F5EF' }}>
-      {/* Sidebar */}
-      <TeacherSidebar 
-        activeSection={activeSection} 
-        setActiveSection={setActiveSection} 
-        isCollapsed={sidebarCollapsed} 
-        setIsCollapsed={setSidebarCollapsed} 
-      />
+    <div className="min-h-screen bg-[#FBFBFD]">
+      <TeacherSidebar activeSection={activeSection} setActiveSection={setActiveSection} isCollapsed={sidebarCollapsed} setIsCollapsed={setSidebarCollapsed} />
 
-      {/* Main Content */}
-      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
-        {/* Top Header */}
-        <header className="sticky top-0 z-40 bg-white border-b px-6 py-4" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>
-                {activeSection === 'dashboard' && 'Dashboard'}
-                {activeSection === 'wallet' && 'Earnings Wallet'}
-                {activeSection === 'availability' && 'Availability'}
-                {activeSection === 'classroom' && 'Classroom Tools'}
-                {activeSection === 'students' && 'Student Management'}
-                {activeSection === 'profile' && 'Profile'}
-              </h1>
-            </div>
-            <div className="flex items-center gap-4">
+      <div className={`transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-[68px]' : 'lg:ml-[260px]'} pb-20 lg:pb-24`}>
+        {/* Header */}
+        <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-xl border-b border-gray-200/60">
+          <div className="h-16 flex items-center justify-between px-4 lg:px-8">
+            <h1 className="text-[17px] font-semibold text-[#1D1D1F] tracking-tight">
+              {SECTION_TITLES[activeSection]}
+            </h1>
+            <div className="flex items-center gap-2">
               <NotificationBell userId={user?.user_id} userRole="teacher" />
-              <button
-                onClick={handleLogout}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-all"
-              >
-                <LogOut className="w-5 h-5 text-gray-500" />
+              <button onClick={handleLogout} className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors">
+                <LogOut className="w-[18px] h-[18px] text-gray-400" />
               </button>
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
-        <div className="p-6">
-          {activeSection === 'dashboard' && (
-            <DashboardOverview 
-              teacherData={dashboardData} 
-              students={students} 
-              user={user} 
-              commissionInfo={commissionInfo} 
-            />
-          )}
-          
-          {activeSection === 'wallet' && (
-            <EarningsWallet 
-              teacherData={dashboardData?.teacher} 
-              commissionInfo={commissionInfo} 
-              user={user} 
-            />
-          )}
-          
-          {activeSection === 'availability' && (
-            <AvailabilityCalendar teacherData={dashboardData?.teacher} />
-          )}
-          
-          {activeSection === 'classroom' && (
-            <ClassroomTools 
-              teacherData={dashboardData?.teacher} 
-              students={students} 
-            />
-          )}
-          
-          {activeSection === 'students' && (
-            <StudentManagement 
-              teacherData={dashboardData?.teacher} 
-              students={students} 
-              setStudents={setStudents} 
-            />
-          )}
-          
-          {activeSection === 'profile' && (
-            <ProfileManagement 
-              teacherData={dashboardData?.teacher} 
-              user={user} 
-            />
-          )}
-        </div>
+        <main className="p-4 lg:p-8 animate-fade-in-up">
+          {activeSection === 'dashboard' && <DashboardOverview teacherData={dashboardData} students={students} user={user} commissionInfo={commissionInfo} />}
+          {activeSection === 'wallet' && <EarningsWallet teacherData={dashboardData?.teacher} commissionInfo={commissionInfo} user={user} />}
+          {activeSection === 'availability' && <AvailabilityCalendar teacherData={dashboardData?.teacher} />}
+          {activeSection === 'classroom' && <ClassroomTools teacherData={dashboardData?.teacher} students={students} />}
+          {activeSection === 'students' && <StudentManagement teacherData={dashboardData?.teacher} students={students} setStudents={setStudents} />}
+          {activeSection === 'profile' && <ProfileManagement teacherData={dashboardData?.teacher} user={user} />}
+        </main>
 
-        {/* Footer with Join Classroom CTA */}
-        <div className="fixed bottom-0 right-0 left-0 bg-white border-t p-4" style={{ 
-          marginLeft: sidebarCollapsed ? '64px' : '256px',
-          borderColor: 'rgba(15, 61, 46, 0.1)' 
-        }}>
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
+        {/* Bottom CTA Bar */}
+        <div className="hidden lg:block fixed bottom-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-200/60 px-8 py-3" style={{ left: sidebarCollapsed ? '68px' : '260px' }}>
+          <div className="flex items-center justify-between max-w-5xl mx-auto">
             <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span className="text-sm text-gray-600">Ready for your next class</span>
+              <div className="w-2 h-2 rounded-full bg-[#34C759] animate-pulse" />
+              <span className="text-sm text-gray-500">Ready for your next class</span>
             </div>
             <button
               onClick={() => {
                 const meetLink = dashboardData?.teacher?.meet_link;
-                if (meetLink) {
-                  window.open(meetLink, '_blank');
-                } else {
-                  toast.error('Please add your Google Meet link in Profile settings');
-                }
+                if (meetLink) window.open(meetLink, '_blank');
+                else toast.error('Please add your Google Meet link in Profile settings');
               }}
-              className="h-11 px-6 rounded-xl bg-[#0F3D2E] text-white font-medium flex items-center gap-2 transition-all hover:opacity-90"
               data-testid="enter-classroom-btn"
+              className="apple-btn-primary gap-2"
             >
-              <Video className="w-5 h-5" />
-              Enter Live Classroom
+              <Video className="w-4 h-4" />
+              Enter Classroom
             </button>
           </div>
         </div>
