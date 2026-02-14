@@ -128,10 +128,9 @@ export default function Onboarding() {
       <div className="w-full max-w-2xl mx-auto px-6 py-12">
         <button
           onClick={handleBack}
-          className="flex items-center gap-2 mb-12 text-sm font-medium"
-          className="text-gray-500"
+          className="flex items-center gap-2 mb-12 text-[13px] font-medium text-gray-400 hover:text-gray-600 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-3.5 h-3.5" />
           Back
         </button>
 
@@ -141,10 +140,10 @@ export default function Onboarding() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <p className="text-2xl font-medium mb-2" style={{ color: '#0F3D2E' }}>
+            <p className="text-xl font-semibold mb-2 text-[#0F3D2E] tracking-tight">
               Absolutely no payment required to begin.
             </p>
-            <p className="text-lg font-normal" className="text-gray-500">
+            <p className="text-[15px] text-gray-400">
               Just a few questions to personalise your experience.
             </p>
           </motion.div>
@@ -155,14 +154,13 @@ export default function Onboarding() {
             {questions.map((_, idx) => (
               <div
                 key={idx}
-                className="h-1 flex-1 rounded-full transition-all"
-                style={{
-                  backgroundColor: idx <= step ? '#0F3D2E' : 'rgba(15, 61, 46, 0.1)'
-                }}
+                className={`h-1 flex-1 rounded-full transition-all ${
+                  idx <= step ? 'bg-[#0F3D2E]' : 'bg-gray-200'
+                }`}
               />
             ))}
           </div>
-          <p className="text-sm" className="text-gray-400">
+          <p className="text-[12px] text-gray-400">
             Question {step + 1} of {questions.length}
           </p>
         </div>
@@ -175,14 +173,11 @@ export default function Onboarding() {
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
           >
-            <h2 
-              className="text-4xl md:text-5xl font-semibold mb-12"
-              style={{ color: '#1F2933' }}
-            >
+            <h2 className="text-3xl md:text-4xl font-semibold mb-10 text-[#1D1D1F] tracking-tight">
               {currentQuestion.title}
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {currentQuestion.options.map((option, idx) => (
                 <motion.button
                   key={option.value}
@@ -190,13 +185,14 @@ export default function Onboarding() {
                   onClick={() => handleAnswer(fieldNames[step], option.value)}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  whileHover={{ scale: 1.01, x: 4 }}
-                  whileTap={{ scale: 0.99 }}
-                  className="w-full p-6 rounded-2xl text-left border-2 transition-all"
-                  style={{
-                    borderColor: answers[fieldNames[step]] === option.value ? '#0F3D2E' : 'rgba(15, 61, 46, 0.1)',
-                    backgroundColor: answers[fieldNames[step]] === option.value ? 'rgba(15, 61, 46, 0.03)' : '#FFFFFF',
+                  transition={{ delay: idx * 0.08 }}
+                  whileHover={{ scale: 1.005 }}
+                  whileTap={{ scale: 0.995 }}
+                  className={`w-full p-5 rounded-2xl text-left border transition-all ${
+                    answers[fieldNames[step]] === option.value
+                      ? 'border-[#0F3D2E] bg-[#0F3D2E]/[0.03]'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
                     
                   }}
                 >
