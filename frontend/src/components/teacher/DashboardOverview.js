@@ -1,28 +1,26 @@
 import React from 'react';
 import { DollarSign, Users, Calendar, Star, Clock, Video, Award, Circle } from 'lucide-react';
+import Card from '../Card';
+import Badge from '../Badge';
 
 export default function DashboardOverview({ teacherData, students, user, commissionInfo }) {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-br from-[#0F3D2E] to-[#1a5c47] rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-br from-brand to-brand-light rounded-lg p-6 text-white">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold mb-2" data-testid="welcome-message">Welcome back, {user?.name?.split(' ')[0]}!</h1>
-            <p className="opacity-80">Here's your teaching overview for today</p>
+            <h1 className="text-h2 font-bold mb-2" data-testid="welcome-message">Welcome back, {user?.name?.split(' ')[0]}!</h1>
+            <p className="text-white/70 text-body">Here's your teaching overview for today</p>
           </div>
           {commissionInfo && (
-            <div 
-              className="flex items-center gap-2 px-4 py-2 rounded-xl"
-              style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)' }}
-              data-testid="tier-badge"
-            >
+            <div className="flex items-center gap-2 px-4 py-2 rounded-md bg-white/20" data-testid="tier-badge">
               {commissionInfo.tier_level === 'elite' && <Award className="w-5 h-5" />}
               {commissionInfo.tier_level === 'rated' && <Star className="w-5 h-5" />}
               {commissionInfo.tier_level === 'new' && <Circle className="w-5 h-5" />}
               <div>
-                <p className="text-sm font-semibold">{commissionInfo.tier_name}</p>
-                <p className="text-xs opacity-80">{Math.round((1 - commissionInfo.commission_rate) * 100)}% earnings rate</p>
+                <p className="text-small font-semibold">{commissionInfo.tier_name}</p>
+                <p className="text-caption text-white/70">{Math.round((1 - commissionInfo.commission_rate) * 100)}% earnings rate</p>
               </div>
             </div>
           )}
@@ -31,62 +29,46 @@ export default function DashboardOverview({ teacherData, students, user, commiss
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4 border" >
-          <DollarSign className="w-8 h-8 mb-2" style={{ color: '#2EB6A0' }} />
-          <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }} data-testid="monthly-earnings">RM {(teacherData?.estimated_earnings || 0).toFixed(0)}</p>
-          <p className="text-xs text-gray-500">This Month</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border" >
-          <Users className="w-8 h-8 mb-2" style={{ color: '#D4AF37' }} />
-          <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }} data-testid="student-count">{students.length}</p>
-          <p className="text-xs text-gray-500">Active Students</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border" >
-          <Calendar className="w-8 h-8 mb-2" style={{ color: '#E76F51' }} />
-          <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }} data-testid="classes-today">{teacherData?.todays_classes?.length || 0}</p>
-          <p className="text-xs text-gray-500">Classes Today</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border" >
-          <Star className="w-8 h-8 mb-2" style={{ color: '#FBBF24' }} fill="#FBBF24" />
-          <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }} data-testid="teacher-rating">{(teacherData?.teacher?.rating || 5.0).toFixed(1)}</p>
-          <p className="text-xs text-gray-500">Your Rating</p>
-        </div>
+        {[
+          { icon: DollarSign, color: 'text-teal', value: `RM ${(teacherData?.estimated_earnings || 0).toFixed(0)}`, label: 'This Month', testId: 'monthly-earnings' },
+          { icon: Users, color: 'text-gold-dark', value: students.length, label: 'Active Students', testId: 'student-count' },
+          { icon: Calendar, color: 'text-coral', value: teacherData?.todays_classes?.length || 0, label: 'Classes Today', testId: 'classes-today' },
+          { icon: Star, color: 'text-warning', value: (teacherData?.teacher?.rating || 5.0).toFixed(1), label: 'Your Rating', testId: 'teacher-rating', fill: true },
+        ].map((stat) => (
+          <Card key={stat.testId} className="p-4">
+            <stat.icon className={`w-8 h-8 mb-2 ${stat.color}`} {...(stat.fill ? { fill: 'currentColor' } : {})} />
+            <p className="text-h2 font-bold text-brand" data-testid={stat.testId}>{stat.value}</p>
+            <p className="text-caption text-ink-secondary">{stat.label}</p>
+          </Card>
+        ))}
       </div>
 
       {/* Today's Schedule */}
-      <div className="bg-white rounded-2xl border" >
-        <div className="p-4 border-b" >
-          <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Today's Schedule</h3>
+      <Card>
+        <div className="px-6 py-4 border-b border-surface-subtle">
+          <h3 className="text-h3 text-brand">Today's Schedule</h3>
         </div>
-        <div className="p-4">
+        <div className="p-6">
           {(!teacherData?.todays_classes || teacherData.todays_classes.length === 0) ? (
             <div className="text-center py-8">
-              <Clock className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-              <p className="text-gray-500">No classes scheduled for today</p>
+              <Clock className="w-12 h-12 mx-auto mb-3 text-ink-faint" />
+              <p className="text-ink-secondary">No classes scheduled for today</p>
             </div>
           ) : (
             <div className="space-y-3">
               {teacherData.todays_classes.map((cls, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-[#F7F5EF]">
+                <div key={idx} className="flex items-center justify-between p-3 rounded-md bg-surface-warm">
                   <div className="flex items-center gap-3">
-                    <div className="w-1 h-10 rounded-full bg-[#0F3D2E]"></div>
+                    <div className="w-1 h-10 rounded-full bg-brand" />
                     <div>
-                      <p className="font-medium" style={{ color: '#1D1D1F' }}>
-                        {new Date(cls.start_time_utc).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
-                      </p>
-                      <p className="text-xs text-gray-500">Student ID: {cls.student_id?.slice(0, 8)}...</p>
+                      <p className="font-medium text-ink">{new Date(cls.start_time_utc).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</p>
+                      <p className="text-caption text-ink-secondary">Student ID: {cls.student_id?.slice(0, 8)}...</p>
                     </div>
                   </div>
                   {cls.meet_link && (
-                    <a
-                      href={cls.meet_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="h-9 px-4 rounded-lg bg-[#0F3D2E] text-white text-sm font-medium flex items-center gap-2"
-                      data-testid="join-class-btn"
-                    >
-                      <Video className="w-4 h-4" />
-                      Join
+                    <a href={cls.meet_link} target="_blank" rel="noopener noreferrer" data-testid="join-class-btn"
+                      className="h-9 px-4 rounded-md bg-brand text-white text-small font-medium flex items-center gap-2 hover:bg-brand-light transition-all">
+                      <Video className="w-4 h-4" />Join
                     </a>
                   )}
                 </div>
@@ -94,7 +76,7 @@ export default function DashboardOverview({ teacherData, students, user, commiss
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
