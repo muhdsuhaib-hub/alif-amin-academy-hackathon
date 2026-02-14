@@ -184,8 +184,8 @@ export default function FinancialReports() {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={monthlyRevenueData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" stroke="#9CA3AF" style={{ fontSize: '12px',  }} />
-              <YAxis stroke="#9CA3AF" style={{ fontSize: '12px',  }} />
+              <XAxis dataKey="month" stroke="#9CA3AF" style={{ fontSize: '12px' }} />
+              <YAxis stroke="#9CA3AF" style={{ fontSize: '12px' }} />
               <Tooltip />
               <Legend />
               <Line type="monotone" dataKey="revenue" stroke="#0F3D2E" strokeWidth={2} name="Revenue (RM)" />

@@ -317,8 +317,8 @@ export default function AdminDashboard({ user }) {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="month" stroke="#9CA3AF" style={{ fontSize: '12px',  }} />
-                    <YAxis stroke="#9CA3AF" style={{ fontSize: '12px',  }} />
+                    <XAxis dataKey="month" stroke="#9CA3AF" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#9CA3AF" style={{ fontSize: '12px' }} />
                     <Tooltip />
                     <Area type="monotone" dataKey="users" stroke="#0F3D2E" fillOpacity={1} fill="url(#colorUsers)" />
                   </AreaChart>
@@ -330,8 +330,8 @@ export default function AdminDashboard({ user }) {
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={revenueData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="month" stroke="#9CA3AF" style={{ fontSize: '12px',  }} />
-                    <YAxis stroke="#9CA3AF" style={{ fontSize: '12px',  }} />
+                    <XAxis dataKey="month" stroke="#9CA3AF" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#9CA3AF" style={{ fontSize: '12px' }} />
                     <Tooltip />
                     <Line type="monotone" dataKey="revenue" stroke="#2EB6A0" strokeWidth={2} />
                   </LineChart>
@@ -343,8 +343,8 @@ export default function AdminDashboard({ user }) {
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={attendanceData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="day" stroke="#9CA3AF" style={{ fontSize: '12px',  }} />
-                    <YAxis stroke="#9CA3AF" style={{ fontSize: '12px',  }} />
+                    <XAxis dataKey="day" stroke="#9CA3AF" style={{ fontSize: '12px' }} />
+                    <YAxis stroke="#9CA3AF" style={{ fontSize: '12px' }} />
                     <Tooltip />
                     <Bar dataKey="rate" fill="#C8A951" radius={[8, 8, 0, 0]} />
                   </BarChart>

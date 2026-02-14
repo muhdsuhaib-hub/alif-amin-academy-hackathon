@@ -42,7 +42,7 @@ export default function Landing() {
               data-testid="login-button"
               onClick={handleLogin}
               className="h-10 px-6 rounded-full text-sm font-medium transition-all hover:bg-opacity-5"
-              style={{ color: '#0F3D2E', border: '1px solid rgba(15, 61, 46, 0.2)',  }}
+              style={{ color: '#0F3D2E', border: '1px solid rgba(15, 61, 46, 0.2)' }}
             >
               Log In
             </button>
@@ -50,7 +50,7 @@ export default function Landing() {
               data-testid="signup-button"
               onClick={handleGetStarted}
               className="h-10 px-6 rounded-full text-white text-sm font-medium transition-all hover:scale-105"
-              style={{ backgroundColor: '#0F3D2E', , fontWeight: 600 }}
+              style={{ backgroundColor: '#0F3D2E', fontWeight: 600 }}
             >
               Sign Up
             </button>
@@ -90,7 +90,7 @@ export default function Landing() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="mt-12 h-16 px-12 rounded-full text-white text-lg font-semibold shadow-soft"
-              style={{ backgroundColor: '#0F3D2E',  }}
+              style={{ backgroundColor: '#0F3D2E' }}
             >
               Start Absolutely Free
             </motion.button>
@@ -180,7 +180,7 @@ export default function Landing() {
               >
                 <div 
                   className="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-3xl font-bold text-white"
-                  style={{ backgroundColor: '#0F3D2E',  }}
+                  style={{ backgroundColor: '#0F3D2E' }}
                 >
                   {step.number}
                 </div>
@@ -201,7 +201,7 @@ export default function Landing() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="h-14 px-10 rounded-full text-white text-base font-semibold shadow-soft"
-              style={{ backgroundColor: '#0F3D2E',  }}
+              style={{ backgroundColor: '#0F3D2E' }}
             >
               Begin Free Trial
             </motion.button>
