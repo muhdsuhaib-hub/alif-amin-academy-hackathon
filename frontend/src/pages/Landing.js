@@ -35,14 +35,14 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 glass-effect">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-5 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="text-3xl font-semibold tracking-tight" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>Alif Amin Academy</div>
+            <div className="text-3xl font-semibold tracking-tight" style={{ color: '#0F3D2E',  }}>Alif Amin Academy</div>
           </div>
           <div className="flex items-center gap-3">
             <button
               data-testid="login-button"
               onClick={handleLogin}
               className="h-10 px-6 rounded-full text-sm font-medium transition-all hover:bg-opacity-5"
-              style={{ color: '#0F3D2E', border: '1px solid rgba(15, 61, 46, 0.2)', fontFamily: 'Cal Sans', fontWeight: 500 }}
+              style={{ color: '#0F3D2E', border: '1px solid rgba(15, 61, 46, 0.2)',  }}
             >
               Log In
             </button>
@@ -50,7 +50,7 @@ export default function Landing() {
               data-testid="signup-button"
               onClick={handleGetStarted}
               className="h-10 px-6 rounded-full text-white text-sm font-medium transition-all hover:scale-105"
-              style={{ backgroundColor: '#0F3D2E', fontFamily: 'Cal Sans', fontWeight: 600 }}
+              style={{ backgroundColor: '#0F3D2E', , fontWeight: 600 }}
             >
               Sign Up
             </button>
@@ -79,7 +79,7 @@ export default function Landing() {
             
             <p 
               className="text-xl md:text-2xl mb-4 font-medium tracking-wide"
-              style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}
+              style={{ color: '#5A5A5A',  }}
             >
               From Alif to Amin. Guided Every Step.
             </p>
@@ -90,12 +90,12 @@ export default function Landing() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="mt-12 h-16 px-12 rounded-full text-white text-lg font-semibold shadow-soft"
-              style={{ backgroundColor: '#0F3D2E', fontFamily: 'Cal Sans' }}
+              style={{ backgroundColor: '#0F3D2E',  }}
             >
               Start Absolutely Free
             </motion.button>
 
-            <p className="mt-4 text-sm font-normal" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+            <p className="mt-4 text-sm font-normal" style={{ color: '#9CA3AF',  }}>
               No card required
             </p>
           </motion.div>
@@ -115,21 +115,21 @@ export default function Landing() {
             className="space-y-12"
           >
             <div className="space-y-6">
-              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933',  }}>
                 Guided for beginners and families
               </p>
               <div className="w-24 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
             </div>
 
             <div className="space-y-6">
-              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933',  }}>
                 Personalised after just 3 simple questions
               </p>
               <div className="w-24 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
             </div>
 
             <div className="space-y-6">
-              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933',  }}>
                 No payment or commitment upfront
               </p>
             </div>
@@ -147,7 +147,7 @@ export default function Landing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-4xl md:text-5xl font-semibold text-center mb-20 tracking-tight"
-            style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}
+            style={{ color: '#0F3D2E',  }}
           >
             How It Starts
           </motion.h2>
@@ -180,14 +180,14 @@ export default function Landing() {
               >
                 <div 
                   className="w-20 h-20 rounded-full mx-auto flex items-center justify-center text-3xl font-bold text-white"
-                  style={{ backgroundColor: '#0F3D2E', fontFamily: 'Cal Sans' }}
+                  style={{ backgroundColor: '#0F3D2E',  }}
                 >
                   {step.number}
                 </div>
-                <h3 className="text-xl font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+                <h3 className="text-xl font-semibold" style={{ color: '#1F2933',  }}>
                   {step.title}
                 </h3>
-                <p className="text-base font-normal" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+                <p className="text-base font-normal" style={{ color: '#5A5A5A',  }}>
                   {step.description}
                 </p>
               </motion.div>
@@ -201,7 +201,7 @@ export default function Landing() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="h-14 px-10 rounded-full text-white text-base font-semibold shadow-soft"
-              style={{ backgroundColor: '#0F3D2E', fontFamily: 'Cal Sans' }}
+              style={{ backgroundColor: '#0F3D2E',  }}
             >
               Begin Free Trial
             </motion.button>
@@ -221,14 +221,14 @@ export default function Landing() {
             className="space-y-16"
           >
             <div className="text-center space-y-8">
-              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A',  }}>
                 "A calm and respectful approach to learning. Perfect for our family."
               </p>
               <div className="w-32 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
             </div>
 
             <div className="text-center space-y-8">
-              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A',  }}>
                 "No pressure, just genuine guidance. Exactly what we needed."
               </p>
             </div>
@@ -239,11 +239,11 @@ export default function Landing() {
       <footer className="py-16 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="text-2xl font-semibold tracking-tight" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+            <div className="text-2xl font-semibold tracking-tight" style={{ color: '#0F3D2E',  }}>
               Alif Amin
             </div>
             
-            <div className="flex gap-8 text-sm font-medium" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
+            <div className="flex gap-8 text-sm font-medium" style={{ color: '#5A5A5A',  }}>
               <a href="#" className="hover:opacity-70 transition-opacity">About</a>
               <a href="#" className="hover:opacity-70 transition-opacity">Contact</a>
               <a href="#" className="hover:opacity-70 transition-opacity">Privacy</a>
@@ -251,7 +251,7 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="text-center mt-8 text-sm font-normal" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+          <div className="text-center mt-8 text-sm font-normal" style={{ color: '#9CA3AF',  }}>
             © 2025 Alif Amin. From Alif to Amin. Guided Every Step.
           </div>
         </div>

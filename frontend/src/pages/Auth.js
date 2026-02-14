@@ -449,10 +449,10 @@ export default function Auth() {
             <div className="w-14 h-14 rounded-xl bg-white bg-opacity-20 flex items-center justify-center">
               <BookOpen className="w-7 h-7" />
             </div>
-            <span className="text-2xl font-bold" style={{ fontFamily: 'Cal Sans' }}>Alif Amin Academy</span>
+            <span className="text-2xl font-bold" style={{  }}>Alif Amin Academy</span>
           </div>
           
-          <h1 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Cal Sans' }}>
+          <h1 className="text-4xl font-bold mb-4" style={{  }}>
             Begin Your Quran Journey Today
           </h1>
           <p className="text-lg opacity-80 mb-8">
@@ -501,7 +501,7 @@ export default function Auth() {
             <div className="w-10 h-10 rounded-xl bg-[#0F3D2E] flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+            <span className="text-xl font-bold" style={{ color: '#0F3D2E',  }}>
               Alif Amin Academy
             </span>
           </div>
@@ -515,7 +515,7 @@ export default function Auth() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <h2 className="text-3xl font-bold mb-2" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+                <h2 className="text-3xl font-bold mb-2" style={{ color: '#0F3D2E',  }}>
                   Welcome Back
                 </h2>
                 <p className="text-gray-500 mb-8">Log in to continue your learning journey</p>
@@ -623,7 +623,7 @@ export default function Auth() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <h2 className="text-3xl font-bold mb-2" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+                <h2 className="text-3xl font-bold mb-2" style={{ color: '#0F3D2E',  }}>
                   Complete Your Profile
                 </h2>
                 <p className="text-gray-500 mb-8">Tell us a bit about yourself</p>

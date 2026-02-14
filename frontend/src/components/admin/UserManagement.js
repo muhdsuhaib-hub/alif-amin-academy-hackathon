@@ -261,7 +261,7 @@ export default function UserManagement() {
         {showFilters && (
           <div className="border-t pt-4 mt-4" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
             <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium" style={{ color: '#1F2933' }}>Filter Options</h4>
+              <h4 className="font-medium" style={{ color: '#1D1D1F' }}>Filter Options</h4>
               <button
                 onClick={clearFilters}
                 className="text-sm text-gray-500 hover:text-gray-700"
@@ -374,7 +374,7 @@ export default function UserManagement() {
                             {user.name?.charAt(0) || 'U'}
                           </div>
                           <div>
-                            <p className="font-medium text-sm" style={{ color: '#1F2933' }}>{user.name || 'Unknown'}</p>
+                            <p className="font-medium text-sm" style={{ color: '#1D1D1F' }}>{user.name || 'Unknown'}</p>
                             <p className="text-xs text-gray-400">{user.auth_provider || 'google'}</p>
                           </div>
                         </div>
@@ -488,7 +488,7 @@ export default function UserManagement() {
             
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Full Name</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F' }}>Full Name</label>
                 <input
                   type="text"
                   value={selectedUser.name || ''}
@@ -499,7 +499,7 @@ export default function UserManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Email</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F' }}>Email</label>
                 <input
                   type="email"
                   value={selectedUser.email || ''}
@@ -510,7 +510,7 @@ export default function UserManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Phone</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F' }}>Phone</label>
                 <input
                   type="tel"
                   value={selectedUser.phone || ''}
@@ -521,7 +521,7 @@ export default function UserManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Role</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F' }}>Role</label>
                 <select
                   value={selectedUser.role || 'student'}
                   onChange={(e) => setSelectedUser({ ...selectedUser, role: e.target.value })}
@@ -535,7 +535,7 @@ export default function UserManagement() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>Timezone</label>
+                <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F' }}>Timezone</label>
                 <input
                   type="text"
                   value={selectedUser.timezone || ''}

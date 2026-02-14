@@ -142,7 +142,7 @@ export default function DashboardHome({ bookings, onOpenBooking }) {
               <div key={b.booking_id} className="p-4 rounded-xl bg-gray-50 border border-gray-100">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="font-medium text-sm" style={{ color: '#1F2933' }}>
+                    <p className="font-medium text-sm" style={{ color: '#1D1D1F' }}>
                       {new Date(b.start_time_utc).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                     </p>
                     <p className="text-sm text-gray-500">{b.teacher_name || 'Teacher'} &middot; {b.duration_minutes || 30} min</p>

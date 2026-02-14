@@ -83,7 +83,7 @@ export default function StudentManagement({ teacherData, students, setStudents }
                         <div className="w-9 h-9 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
                           {student.name?.charAt(0) || 'S'}
                         </div>
-                        <span className="font-medium text-sm" style={{ color: '#1F2933' }}>{student.name || 'Unknown'}</span>
+                        <span className="font-medium text-sm" style={{ color: '#1D1D1F' }}>{student.name || 'Unknown'}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3">

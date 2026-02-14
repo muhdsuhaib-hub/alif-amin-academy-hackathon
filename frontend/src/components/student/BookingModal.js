@@ -222,7 +222,7 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user, preSele
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate" style={{ color: '#1F2933' }}>{t.name}</p>
+                          <p className="font-medium text-sm truncate" style={{ color: '#1D1D1F' }}>{t.name}</p>
                           <div className="flex items-center gap-2 text-xs text-gray-500">
                             {t.specializations?.length > 0 && (
                               <span>{t.specializations.slice(0, 2).join(', ')}</span>

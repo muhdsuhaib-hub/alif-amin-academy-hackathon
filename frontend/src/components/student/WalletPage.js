@@ -277,7 +277,7 @@ export default function WalletPage({ user }) {
                       {getTransactionIcon(tx.transaction_type)}
                     </div>
                     <div>
-                      <p className="font-medium text-sm" style={{ color: '#1F2933' }}>{tx.description}</p>
+                      <p className="font-medium text-sm" style={{ color: '#1D1D1F' }}>{tx.description}</p>
                       <p className="text-xs text-gray-400">{formatDate(tx.created_at)}</p>
                     </div>
                   </div>

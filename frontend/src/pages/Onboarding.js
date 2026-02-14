@@ -129,7 +129,7 @@ export default function Onboarding() {
         <button
           onClick={handleBack}
           className="flex items-center gap-2 mb-12 text-sm font-medium"
-          style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}
+          style={{ color: '#5A5A5A',  }}
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -141,10 +141,10 @@ export default function Onboarding() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <p className="text-2xl font-medium mb-2" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+            <p className="text-2xl font-medium mb-2" style={{ color: '#0F3D2E',  }}>
               Absolutely no payment required to begin.
             </p>
-            <p className="text-lg font-normal" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+            <p className="text-lg font-normal" style={{ color: '#5A5A5A',  }}>
               Just a few questions to personalise your experience.
             </p>
           </motion.div>
@@ -162,7 +162,7 @@ export default function Onboarding() {
               />
             ))}
           </div>
-          <p className="text-sm" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+          <p className="text-sm" style={{ color: '#9CA3AF',  }}>
             Question {step + 1} of {questions.length}
           </p>
         </div>
@@ -177,7 +177,7 @@ export default function Onboarding() {
           >
             <h2 
               className="text-4xl md:text-5xl font-semibold mb-12"
-              style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}
+              style={{ color: '#1F2933',  }}
             >
               {currentQuestion.title}
             </h2>
@@ -197,7 +197,7 @@ export default function Onboarding() {
                   style={{
                     borderColor: answers[fieldNames[step]] === option.value ? '#0F3D2E' : 'rgba(15, 61, 46, 0.1)',
                     backgroundColor: answers[fieldNames[step]] === option.value ? 'rgba(15, 61, 46, 0.03)' : '#FFFFFF',
-                    fontFamily: 'Cal Sans'
+                    
                   }}
                 >
                   <div className="flex items-start justify-between">

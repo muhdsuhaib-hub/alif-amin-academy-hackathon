@@ -227,7 +227,7 @@ export default function WithdrawalManagement() {
         <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3">
             <AlertCircle className="w-5 h-5" style={{ color: '#D4AF37' }} />
-            <h3 className="text-lg font-semibold" style={{ color: '#1F2933' }}>
+            <h3 className="text-lg font-semibold" style={{ color: '#1D1D1F' }}>
               Pending Withdrawal Requests
             </h3>
             {pendingWithdrawals.length > 0 && (
@@ -261,7 +261,7 @@ export default function WithdrawalManagement() {
                       {wd.teacher_info?.name?.charAt(0) || 'T'}
                     </div>
                     <div>
-                      <p className="font-medium" style={{ color: '#1F2933' }}>{wd.teacher_info?.name || 'Unknown'}</p>
+                      <p className="font-medium" style={{ color: '#1D1D1F' }}>{wd.teacher_info?.name || 'Unknown'}</p>
                       <p className="text-xs text-gray-500">{wd.teacher_info?.email} • {wd.teacher_info?.tier_level} tier</p>
                     </div>
                   </div>
@@ -273,7 +273,7 @@ export default function WithdrawalManagement() {
 
                 <div className="bg-gray-50 rounded-lg p-3 mb-3">
                   <p className="text-xs text-gray-500 mb-1">Bank Details</p>
-                  <p className="text-sm font-medium" style={{ color: '#1F2933' }}>
+                  <p className="text-sm font-medium" style={{ color: '#1D1D1F' }}>
                     {wd.bank_name} - {wd.account_number}
                   </p>
                   <p className="text-sm text-gray-600">{wd.account_holder_name}</p>
@@ -322,7 +322,7 @@ export default function WithdrawalManagement() {
           style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}
           onClick={() => setShowAllWithdrawals(!showAllWithdrawals)}
         >
-          <h3 className="text-lg font-semibold" style={{ color: '#1F2933' }}>
+          <h3 className="text-lg font-semibold" style={{ color: '#1D1D1F' }}>
             Withdrawal History
           </h3>
           <div className="flex items-center gap-3">
@@ -362,7 +362,7 @@ export default function WithdrawalManagement() {
                   <tr key={wd.withdrawal_id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div>
-                        <p className="font-medium text-sm" style={{ color: '#1F2933' }}>{wd.teacher_info?.name || 'Unknown'}</p>
+                        <p className="font-medium text-sm" style={{ color: '#1D1D1F' }}>{wd.teacher_info?.name || 'Unknown'}</p>
                         <p className="text-xs text-gray-500">{wd.teacher_info?.email}</p>
                       </div>
                     </td>
@@ -370,7 +370,7 @@ export default function WithdrawalManagement() {
                       <p className="font-semibold" style={{ color: '#0F3D2E' }}>RM {wd.amount.toFixed(2)}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-sm" style={{ color: '#1F2933' }}>{wd.bank_name}</p>
+                      <p className="text-sm" style={{ color: '#1D1D1F' }}>{wd.bank_name}</p>
                       <p className="text-xs text-gray-500">****{wd.account_number?.slice(-4)}</p>
                     </td>
                     <td className="px-4 py-3">
@@ -405,7 +405,7 @@ export default function WithdrawalManagement() {
             <h3 className="text-xl font-semibold mb-4" style={{ color: '#0F3D2E' }}>Reject Withdrawal</h3>
             
             <div className="bg-gray-50 rounded-lg p-3 mb-4">
-              <p className="text-sm font-medium" style={{ color: '#1F2933' }}>
+              <p className="text-sm font-medium" style={{ color: '#1D1D1F' }}>
                 {selectedWithdrawal.teacher_info?.name}
               </p>
               <p className="text-lg font-bold" style={{ color: '#E76F51' }}>

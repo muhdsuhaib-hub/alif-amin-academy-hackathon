@@ -130,7 +130,7 @@ export default function AvailabilityCalendar({ teacherData }) {
       {/* Availability Grid */}
       <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
         <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-          <h4 className="font-medium" style={{ color: '#1F2933' }}>Upcoming Available Slots</h4>
+          <h4 className="font-medium" style={{ color: '#1D1D1F' }}>Upcoming Available Slots</h4>
         </div>
         
         {availability.length === 0 ? (
@@ -153,7 +153,7 @@ export default function AvailabilityCalendar({ teacherData }) {
                     </span>
                   </div>
                   <div>
-                    <p className="font-medium" style={{ color: '#1F2933' }}>
+                    <p className="font-medium" style={{ color: '#1D1D1F' }}>
                       {convertToLocalTime(slot.start_time_utc)} - {convertToLocalTime(slot.end_time_utc)}
                     </p>
                     <p className="text-xs text-gray-500">{convertToLocalDate(slot.start_time_utc)}</p>

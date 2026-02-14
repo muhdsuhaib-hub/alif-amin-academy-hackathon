@@ -128,7 +128,7 @@ export default function TeacherApprovals() {
       {pendingTeachers.length === 0 ? (
         <div className="bg-white rounded-2xl p-8 text-center" style={{ border: '1px solid rgba(15, 61, 46, 0.1)' }}>
           <CheckCircle className="w-12 h-12 mx-auto mb-4" style={{ color: '#2EB6A0' }} />
-          <h3 className="text-lg font-medium mb-2" style={{ color: '#1F2933' }}>All Caught Up!</h3>
+          <h3 className="text-lg font-medium mb-2" style={{ color: '#1D1D1F' }}>All Caught Up!</h3>
           <p style={{ color: '#5A5A5A' }}>No pending teacher applications to review.</p>
         </div>
       ) : (
@@ -152,7 +152,7 @@ export default function TeacherApprovals() {
 
                   {/* Info */}
                   <div>
-                    <h3 className="text-lg font-semibold" style={{ color: '#1F2933' }}>
+                    <h3 className="text-lg font-semibold" style={{ color: '#1D1D1F' }}>
                       {teacher.user?.name || 'Unknown'}
                     </h3>
                     
@@ -222,13 +222,13 @@ export default function TeacherApprovals() {
                 <XCircle className="w-5 h-5" style={{ color: '#E76F51' }} />
               </div>
               <div>
-                <h3 className="text-lg font-semibold" style={{ color: '#1F2933' }}>Reject Application</h3>
+                <h3 className="text-lg font-semibold" style={{ color: '#1D1D1F' }}>Reject Application</h3>
                 <p className="text-sm" style={{ color: '#5A5A5A' }}>{selectedTeacher.user?.name}</p>
               </div>
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2" style={{ color: '#1F2933' }}>
+              <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F' }}>
                 Reason for Rejection (Optional)
               </label>
               <textarea

@@ -261,7 +261,7 @@ export default function EarningsWallet({ teacherData, commissionInfo, user }) {
                     <CreditCard className="w-5 h-5" style={{ color: '#0F3D2E' }} />
                   </div>
                   <div>
-                    <p className="font-medium text-sm" style={{ color: '#1F2933' }}>
+                    <p className="font-medium text-sm" style={{ color: '#1D1D1F' }}>
                       {wd.bank_name} - ****{wd.account_number?.slice(-4)}
                     </p>
                     <p className="text-xs text-gray-500">
@@ -307,7 +307,7 @@ export default function EarningsWallet({ teacherData, commissionInfo, user }) {
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-sm" style={{ color: '#1F2933' }}>
+                    <p className="font-medium text-sm" style={{ color: '#1D1D1F' }}>
                       {getTransactionTypeLabel(tx.transaction_type)}
                     </p>
                     <p className="text-xs text-gray-500">

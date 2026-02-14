@@ -152,7 +152,7 @@ export default function ClassroomTools({ teacherData, students }) {
                 <h4 className="text-sm font-medium text-gray-700">Previous Notes</h4>
                 {(lessonNotes[selectedStudent.student_id] || []).map(note => (
                   <div key={note.id} className="p-3 rounded-lg bg-[#F7F5EF]">
-                    <p className="text-sm" style={{ color: '#1F2933' }}>{note.note}</p>
+                    <p className="text-sm" style={{ color: '#1D1D1F' }}>{note.note}</p>
                     <p className="text-xs text-gray-500 mt-1">{note.date}</p>
                   </div>
                 ))}
@@ -209,25 +209,25 @@ export default function ClassroomTools({ teacherData, students }) {
                 <div className="absolute top-4 right-4 text-xs text-gray-400">Page {currentPage}</div>
                 
                 <div className="text-right font-arabic leading-loose" style={{ direction: 'rtl' }}>
-                  <p className="text-2xl mb-4" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                  <p className="text-2xl mb-4" style={{ fontFamily: 'Amiri, serif', color: '#1D1D1F' }}>
                     بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                   </p>
-                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1D1D1F' }}>
                     الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ ﴿١﴾
                   </p>
-                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1D1D1F' }}>
                     الرَّحْمَٰنِ الرَّحِيمِ ﴿٢﴾
                   </p>
-                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1D1D1F' }}>
                     مَالِكِ يَوْمِ الدِّينِ ﴿٣﴾
                   </p>
-                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1D1D1F' }}>
                     إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ ﴿٤﴾
                   </p>
-                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1D1D1F' }}>
                     اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ ﴿٥﴾
                   </p>
-                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1F2933' }}>
+                  <p className="text-xl mb-3" style={{ fontFamily: 'Amiri, serif', color: '#1D1D1F' }}>
                     صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ ﴿٦﴾
                   </p>
                 </div>

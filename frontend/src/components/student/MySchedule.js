@@ -15,7 +15,7 @@ const ScheduleCard = ({ booking, onEdit, onCancel }) => {
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="font-medium text-sm" style={{ color: '#1F2933' }}>
+          <p className="font-medium text-sm" style={{ color: '#1D1D1F' }}>
             {new Date(booking.start_time_utc).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
           </p>
           <p className="text-xs text-gray-500">

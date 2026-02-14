@@ -27,7 +27,7 @@ export default function StudentSidebar({ activeTab, setActiveTab, isOpen, setIsO
       `} style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-6 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-          <span className="text-xl font-semibold" style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}>
+          <span className="text-xl font-semibold" style={{ color: '#0F3D2E',  }}>
             Alif Amin
           </span>
           <button 
@@ -45,7 +45,7 @@ export default function StudentSidebar({ activeTab, setActiveTab, isOpen, setIsO
               {user?.name?.charAt(0) || 'S'}
             </div>
             <div>
-              <p className="font-medium text-sm" style={{ color: '#1F2933' }}>{user?.name}</p>
+              <p className="font-medium text-sm" style={{ color: '#1D1D1F' }}>{user?.name}</p>
               <p className="text-xs text-gray-500">Student</p>
             </div>
           </div>

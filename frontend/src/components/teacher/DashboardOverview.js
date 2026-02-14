@@ -71,7 +71,7 @@ export default function DashboardOverview({ teacherData, students, user, commiss
                   <div className="flex items-center gap-3">
                     <div className="w-1 h-10 rounded-full bg-[#0F3D2E]"></div>
                     <div>
-                      <p className="font-medium" style={{ color: '#1F2933' }}>
+                      <p className="font-medium" style={{ color: '#1D1D1F' }}>
                         {new Date(cls.start_time_utc).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
                       </p>
                       <p className="text-xs text-gray-500">Student ID: {cls.student_id?.slice(0, 8)}...</p>

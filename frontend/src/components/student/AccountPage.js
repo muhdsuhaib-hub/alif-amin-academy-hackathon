@@ -10,7 +10,7 @@ export default function AccountPage({ user }) {
               {user?.name?.charAt(0) || 'S'}
             </div>
             <div>
-              <h2 className="text-xl font-semibold" style={{ color: '#1F2933' }}>{user?.name}</h2>
+              <h2 className="text-xl font-semibold" style={{ color: '#1D1D1F' }}>{user?.name}</h2>
               <p className="text-gray-500">{user?.email}</p>
             </div>
           </div>

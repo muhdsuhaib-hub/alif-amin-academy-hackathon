@@ -44,7 +44,7 @@ export default function TeacherSignup() {
           <button
             onClick={() => navigate('/onboarding')}
             className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-70"
-            style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}
+            style={{ color: '#5A5A5A',  }}
           >
             <ArrowLeft className="w-4 h-4" />
             Back
@@ -69,7 +69,7 @@ export default function TeacherSignup() {
               </div>
               <span 
                 className="text-2xl font-semibold"
-                style={{ color: '#0F3D2E', fontFamily: 'Cal Sans' }}
+                style={{ color: '#0F3D2E',  }}
               >
                 Alif Amin Academy
               </span>
@@ -77,13 +77,13 @@ export default function TeacherSignup() {
 
             <h1 
               className="text-4xl md:text-5xl font-semibold mb-4"
-              style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}
+              style={{ color: '#1F2933',  }}
             >
               Join as a Teacher
             </h1>
             <p 
               className="text-lg"
-              style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}
+              style={{ color: '#5A5A5A',  }}
             >
               Share your knowledge and make a difference in students&apos; lives
             </p>
@@ -109,7 +109,7 @@ export default function TeacherSignup() {
                   >
                     <benefit.icon className="w-5 h-5" style={{ color: '#0F3D2E' }} />
                   </div>
-                  <span style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>{benefit.text}</span>
+                  <span style={{ color: '#1F2933',  }}>{benefit.text}</span>
                 </div>
               ))}
             </div>
@@ -129,7 +129,7 @@ export default function TeacherSignup() {
               style={{ 
                 backgroundColor: '#0F3D2E', 
                 color: 'white',
-                fontFamily: 'Cal Sans'
+                
               }}
             >
               {isLoading ? (
@@ -149,7 +149,7 @@ export default function TeacherSignup() {
 
             <p 
               className="text-center text-sm mt-6"
-              style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}
+              style={{ color: '#9CA3AF',  }}
             >
               By continuing, you agree to our Terms of Service
             </p>
@@ -166,10 +166,10 @@ export default function TeacherSignup() {
             <div className="flex items-start gap-3">
               <CheckCircle className="w-5 h-5 mt-0.5" style={{ color: '#D4AF37' }} />
               <div>
-                <p className="text-sm font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+                <p className="text-sm font-medium" style={{ color: '#1F2933',  }}>
                   Application Review
                 </p>
-                <p className="text-sm mt-1" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+                <p className="text-sm mt-1" style={{ color: '#5A5A5A',  }}>
                   After signing up, our team will review your application. You&apos;ll be notified once approved.
                 </p>
               </div>

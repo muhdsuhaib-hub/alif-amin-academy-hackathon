@@ -126,8 +126,8 @@ export default function SubscriptionManagement() {
     <div>
       {/* Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Subscription Management</h2>
-        <p className="text-sm mt-1" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+        <h2 className="text-2xl font-semibold" style={{ color: '#1D1D1F',  }}>Subscription Management</h2>
+        <p className="text-sm mt-1" style={{ color: '#5A5A5A',  }}>
           Manage student subscriptions and trials
         </p>
       </div>
@@ -137,9 +137,9 @@ export default function SubscriptionManagement() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3 mb-2">
             <TrendingUp className="w-5 h-5" style={{ color: '#2EB6A0' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>Active</p>
+            <p className="text-sm font-medium" style={{ color: '#9CA3AF',  }}>Active</p>
           </div>
-          <p className="text-3xl font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+          <p className="text-3xl font-semibold" style={{ color: '#1D1D1F',  }}>
             {overview?.active_subscriptions || 0}
           </p>
         </div>
@@ -147,9 +147,9 @@ export default function SubscriptionManagement() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3 mb-2">
             <Clock className="w-5 h-5" style={{ color: '#C8A951' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>Trial</p>
+            <p className="text-sm font-medium" style={{ color: '#9CA3AF',  }}>Trial</p>
           </div>
-          <p className="text-3xl font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+          <p className="text-3xl font-semibold" style={{ color: '#1D1D1F',  }}>
             {overview?.trial_subscriptions || 0}
           </p>
         </div>
@@ -157,9 +157,9 @@ export default function SubscriptionManagement() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3 mb-2">
             <Pause className="w-5 h-5" style={{ color: '#E76F51' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>Paused</p>
+            <p className="text-sm font-medium" style={{ color: '#9CA3AF',  }}>Paused</p>
           </div>
-          <p className="text-3xl font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+          <p className="text-3xl font-semibold" style={{ color: '#1D1D1F',  }}>
             {overview?.paused_subscriptions || 0}
           </p>
         </div>
@@ -167,9 +167,9 @@ export default function SubscriptionManagement() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3 mb-2">
             <XCircle className="w-5 h-5" style={{ color: '#9CA3AF' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>Cancelled</p>
+            <p className="text-sm font-medium" style={{ color: '#9CA3AF',  }}>Cancelled</p>
           </div>
-          <p className="text-3xl font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+          <p className="text-3xl font-semibold" style={{ color: '#1D1D1F',  }}>
             {overview?.cancelled_subscriptions || 0}
           </p>
         </div>
@@ -180,17 +180,17 @@ export default function SubscriptionManagement() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border mb-8" style={{ borderColor: 'rgba(231, 111, 81, 0.3)', backgroundColor: '#FFF9E6' }}>
           <div className="flex items-center gap-3 mb-4">
             <AlertTriangle className="w-5 h-5" style={{ color: '#E76F51' }} />
-            <h3 className="text-lg font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+            <h3 className="text-lg font-semibold" style={{ color: '#1D1D1F',  }}>
               Trials Expiring Soon ({overview.trials_expiring_soon.length})
             </h3>
           </div>
           <div className="grid gap-3">
             {overview.trials_expiring_soon.slice(0, 5).map((student, idx) => (
               <div key={idx} className="p-3 rounded-lg bg-white">
-                <p className="text-sm font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+                <p className="text-sm font-medium" style={{ color: '#1D1D1F',  }}>
                   {student.student_name || 'Unknown Student'}
                 </p>
-                <p className="text-xs" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>
+                <p className="text-xs" style={{ color: '#5A5A5A',  }}>
                   {student.student_email || ''}
                 </p>
               </div>
@@ -205,11 +205,11 @@ export default function SubscriptionManagement() {
           <table className="w-full">
             <thead style={{ backgroundColor: '#F7F5EF' }}>
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Student</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Status</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Plan</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Next Billing</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>Actions</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: '#1D1D1F',  }}>Student</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: '#1D1D1F',  }}>Status</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: '#1D1D1F',  }}>Plan</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: '#1D1D1F',  }}>Next Billing</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold" style={{ color: '#1D1D1F',  }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -219,8 +219,8 @@ export default function SubscriptionManagement() {
                   <tr key={idx} className="border-t hover:bg-gray-50 transition-colors" style={{ borderColor: 'rgba(15, 61, 46, 0.05)' }}>
                     <td className="px-6 py-4">
                       <div>
-                        <p className="font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>{student.name}</p>
-                        <p className="text-sm" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>{student.email}</p>
+                        <p className="font-medium" style={{ color: '#1D1D1F',  }}>{student.name}</p>
+                        <p className="text-sm" style={{ color: '#9CA3AF',  }}>{student.email}</p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -229,19 +229,19 @@ export default function SubscriptionManagement() {
                         style={{
                           backgroundColor: statusColors.bg,
                           color: statusColors.text,
-                          fontFamily: 'Cal Sans'
+                          
                         }}
                       >
                         {student.student_info.subscription_status}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <p style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
+                      <p style={{ color: '#5A5A5A',  }}>
                         {student.student_info.subscription_plan || 'No plan'}
                       </p>
                     </td>
                     <td className="px-6 py-4">
-                      <p style={{ color: '#5A5A5A', fontFamily: 'Cal Sans' }}>
+                      <p style={{ color: '#5A5A5A',  }}>
                         {formatDate(student.student_info.next_billing_date)}
                       </p>
                     </td>
@@ -302,13 +302,13 @@ export default function SubscriptionManagement() {
         >
           <div className="space-y-4">
             <div className="p-4 rounded-xl" style={{ backgroundColor: '#F7F5EF' }}>
-              <p className="text-sm mb-1" style={{ color: '#9CA3AF', fontFamily: 'Cal Sans', fontWeight: 300 }}>Student</p>
-              <p className="font-medium" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>{selectedStudent.name}</p>
-              <p className="text-sm" style={{ color: '#5A5A5A', fontFamily: 'Cal Sans', fontWeight: 300 }}>{selectedStudent.email}</p>
+              <p className="text-sm mb-1" style={{ color: '#9CA3AF',  }}>Student</p>
+              <p className="font-medium" style={{ color: '#1D1D1F',  }}>{selectedStudent.name}</p>
+              <p className="text-sm" style={{ color: '#5A5A5A',  }}>{selectedStudent.email}</p>
             </div>
 
             <div className="p-4 rounded-xl border-l-4" style={{ backgroundColor: '#FFF9E6', borderLeftColor: '#C8A951' }}>
-              <p className="text-sm" style={{ color: '#1F2933', fontFamily: 'Cal Sans' }}>
+              <p className="text-sm" style={{ color: '#1D1D1F',  }}>
                 {action === 'pause' && 'This will pause the student\'s subscription. They won\'t be charged until resumed.'}
                 {action === 'resume' && 'This will reactivate the student\'s subscription and billing.'}
                 {action === 'extend_trial' && 'This will extend the trial period by 7 days.'}
