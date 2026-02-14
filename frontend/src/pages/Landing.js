@@ -236,7 +236,7 @@ export default function Landing() {
         </div>
       </motion.section>
 
-      <footer className="py-16 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+      <footer className="py-16 border-t" >
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
             <div className="text-2xl font-semibold tracking-tight" style={{ color: '#0F3D2E',  }}>

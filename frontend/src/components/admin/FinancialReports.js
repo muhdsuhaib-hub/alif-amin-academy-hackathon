@@ -131,7 +131,7 @@ export default function FinancialReports() {
 
       {/* Revenue Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
           <div className="flex items-center gap-3 mb-2">
             <DollarSign className="w-5 h-5" style={{ color: '#0F3D2E' }} />
             <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Total Revenue</p>
@@ -141,7 +141,7 @@ export default function FinancialReports() {
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
           <div className="flex items-center gap-3 mb-2">
             <TrendingUp className="w-5 h-5" style={{ color: '#2EB6A0' }} />
             <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>MRR</p>
@@ -151,7 +151,7 @@ export default function FinancialReports() {
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-5 h-5" style={{ color: '#C8A951' }} />
             <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Active Subs</p>
@@ -161,7 +161,7 @@ export default function FinancialReports() {
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
           <div className="flex items-center gap-3 mb-2">
             <Calendar className="w-5 h-5" style={{ color: '#E76F51' }} />
             <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Paid Classes</p>
@@ -174,7 +174,7 @@ export default function FinancialReports() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold" style={{ color: '#1D1D1F',  }}>Monthly Revenue Trend</h3>
             <Button variant="ghost" size="sm" onClick={handleExportRevenue}>
@@ -194,7 +194,7 @@ export default function FinancialReports() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
           <h3 className="text-lg font-semibold mb-4" style={{ color: '#1D1D1F',  }}>Revenue Breakdown</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -219,7 +219,7 @@ export default function FinancialReports() {
       </div>
 
       {/* Payroll Section */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+      <div className="bg-white rounded-2xl p-6 shadow-sm border" >
         <div className="flex justify-between items-center mb-6">
           <div>
             <h3 className="text-xl font-semibold" style={{ color: '#1D1D1F',  }}>Teacher Payroll</h3>

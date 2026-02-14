@@ -35,19 +35,19 @@ export default function StudentManagement({ teacherData, students, setStudents }
     <div className="space-y-6">
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-xl p-4 border" >
           <p className="text-xs text-gray-500 mb-1">Active Students</p>
           <p className="text-2xl font-semibold" style={{ color: '#0F3D2E' }} data-testid="active-students-count">
             {students.filter(s => getLastLessonStatus(s.last_session) === 'active').length}
           </p>
         </div>
-        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-xl p-4 border" >
           <p className="text-xs text-gray-500 mb-1">Need Attention</p>
           <p className="text-2xl font-semibold" style={{ color: '#E76F51' }}>
             {students.filter(s => getLastLessonStatus(s.last_session) === 'warning').length}
           </p>
         </div>
-        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-xl p-4 border" >
           <p className="text-xs text-gray-500 mb-1">Inactive (2+ weeks)</p>
           <p className="text-2xl font-semibold text-gray-400">
             {students.filter(s => getLastLessonStatus(s.last_session) === 'inactive').length}
@@ -56,8 +56,8 @@ export default function StudentManagement({ teacherData, students, setStudents }
       </div>
 
       {/* Student List */}
-      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-        <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border overflow-hidden" >
+        <div className="p-4 border-b" >
           <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Student List</h3>
         </div>
         
@@ -203,8 +203,8 @@ export default function StudentManagement({ teacherData, students, setStudents }
                   value={reportData.attendance}
                   onChange={(e) => setReportData({ ...reportData, attendance: e.target.value })}
                   placeholder="e.g., 4/4"
-                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  className="apple-input"
+                  
                 />
               </div>
 
@@ -215,8 +215,8 @@ export default function StudentManagement({ teacherData, students, setStudents }
                   value={reportData.progress}
                   onChange={(e) => setReportData({ ...reportData, progress: e.target.value })}
                   placeholder="e.g., Completed Surah Al-Mulk"
-                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  className="apple-input"
+                  
                 />
               </div>
 
@@ -227,7 +227,7 @@ export default function StudentManagement({ teacherData, students, setStudents }
                   onChange={(e) => setReportData({ ...reportData, notes: e.target.value })}
                   placeholder="Comments for parents..."
                   className="w-full h-24 p-3 rounded-lg border resize-none focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  
                 />
               </div>
 

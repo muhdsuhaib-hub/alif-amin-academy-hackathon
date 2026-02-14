@@ -134,7 +134,7 @@ export default function SubscriptionManagement() {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
           <div className="flex items-center gap-3 mb-2">
             <TrendingUp className="w-5 h-5" style={{ color: '#2EB6A0' }} />
             <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Active</p>
@@ -144,7 +144,7 @@ export default function SubscriptionManagement() {
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
           <div className="flex items-center gap-3 mb-2">
             <Clock className="w-5 h-5" style={{ color: '#C8A951' }} />
             <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Trial</p>
@@ -154,7 +154,7 @@ export default function SubscriptionManagement() {
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
           <div className="flex items-center gap-3 mb-2">
             <Pause className="w-5 h-5" style={{ color: '#E76F51' }} />
             <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Paused</p>
@@ -164,7 +164,7 @@ export default function SubscriptionManagement() {
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border" >
           <div className="flex items-center gap-3 mb-2">
             <XCircle className="w-5 h-5" style={{ color: '#9CA3AF' }} />
             <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Cancelled</p>
@@ -200,7 +200,7 @@ export default function SubscriptionManagement() {
       )}
 
       {/* Students List */}
-      <div className="bg-white rounded-2xl shadow-sm border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+      <div className="bg-white rounded-2xl shadow-sm border overflow-hidden" >
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-[#FBFBFD]">

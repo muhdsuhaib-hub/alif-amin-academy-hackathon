@@ -236,7 +236,7 @@ export default function TeacherApprovals() {
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="Provide a reason for rejection..."
                 className="w-full h-24 px-4 py-3 rounded-lg border resize-none focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                
               />
             </div>
 

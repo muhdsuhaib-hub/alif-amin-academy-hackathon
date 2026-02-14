@@ -4,7 +4,7 @@ export default function AccountPage({ user }) {
   return (
     <div className="p-4 lg:p-8" data-testid="account-page">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl p-6 border mb-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-2xl p-6 border mb-6" >
           <div className="flex items-center gap-4 mb-6">
             <div className="w-20 h-20 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white text-2xl font-semibold">
               {user?.name?.charAt(0) || 'S'}

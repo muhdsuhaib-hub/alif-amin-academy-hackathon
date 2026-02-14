@@ -4,7 +4,7 @@ import NotificationBell from '../NotificationBell';
 
 export default function StudentHeader({ title, user, onMenuClick }) {
   return (
-    <header className="h-16 bg-white border-b flex items-center justify-between px-4 lg:px-8" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+    <header className="h-16 bg-white border-b flex items-center justify-between px-4 lg:px-8" >
       <div className="flex items-center gap-4">
         <button 
           className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"

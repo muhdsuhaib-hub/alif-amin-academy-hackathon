@@ -168,7 +168,7 @@ export default function WithdrawalManagement() {
       {/* Commission Stats Cards */}
       {commissionStats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl p-5 border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+          <div className="bg-white rounded-xl p-5 border" >
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(46, 182, 160, 0.1)' }}>
                 <TrendingUp className="w-5 h-5" style={{ color: '#2EB6A0' }} />
@@ -181,7 +181,7 @@ export default function WithdrawalManagement() {
             <p className="text-xs text-gray-400 mt-1">From {commissionStats.commission_earned?.total_sessions_completed || 0} sessions</p>
           </div>
 
-          <div className="bg-white rounded-xl p-5 border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+          <div className="bg-white rounded-xl p-5 border" >
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(231, 111, 81, 0.1)' }}>
                 <DollarSign className="w-5 h-5" style={{ color: '#E76F51' }} />
@@ -194,7 +194,7 @@ export default function WithdrawalManagement() {
             <p className="text-xs text-gray-400 mt-1">Owed to tutors</p>
           </div>
 
-          <div className="bg-white rounded-xl p-5 border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+          <div className="bg-white rounded-xl p-5 border" >
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(212, 175, 55, 0.1)' }}>
                 <Clock className="w-5 h-5" style={{ color: '#D4AF37' }} />
@@ -207,7 +207,7 @@ export default function WithdrawalManagement() {
             <p className="text-xs text-gray-400 mt-1">RM {(commissionStats.withdrawals?.pending_withdrawal_amount || 0).toLocaleString()} total</p>
           </div>
 
-          <div className="bg-white rounded-xl p-5 border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+          <div className="bg-white rounded-xl p-5 border" >
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(15, 61, 46, 0.1)' }}>
                 <CheckCircle className="w-5 h-5" style={{ color: '#0F3D2E' }} />
@@ -223,8 +223,8 @@ export default function WithdrawalManagement() {
       )}
 
       {/* Pending Withdrawals Section */}
-      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-        <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+      <div className="bg-white rounded-2xl border overflow-hidden" >
+        <div className="p-4 border-b flex items-center justify-between" >
           <div className="flex items-center gap-3">
             <AlertCircle className="w-5 h-5" style={{ color: '#D4AF37' }} />
             <h3 className="text-lg font-semibold" style={{ color: '#1D1D1F' }}>
@@ -316,10 +316,10 @@ export default function WithdrawalManagement() {
       </div>
 
       {/* All Withdrawals History */}
-      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+      <div className="bg-white rounded-2xl border overflow-hidden" >
         <div 
           className="p-4 border-b flex items-center justify-between cursor-pointer"
-          style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}
+          
           onClick={() => setShowAllWithdrawals(!showAllWithdrawals)}
         >
           <h3 className="text-lg font-semibold" style={{ color: '#1D1D1F' }}>
@@ -334,7 +334,7 @@ export default function WithdrawalManagement() {
               }}
               onClick={(e) => e.stopPropagation()}
               className="px-3 py-1.5 rounded-lg border text-sm"
-              style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+              
             >
               <option value="">All Status</option>
               <option value="pending">Pending</option>
@@ -420,7 +420,7 @@ export default function WithdrawalManagement() {
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder="Enter reason for rejection..."
                 className="w-full h-24 p-3 rounded-lg border resize-none focus:outline-none focus:ring-2 focus:ring-[#E76F51]"
-                style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                
                 data-testid="reject-reason-input"
               />
             </div>
@@ -432,8 +432,8 @@ export default function WithdrawalManagement() {
                 value={adminNotes}
                 onChange={(e) => setAdminNotes(e.target.value)}
                 placeholder="Internal notes..."
-                className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                className="apple-input"
+                
               />
             </div>
 

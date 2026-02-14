@@ -179,7 +179,7 @@ export default function SupportTickets() {
       </div>
 
       {/* Tickets List */}
-      <div className="bg-white rounded-2xl shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+      <div className="bg-white rounded-2xl shadow-sm border" >
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F3D2E]"></div>

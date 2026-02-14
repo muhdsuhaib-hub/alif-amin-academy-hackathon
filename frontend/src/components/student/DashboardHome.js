@@ -98,7 +98,7 @@ export default function DashboardHome({ bookings, onOpenBooking }) {
         {nextClass ? (
           <NextClassCard booking={nextClass} />
         ) : (
-          <div className="bg-white rounded-2xl p-8 border text-center" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <div className="bg-white rounded-2xl p-8 border text-center" >
             <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p className="text-gray-500 mb-4">No upcoming classes scheduled</p>
             <button
@@ -113,7 +113,7 @@ export default function DashboardHome({ bookings, onOpenBooking }) {
       </section>
 
       {/* Quick Book CTA */}
-      <section className="bg-white rounded-2xl p-6 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <section className="bg-white rounded-2xl p-6 border" >
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-semibold" style={{ color: '#0F3D2E' }}>Book a New Class</h2>
         </div>
@@ -129,7 +129,7 @@ export default function DashboardHome({ bookings, onOpenBooking }) {
       </section>
 
       {/* Recent History */}
-      <section className="bg-white rounded-2xl p-6 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <section className="bg-white rounded-2xl p-6 border" >
         <h2 className="text-lg font-semibold mb-4" style={{ color: '#0F3D2E' }}>Recent Classes</h2>
         {pastBookings.length === 0 ? (
           <div className="text-center py-8">

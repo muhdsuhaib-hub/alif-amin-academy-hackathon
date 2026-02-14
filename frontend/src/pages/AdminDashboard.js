@@ -209,7 +209,7 @@ export default function AdminDashboard({ user }) {
           <>
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-sm font-medium mb-1" className="text-gray-400">Total Active Users</p>
@@ -234,7 +234,7 @@ export default function AdminDashboard({ user }) {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-sm font-medium mb-1" className="text-gray-400">Active Students</p>
@@ -259,7 +259,7 @@ export default function AdminDashboard({ user }) {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-sm font-medium mb-1" className="text-gray-400">Revenue (MTD)</p>
@@ -284,7 +284,7 @@ export default function AdminDashboard({ user }) {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-sm font-medium mb-1" className="text-gray-400">Conversion Rate</p>
@@ -306,7 +306,7 @@ export default function AdminDashboard({ user }) {
 
             {/* Mini Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
                 <h3 className="text-lg font-semibold mb-4" style={{ color: '#1D1D1F',  }}>User Growth</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <AreaChart data={userGrowthData}>
@@ -325,7 +325,7 @@ export default function AdminDashboard({ user }) {
                 </ResponsiveContainer>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
                 <h3 className="text-lg font-semibold mb-4" style={{ color: '#1D1D1F',  }}>Revenue Trend</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <LineChart data={revenueData}>
@@ -338,7 +338,7 @@ export default function AdminDashboard({ user }) {
                 </ResponsiveContainer>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
                 <h3 className="text-lg font-semibold mb-4" style={{ color: '#1D1D1F',  }}>Attendance Rate</h3>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={attendanceData}>
@@ -353,7 +353,7 @@ export default function AdminDashboard({ user }) {
             </div>
 
             {/* Today's Highlights */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border mb-8" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+            <div className="bg-white rounded-2xl p-6 shadow-sm border mb-8" >
               <h3 className="text-xl font-semibold mb-6" style={{ color: '#1D1D1F',  }}>Today&apos;s Highlights</h3>
               
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -410,7 +410,7 @@ export default function AdminDashboard({ user }) {
 
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
                 <div className="flex items-center gap-3 mb-2">
                   <UserPlus className="w-5 h-5" style={{ color: '#0F3D2E' }} />
                   <p className="text-sm font-medium" className="text-gray-400">New Sign-ups Today</p>
@@ -420,7 +420,7 @@ export default function AdminDashboard({ user }) {
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
                 <div className="flex items-center gap-3 mb-2">
                   <Calendar className="w-5 h-5" style={{ color: '#C8A951' }} />
                   <p className="text-sm font-medium" className="text-gray-400">Classes This Month</p>
@@ -430,7 +430,7 @@ export default function AdminDashboard({ user }) {
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
                 <div className="flex items-center gap-3 mb-2">
                   <CheckCircle className="w-5 h-5" style={{ color: '#2EB6A0' }} />
                   <p className="text-sm font-medium" className="text-gray-400">Completed Classes</p>
@@ -440,7 +440,7 @@ export default function AdminDashboard({ user }) {
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+              <div className="bg-white rounded-2xl p-6 shadow-sm border" >
                 <div className="flex items-center gap-3 mb-2">
                   <Users className="w-5 h-5" style={{ color: '#E76F51' }} />
                   <p className="text-sm font-medium" className="text-gray-400">Active Teachers</p>
@@ -452,7 +452,7 @@ export default function AdminDashboard({ user }) {
             </div>
 
             {/* Credit Liability Section */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border mt-8" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+            <div className="bg-white rounded-2xl p-6 shadow-sm border mt-8" >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(212, 175, 55, 0.15)' }}>
@@ -550,7 +550,7 @@ export default function AdminDashboard({ user }) {
 
               {/* Additional Stats Row */}
               {liability && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 pt-4 border-t" >
                   <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
                     <span className="text-sm" style={{ color: '#5A5A5A',  }}>Platform Commission (potential)</span>
                     <span className="text-sm font-semibold" style={{ color: '#0F3D2E',  }}>
@@ -574,7 +574,7 @@ export default function AdminDashboard({ user }) {
             </div>
 
             {/* Revenue Recognition Section */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border mt-8" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+            <div className="bg-white rounded-2xl p-6 shadow-sm border mt-8" >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(46, 182, 160, 0.15)' }}>
@@ -714,7 +714,7 @@ export default function AdminDashboard({ user }) {
                             RM {(revenue?.marketing_expense?.realized || 0).toLocaleString()}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center pt-2 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+                        <div className="flex justify-between items-center pt-2 border-t" >
                           <span className="text-sm" style={{ color: '#5A5A5A',  }}>Sessions Completed</span>
                           <span className="text-sm font-semibold" style={{ color: '#0F3D2E',  }}>
                             {revenue?.session_summary?.total_completed || 0}
@@ -743,7 +743,7 @@ export default function AdminDashboard({ user }) {
             </div>
 
             {/* Commission Tier Summary */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border mt-8" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
+            <div className="bg-white rounded-2xl p-6 shadow-sm border mt-8" >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: 'rgba(15, 61, 46, 0.1)' }}>

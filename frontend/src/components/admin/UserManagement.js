@@ -235,7 +235,7 @@ export default function UserManagement() {
       </div>
 
       {/* Search & Filters */}
-      <div className="bg-white rounded-2xl border p-4" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border p-4" >
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="flex gap-2 mb-4">
           <div className="flex-1 relative">
@@ -246,7 +246,7 @@ export default function UserManagement() {
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by name, email, or phone..."
               className="w-full h-11 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-              style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+              
             />
           </div>
           <button
@@ -259,7 +259,7 @@ export default function UserManagement() {
 
         {/* Filter Panel */}
         {showFilters && (
-          <div className="border-t pt-4 mt-4" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <div className="border-t pt-4 mt-4" >
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-medium" style={{ color: '#1D1D1F' }}>Filter Options</h4>
               <button
@@ -277,7 +277,7 @@ export default function UserManagement() {
                   value={filterRole}
                   onChange={(e) => { setFilterRole(e.target.value); setPage(1); }}
                   className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  
                 >
                   <option value="">All Roles</option>
                   <option value="student">Student</option>
@@ -293,7 +293,7 @@ export default function UserManagement() {
                   value={filterStatus}
                   onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
                   className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  
                 >
                   <option value="">All Status</option>
                   <option value="trial">Trial</option>
@@ -311,7 +311,7 @@ export default function UserManagement() {
                   value={filterDateFrom}
                   onChange={(e) => setFilterDateFrom(e.target.value)}
                   className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  
                 />
               </div>
 
@@ -323,7 +323,7 @@ export default function UserManagement() {
                   value={filterDateTo}
                   onChange={(e) => setFilterDateTo(e.target.value)}
                   className="w-full h-10 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  
                 />
               </div>
             </div>
@@ -338,7 +338,7 @@ export default function UserManagement() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border overflow-hidden" >
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0F3D2E]"></div>
@@ -353,7 +353,7 @@ export default function UserManagement() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+                  <tr className="border-b" >
                     <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase">User</th>
                     <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase">Contact</th>
                     <th className="text-left px-6 py-4 text-xs font-medium text-gray-500 uppercase">Role</th>
@@ -448,7 +448,7 @@ export default function UserManagement() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between px-6 py-4 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+            <div className="flex items-center justify-between px-6 py-4 border-t" >
               <p className="text-sm text-gray-500">
                 Showing page {page} of {totalPages}
               </p>
@@ -457,7 +457,7 @@ export default function UserManagement() {
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
                   className="p-2 rounded-lg border transition-all hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -465,7 +465,7 @@ export default function UserManagement() {
                   onClick={() => setPage(Math.min(totalPages, page + 1))}
                   disabled={page === totalPages}
                   className="p-2 rounded-lg border transition-all hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -479,7 +479,7 @@ export default function UserManagement() {
       {showEditModal && selectedUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b flex items-center justify-between" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+            <div className="p-6 border-b flex items-center justify-between" >
               <h3 className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>Edit User</h3>
               <button onClick={() => setShowEditModal(false)} className="p-2 hover:bg-gray-100 rounded-full">
                 <X className="w-5 h-5 text-gray-500" />
@@ -493,8 +493,8 @@ export default function UserManagement() {
                   type="text"
                   value={selectedUser.name || ''}
                   onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
-                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  className="apple-input"
+                  
                 />
               </div>
 
@@ -504,8 +504,8 @@ export default function UserManagement() {
                   type="email"
                   value={selectedUser.email || ''}
                   onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
-                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  className="apple-input"
+                  
                 />
               </div>
 
@@ -515,8 +515,8 @@ export default function UserManagement() {
                   type="tel"
                   value={selectedUser.phone || ''}
                   onChange={(e) => setSelectedUser({ ...selectedUser, phone: e.target.value })}
-                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  className="apple-input"
+                  
                 />
               </div>
 
@@ -525,8 +525,8 @@ export default function UserManagement() {
                 <select
                   value={selectedUser.role || 'student'}
                   onChange={(e) => setSelectedUser({ ...selectedUser, role: e.target.value })}
-                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  className="apple-input"
+                  
                 >
                   <option value="student">Student</option>
                   <option value="teacher">Teacher</option>
@@ -540,13 +540,13 @@ export default function UserManagement() {
                   type="text"
                   value={selectedUser.timezone || ''}
                   onChange={(e) => setSelectedUser({ ...selectedUser, timezone: e.target.value })}
-                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  className="apple-input"
+                  
                 />
               </div>
             </div>
 
-            <div className="p-6 border-t flex gap-3" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+            <div className="p-6 border-t flex gap-3" >
               <button
                 onClick={handleUpdate}
                 className="flex-1 h-11 rounded-xl bg-[#0F3D2E] text-white font-medium transition-all hover:opacity-90"

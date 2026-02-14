@@ -106,7 +106,7 @@ export default function MySchedule({ bookings, onOpenBooking, onEdit, onCancel }
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}
-        <div className="lg:col-span-2 bg-white rounded-2xl p-6 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="lg:col-span-2 bg-white rounded-2xl p-6 border" >
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold" style={{ color: '#0F3D2E' }}>
               {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
@@ -153,14 +153,14 @@ export default function MySchedule({ bookings, onOpenBooking, onEdit, onCancel }
             })}
           </div>
 
-          <div className="flex items-center gap-4 mt-4 pt-4 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+          <div className="flex items-center gap-4 mt-4 pt-4 border-t" >
             <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-[#22C55E]" /><span className="text-xs text-gray-500">Scheduled</span></div>
             <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-red-500" /><span className="text-xs text-gray-500">Cancelled</span></div>
           </div>
         </div>
 
         {/* Agenda */}
-        <div className="bg-white rounded-2xl p-6 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-2xl p-6 border" >
           <h3 className="text-lg font-semibold mb-4" style={{ color: '#0F3D2E' }}>
             {selectedDay ? selectedDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'All Bookings'}
           </h3>

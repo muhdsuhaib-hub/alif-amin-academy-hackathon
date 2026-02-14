@@ -31,22 +31,22 @@ export default function DashboardOverview({ teacherData, students, user, commiss
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-xl p-4 border" >
           <DollarSign className="w-8 h-8 mb-2" style={{ color: '#2EB6A0' }} />
           <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }} data-testid="monthly-earnings">RM {(teacherData?.estimated_earnings || 0).toFixed(0)}</p>
           <p className="text-xs text-gray-500">This Month</p>
         </div>
-        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-xl p-4 border" >
           <Users className="w-8 h-8 mb-2" style={{ color: '#D4AF37' }} />
           <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }} data-testid="student-count">{students.length}</p>
           <p className="text-xs text-gray-500">Active Students</p>
         </div>
-        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-xl p-4 border" >
           <Calendar className="w-8 h-8 mb-2" style={{ color: '#E76F51' }} />
           <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }} data-testid="classes-today">{teacherData?.todays_classes?.length || 0}</p>
           <p className="text-xs text-gray-500">Classes Today</p>
         </div>
-        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-xl p-4 border" >
           <Star className="w-8 h-8 mb-2" style={{ color: '#FBBF24' }} fill="#FBBF24" />
           <p className="text-2xl font-bold" style={{ color: '#0F3D2E' }} data-testid="teacher-rating">{(teacherData?.teacher?.rating || 5.0).toFixed(1)}</p>
           <p className="text-xs text-gray-500">Your Rating</p>
@@ -54,8 +54,8 @@ export default function DashboardOverview({ teacherData, students, user, commiss
       </div>
 
       {/* Today's Schedule */}
-      <div className="bg-white rounded-2xl border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-        <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border" >
+        <div className="p-4 border-b" >
           <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Today's Schedule</h3>
         </div>
         <div className="p-4">

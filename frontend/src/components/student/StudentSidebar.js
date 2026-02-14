@@ -24,9 +24,9 @@ export default function StudentSidebar({ activeTab, setActiveTab, isOpen, setIsO
         fixed top-0 left-0 h-full bg-white z-50 transition-transform duration-300 ease-in-out
         w-72 lg:translate-x-0 shadow-xl lg:shadow-none border-r
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-      `} style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      `} >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-6 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="h-16 flex items-center justify-between px-6 border-b" >
           <span className="text-xl font-semibold" style={{ color: '#0F3D2E',  }}>
             Alif Amin
           </span>
@@ -39,7 +39,7 @@ export default function StudentSidebar({ activeTab, setActiveTab, isOpen, setIsO
         </div>
 
         {/* User Info */}
-        <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="p-4 border-b" >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-[#0F3D2E] flex items-center justify-center text-white font-medium">
               {user?.name?.charAt(0) || 'S'}
@@ -79,7 +79,7 @@ export default function StudentSidebar({ activeTab, setActiveTab, isOpen, setIsO
         </nav>
 
         {/* Logout */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t" >
           <button
             onClick={onLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-red-50 hover:text-red-600 transition-all"

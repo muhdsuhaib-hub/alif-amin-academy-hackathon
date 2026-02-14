@@ -210,7 +210,7 @@ export default function WalletPage({ user }) {
         </div>
 
         {/* Top-up Packages */}
-        <div className="bg-white rounded-2xl p-6 border mb-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-2xl p-6 border mb-6" >
           <h3 className="text-lg font-semibold mb-4" style={{ color: '#0F3D2E' }}>Top Up Credits</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -258,7 +258,7 @@ export default function WalletPage({ user }) {
         </div>
 
         {/* Transaction History */}
-        <div className="bg-white rounded-2xl p-6 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-2xl p-6 border" >
           <h3 className="text-lg font-semibold mb-4" style={{ color: '#0F3D2E' }}>Transaction History</h3>
           
           {transactions.length === 0 ? (

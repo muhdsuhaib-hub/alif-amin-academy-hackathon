@@ -65,8 +65,8 @@ export default function ClassroomTools({ teacherData, students }) {
   return (
     <div className="space-y-6">
       {/* Digital Mushaf Card */}
-      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-        <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border overflow-hidden" >
+        <div className="p-4 border-b flex items-center justify-between" >
           <div>
             <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Digital Mushaf</h3>
             <p className="text-sm text-gray-500">Interactive Quran with live pointer</p>
@@ -99,8 +99,8 @@ export default function ClassroomTools({ teacherData, students }) {
       </div>
 
       {/* Lesson Notes */}
-      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-        <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border overflow-hidden" >
+        <div className="p-4 border-b" >
           <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Lesson Notes</h3>
           <p className="text-sm text-gray-500">Private notes for each student</p>
         </div>
@@ -114,8 +114,8 @@ export default function ClassroomTools({ teacherData, students }) {
                 const student = students.find(s => s.student_id === e.target.value);
                 setSelectedStudent(student);
               }}
-              className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-              style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+              className="apple-input"
+              
               data-testid="student-select"
             >
               <option value="">Choose a student...</option>
@@ -135,7 +135,7 @@ export default function ClassroomTools({ teacherData, students }) {
                   onChange={(e) => setCurrentNote(e.target.value)}
                   placeholder="Add a note about this student's progress..."
                   className="w-full h-24 p-3 rounded-lg border resize-none focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  
                   data-testid="lesson-note-input"
                 />
                 <button

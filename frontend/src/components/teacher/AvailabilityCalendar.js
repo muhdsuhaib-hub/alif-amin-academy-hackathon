@@ -128,8 +128,8 @@ export default function AvailabilityCalendar({ teacherData }) {
       </div>
 
       {/* Availability Grid */}
-      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-        <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border overflow-hidden" >
+        <div className="p-4 border-b" >
           <h4 className="font-medium" style={{ color: '#1D1D1F' }}>Upcoming Available Slots</h4>
         </div>
         
@@ -194,8 +194,8 @@ export default function AvailabilityCalendar({ teacherData }) {
                     value={newSlot.startDate}
                     onChange={(e) => setNewSlot({ ...newSlot, startDate: e.target.value })}
                     min={new Date().toISOString().split('T')[0]}
-                    className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                    className="apple-input"
+                    
                   />
                 </div>
                 <div>
@@ -205,8 +205,8 @@ export default function AvailabilityCalendar({ teacherData }) {
                     value={newSlot.endDate}
                     onChange={(e) => setNewSlot({ ...newSlot, endDate: e.target.value })}
                     min={newSlot.startDate || new Date().toISOString().split('T')[0]}
-                    className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                    className="apple-input"
+                    
                   />
                 </div>
               </div>
@@ -218,8 +218,8 @@ export default function AvailabilityCalendar({ teacherData }) {
                     type="time"
                     value={newSlot.startTime}
                     onChange={(e) => setNewSlot({ ...newSlot, startTime: e.target.value })}
-                    className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                    className="apple-input"
+                    
                   />
                 </div>
                 <div>
@@ -228,8 +228,8 @@ export default function AvailabilityCalendar({ teacherData }) {
                     type="time"
                     value={newSlot.endTime}
                     onChange={(e) => setNewSlot({ ...newSlot, endTime: e.target.value })}
-                    className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                    style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                    className="apple-input"
+                    
                   />
                 </div>
               </div>

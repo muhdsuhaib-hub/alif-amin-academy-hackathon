@@ -81,7 +81,7 @@ export default function ProfileManagement({ teacherData, user }) {
   return (
     <div className="space-y-6">
       {/* Profile Header */}
-      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border p-6" >
         <div className="flex items-center gap-6">
           <div className="w-24 h-24 rounded-2xl bg-[#0F3D2E] flex items-center justify-center text-white text-3xl font-medium">
             {user?.name?.charAt(0) || 'T'}
@@ -110,7 +110,7 @@ export default function ProfileManagement({ teacherData, user }) {
       </div>
 
       {/* Basic Info */}
-      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border p-6" >
         <h3 className="font-semibold mb-4" style={{ color: '#0F3D2E' }}>Basic Information</h3>
         <div className="space-y-4">
           <div>
@@ -120,7 +120,7 @@ export default function ProfileManagement({ teacherData, user }) {
               onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
               placeholder="Tell students about yourself, your teaching style, and experience..."
               className="w-full h-32 p-3 rounded-lg border resize-none focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-              style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+              
               data-testid="bio-input"
             />
           </div>
@@ -132,8 +132,8 @@ export default function ProfileManagement({ teacherData, user }) {
                 type="number"
                 value={profile.yearsExperience}
                 onChange={(e) => setProfile({ ...profile, yearsExperience: parseInt(e.target.value) })}
-                className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                className="apple-input"
+                
                 data-testid="experience-input"
               />
             </div>
@@ -146,8 +146,8 @@ export default function ProfileManagement({ teacherData, user }) {
               value={profile.meetLink}
               onChange={(e) => setProfile({ ...profile, meetLink: e.target.value })}
               placeholder="https://meet.google.com/xxx-xxxx-xxx"
-              className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-              style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+              className="apple-input"
+              
               data-testid="meet-link-input"
             />
           </div>
@@ -155,7 +155,7 @@ export default function ProfileManagement({ teacherData, user }) {
       </div>
 
       {/* Specialties */}
-      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border p-6" >
         <h3 className="font-semibold mb-4" style={{ color: '#0F3D2E' }}>Specialties & Skills</h3>
         <div className="flex flex-wrap gap-2">
           {specialties.map(specialty => (
@@ -177,11 +177,11 @@ export default function ProfileManagement({ teacherData, user }) {
       </div>
 
       {/* Video Introduction */}
-      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border p-6" >
         <h3 className="font-semibold mb-2" style={{ color: '#0F3D2E' }}>Video Introduction</h3>
         <p className="text-sm text-gray-500 mb-4">Upload a 1-2 minute video of yourself reciting Quran so parents can hear your voice and Tajweed quality.</p>
         
-        <div className="border-2 border-dashed rounded-xl p-8 text-center relative" style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}>
+        <div className="border-2 border-dashed rounded-xl p-8 text-center relative" >
           {videoFile ? (
             <div>
               <Video className="w-12 h-12 mx-auto mb-3" style={{ color: '#0F3D2E' }} />
@@ -206,11 +206,11 @@ export default function ProfileManagement({ teacherData, user }) {
       </div>
 
       {/* Certificates */}
-      <div className="bg-white rounded-2xl border p-6" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border p-6" >
         <h3 className="font-semibold mb-2" style={{ color: '#0F3D2E' }}>Ijazah / Certificates</h3>
         <p className="text-sm text-gray-500 mb-4">Upload your credentials to get a "Verified" badge (e.g., Degree from Al-Azhar, Darul Quran).</p>
         
-        <div className="border-2 border-dashed rounded-xl p-8 text-center relative" style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}>
+        <div className="border-2 border-dashed rounded-xl p-8 text-center relative" >
           {certificateFile ? (
             <div>
               <Award className="w-12 h-12 mx-auto mb-3" style={{ color: '#D4AF37' }} />

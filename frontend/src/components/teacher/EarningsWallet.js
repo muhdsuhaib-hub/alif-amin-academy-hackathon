@@ -178,7 +178,7 @@ export default function EarningsWallet({ teacherData, commissionInfo, user }) {
 
       {/* Tier & Commission Info */}
       {commissionInfo && (
-        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-xl p-4 border" >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div 
@@ -205,7 +205,7 @@ export default function EarningsWallet({ teacherData, commissionInfo, user }) {
           </div>
           
           {commissionInfo.next_tier?.next_tier && (
-            <div className="mt-4 pt-4 border-t" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+            <div className="mt-4 pt-4 border-t" >
               <p className="text-xs text-gray-500 mb-2">Progress to {commissionInfo.next_tier.next_tier_name}</p>
               {commissionInfo.next_tier.requirements.rating_needed > 0 && (
                 <p className="text-xs" style={{ color: '#5A5A5A' }}>
@@ -229,19 +229,19 @@ export default function EarningsWallet({ teacherData, commissionInfo, user }) {
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-xl p-4 border" >
           <p className="text-xs text-gray-500 mb-1">Total Earned</p>
           <p className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>RM {totalEarnings.toFixed(2)}</p>
         </div>
-        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-xl p-4 border" >
           <p className="text-xs text-gray-500 mb-1">Total Withdrawn</p>
           <p className="text-xl font-semibold" style={{ color: '#2EB6A0' }}>RM {totalWithdrawn.toFixed(2)}</p>
         </div>
-        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-xl p-4 border" >
           <p className="text-xs text-gray-500 mb-1">Pending Withdrawal</p>
           <p className="text-xl font-semibold" style={{ color: '#D4AF37' }}>RM {pendingWithdrawal.toFixed(2)}</p>
         </div>
-        <div className="bg-white rounded-xl p-4 border" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-xl p-4 border" >
           <p className="text-xs text-gray-500 mb-1">Transactions</p>
           <p className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>{transactions.length}</p>
         </div>
@@ -249,8 +249,8 @@ export default function EarningsWallet({ teacherData, commissionInfo, user }) {
 
       {/* Withdrawal History */}
       {withdrawals.length > 0 && (
-        <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-          <div className="p-4 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="bg-white rounded-2xl border overflow-hidden" >
+          <div className="p-4 border-b" >
             <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Recent Withdrawals</h3>
           </div>
           <div className="divide-y" style={{ borderColor: 'rgba(15, 61, 46, 0.05)' }}>
@@ -282,8 +282,8 @@ export default function EarningsWallet({ teacherData, commissionInfo, user }) {
       )}
 
       {/* Transaction History */}
-      <div className="bg-white rounded-2xl border overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
-        <div className="p-4 border-b flex items-center justify-between" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+      <div className="bg-white rounded-2xl border overflow-hidden" >
+        <div className="p-4 border-b flex items-center justify-between" >
           <h3 className="font-semibold" style={{ color: '#0F3D2E' }}>Earnings History</h3>
         </div>
         {transactions.length === 0 ? (
@@ -350,8 +350,8 @@ export default function EarningsWallet({ teacherData, commissionInfo, user }) {
                   onChange={(e) => setWithdrawAmount(e.target.value)}
                   placeholder="Enter amount"
                   max={withdrawableBalance}
-                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  className="apple-input"
+                  
                   data-testid="withdraw-amount-input"
                 />
                 <p className="text-xs text-gray-500 mt-1">Available: RM {withdrawableBalance.toFixed(2)}</p>
@@ -362,8 +362,8 @@ export default function EarningsWallet({ teacherData, commissionInfo, user }) {
                 <select
                   value={bankDetails.bank}
                   onChange={(e) => setBankDetails({ ...bankDetails, bank: e.target.value })}
-                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  className="apple-input"
+                  
                   data-testid="withdraw-bank-select"
                 >
                   <option value="maybank">Maybank</option>
@@ -382,8 +382,8 @@ export default function EarningsWallet({ teacherData, commissionInfo, user }) {
                   value={bankDetails.accountNumber}
                   onChange={(e) => setBankDetails({ ...bankDetails, accountNumber: e.target.value })}
                   placeholder="Enter account number"
-                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  className="apple-input"
+                  
                   data-testid="withdraw-account-number"
                 />
               </div>
@@ -395,8 +395,8 @@ export default function EarningsWallet({ teacherData, commissionInfo, user }) {
                   value={bankDetails.accountName}
                   onChange={(e) => setBankDetails({ ...bankDetails, accountName: e.target.value })}
                   placeholder="Enter account holder name"
-                  className="w-full h-11 px-4 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                  style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                  className="apple-input"
+                  
                   data-testid="withdraw-account-name"
                 />
               </div>

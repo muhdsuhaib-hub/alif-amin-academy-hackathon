@@ -217,7 +217,7 @@ function CountryCodeSelector({ value, onChange }) {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="h-12 px-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E] bg-white flex items-center gap-2 min-w-[90px]"
-        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+        
       >
         <span className="text-2xl leading-none">{selectedCountry.flag}</span>
         <span className="text-sm text-gray-600">{selectedCountry.code}</span>
@@ -227,15 +227,15 @@ function CountryCodeSelector({ value, onChange }) {
       </button>
       
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-72 bg-white rounded-xl border shadow-lg z-50 overflow-hidden" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
-          <div className="p-2 border-b" style={{ borderColor: 'rgba(15, 61, 46, 0.08)' }}>
+        <div className="absolute top-full left-0 mt-1 w-72 bg-white rounded-xl border shadow-lg z-50 overflow-hidden" >
+          <div className="p-2 border-b" >
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search country..."
               className="w-full h-9 px-3 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-              style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+              
               autoFocus
             />
           </div>
@@ -632,8 +632,8 @@ export default function Auth() {
                         onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                         placeholder="Enter your full name"
                         required
-                        className="w-full h-12 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                        className="apple-input pl-11"
+                        
                       />
                     </div>
                   </div>
@@ -650,8 +650,8 @@ export default function Auth() {
                         onBlur={(e) => checkEmail(e.target.value)}
                         placeholder="Enter your email"
                         required
-                        className="w-full h-12 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                        className="apple-input pl-11"
+                        
                       />
                     </div>
                     {emailExists && (
@@ -682,8 +682,8 @@ export default function Auth() {
                           required
                           pattern="[0-9]*"
                           inputMode="numeric"
-                          className="w-full h-12 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                          style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                          className="apple-input pl-11"
+                          
                         />
                       </div>
                     </div>
@@ -702,8 +702,8 @@ export default function Auth() {
                         placeholder="Create a password (min 6 characters)"
                         required
                         minLength={6}
-                        className="w-full h-12 pl-12 pr-12 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                        className="apple-input pl-11 pr-11"
+                        
                       />
                       <button
                         type="button"
@@ -726,8 +726,8 @@ export default function Auth() {
                         onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                         placeholder="Confirm your password"
                         required
-                        className="w-full h-12 pl-12 pr-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-[#0F3D2E]"
-                        style={{ borderColor: 'rgba(15, 61, 46, 0.2)' }}
+                        className="apple-input pl-11"
+                        
                       />
                     </div>
                   </div>
