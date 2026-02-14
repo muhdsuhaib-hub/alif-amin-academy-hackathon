@@ -68,7 +68,7 @@ export default function Landing() {
           >
             <h1 
               className="text-6xl md:text-8xl font-bold tracking-tight leading-tight mb-8"
-              style={{ color: '#1F2933', fontFamily: 'Great Kingdom', letterSpacing: '-0.01em' }}
+              style={{ color: '#1F2933', , letterSpacing: '-0.01em' }}
             >
               Learn the Quran.
               <br />
@@ -95,7 +95,7 @@ export default function Landing() {
               Start Absolutely Free
             </motion.button>
 
-            <p className="mt-4 text-sm font-normal" style={{ color: '#9CA3AF',  }}>
+            <p className="mt-4 text-sm font-normal" style={{ color: '#9CA3AF' }}>
               No card required
             </p>
           </motion.div>
@@ -251,7 +251,7 @@ export default function Landing() {
             </div>
           </div>
 
-          <div className="text-center mt-8 text-sm font-normal" style={{ color: '#9CA3AF',  }}>
+          <div className="text-center mt-8 text-sm font-normal" style={{ color: '#9CA3AF' }}>
             © 2025 Alif Amin. From Alif to Amin. Guided Every Step.
           </div>
         </div>

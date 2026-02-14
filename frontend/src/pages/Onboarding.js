@@ -162,7 +162,7 @@ export default function Onboarding() {
               />
             ))}
           </div>
-          <p className="text-sm" style={{ color: '#9CA3AF',  }}>
+          <p className="text-sm" style={{ color: '#9CA3AF' }}>
             Question {step + 1} of {questions.length}
           </p>
         </div>

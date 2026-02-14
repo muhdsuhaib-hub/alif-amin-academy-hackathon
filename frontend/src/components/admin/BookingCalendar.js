@@ -263,13 +263,13 @@ export default function BookingCalendar() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-xs mb-1" style={{ color: '#9CA3AF',  }}>Student</p>
+                            <p className="text-xs mb-1" style={{ color: '#9CA3AF' }}>Student</p>
                             <p className="text-sm font-medium" style={{ color: '#1D1D1F',  }}>
                               {booking.student?.user?.name || 'Unknown'}
                             </p>
                           </div>
                           <div>
-                            <p className="text-xs mb-1" style={{ color: '#9CA3AF',  }}>Teacher</p>
+                            <p className="text-xs mb-1" style={{ color: '#9CA3AF' }}>Teacher</p>
                             <p className="text-sm font-medium" style={{ color: '#1D1D1F',  }}>
                               {booking.teacher?.user?.name || 'Unknown'}
                             </p>

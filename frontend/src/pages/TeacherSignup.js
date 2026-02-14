@@ -149,7 +149,7 @@ export default function TeacherSignup() {
 
             <p 
               className="text-center text-sm mt-6"
-              style={{ color: '#9CA3AF',  }}
+              style={{ color: '#9CA3AF' }}
             >
               By continuing, you agree to our Terms of Service
             </p>

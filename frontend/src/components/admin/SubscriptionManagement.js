@@ -137,7 +137,7 @@ export default function SubscriptionManagement() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3 mb-2">
             <TrendingUp className="w-5 h-5" style={{ color: '#2EB6A0' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF',  }}>Active</p>
+            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Active</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F',  }}>
             {overview?.active_subscriptions || 0}
@@ -147,7 +147,7 @@ export default function SubscriptionManagement() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3 mb-2">
             <Clock className="w-5 h-5" style={{ color: '#C8A951' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF',  }}>Trial</p>
+            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Trial</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F',  }}>
             {overview?.trial_subscriptions || 0}
@@ -157,7 +157,7 @@ export default function SubscriptionManagement() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3 mb-2">
             <Pause className="w-5 h-5" style={{ color: '#E76F51' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF',  }}>Paused</p>
+            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Paused</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F',  }}>
             {overview?.paused_subscriptions || 0}
@@ -167,7 +167,7 @@ export default function SubscriptionManagement() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3 mb-2">
             <XCircle className="w-5 h-5" style={{ color: '#9CA3AF' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF',  }}>Cancelled</p>
+            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Cancelled</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F',  }}>
             {overview?.cancelled_subscriptions || 0}
@@ -220,7 +220,7 @@ export default function SubscriptionManagement() {
                     <td className="px-6 py-4">
                       <div>
                         <p className="font-medium" style={{ color: '#1D1D1F',  }}>{student.name}</p>
-                        <p className="text-sm" style={{ color: '#9CA3AF',  }}>{student.email}</p>
+                        <p className="text-sm" style={{ color: '#9CA3AF' }}>{student.email}</p>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -302,7 +302,7 @@ export default function SubscriptionManagement() {
         >
           <div className="space-y-4">
             <div className="p-4 rounded-xl" className="bg-[#FBFBFD]">
-              <p className="text-sm mb-1" style={{ color: '#9CA3AF',  }}>Student</p>
+              <p className="text-sm mb-1" style={{ color: '#9CA3AF' }}>Student</p>
               <p className="font-medium" style={{ color: '#1D1D1F',  }}>{selectedStudent.name}</p>
               <p className="text-sm" style={{ color: '#5A5A5A',  }}>{selectedStudent.email}</p>
             </div>

@@ -230,7 +230,7 @@ export default function SupportTickets() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 text-sm" style={{ color: '#9CA3AF',  }}>
+                  <div className="flex items-center gap-4 text-sm" style={{ color: '#9CA3AF' }}>
                     <span>From: {ticket.user_name}</span>
                     <span>•</span>
                     <span>{formatDate(ticket.created_at)}</span>
@@ -328,12 +328,12 @@ export default function SupportTickets() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm mb-1" style={{ color: '#9CA3AF',  }}>Submitted By</p>
+                <p className="text-sm mb-1" style={{ color: '#9CA3AF' }}>Submitted By</p>
                 <p className="font-medium" style={{ color: '#1D1D1F',  }}>{selectedTicket.user_name}</p>
                 <p className="text-sm" style={{ color: '#5A5A5A',  }}>{selectedTicket.user_email}</p>
               </div>
               <div>
-                <p className="text-sm mb-1" style={{ color: '#9CA3AF',  }}>Created</p>
+                <p className="text-sm mb-1" style={{ color: '#9CA3AF' }}>Created</p>
                 <p className="font-medium" style={{ color: '#1D1D1F',  }}>{formatDate(selectedTicket.created_at)}</p>
               </div>
             </div>

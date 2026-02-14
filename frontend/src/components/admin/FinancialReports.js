@@ -134,7 +134,7 @@ export default function FinancialReports() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3 mb-2">
             <DollarSign className="w-5 h-5" style={{ color: '#0F3D2E' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF',  }}>Total Revenue</p>
+            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Total Revenue</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F',  }}>
             RM {revenueData?.total_revenue?.toLocaleString() || 0}
@@ -144,7 +144,7 @@ export default function FinancialReports() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3 mb-2">
             <TrendingUp className="w-5 h-5" style={{ color: '#2EB6A0' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF',  }}>MRR</p>
+            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>MRR</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F',  }}>
             RM {revenueData?.mrr?.toLocaleString() || 0}
@@ -154,7 +154,7 @@ export default function FinancialReports() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-5 h-5" style={{ color: '#C8A951' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF',  }}>Active Subs</p>
+            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Active Subs</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F',  }}>
             {revenueData?.active_subscriptions || 0}
@@ -164,7 +164,7 @@ export default function FinancialReports() {
         <div className="bg-white rounded-2xl p-6 shadow-sm border" style={{ borderColor: 'rgba(15, 61, 46, 0.1)' }}>
           <div className="flex items-center gap-3 mb-2">
             <Calendar className="w-5 h-5" style={{ color: '#E76F51' }} />
-            <p className="text-sm font-medium" style={{ color: '#9CA3AF',  }}>Paid Classes</p>
+            <p className="text-sm font-medium" style={{ color: '#9CA3AF' }}>Paid Classes</p>
           </div>
           <p className="text-3xl font-semibold" style={{ color: '#1D1D1F',  }}>
             {revenueData?.paid_classes || 0}
@@ -236,13 +236,13 @@ export default function FinancialReports() {
         <div className="mb-6 p-4 rounded-xl" className="bg-[#FBFBFD]">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm mb-1" style={{ color: '#9CA3AF',  }}>Total Payroll</p>
+              <p className="text-sm mb-1" style={{ color: '#9CA3AF' }}>Total Payroll</p>
               <p className="text-2xl font-semibold" style={{ color: '#0F3D2E',  }}>
                 RM {payrollData?.total_payroll?.toLocaleString() || 0}
               </p>
             </div>
             <div>
-              <p className="text-sm mb-1" style={{ color: '#9CA3AF',  }}>Teachers</p>
+              <p className="text-sm mb-1" style={{ color: '#9CA3AF' }}>Teachers</p>
               <p className="text-2xl font-semibold" style={{ color: '#0F3D2E',  }}>
                 {payrollData?.teacher_count || 0}
               </p>
@@ -266,7 +266,7 @@ export default function FinancialReports() {
                   <td className="px-4 py-3">
                     <div>
                       <p className="font-medium" style={{ color: '#1D1D1F',  }}>{teacher.teacher_name}</p>
-                      <p className="text-xs" style={{ color: '#9CA3AF',  }}>{teacher.email}</p>
+                      <p className="text-xs" style={{ color: '#9CA3AF' }}>{teacher.email}</p>
                     </div>
                   </td>
                   <td className="px-4 py-3">
