@@ -91,20 +91,20 @@ export default function DashboardHome({ bookings, onOpenBooking }) {
   const nextClass = upcomingBookings[0];
 
   return (
-    <div className="p-4 lg:p-8 space-y-6" data-testid="dashboard-home">
+    <div className="p-4 lg:p-8 space-y-6 stagger-children" data-testid="dashboard-home">
       {/* Next Class Hero */}
       <section>
-        <h2 className="text-lg font-semibold mb-4" style={{ color: '#0F3D2E' }}>Next Class</h2>
+        <h2 className="text-[15px] font-semibold mb-4 text-[#1D1D1F] tracking-tight">Next Class</h2>
         {nextClass ? (
           <NextClassCard booking={nextClass} />
         ) : (
-          <div className="bg-white rounded-2xl p-8 border text-center" >
-            <Calendar className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p className="text-gray-500 mb-4">No upcoming classes scheduled</p>
+          <div className="apple-card p-8 text-center">
+            <Calendar className="w-10 h-10 mx-auto mb-4 text-gray-300" />
+            <p className="text-gray-400 mb-5 text-[15px]">No upcoming classes scheduled</p>
             <button
               onClick={onOpenBooking}
               data-testid="book-first-class-btn"
-              className="px-6 py-3 rounded-xl bg-[#0F3D2E] text-white font-medium hover:opacity-90 transition-all"
+              className="apple-btn-primary"
             >
               Book Your First Class
             </button>
@@ -113,31 +113,31 @@ export default function DashboardHome({ bookings, onOpenBooking }) {
       </section>
 
       {/* Quick Book CTA */}
-      <section className="bg-white rounded-2xl p-6 border" >
+      <section className="apple-card p-6">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-semibold" style={{ color: '#0F3D2E' }}>Book a New Class</h2>
+          <h2 className="text-[15px] font-semibold text-[#1D1D1F] tracking-tight">Book a New Class</h2>
         </div>
-        <p className="text-sm text-gray-500 mb-4">Choose your teacher, date, time and session duration.</p>
+        <p className="text-[13px] text-gray-400 mb-4">Choose your teacher, date, time and session duration.</p>
         <button
           onClick={onOpenBooking}
           data-testid="quick-book-btn"
-          className="w-full h-14 rounded-xl bg-[#D4AF37] text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-all"
+          className="w-full h-12 rounded-xl bg-[#C8A951] text-white font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:bg-[#C8A951]/90"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 h-4" />
           Book a Session
         </button>
       </section>
 
       {/* Recent History */}
-      <section className="bg-white rounded-2xl p-6 border" >
-        <h2 className="text-lg font-semibold mb-4" style={{ color: '#0F3D2E' }}>Recent Classes</h2>
+      <section className="apple-card p-6">
+        <h2 className="text-[15px] font-semibold mb-4 text-[#1D1D1F] tracking-tight">Recent Classes</h2>
         {pastBookings.length === 0 ? (
           <div className="text-center py-8">
-            <Clock className="w-10 h-10 mx-auto mb-3 text-gray-300" />
-            <p className="text-gray-500">No past classes yet</p>
+            <Clock className="w-8 h-8 mx-auto mb-3 text-gray-300" />
+            <p className="text-gray-400 text-[15px]">No past classes yet</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {pastBookings.map((b) => (
               <div key={b.booking_id} className="p-4 rounded-xl bg-gray-50 border border-gray-100">
                 <div className="flex items-start justify-between">
