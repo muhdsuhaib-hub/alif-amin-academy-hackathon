@@ -35,7 +35,7 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 glass-effect">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-5 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="text-3xl font-semibold tracking-tight" style={{ color: '#0F3D2E',  }}>Alif Amin Academy</div>
+            <div className="text-3xl font-semibold tracking-tight" style={{ color: '#0F3D2E' }}>Alif Amin Academy</div>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -68,7 +68,7 @@ export default function Landing() {
           >
             <h1 
               className="text-6xl md:text-8xl font-bold tracking-tight leading-tight mb-8"
-              style={{ color: '#1F2933', , letterSpacing: '-0.01em' }}
+              style={{ color: '#1F2933', letterSpacing: '-0.01em' }}
             >
               Learn the Quran.
               <br />
@@ -79,7 +79,7 @@ export default function Landing() {
             
             <p 
               className="text-xl md:text-2xl mb-4 font-medium tracking-wide"
-              style={{ color: '#5A5A5A',  }}
+              style={{ color: '#5A5A5A' }}
             >
               From Alif to Amin. Guided Every Step.
             </p>
@@ -115,21 +115,21 @@ export default function Landing() {
             className="space-y-12"
           >
             <div className="space-y-6">
-              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933',  }}>
+              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933' }}>
                 Guided for beginners and families
               </p>
               <div className="w-24 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
             </div>
 
             <div className="space-y-6">
-              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933',  }}>
+              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933' }}>
                 Personalised after just 3 simple questions
               </p>
               <div className="w-24 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
             </div>
 
             <div className="space-y-6">
-              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933',  }}>
+              <p className="text-2xl md:text-3xl font-medium" style={{ color: '#1F2933' }}>
                 No payment or commitment upfront
               </p>
             </div>
@@ -147,7 +147,7 @@ export default function Landing() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-4xl md:text-5xl font-semibold text-center mb-20 tracking-tight"
-            style={{ color: '#0F3D2E',  }}
+            style={{ color: '#0F3D2E' }}
           >
             How It Starts
           </motion.h2>
@@ -184,10 +184,10 @@ export default function Landing() {
                 >
                   {step.number}
                 </div>
-                <h3 className="text-xl font-semibold" style={{ color: '#1F2933',  }}>
+                <h3 className="text-xl font-semibold" style={{ color: '#1F2933' }}>
                   {step.title}
                 </h3>
-                <p className="text-base font-normal" style={{ color: '#5A5A5A',  }}>
+                <p className="text-base font-normal" style={{ color: '#5A5A5A' }}>
                   {step.description}
                 </p>
               </motion.div>
@@ -221,14 +221,14 @@ export default function Landing() {
             className="space-y-16"
           >
             <div className="text-center space-y-8">
-              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A',  }}>
+              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A' }}>
                 "A calm and respectful approach to learning. Perfect for our family."
               </p>
               <div className="w-32 h-px mx-auto" style={{ backgroundColor: '#C8A951', opacity: 0.3 }}></div>
             </div>
 
             <div className="text-center space-y-8">
-              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A',  }}>
+              <p className="text-xl md:text-2xl font-normal italic" style={{ color: '#5A5A5A' }}>
                 "No pressure, just genuine guidance. Exactly what we needed."
               </p>
             </div>
@@ -239,11 +239,11 @@ export default function Landing() {
       <footer className="py-16 border-t" >
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="text-2xl font-semibold tracking-tight" style={{ color: '#0F3D2E',  }}>
+            <div className="text-2xl font-semibold tracking-tight" style={{ color: '#0F3D2E' }}>
               Alif Amin
             </div>
             
-            <div className="flex gap-8 text-sm font-medium" style={{ color: '#5A5A5A',  }}>
+            <div className="flex gap-8 text-sm font-medium" style={{ color: '#5A5A5A' }}>
               <a href="#" className="hover:opacity-70 transition-opacity">About</a>
               <a href="#" className="hover:opacity-70 transition-opacity">Contact</a>
               <a href="#" className="hover:opacity-70 transition-opacity">Privacy</a>

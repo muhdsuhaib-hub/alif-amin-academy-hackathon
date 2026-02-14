@@ -27,7 +27,7 @@ export default function StudentSidebar({ activeTab, setActiveTab, isOpen, setIsO
       `} >
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-6 border-b" >
-          <span className="text-xl font-semibold" style={{ color: '#0F3D2E',  }}>
+          <span className="text-xl font-semibold" style={{ color: '#0F3D2E' }}>
             Alif Amin
           </span>
           <button 

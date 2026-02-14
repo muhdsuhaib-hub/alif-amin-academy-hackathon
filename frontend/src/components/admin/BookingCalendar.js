@@ -164,8 +164,8 @@ export default function BookingCalendar() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-semibold" style={{ color: '#1D1D1F',  }}>Master Calendar</h2>
-          <p className="text-sm mt-1" style={{ color: '#5A5A5A',  }}>
+          <h2 className="text-2xl font-semibold" style={{ color: '#1D1D1F' }}>Master Calendar</h2>
+          <p className="text-sm mt-1" style={{ color: '#5A5A5A' }}>
             View and manage all class bookings
           </p>
         </div>
@@ -212,7 +212,7 @@ export default function BookingCalendar() {
         ) : bookings.length === 0 ? (
           <div className="text-center py-12">
             <CalendarIcon className="w-12 h-12 mx-auto mb-4" style={{ color: '#9CA3AF' }} />
-            <p style={{ color: '#5A5A5A',  }}>No bookings found for selected date</p>
+            <p style={{ color: '#5A5A5A' }}>No bookings found for selected date</p>
           </div>
         ) : (
           <div className="p-6">
@@ -233,7 +233,7 @@ export default function BookingCalendar() {
                         <div className="flex items-center gap-4 mb-3">
                           <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4" style={{ color: '#5A5A5A' }} />
-                            <span className="text-sm font-semibold" style={{ color: '#1D1D1F',  }}>
+                            <span className="text-sm font-semibold" style={{ color: '#1D1D1F' }}>
                               {formatTime(booking.start_time_utc)} - {formatTime(booking.end_time_utc)}
                             </span>
                           </div>
@@ -264,13 +264,13 @@ export default function BookingCalendar() {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-xs mb-1" style={{ color: '#9CA3AF' }}>Student</p>
-                            <p className="text-sm font-medium" style={{ color: '#1D1D1F',  }}>
+                            <p className="text-sm font-medium" style={{ color: '#1D1D1F' }}>
                               {booking.student?.user?.name || 'Unknown'}
                             </p>
                           </div>
                           <div>
                             <p className="text-xs mb-1" style={{ color: '#9CA3AF' }}>Teacher</p>
-                            <p className="text-sm font-medium" style={{ color: '#1D1D1F',  }}>
+                            <p className="text-sm font-medium" style={{ color: '#1D1D1F' }}>
                               {booking.teacher?.user?.name || 'Unknown'}
                             </p>
                           </div>
@@ -284,7 +284,7 @@ export default function BookingCalendar() {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-sm hover:underline"
-                              style={{ color: '#0F3D2E',  }}
+                              style={{ color: '#0F3D2E' }}
                             >
                               Join Google Meet
                             </a>
@@ -369,7 +369,7 @@ export default function BookingCalendar() {
             ]}
           />
           <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F',  }}>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F' }}>
               Notes (Optional)
             </label>
             <textarea

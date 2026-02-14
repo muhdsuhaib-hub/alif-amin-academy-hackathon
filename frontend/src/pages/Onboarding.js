@@ -129,7 +129,7 @@ export default function Onboarding() {
         <button
           onClick={handleBack}
           className="flex items-center gap-2 mb-12 text-sm font-medium"
-          style={{ color: '#5A5A5A',  }}
+          style={{ color: '#5A5A5A' }}
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -141,10 +141,10 @@ export default function Onboarding() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <p className="text-2xl font-medium mb-2" style={{ color: '#0F3D2E',  }}>
+            <p className="text-2xl font-medium mb-2" style={{ color: '#0F3D2E' }}>
               Absolutely no payment required to begin.
             </p>
-            <p className="text-lg font-normal" style={{ color: '#5A5A5A',  }}>
+            <p className="text-lg font-normal" style={{ color: '#5A5A5A' }}>
               Just a few questions to personalise your experience.
             </p>
           </motion.div>
@@ -177,7 +177,7 @@ export default function Onboarding() {
           >
             <h2 
               className="text-4xl md:text-5xl font-semibold mb-12"
-              style={{ color: '#1F2933',  }}
+              style={{ color: '#1F2933' }}
             >
               {currentQuestion.title}
             </h2>

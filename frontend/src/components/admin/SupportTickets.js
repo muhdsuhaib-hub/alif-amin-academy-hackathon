@@ -140,8 +140,8 @@ export default function SupportTickets() {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-semibold" style={{ color: '#1D1D1F',  }}>Support Tickets</h2>
-          <p className="text-sm mt-1" style={{ color: '#5A5A5A',  }}>
+          <h2 className="text-2xl font-semibold" style={{ color: '#1D1D1F' }}>Support Tickets</h2>
+          <p className="text-sm mt-1" style={{ color: '#5A5A5A' }}>
             Manage support requests and issues
           </p>
         </div>
@@ -187,7 +187,7 @@ export default function SupportTickets() {
         ) : tickets.length === 0 ? (
           <div className="text-center py-12">
             <MessageSquare className="w-12 h-12 mx-auto mb-4" style={{ color: '#9CA3AF' }} />
-            <p style={{ color: '#5A5A5A',  }}>No support tickets found</p>
+            <p style={{ color: '#5A5A5A' }}>No support tickets found</p>
           </div>
         ) : (
           <div className="divide-y" style={{ borderColor: 'rgba(15, 61, 46, 0.05)' }}>
@@ -205,7 +205,7 @@ export default function SupportTickets() {
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold" style={{ color: '#1D1D1F',  }}>
+                        <h3 className="text-lg font-semibold" style={{ color: '#1D1D1F' }}>
                           {ticket.subject}
                         </h3>
                         <span
@@ -219,13 +219,13 @@ export default function SupportTickets() {
                           {ticket.priority}
                         </span>
                       </div>
-                      <p className="text-sm line-clamp-2" style={{ color: '#5A5A5A',  }}>
+                      <p className="text-sm line-clamp-2" style={{ color: '#5A5A5A' }}>
                         {ticket.description}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 ml-4">
                       {getStatusIcon(ticket.status)}
-                      <span className="text-sm capitalize" style={{ color: '#5A5A5A',  }}>
+                      <span className="text-sm capitalize" style={{ color: '#5A5A5A' }}>
                         {ticket.status.replace('_', ' ')}
                       </span>
                     </div>
@@ -259,7 +259,7 @@ export default function SupportTickets() {
             required
           />
           <div>
-            <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F',  }}>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F' }}>
               Description <span style={{ color: '#E76F51' }}>*</span>
             </label>
             <textarea
@@ -307,7 +307,7 @@ export default function SupportTickets() {
           <div className="space-y-6">
             <div>
               <div className="flex items-center gap-3 mb-4">
-                <h3 className="text-xl font-semibold" style={{ color: '#1D1D1F',  }}>
+                <h3 className="text-xl font-semibold" style={{ color: '#1D1D1F' }}>
                   {selectedTicket.subject}
                 </h3>
                 <span
@@ -322,24 +322,24 @@ export default function SupportTickets() {
                 </span>
               </div>
               <div className="p-4 rounded-xl" className="bg-[#FBFBFD]">
-                <p style={{ color: '#1D1D1F',  }}>{selectedTicket.description}</p>
+                <p style={{ color: '#1D1D1F' }}>{selectedTicket.description}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm mb-1" style={{ color: '#9CA3AF' }}>Submitted By</p>
-                <p className="font-medium" style={{ color: '#1D1D1F',  }}>{selectedTicket.user_name}</p>
-                <p className="text-sm" style={{ color: '#5A5A5A',  }}>{selectedTicket.user_email}</p>
+                <p className="font-medium" style={{ color: '#1D1D1F' }}>{selectedTicket.user_name}</p>
+                <p className="text-sm" style={{ color: '#5A5A5A' }}>{selectedTicket.user_email}</p>
               </div>
               <div>
                 <p className="text-sm mb-1" style={{ color: '#9CA3AF' }}>Created</p>
-                <p className="font-medium" style={{ color: '#1D1D1F',  }}>{formatDate(selectedTicket.created_at)}</p>
+                <p className="font-medium" style={{ color: '#1D1D1F' }}>{formatDate(selectedTicket.created_at)}</p>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F',  }}>
+              <label className="block text-sm font-medium mb-2" style={{ color: '#1D1D1F' }}>
                 Update Status
               </label>
               <div className="grid grid-cols-2 gap-3">

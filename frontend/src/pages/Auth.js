@@ -615,7 +615,7 @@ export default function Auth() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
               >
-                <h2 className="text-3xl font-bold mb-2" style={{ color: '#0F3D2E',  }}>
+                <h2 className="text-3xl font-bold mb-2" style={{ color: '#0F3D2E' }}>
                   Complete Your Profile
                 </h2>
                 <p className="text-gray-500 mb-8">Tell us a bit about yourself</p>
