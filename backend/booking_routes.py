@@ -186,6 +186,26 @@ async def create_booking(req: CreateBookingRequest, request: Request):
         reference_id=booking_id
     )
 
+    # === Create ClassSession (Virtual Classroom) ===
+    session_id = f"cs_{uuid.uuid4().hex[:12]}"
+    meet_link_slug = str(uuid.uuid4())
+    now_iso = datetime.now(timezone.utc).isoformat()
+    await db.class_sessions.insert_one({
+        "session_id": session_id,
+        "teacher_id": req.teacher_id,
+        "student_id": student["student_id"],
+        "booking_id": booking_id,
+        "slot_id": None,
+        "start_time_utc": start_time.isoformat(),
+        "end_time_utc": end_time.isoformat(),
+        "status": "booked",
+        "meet_link_slug": meet_link_slug,
+        "recording_url": None,
+        "recording_visibility": "hidden",
+        "created_at": now_iso,
+        "updated_at": now_iso,
+    })
+
     # Create notification for teacher
     notif_id = f"notif_{uuid.uuid4().hex[:12]}"
     student_user_name = user.get("name", "A student")
@@ -197,20 +217,24 @@ async def create_booking(req: CreateBookingRequest, request: Request):
         "notification_type": "booking_confirmed",
         "related_id": booking_id,
         "is_read": False,
-        "created_at": datetime.now(timezone.utc).isoformat()
+        "created_at": now_iso
     })
 
     return {
         "success": True,
         "booking_id": booking_id,
+        "session_id": session_id,
+        "meet_link_slug": meet_link_slug,
         "booking": {
             "booking_id": booking_id,
+            "session_id": session_id,
             "teacher_name": teacher_name,
             "start_time_utc": start_time.isoformat(),
             "end_time_utc": end_time.isoformat(),
             "duration_minutes": req.duration_minutes,
             "credits_charged": credits_needed,
             "meet_link": meet_link,
+            "meet_link_slug": meet_link_slug,
             "status": "scheduled"
         },
         "wallet_balance": {
