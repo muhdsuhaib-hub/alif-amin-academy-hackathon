@@ -5,71 +5,60 @@ Build a web-based platform for an online Quran Academy named "Alif Amin Academy"
 
 ## Tech Stack
 - **Frontend:** React, Tailwind CSS, Shadcn UI, lucide-react, @tanstack/react-query, livekit-client, @livekit/components-react
-- **Backend:** FastAPI (Python), MongoDB (motor), livekit-api
+- **Backend:** FastAPI (Python), MongoDB (motor), livekit-api, websockets
 - **Auth:** JWT Email/Password + Custom Google OAuth 2.0
-- **Realtime:** FastAPI WebSockets (pointer/page/highlight sync, chat)
+- **Realtime:** FastAPI WebSockets (pointer/page/highlight/hand/chat/end-class sync)
 - **Video:** LiveKit WebRTC (wss://alif-amin-web-app-ubmi3yue.livekit.cloud)
 - **Arabic Font:** Amiri (Google Fonts)
 
 ## What's Been Implemented
 
-### UI/UX Redesign (COMPLETE - Feb 2026)
+### UI/UX Redesign (COMPLETE)
 - Full Apple-inspired design system with standardized tokens
-- Centralized component library
 - All pages and components refactored
 
 ### Virtual Classroom Module - Batch 1 (COMPLETE)
-- Phase 1: Clean slate, removed old classroom code
-- Phase 2: ClassSession, StudentProgress, InteractiveActivity models (Pydantic validated, Motor raw)
-- Phase 3: 9 classroom API endpoints (next-class, CRUD, progress, ratings, admin, activities)
-- Phase 4: Digital Mushaf Engine (604-page Madani, react-query prefetch, QuranNavigator, Teacher Toolbar)
+- Phase 1: Clean slate
+- Phase 2: ClassSession, StudentProgress, InteractiveActivity models (Pydantic validated)
+- Phase 3: 9 classroom API endpoints + auto ClassSession on booking
+- Phase 4: Digital Mushaf Engine (604-page, react-query prefetch, QuranNavigator, Toolbar)
 
-### Virtual Classroom Module - Batch 2 (COMPLETE - Feb 2026)
-- **Phase 5: Real-Time Sync + LiveKit Video**
-  - LiveKit token generation endpoint (POST /api/classroom/livekit/token)
-  - WebSocket sync at /api/classroom/ws/{room_id} — events: ROOM_STATE, POINTER_MOVE (50ms throttle), PAGE_CHANGE, HIGHLIGHT_SYNC, NAVIGATE, CHAT
-  - Recording toggle endpoint with stealth mode (admin visible:false)
-  - Teacher pointer/page/highlight broadcast to student in real-time
-- **Phase 6: Apple-Style Classroom UI**
-  - 75/25 split layout (desktop): Left = Mushaf Stage, Right = Video Strip
-  - Mobile: Video strip stacked on top, Mushaf below
-  - Glassmorphism toolbar/control bar (backdrop-blur-xl, rounded-3xl)
-  - VideoStrip with participant tiles (LiveKitRoom integration)
-  - ControlBar: Mic, Camera, End Class + Recording indicator (blinking red dot, visibility-aware)
-  - Chat panel (side panel toggle)
-  - QuranNavigator drawer (teacher-only)
-  - Full route: /classroom/:sessionId (protected, all roles)
-  - Dashboard "Join" buttons now navigate to /classroom/:sessionId
+### Virtual Classroom Module - Batch 2 (COMPLETE)
+- Phase 5: LiveKit video integration + WebSocket real-time sync (pointer/page/highlight)
+- Phase 6: Apple-style classroom UI (75/25 split, glassmorphism, control bar)
+
+### Phase 7: End Class + Revenue (COMPLETE - Feb 2026)
+- **Session Report Modal (Teacher):** Mandatory form — Surah select (114 surahs), Ayah range, Track type (Hifz/Murajaah/Nazra), Grading sliders (fluency/tajweed/makhraj 1-10), Teacher notes
+- **Revenue Trigger:** On progress submission → session marked completed → wallet deduction → teacher earnings credited (commission-tiered)
+- **Rate Teacher Modal (Student):** 5-star rating with gold hover + review textarea → updates teacher cumulative average
+- **END_CLASS WebSocket event:** Teacher ends → student receives notification → rating modal auto-shows
+
+### Raise Hand Feature (COMPLETE - Feb 2026)
+- Student ControlBar: Raise/Lower Hand button with golden highlight
+- WebSocket: RAISE_HAND/LOWER_HAND events broadcast to all participants
+- Teacher UI: Floating glassmorphism toast notification, hand count badge in top bar
+- Video tiles: Golden glowing border when hand is raised, hand icon next to name
+- Both teacher and student can lower hand
 
 ### Existing Features
-- Admin Dashboard, Student Dashboard, Teacher Dashboard
-- Wallet/credit system, booking/cancellation, commission tiers
-- Google OAuth + Email/Password auth, onboarding flow
+- Admin/Student/Teacher Dashboards, Wallet/credit system, Booking/cancellation
+- Commission tiers, Google OAuth + Email/Password auth, Onboarding flow
 
-## Collections Used
-- `class_sessions`, `student_progress`, `activities`, `session_ratings`
+## Collections
+- class_sessions, student_progress, activities, session_ratings, session_payment_records
 
-## Bug Fixes (This Session)
-- MongoDB ObjectId serialization in auth/register
-- User role parsing in ClassroomPage (/api/auth/me returns flat object, not {user:...})
-
-## Mocked Integrations
-- Stripe payment processing
-- File storage (teacher profile media)
-- Recording file storage (GCS Signed URLs - endpoint exists, no actual upload)
-
-## In Progress: Batch 3 (Phases 7-8)
-- Phase 7: "End Class" flow — session report modal, revenue trigger, student rating
-- Phase 8: Student progress dashboard, Admin session monitor with stealth recording, PDF reports
+## In Progress: Phase 8 — Progress Tracker + Admin Monitor
+- Student "My Progress Tracker" widget (line chart/progress bars for grading scores)
+- Admin Global Session Monitor (live rooms list, "Join Stealth" button, "Stealth Record" toggle)
+- Admin session detail view with recording playback
 
 ## Upcoming (P1)
-- Real Stripe payments
-- File storage for teacher profiles
+- Real Stripe payments, File storage
 
 ## Future (P2)
 - Google Meet API, Twilio notifications, PDF report cards
 
 ## Key Credentials
-- LiveKit: wss://alif-amin-web-app-ubmi3yue.livekit.cloud (API key/secret in backend/.env)
-- GCS Bucket: alif-amin-recordings
+- LiveKit: wss://alif-amin-web-app-ubmi3yue.livekit.cloud (keys in backend/.env)
+- GCS: alif-amin-recordings
 - Admin emails: muhdsuhaib@gmail.com, hello.alifamin@gmail.com
