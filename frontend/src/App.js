@@ -12,6 +12,7 @@ import BrowseTeachers from './pages/BrowseTeachers';
 import BookClass from './pages/BookClass';
 import TeacherSignup from './pages/TeacherSignup';
 import Auth from './pages/Auth';
+import ClassroomPage from './pages/ClassroomPage';
 import { Toaster } from './components/ui/sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
