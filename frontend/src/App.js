@@ -224,6 +224,12 @@ function AppRouter() {
           <AdminDashboard />
         </ProtectedRoute>
       } />
+
+      <Route path="/classroom/:sessionId" element={
+        <ProtectedRoute allowedRoles={['teacher', 'student', 'admin']}>
+          <ClassroomPage />
+        </ProtectedRoute>
+      } />
     </Routes>
   );
 }
