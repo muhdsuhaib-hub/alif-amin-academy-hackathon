@@ -376,3 +376,76 @@ class WithdrawalRequest(BaseModel):
     processed_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
+
+
+# ============== VIRTUAL CLASSROOM MODELS ==============
+
+class ClassSession(BaseModel):
+    session_id: str
+    teacher_id: str
+    student_id: str
+    booking_id: Optional[str] = None
+    slot_id: Optional[str] = None
+    start_time_utc: datetime
+    end_time_utc: datetime
+    status: Literal["booked", "live", "completed", "cancelled"] = "booked"
+    meet_link_slug: str  # UUID room identifier
+    recording_url: Optional[str] = None
+    recording_visibility: Literal["public", "hidden"] = "hidden"
+    created_at: datetime
+    updated_at: datetime
+
+
+class ClassSessionCreate(BaseModel):
+    teacher_id: str
+    student_id: str
+    booking_id: Optional[str] = None
+    slot_id: Optional[str] = None
+    start_time_utc: str
+    end_time_utc: str
+
+
+class StudentProgressRecord(BaseModel):
+    progress_id: str
+    session_id: str
+    student_id: str
+    teacher_id: str
+    surah_name: str
+    ayah_start: int
+    ayah_end: int
+    track_type: Literal["Memorization (Hifz)", "Revision (Murajaah)", "Recitation (Nazra)"]
+    grading: dict  # {fluency_score: 1-10, tajweed_score: 1-10, makhraj_score: 1-10}
+    teacher_comments: Optional[str] = None
+    created_at: datetime
+
+
+class StudentProgressCreate(BaseModel):
+    session_id: str
+    surah_name: str
+    ayah_start: int
+    ayah_end: int
+    track_type: Literal["Memorization (Hifz)", "Revision (Murajaah)", "Recitation (Nazra)"]
+    grading: dict
+    teacher_comments: Optional[str] = None
+
+
+class InteractiveActivity(BaseModel):
+    activity_id: str
+    title: str
+    activity_type: Literal["quiz", "flashcard"]
+    content: dict  # Flexible JSON for quiz questions or flashcard data
+    surah_name: Optional[str] = None
+    difficulty: Literal["beginner", "intermediate", "advanced"] = "beginner"
+    created_by: str  # admin user_id
+    is_active: bool = True
+    created_at: datetime
+    updated_at: datetime
+
+
+class InteractiveActivityCreate(BaseModel):
+    title: str
+    activity_type: Literal["quiz", "flashcard"]
+    content: dict
+    surah_name: Optional[str] = None
+    difficulty: Literal["beginner", "intermediate", "advanced"] = "beginner"
+
