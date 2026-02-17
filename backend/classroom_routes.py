@@ -590,6 +590,22 @@ async def classroom_websocket(websocket: WebSocket, room_id: str):
                     "page": msg.get("page", 1),
                 }, exclude=websocket)
 
+            elif msg_type == "RAISE_HAND":
+                # Student raises/lowers hand — broadcast to all
+                await broadcast_to_room(room_id, msg, exclude=None)
+
+            elif msg_type == "LOWER_HAND":
+                # Teacher or student lowers hand — broadcast to all
+                await broadcast_to_room(room_id, msg, exclude=None)
+
+            elif msg_type == "CHAT":
+                # Chat message — broadcast to all except sender
+                await broadcast_to_room(room_id, msg, exclude=websocket)
+
+            elif msg_type == "END_CLASS":
+                # Teacher ended class — notify student
+                await broadcast_to_room(room_id, msg, exclude=websocket)
+
     except WebSocketDisconnect:
         pass
     except Exception as e:
