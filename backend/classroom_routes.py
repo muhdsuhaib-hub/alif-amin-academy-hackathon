@@ -1,8 +1,12 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisconnect
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 from models import ClassSessionCreate, StudentProgressCreate, InteractiveActivityCreate
+from livekit import api as livekit_api
 import uuid
+import os
+import json
+import asyncio
 import logging
 
 classroom_router = APIRouter(prefix="/api/classroom")
