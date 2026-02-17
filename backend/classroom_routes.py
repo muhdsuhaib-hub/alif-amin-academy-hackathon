@@ -409,3 +409,175 @@ async def admin_list_sessions(request: Request, status: Optional[str] = None):
         })
 
     return {"sessions": enriched}
+
+
+
+# ============== LIVEKIT TOKEN GENERATION ==============
+
+@classroom_router.post("/livekit/token")
+async def generate_livekit_token(request: Request):
+    """Generate a LiveKit access token for joining a video room."""
+    user = await _get_user(request)
+    body = await request.json()
+
+    room_name = body.get("room_name")
+    if not room_name:
+        raise HTTPException(status_code=400, detail="room_name required")
+
+    lk_url = os.environ.get("LIVEKIT_URL")
+    lk_key = os.environ.get("LIVEKIT_API_KEY")
+    lk_secret = os.environ.get("LIVEKIT_API_SECRET")
+
+    if not all([lk_url, lk_key, lk_secret]):
+        raise HTTPException(status_code=500, detail="LiveKit not configured")
+
+    is_teacher = user.get("role") == "teacher"
+    identity = user["user_id"]
+    name = user.get("name", "Participant")
+
+    token = livekit_api.AccessToken(api_key=lk_key, api_secret=lk_secret)
+    token = token.with_identity(identity).with_name(name)
+    token = token.with_grants(livekit_api.VideoGrants(
+        room_join=True,
+        room=room_name,
+        can_publish=True,
+        can_subscribe=True,
+        can_publish_data=True,
+    ))
+
+    jwt_token = token.to_jwt()
+
+    return {
+        "token": jwt_token,
+        "server_url": lk_url,
+        "identity": identity,
+        "name": name,
+        "is_teacher": is_teacher,
+    }
+
+
+# ============== RECORDING TOGGLE ==============
+
+@classroom_router.post("/session/{session_id}/recording/toggle")
+async def toggle_recording(session_id: str, request: Request):
+    """Start/stop recording. Stealth mode if admin triggers it."""
+    user = await _get_user(request)
+    role = user.get("role")
+    if role not in ("teacher", "admin"):
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    body = await request.json()
+    action = body.get("action", "start")  # "start" or "stop"
+    visible = role == "teacher"  # Admin recording is stealth (visible=false)
+
+    session = await db.class_sessions.find_one({"session_id": session_id}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Broadcast recording event via WS
+    room_id = session["meet_link_slug"]
+    if room_id in classroom_rooms:
+        event = {
+            "type": "RECORDING_STARTED" if action == "start" else "RECORDING_STOPPED",
+            "visible": visible,
+        }
+        await broadcast_to_room(room_id, event, exclude=None)
+
+    return {"action": action, "visible": visible, "session_id": session_id}
+
+
+# ============== WEBSOCKET REAL-TIME SYNC ==============
+
+# Room state: {room_id: {connections: set(), page: int, highlights: [], recording: {}}}
+classroom_rooms = {}
+
+
+async def broadcast_to_room(room_id, message, exclude=None):
+    """Broadcast a JSON message to all connections in a room."""
+    if room_id not in classroom_rooms:
+        return
+    payload = json.dumps(message)
+    stale = set()
+    for ws in classroom_rooms[room_id]["connections"]:
+        if ws == exclude:
+            continue
+        try:
+            await ws.send_text(payload)
+        except Exception:
+            stale.add(ws)
+    classroom_rooms[room_id]["connections"] -= stale
+
+
+@classroom_router.websocket("/ws/{room_id}")
+async def classroom_websocket(websocket: WebSocket, room_id: str):
+    """
+    WebSocket endpoint for real-time classroom sync.
+    Events: POINTER_MOVE, PAGE_CHANGE, HIGHLIGHT, RECORDING_STARTED/STOPPED
+    """
+    await websocket.accept()
+
+    # Register connection
+    if room_id not in classroom_rooms:
+        classroom_rooms[room_id] = {
+            "connections": set(),
+            "page": 1,
+            "highlights": [],
+            "recording": {"active": False, "visible": False},
+        }
+    classroom_rooms[room_id]["connections"].add(websocket)
+
+    # Send current room state on join
+    state = classroom_rooms[room_id]
+    await websocket.send_text(json.dumps({
+        "type": "ROOM_STATE",
+        "page": state["page"],
+        "highlights": state["highlights"],
+        "recording": state["recording"],
+    }))
+
+    try:
+        while True:
+            raw = await websocket.receive_text()
+            msg = json.loads(raw)
+            msg_type = msg.get("type")
+
+            if msg_type == "POINTER_MOVE":
+                # Broadcast pointer coords to everyone except sender
+                await broadcast_to_room(room_id, msg, exclude=websocket)
+
+            elif msg_type == "PAGE_CHANGE":
+                # Teacher changes page — sync all
+                classroom_rooms[room_id]["page"] = msg.get("page", 1)
+                await broadcast_to_room(room_id, msg, exclude=websocket)
+
+            elif msg_type == "HIGHLIGHT":
+                # Add/remove highlight and broadcast
+                hl = {"verseKey": msg.get("verseKey"), "color": msg.get("color")}
+                highlights = classroom_rooms[room_id]["highlights"]
+                existing = next((i for i, h in enumerate(highlights) if h["verseKey"] == hl["verseKey"]), None)
+                if existing is not None:
+                    highlights.pop(existing)
+                else:
+                    highlights.append(hl)
+                await broadcast_to_room(room_id, {
+                    "type": "HIGHLIGHT_SYNC",
+                    "highlights": highlights,
+                }, exclude=None)
+
+            elif msg_type == "NAVIGATE":
+                # Surah/Juz navigation — resolves to page
+                classroom_rooms[room_id]["page"] = msg.get("page", 1)
+                await broadcast_to_room(room_id, {
+                    "type": "PAGE_CHANGE",
+                    "page": msg.get("page", 1),
+                }, exclude=websocket)
+
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        logger.error(f"WS error in room {room_id}: {e}")
+    finally:
+        if room_id in classroom_rooms:
+            classroom_rooms[room_id]["connections"].discard(websocket)
+            if not classroom_rooms[room_id]["connections"]:
+                del classroom_rooms[room_id]
