@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Dict
 from datetime import datetime
 import uuid
 
@@ -414,7 +414,7 @@ class StudentProgressRecord(BaseModel):
     ayah_start: int
     ayah_end: int
     track_type: Literal["Memorization (Hifz)", "Revision (Murajaah)", "Recitation (Nazra)"]
-    grading: dict  # {fluency_score: 1-10, tajweed_score: 1-10, makhraj_score: 1-10}
+    grading: Dict[str, int]  # {fluency_score: 1-10, tajweed_score: 1-10, makhraj_score: 1-10}
     teacher_comments: Optional[str] = None
     created_at: datetime
 
@@ -425,7 +425,7 @@ class StudentProgressCreate(BaseModel):
     ayah_start: int
     ayah_end: int
     track_type: Literal["Memorization (Hifz)", "Revision (Murajaah)", "Recitation (Nazra)"]
-    grading: dict
+    grading: Dict[str, int]
     teacher_comments: Optional[str] = None
 
 
