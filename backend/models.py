@@ -420,7 +420,7 @@ class StudentProgressRecord(BaseModel):
 
 
 class StudentProgressCreate(BaseModel):
-    session_id: str
+    session_id: Optional[str] = None  # Optional since it's provided via URL path
     surah_name: str
     ayah_start: int
     ayah_end: int
