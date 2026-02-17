@@ -227,14 +227,20 @@ function AppRouter() {
   );
 }
 
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 2, refetchOnWindowFocus: false } },
+});
+
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <AppRouter />
-      </BrowserRouter>
-      <Toaster position="top-right" />
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <div className="App">
+        <BrowserRouter>
+          <AppRouter />
+        </BrowserRouter>
+        <Toaster position="top-right" />
+      </div>
+    </QueryClientProvider>
   );
 }
 
