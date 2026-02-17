@@ -197,7 +197,8 @@ export default function ClassroomPage() {
         const meRes = await fetch(`${API}/auth/me`, { credentials: 'include' });
         if (!meRes.ok) { navigate('/auth'); return; }
         const meData = await meRes.json();
-        setUser(meData.user);
+        // /api/auth/me returns user object directly, not wrapped in { user: ... }
+        setUser(meData.user || meData);
 
         // Get session details
         const sRes = await fetch(`${API}/classroom/session/${sessionId}`, { credentials: 'include' });
