@@ -123,6 +123,7 @@ class TestSessionProgress:
         data = setup_session
         
         progress_data = {
+            "session_id": data['session_id'],  # Required by Pydantic model
             "surah_name": "Al-Fatihah",
             "ayah_start": 1,
             "ayah_end": 7,
@@ -152,6 +153,7 @@ class TestSessionProgress:
         data = setup_session
         
         progress_data = {
+            "session_id": data['session_id'],  # Required by Pydantic model
             "surah_name": "Al-Fatihah",
             "ayah_start": 1,
             "ayah_end": 7,
