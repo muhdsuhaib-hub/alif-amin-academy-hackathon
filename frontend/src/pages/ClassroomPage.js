@@ -198,7 +198,8 @@ export default function ClassroomPage() {
         if (!meRes.ok) { navigate('/auth'); return; }
         const meData = await meRes.json();
         // /api/auth/me returns user object directly, not wrapped in { user: ... }
-        setUser(meData.user || meData);
+        const userData = meData.user || meData;
+        setUser(userData);
 
         // Get session details
         const sRes = await fetch(`${API}/classroom/session/${sessionId}`, { credentials: 'include' });
@@ -220,7 +221,7 @@ export default function ClassroomPage() {
         }
 
         // Mark as live if teacher
-        if (meData.user.role === 'teacher') {
+        if (userData.role === 'teacher') {
           await fetch(`${API}/classroom/session/${sessionId}/go-live`, {
             method: 'POST',
             credentials: 'include',
