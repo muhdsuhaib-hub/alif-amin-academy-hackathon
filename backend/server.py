@@ -123,6 +123,8 @@ async def register_with_email(data: EmailRegister):
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user_doc)
+    # Remove _id added by MongoDB
+    user_doc.pop('_id', None)
     
     # Create student profile if role is student
     if data.role == "student":
