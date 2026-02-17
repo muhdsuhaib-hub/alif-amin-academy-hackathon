@@ -1075,6 +1075,14 @@ async def get_admin_stats(current_user: User = Depends(get_current_user)):
         },
         "status": "scheduled"
     }, {"_id": 0}).to_list(100)
+
+    # Enrich with session_id from class_sessions
+    for cls in todays_classes:
+        cs = await db.class_sessions.find_one(
+            {"booking_id": cls.get("booking_id")}, {"_id": 0, "session_id": 1}
+        )
+        if cs:
+            cls["session_id"] = cs["session_id"]
     
     trial_students = await db.students.find({
         "subscription_status": "trial"
