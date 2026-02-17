@@ -29,50 +29,34 @@ class TestSessionProgress:
     
     @pytest.fixture
     def setup_session(self):
-        """Create a test session with proper teacher/student linkage using seeded data"""
+        """Create a test session with proper teacher/student linkage"""
         unique_id = uuid.uuid4().hex[:8]
         
-        # Use seeded teacher (teacher_001 with user_teacher001)
-        # Create a user session for the seeded teacher by logging in
-        login_res = requests.post(
-            f"{BASE_URL}/api/auth/login",
-            json={"email": "ustaz.ahmad@alilm.com", "password": "Test123!"}
+        # Register a new teacher
+        teacher_email = f"TEST_teacher_prog_{unique_id}@test.com"
+        reg_res = requests.post(
+            f"{BASE_URL}/api/auth/register",
+            json={
+                "email": teacher_email,
+                "password": "Test123!",
+                "full_name": f"Progress Teacher {unique_id}",
+                "role": "teacher"
+            }
         )
-        # If login fails (password might be different), try registering a new teacher properly
-        if login_res.status_code != 200:
-            # Create a fully valid teacher by using the registration flow
-            teacher_email = f"TEST_teacher_prog_{unique_id}@test.com"
-            reg_res = requests.post(
-                f"{BASE_URL}/api/auth/register",
-                json={
-                    "email": teacher_email,
-                    "password": "Test123!",
-                    "full_name": f"Progress Teacher {unique_id}",
-                    "role": "teacher"
-                }
-            )
-            assert reg_res.status_code == 200, f"Teacher registration failed: {reg_res.text}"
-            reg_data = reg_res.json()
-            teacher_session = reg_data.get("session_token")
-            teacher_user_id = reg_data.get("user_id")
-            
-            # Register as teacher to create teacher profile
-            teacher_reg_res = requests.post(
-                f"{BASE_URL}/api/auth/register-teacher",
-                cookies={"session_token": teacher_session}
-            )
-            
-            # Get the new teacher_id
-            if teacher_reg_res.status_code == 200:
-                teacher_data = teacher_reg_res.json()
-                teacher_id = teacher_data.get("teacher", {}).get("teacher_id", f"teacher_{unique_id}")
-            else:
-                teacher_id = f"teacher_{unique_id}"
-        else:
-            # Use the seeded teacher
-            login_data = login_res.json()
-            teacher_session = login_data.get("session_token")
-            teacher_id = "teacher_001"
+        assert reg_res.status_code == 200, f"Teacher registration failed: {reg_res.text}"
+        reg_data = reg_res.json()
+        teacher_session = reg_data.get("session_token")
+        
+        # Register as teacher to create teacher profile
+        teacher_reg_res = requests.post(
+            f"{BASE_URL}/api/auth/register-teacher",
+            cookies={"session_token": teacher_session}
+        )
+        assert teacher_reg_res.status_code == 200, f"Teacher profile creation failed: {teacher_reg_res.text}"
+        teacher_data = teacher_reg_res.json()
+        # Note: Response format is {"teacher_id": "...", "status": "pending"} not nested
+        teacher_id = teacher_data.get("teacher_id")
+        assert teacher_id, "Teacher ID should be returned"
         
         # Register a test student
         student_email = f"TEST_student_prog_{unique_id}@test.com"
@@ -89,12 +73,12 @@ class TestSessionProgress:
         student_data = student_res.json()
         student_session = student_data.get("session_token")
         
-        # Get student_id
+        # Get student_id (created automatically for students)
         student_info = requests.get(
             f"{BASE_URL}/api/student/profile",
             cookies={"session_token": student_session}
         )
-        student_id = student_info.json().get("student_id", f"student_{unique_id}") if student_info.status_code == 200 else f"student_{unique_id}"
+        student_id = student_info.json().get("student_id") if student_info.status_code == 200 else f"student_{unique_id}"
         
         # Create a session linking this teacher and student
         session_res = requests.post(
