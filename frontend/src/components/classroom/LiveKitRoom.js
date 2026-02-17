@@ -1,36 +1,40 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
-  LiveKitRoom,
   VideoTrack,
   useTracks,
-  useParticipants,
   useLocalParticipant,
-  useRoomContext,
 } from '@livekit/components-react';
-import { Track, RoomEvent } from 'livekit-client';
+import { Track } from 'livekit-client';
 import '@livekit/components-styles';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-
 // ==================== VIDEO TILE ====================
-function ParticipantVideo({ track, name, isLocal }) {
+function ParticipantVideo({ track, name, isLocal, hasRaisedHand }) {
   return (
     <div
-      className="relative rounded-2xl overflow-hidden bg-black/80 backdrop-blur-xl border border-white/10 aspect-video"
+      className={`relative rounded-2xl overflow-hidden bg-black/80 backdrop-blur-xl border-2 aspect-video transition-all duration-300 ${
+        hasRaisedHand ? 'border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'border-white/10'
+      }`}
       data-testid={`video-tile-${isLocal ? 'local' : 'remote'}`}
     >
       <VideoTrack trackRef={track} className="w-full h-full object-cover" />
-      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
+      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2 flex items-center justify-between">
         <span className="text-white text-xs font-medium">
           {name}{isLocal ? ' (You)' : ''}
         </span>
+        {hasRaisedHand && (
+          <span className="text-sm" title="Hand Raised">
+            <svg className="w-4 h-4 text-[#D4AF37] animate-bounce" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.5 8c-.7 0-1.3.4-1.5 1V6c0-.8-.7-1.5-1.5-1.5S14 5.2 14 6V4.5c0-.8-.7-1.5-1.5-1.5S11 3.7 11 4.5V6c0-.8-.7-1.5-1.5-1.5S8 5.2 8 6v6.5L6.6 11c-.6-.6-1.5-.5-2.1.1-.5.6-.5 1.5.1 2l4.5 5.1c.6.7 1.5 1.1 2.4 1.1h4.9c1.6 0 3-1.2 3.2-2.8l.4-3.1V9.5c0-.8-.7-1.5-1.5-1.5z" />
+            </svg>
+          </span>
+        )}
       </div>
     </div>
   );
 }
 
 // ==================== VIDEO STRIP ====================
-function VideoStrip() {
+function VideoStrip({ raisedHands = {} }) {
   const tracks = useTracks(
     [{ source: Track.Source.Camera, withPlaceholder: true }],
     { onlySubscribed: false }
@@ -47,20 +51,24 @@ function VideoStrip() {
 
   return (
     <div className="flex flex-col gap-3 h-full overflow-y-auto p-3" data-testid="video-strip">
-      {tracks.map((trackRef) => (
-        <ParticipantVideo
-          key={trackRef.participant.sid}
-          track={trackRef}
-          name={trackRef.participant.name || trackRef.participant.identity}
-          isLocal={trackRef.participant.sid === localParticipant?.sid}
-        />
-      ))}
+      {tracks.map((trackRef) => {
+        const identity = trackRef.participant.identity;
+        return (
+          <ParticipantVideo
+            key={trackRef.participant.sid}
+            track={trackRef}
+            name={trackRef.participant.name || identity}
+            isLocal={trackRef.participant.sid === localParticipant?.sid}
+            hasRaisedHand={!!raisedHands[identity]}
+          />
+        );
+      })}
     </div>
   );
 }
 
 // ==================== CONTROL BAR ====================
-function ControlBar({ onEndClass, isRecording, isTeacher }) {
+function ControlBar({ onEndClass, isRecording, isTeacher, isHandRaised, onRaiseHand, onLowerHand }) {
   const { localParticipant } = useLocalParticipant();
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
@@ -124,6 +132,20 @@ function ControlBar({ onEndClass, isRecording, isTeacher }) {
         </svg>
       </button>
 
+      {/* Raise Hand (Student only) / Lower Hand (Both) */}
+      {!isTeacher && (
+        <button
+          onClick={isHandRaised ? onLowerHand : onRaiseHand}
+          className={`${btnBase} ${isHandRaised ? 'bg-[#D4AF37]/20 border-[#D4AF37]/40 text-[#D4AF37]' : 'bg-white/60 border-white/30 text-ink-secondary'}`}
+          title={isHandRaised ? 'Lower Hand' : 'Raise Hand'}
+          data-testid="raise-hand-btn"
+        >
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.5 8c-.7 0-1.3.4-1.5 1V6c0-.8-.7-1.5-1.5-1.5S14 5.2 14 6V4.5c0-.8-.7-1.5-1.5-1.5S11 3.7 11 4.5V6c0-.8-.7-1.5-1.5-1.5S8 5.2 8 6v6.5L6.6 11c-.6-.6-1.5-.5-2.1.1-.5.6-.5 1.5.1 2l4.5 5.1c.6.7 1.5 1.1 2.4 1.1h4.9c1.6 0 3-1.2 3.2-2.8l.4-3.1V9.5c0-.8-.7-1.5-1.5-1.5z" />
+          </svg>
+        </button>
+      )}
+
       <div className="w-px h-6 bg-black/10 mx-1" />
 
       {/* End Class */}
@@ -138,5 +160,4 @@ function ControlBar({ onEndClass, isRecording, isTeacher }) {
   );
 }
 
-// ==================== MAIN EXPORTS ====================
 export { VideoStrip, ControlBar, ParticipantVideo };
