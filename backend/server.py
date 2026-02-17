@@ -165,7 +165,7 @@ async def register_with_email(data: EmailRegister):
     await db.user_sessions.insert_one({
         "user_id": user_id,
         "session_token": session_token,
-        "created_at": datetime.now(timezone.utc),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "expires_at": expires_at
     })
     
