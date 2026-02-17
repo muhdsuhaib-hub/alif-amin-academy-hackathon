@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from datetime import datetime, timezone, timedelta
-from typing import Optional, Literal
-from pydantic import BaseModel
+from typing import Optional
+from models import ClassSessionCreate, StudentProgressCreate, InteractiveActivityCreate
 import uuid
 import logging
 
@@ -44,7 +44,7 @@ async def _get_user(request: Request):
     return user_doc
 
 
-# ============== PHASE 3: NEXT CLASS + JOIN VALIDATION ==============
+# ============== NEXT CLASS + JOIN VALIDATION ==============
 
 @classroom_router.get("/next-class")
 async def get_next_class(request: Request):
@@ -56,7 +56,6 @@ async def get_next_class(request: Request):
     now = datetime.now(timezone.utc)
     role = user.get("role")
 
-    # Build query based on role
     if role == "teacher":
         teacher = await db.teachers.find_one({"user_id": user["user_id"]}, {"_id": 0})
         if not teacher:
@@ -68,12 +67,10 @@ async def get_next_class(request: Request):
             return {"session": None}
         query = {"student_id": student["student_id"], "status": {"$in": ["booked", "live"]}}
     elif role == "admin":
-        # Admin can see any upcoming session
         query = {"status": {"$in": ["booked", "live"]}}
     else:
         return {"session": None}
 
-    # Find the next upcoming session
     session = await db.class_sessions.find_one(
         {**query, "start_time_utc": {"$gte": (now - timedelta(hours=2)).isoformat()}},
         {"_id": 0},
@@ -83,7 +80,6 @@ async def get_next_class(request: Request):
     if not session:
         return {"session": None}
 
-    # Calculate joinability
     start = datetime.fromisoformat(session["start_time_utc"])
     end = datetime.fromisoformat(session["end_time_utc"])
     if start.tzinfo is None:
@@ -94,15 +90,11 @@ async def get_next_class(request: Request):
     join_window_start = start - timedelta(minutes=5)
     is_joinable = join_window_start <= now <= end
 
-    # Enrich with names
-    teacher_user = None
-    student_user = None
+    # Enrich with participant names
     teacher_doc = await db.teachers.find_one({"teacher_id": session["teacher_id"]}, {"_id": 0})
-    if teacher_doc:
-        teacher_user = await db.users.find_one({"user_id": teacher_doc["user_id"]}, {"_id": 0, "name": 1, "picture": 1})
+    teacher_user = await db.users.find_one({"user_id": teacher_doc["user_id"]}, {"_id": 0, "name": 1, "picture": 1}) if teacher_doc else None
     student_doc = await db.students.find_one({"student_id": session["student_id"]}, {"_id": 0})
-    if student_doc:
-        student_user = await db.users.find_one({"user_id": student_doc["user_id"]}, {"_id": 0, "name": 1, "picture": 1})
+    student_user = await db.users.find_one({"user_id": student_doc["user_id"]}, {"_id": 0, "name": 1, "picture": 1}) if student_doc else None
 
     return {
         "session": {
@@ -134,7 +126,6 @@ async def get_session_details(session_id: str, request: Request):
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    # Authorization: only participants or admin
     role = user.get("role")
     if role == "teacher":
         teacher = await db.teachers.find_one({"user_id": user["user_id"]}, {"_id": 0})
@@ -147,7 +138,6 @@ async def get_session_details(session_id: str, request: Request):
     elif role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # Enrich
     teacher_doc = await db.teachers.find_one({"teacher_id": session["teacher_id"]}, {"_id": 0})
     teacher_user = await db.users.find_one({"user_id": teacher_doc["user_id"]}, {"_id": 0, "name": 1, "picture": 1}) if teacher_doc else None
     student_doc = await db.students.find_one({"student_id": session["student_id"]}, {"_id": 0})
@@ -184,23 +174,12 @@ async def go_live(session_id: str, request: Request):
     return {"status": "live", "session_id": session_id}
 
 
-# ============== SESSION CREATION (Called when booking is created) ==============
+# ============== SESSION CREATION ==============
 
 @classroom_router.post("/sessions/create")
-async def create_class_session(request: Request):
-    """Create a class session from a booking. Called internally or by admin."""
-    user = await _get_user(request)
-    body = await request.json()
-
-    teacher_id = body.get("teacher_id")
-    student_id = body.get("student_id")
-    booking_id = body.get("booking_id")
-    slot_id = body.get("slot_id")
-    start_time = body.get("start_time_utc")
-    end_time = body.get("end_time_utc")
-
-    if not all([teacher_id, student_id, start_time, end_time]):
-        raise HTTPException(status_code=400, detail="Missing required fields")
+async def create_class_session(data: ClassSessionCreate, request: Request):
+    """Create a class session. Validates via Pydantic ClassSessionCreate model."""
+    await _get_user(request)
 
     now = datetime.now(timezone.utc)
     session_id = f"cs_{uuid.uuid4().hex[:12]}"
@@ -208,12 +187,12 @@ async def create_class_session(request: Request):
 
     session_doc = {
         "session_id": session_id,
-        "teacher_id": teacher_id,
-        "student_id": student_id,
-        "booking_id": booking_id,
-        "slot_id": slot_id,
-        "start_time_utc": start_time,
-        "end_time_utc": end_time,
+        "teacher_id": data.teacher_id,
+        "student_id": data.student_id,
+        "booking_id": data.booking_id,
+        "slot_id": data.slot_id,
+        "start_time_utc": data.start_time_utc,
+        "end_time_utc": data.end_time_utc,
         "status": "booked",
         "meet_link_slug": meet_link_slug,
         "recording_url": None,
@@ -230,11 +209,11 @@ async def create_class_session(request: Request):
     }
 
 
-# ============== STUDENT PROGRESS (Phase 7 - End Class) ==============
+# ============== STUDENT PROGRESS ==============
 
 @classroom_router.post("/session/{session_id}/progress")
-async def submit_progress(session_id: str, request: Request):
-    """Teacher submits student progress after ending class."""
+async def submit_progress(session_id: str, data: StudentProgressCreate, request: Request):
+    """Teacher submits student progress. Validates via Pydantic StudentProgressCreate model."""
     user = await _get_user(request)
     if user["role"] != "teacher":
         raise HTTPException(status_code=403, detail="Only teacher can submit progress")
@@ -243,36 +222,34 @@ async def submit_progress(session_id: str, request: Request):
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    body = await request.json()
-    now = datetime.now(timezone.utc)
-
     teacher = await db.teachers.find_one({"user_id": user["user_id"]}, {"_id": 0})
     if not teacher or teacher["teacher_id"] != session["teacher_id"]:
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    now = datetime.now(timezone.utc)
     progress_id = f"sp_{uuid.uuid4().hex[:12]}"
+
     progress_doc = {
         "progress_id": progress_id,
         "session_id": session_id,
         "student_id": session["student_id"],
         "teacher_id": session["teacher_id"],
-        "surah_name": body.get("surah_name", ""),
-        "ayah_start": body.get("ayah_start", 0),
-        "ayah_end": body.get("ayah_end", 0),
-        "track_type": body.get("track_type", "Recitation (Nazra)"),
-        "grading": body.get("grading", {}),
-        "teacher_comments": body.get("teacher_comments"),
+        "surah_name": data.surah_name,
+        "ayah_start": data.ayah_start,
+        "ayah_end": data.ayah_end,
+        "track_type": data.track_type,
+        "grading": data.grading,
+        "teacher_comments": data.teacher_comments,
         "created_at": now.isoformat(),
     }
     await db.student_progress.insert_one(progress_doc)
 
-    # Mark session as completed
+    # Mark session completed
     await db.class_sessions.update_one(
         {"session_id": session_id},
         {"$set": {"status": "completed", "updated_at": now.isoformat()}}
     )
 
-    # Also complete the linked booking
     if session.get("booking_id"):
         await db.bookings.update_one(
             {"booking_id": session["booking_id"]},
@@ -297,7 +274,9 @@ async def rate_teacher(session_id: str, request: Request):
     rating = body.get("rating", 5)
     review = body.get("review", "")
 
-    # Save rating
+    if not (1 <= rating <= 5):
+        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+
     rating_id = f"rate_{uuid.uuid4().hex[:12]}"
     await db.session_ratings.insert_one({
         "rating_id": rating_id,
@@ -310,6 +289,7 @@ async def rate_teacher(session_id: str, request: Request):
     })
 
     # Update teacher's cumulative average
+    new_avg = float(rating)
     teacher = await db.teachers.find_one({"teacher_id": session["teacher_id"]}, {"_id": 0})
     if teacher:
         total_reviews = teacher.get("total_reviews", 0) + 1
@@ -324,7 +304,7 @@ async def rate_teacher(session_id: str, request: Request):
             }}
         )
 
-    return {"rating_id": rating_id, "new_average": round(new_avg, 2) if teacher else rating}
+    return {"rating_id": rating_id, "new_average": round(new_avg, 2)}
 
 
 # ============== STUDENT PROGRESS HISTORY ==============
@@ -333,7 +313,6 @@ async def rate_teacher(session_id: str, request: Request):
 async def get_student_progress(student_id: str, request: Request):
     """Get progress history for a student."""
     user = await _get_user(request)
-    # Students can view own, teachers/admins can view any
     if user["role"] == "student":
         student = await db.students.find_one({"user_id": user["user_id"]}, {"_id": 0})
         if not student or student["student_id"] != student_id:
@@ -349,29 +328,28 @@ async def get_student_progress(student_id: str, request: Request):
 # ============== INTERACTIVE ACTIVITIES (Admin CRUD) ==============
 
 @classroom_router.post("/activities")
-async def create_activity(request: Request):
-    """Admin creates an interactive activity (quiz/flashcard)."""
+async def create_activity(data: InteractiveActivityCreate, request: Request):
+    """Admin creates an interactive activity. Validates via Pydantic InteractiveActivityCreate model."""
     user = await _get_user(request)
     if user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
 
-    body = await request.json()
     now = datetime.now(timezone.utc)
     activity_id = f"act_{uuid.uuid4().hex[:12]}"
 
     activity_doc = {
         "activity_id": activity_id,
-        "title": body.get("title", ""),
-        "activity_type": body.get("activity_type", "quiz"),
-        "content": body.get("content", {}),
-        "surah_name": body.get("surah_name"),
-        "difficulty": body.get("difficulty", "beginner"),
+        "title": data.title,
+        "activity_type": data.activity_type,
+        "content": data.content,
+        "surah_name": data.surah_name,
+        "difficulty": data.difficulty,
         "created_by": user["user_id"],
         "is_active": True,
         "created_at": now.isoformat(),
         "updated_at": now.isoformat(),
     }
-    await db.interactive_activities.insert_one(activity_doc)
+    await db.activities.insert_one(activity_doc)
     return {"activity_id": activity_id}
 
 
@@ -382,7 +360,7 @@ async def list_activities(request: Request, activity_type: Optional[str] = None)
     query = {"is_active": True}
     if activity_type:
         query["activity_type"] = activity_type
-    activities = await db.interactive_activities.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    activities = await db.activities.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     return {"activities": activities}
 
 
@@ -392,7 +370,7 @@ async def delete_activity(activity_id: str, request: Request):
     user = await _get_user(request)
     if user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    await db.interactive_activities.update_one(
+    await db.activities.update_one(
         {"activity_id": activity_id},
         {"$set": {"is_active": False, "updated_at": datetime.now(timezone.utc).isoformat()}}
     )
