@@ -23,6 +23,7 @@ from wallet_routes import wallet_router, init_wallet_routes
 from commission_routes import commission_router, init_commission_routes
 from tutor_earnings_routes import tutor_earnings_router, init_tutor_earnings_routes
 from booking_routes import booking_router, init_booking_routes
+from classroom_routes import classroom_router, init_classroom_routes
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -1301,6 +1302,10 @@ app.include_router(tutor_earnings_router)
 # Initialize booking routes with database
 init_booking_routes(db)
 app.include_router(booking_router)
+
+# Initialize classroom routes with database
+init_classroom_routes(db, get_current_user)
+app.include_router(classroom_router)
 
 app.add_middleware(
     CORSMiddleware,
