@@ -260,6 +260,24 @@ async def submit_progress(session_id: str, data: StudentProgressCreate, request:
             {"$set": {"status": "completed"}}
         )
 
+        # REVENUE TRIGGER: Credit teacher earnings
+        try:
+            booking = await db.bookings.find_one({"booking_id": session["booking_id"]}, {"_id": 0})
+            if booking:
+                from wallet_routes import deduct_credits, DeductCreditsRequest
+                student_doc = await db.students.find_one({"student_id": session["student_id"]}, {"_id": 0})
+                if student_doc:
+                    deduct_req = DeductCreditsRequest(
+                        booking_id=session["booking_id"],
+                        teacher_id=session["teacher_id"],
+                        duration_minutes=booking.get("duration_minutes", 30),
+                    )
+                    await deduct_credits(deduct_req, student_doc["user_id"])
+                    logger.info(f"Revenue credited for session {session_id}")
+        except Exception as e:
+            # Log but don't fail the progress submission
+            logger.error(f"Revenue credit failed for session {session_id}: {e}")
+
     return {"progress_id": progress_id, "session_status": "completed"}
 
 
