@@ -14,6 +14,9 @@ import json
 import uuid
 import os
 
+# Configure pytest-asyncio
+pytest_plugins = ('pytest_asyncio',)
+
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://alif-redesign.preview.emergentagent.com')
 WS_BASE = BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://')
 
@@ -29,14 +32,14 @@ class TestSessionProgress:
         """Create a test session with proper teacher/student linkage"""
         unique_id = uuid.uuid4().hex[:8]
         
-        # Register a test teacher
+        # Register a test teacher (using full_name field)
         teacher_email = f"TEST_teacher_prog_{unique_id}@test.com"
         teacher_res = requests.post(
             f"{BASE_URL}/api/auth/register",
             json={
                 "email": teacher_email,
                 "password": "Test123!",
-                "name": f"Progress Teacher {unique_id}",
+                "full_name": f"Progress Teacher {unique_id}",
                 "role": "teacher"
             }
         )
@@ -45,14 +48,7 @@ class TestSessionProgress:
         teacher_session = teacher_data.get("session_token")
         teacher_user_id = teacher_data.get("user_id")
         
-        # Get teacher_id from teachers collection
-        me_res = requests.get(
-            f"{BASE_URL}/api/auth/me",
-            cookies={"session_token": teacher_session}
-        )
-        assert me_res.status_code == 200
-        
-        # Create teacher profile
+        # Complete teacher profile
         profile_res = requests.post(
             f"{BASE_URL}/api/teacher/complete-signup",
             json={
@@ -66,7 +62,6 @@ class TestSessionProgress:
             },
             cookies={"session_token": teacher_session}
         )
-        # May already exist, ignore error
         
         # Get teacher_id
         teacher_info = requests.get(
@@ -82,7 +77,7 @@ class TestSessionProgress:
             json={
                 "email": student_email,
                 "password": "Test123!",
-                "name": f"Progress Student {unique_id}",
+                "full_name": f"Progress Student {unique_id}",
                 "role": "student"
             }
         )
@@ -146,11 +141,11 @@ class TestSessionProgress:
             cookies={"session_token": data['teacher_session']}
         )
         
-        # Should succeed or return 200
         assert res.status_code == 200, f"Progress submission failed: {res.text}"
         result = res.json()
         assert "progress_id" in result, "progress_id should be in response"
         assert result.get("session_status") == "completed", "Session should be marked completed"
+        print(f"Progress submitted: {result}")
     
     def test_progress_submission_student_forbidden(self, setup_session):
         """Test that student cannot submit progress"""
@@ -172,6 +167,7 @@ class TestSessionProgress:
         )
         
         assert res.status_code == 403, f"Expected 403 Forbidden for student, got {res.status_code}"
+        print(f"Student correctly forbidden: {res.status_code}")
     
     def test_progress_validation_missing_surah(self, setup_session):
         """Test Pydantic validation - missing surah_name"""
@@ -193,6 +189,7 @@ class TestSessionProgress:
         
         # Should fail validation
         assert res.status_code == 422, f"Expected 422 validation error, got {res.status_code}"
+        print(f"Validation error correctly returned: {res.status_code}")
 
 
 class TestStudentRating:
@@ -203,17 +200,17 @@ class TestStudentRating:
         """Create a test session for rating"""
         unique_id = uuid.uuid4().hex[:8]
         
-        # Register teacher
+        # Register teacher (using full_name)
         teacher_res = requests.post(
             f"{BASE_URL}/api/auth/register",
             json={
                 "email": f"TEST_teacher_rate_{unique_id}@test.com",
                 "password": "Test123!",
-                "name": f"Rating Teacher {unique_id}",
+                "full_name": f"Rating Teacher {unique_id}",
                 "role": "teacher"
             }
         )
-        assert teacher_res.status_code == 200
+        assert teacher_res.status_code == 200, f"Teacher reg failed: {teacher_res.text}"
         teacher_session = teacher_res.json().get("session_token")
         
         # Complete teacher profile
@@ -240,11 +237,11 @@ class TestStudentRating:
             json={
                 "email": f"TEST_student_rate_{unique_id}@test.com",
                 "password": "Test123!",
-                "name": f"Rating Student {unique_id}",
+                "full_name": f"Rating Student {unique_id}",
                 "role": "student"
             }
         )
-        assert student_res.status_code == 200
+        assert student_res.status_code == 200, f"Student reg failed: {student_res.text}"
         student_session = student_res.json().get("session_token")
         
         student_info = requests.get(f"{BASE_URL}/api/student/profile", cookies={"session_token": student_session})
@@ -263,7 +260,7 @@ class TestStudentRating:
             },
             cookies={"session_token": teacher_session}
         )
-        assert session_res.status_code == 200
+        assert session_res.status_code == 200, f"Session creation failed: {session_res.text}"
         session_data = session_res.json()
         
         return {
@@ -287,6 +284,7 @@ class TestStudentRating:
         result = res.json()
         assert "rating_id" in result, "rating_id should be in response"
         assert "new_average" in result, "new_average should be in response"
+        print(f"Rating submitted: {result}")
     
     def test_rating_teacher_forbidden(self, setup_rating_session):
         """Test that teacher cannot rate themselves"""
@@ -299,6 +297,7 @@ class TestStudentRating:
         )
         
         assert res.status_code == 403, f"Expected 403 Forbidden for teacher, got {res.status_code}"
+        print(f"Teacher correctly forbidden from rating: {res.status_code}")
     
     def test_rating_invalid_value(self, setup_rating_session):
         """Test rating validation (1-5 range)"""
@@ -312,6 +311,7 @@ class TestStudentRating:
         )
         
         assert res.status_code == 400, f"Expected 400 for invalid rating, got {res.status_code}"
+        print(f"Invalid rating correctly rejected: {res.status_code}")
 
 
 class TestRecordingToggle:
@@ -334,7 +334,7 @@ class TestRecordingToggle:
             },
             cookies={"session_token": TEST_TEACHER_SESSION}
         )
-        assert session_res.status_code == 200
+        assert session_res.status_code == 200, f"Session creation failed: {session_res.text}"
         session_id = session_res.json()["session_id"]
         
         # Toggle recording as teacher
@@ -348,6 +348,39 @@ class TestRecordingToggle:
         result = toggle_res.json()
         assert result.get("action") == "start", "Action should be 'start'"
         assert result.get("visible") == True, "Teacher recording should be visible=true"
+        print(f"Recording toggle success: {result}")
+    
+    def test_recording_toggle_stop(self):
+        """Test stopping recording"""
+        unique_id = uuid.uuid4().hex[:8]
+        
+        # Create session
+        session_res = requests.post(
+            f"{BASE_URL}/api/classroom/sessions/create",
+            json={
+                "teacher_id": f"teacher_{unique_id}",
+                "student_id": f"student_{unique_id}",
+                "booking_id": f"booking_rec_stop_{unique_id}",
+                "slot_id": f"slot_rec_stop_{unique_id}",
+                "start_time_utc": "2026-02-17T20:00:00Z",
+                "end_time_utc": "2026-02-17T21:00:00Z"
+            },
+            cookies={"session_token": TEST_TEACHER_SESSION}
+        )
+        assert session_res.status_code == 200
+        session_id = session_res.json()["session_id"]
+        
+        # Stop recording
+        toggle_res = requests.post(
+            f"{BASE_URL}/api/classroom/session/{session_id}/recording/toggle",
+            json={"action": "stop"},
+            cookies={"session_token": TEST_TEACHER_SESSION}
+        )
+        
+        assert toggle_res.status_code == 200
+        result = toggle_res.json()
+        assert result.get("action") == "stop", "Action should be 'stop'"
+        print(f"Recording stop success: {result}")
 
 
 class TestWebSocketEvents:
@@ -385,6 +418,7 @@ class TestWebSocketEvents:
             assert data2["type"] == "RAISE_HAND", f"WS2 should receive RAISE_HAND, got {data2['type']}"
             assert data1.get("identity") == "student_test"
             assert data1.get("name") == "Test Student"
+            print("RAISE_HAND broadcast test passed")
     
     @pytest.mark.asyncio
     async def test_websocket_lower_hand(self):
@@ -413,6 +447,7 @@ class TestWebSocketEvents:
             assert data1["type"] == "LOWER_HAND"
             assert data2["type"] == "LOWER_HAND"
             assert data1.get("identity") == "student_test"
+            print("LOWER_HAND broadcast test passed")
     
     @pytest.mark.asyncio
     async def test_websocket_end_class(self):
@@ -436,6 +471,7 @@ class TestWebSocketEvents:
                 msg = await asyncio.wait_for(student_ws.recv(), timeout=5)
                 data = json.loads(msg)
                 assert data["type"] == "END_CLASS", f"Student should receive END_CLASS, got {data['type']}"
+                print("END_CLASS broadcast test passed")
             except asyncio.TimeoutError:
                 pytest.fail("Student should have received END_CLASS event")
     
@@ -465,6 +501,7 @@ class TestWebSocketEvents:
                 assert data["type"] == "CHAT"
                 assert data.get("text") == "Hello class!"
                 assert data.get("sender") == "Teacher"
+                print("CHAT broadcast test passed")
             except asyncio.TimeoutError:
                 pytest.fail("WS2 should have received CHAT event")
 
@@ -477,6 +514,7 @@ class TestFrontendModals:
         res = requests.get(BASE_URL)
         assert res.status_code == 200, f"Landing page failed to load: {res.status_code}"
         assert "<!DOCTYPE html>" in res.text or "<html" in res.text
+        print("Landing page loads correctly")
     
     def test_classroom_route_protected(self):
         """Test that /classroom/:sessionId route is protected"""
@@ -484,6 +522,7 @@ class TestFrontendModals:
         res = requests.get(f"{BASE_URL}/classroom/test_session_123")
         # React app will handle the redirect client-side
         assert res.status_code == 200, "Classroom route should return React app"
+        print("Classroom route returns React app for auth handling")
 
 
 # Run with: pytest /app/backend/tests/test_classroom_batch3.py -v --tb=short
