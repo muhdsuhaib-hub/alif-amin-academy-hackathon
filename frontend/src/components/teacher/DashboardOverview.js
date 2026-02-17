@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DollarSign, Users, Calendar, Star, Clock, Video, Award, Circle } from 'lucide-react';
 import Card from '../Card';
 import Badge from '../Badge';
 
 export default function DashboardOverview({ teacherData, students, user, commissionInfo }) {
+  const navigate = useNavigate();
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
@@ -65,12 +67,17 @@ export default function DashboardOverview({ teacherData, students, user, commiss
                       <p className="text-caption text-ink-secondary">Student ID: {cls.student_id?.slice(0, 8)}...</p>
                     </div>
                   </div>
-                  {cls.meet_link && (
+                  {cls.session_id ? (
+                    <button onClick={() => navigate(`/classroom/${cls.session_id}`)} data-testid="join-class-btn"
+                      className="h-9 px-4 rounded-md bg-brand text-white text-small font-medium flex items-center gap-2 hover:bg-brand-light transition-all">
+                      <Video className="w-4 h-4" />Join
+                    </button>
+                  ) : cls.meet_link ? (
                     <a href={cls.meet_link} target="_blank" rel="noopener noreferrer" data-testid="join-class-btn"
                       className="h-9 px-4 rounded-md bg-brand text-white text-small font-medium flex items-center gap-2 hover:bg-brand-light transition-all">
                       <Video className="w-4 h-4" />Join
                     </a>
-                  )}
+                  ) : null}
                 </div>
               ))}
             </div>
