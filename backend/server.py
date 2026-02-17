@@ -632,6 +632,14 @@ async def get_teacher_dashboard(current_user: User = Depends(get_current_user)):
             "$lt": today_end.isoformat()
         }
     }, {"_id": 0}).sort("start_time_utc", 1).to_list(20)
+
+    # Enrich with session_id from class_sessions
+    for cls in todays_classes:
+        cs = await db.class_sessions.find_one(
+            {"booking_id": cls.get("booking_id")}, {"_id": 0, "session_id": 1}
+        )
+        if cs:
+            cls["session_id"] = cs["session_id"]
     
     month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
