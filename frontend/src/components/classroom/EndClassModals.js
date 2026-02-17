@@ -1,0 +1,243 @@
+import React, { useState } from 'react';
+import { X, BookOpen, Star, Send, ChevronDown } from 'lucide-react';
+import { toast } from 'sonner';
+import Button from '../Button';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+const TRACK_TYPES = [
+  'Memorization (Hifz)',
+  'Revision (Murajaah)',
+  'Recitation (Nazra)',
+];
+
+const SURAHS = [
+  'Al-Fatihah', 'Al-Baqarah', 'Aal-Imran', 'An-Nisa', 'Al-Maidah', 'Al-Anam',
+  'Al-Araf', 'Al-Anfal', 'At-Tawbah', 'Yunus', 'Hud', 'Yusuf', 'Ar-Ra\'d',
+  'Ibrahim', 'Al-Hijr', 'An-Nahl', 'Al-Isra', 'Al-Kahf', 'Maryam', 'Ta-Ha',
+  'Al-Anbiya', 'Al-Hajj', 'Al-Mu\'minun', 'An-Nur', 'Al-Furqan', 'Ash-Shu\'ara',
+  'An-Naml', 'Al-Qasas', 'Al-Ankabut', 'Ar-Rum', 'Luqman', 'As-Sajdah',
+  'Al-Ahzab', 'Saba', 'Fatir', 'Ya-Sin', 'As-Saffat', 'Sad', 'Az-Zumar',
+  'Ghafir', 'Fussilat', 'Ash-Shura', 'Az-Zukhruf', 'Ad-Dukhan', 'Al-Jathiyah',
+  'Al-Ahqaf', 'Muhammad', 'Al-Fath', 'Al-Hujurat', 'Qaf', 'Adh-Dhariyat',
+  'At-Tur', 'An-Najm', 'Al-Qamar', 'Ar-Rahman', 'Al-Waqi\'ah', 'Al-Hadid',
+  'Al-Mujadilah', 'Al-Hashr', 'Al-Mumtahanah', 'As-Saff', 'Al-Jumu\'ah',
+  'Al-Munafiqun', 'At-Taghabun', 'At-Talaq', 'At-Tahrim', 'Al-Mulk', 'Al-Qalam',
+  'Al-Haqqah', 'Al-Ma\'arij', 'Nuh', 'Al-Jinn', 'Al-Muzzammil', 'Al-Muddathir',
+  'Al-Qiyamah', 'Al-Insan', 'Al-Mursalat', 'An-Naba', 'An-Nazi\'at', 'Abasa',
+  'At-Takwir', 'Al-Infitar', 'Al-Mutaffifin', 'Al-Inshiqaq', 'Al-Buruj',
+  'At-Tariq', 'Al-A\'la', 'Al-Ghashiyah', 'Al-Fajr', 'Al-Balad', 'Ash-Shams',
+  'Al-Layl', 'Ad-Duha', 'Ash-Sharh', 'At-Tin', 'Al-Alaq', 'Al-Qadr',
+  'Al-Bayyinah', 'Az-Zalzalah', 'Al-Adiyat', 'Al-Qari\'ah', 'At-Takathur',
+  'Al-Asr', 'Al-Humazah', 'Al-Fil', 'Quraysh', 'Al-Ma\'un', 'Al-Kawthar',
+  'Al-Kafirun', 'An-Nasr', 'Al-Masad', 'Al-Ikhlas', 'Al-Falaq', 'An-Nas',
+];
+
+// ==================== SESSION REPORT MODAL (Teacher) ====================
+export function SessionReportModal({ sessionId, onSubmitted, onClose }) {
+  const [form, setForm] = useState({
+    surah_name: '',
+    ayah_start: 1,
+    ayah_end: 1,
+    track_type: TRACK_TYPES[2],
+    grading: { fluency_score: 5, tajweed_score: 5, makhraj_score: 5 },
+    teacher_comments: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
+
+  const setGrade = (key, val) =>
+    setForm((p) => ({ ...p, grading: { ...p.grading, [key]: Math.min(10, Math.max(1, val)) } }));
+
+  const handleSubmit = async () => {
+    if (!form.surah_name) { toast.error('Please select a Surah'); return; }
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API}/classroom/session/${sessionId}/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        toast.success('Session report saved & earnings credited!');
+        onSubmitted?.();
+      } else {
+        const err = await res.json();
+        toast.error(err.detail || 'Failed to save report');
+      }
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputCls = 'h-10 w-full rounded-xl bg-[#F5F5F7] border-none px-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand/20';
+  const selectCls = `${inputCls} appearance-none cursor-pointer`;
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
+      <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-modal-in" onClick={(e) => e.stopPropagation()} data-testid="session-report-modal">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 border-b border-black/5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-ink">Session Report</h2>
+              <p className="text-xs text-ink-tertiary mt-0.5">Mandatory — fill in before ending class</p>
+            </div>
+            <button onClick={onClose} className="p-2 hover:bg-black/5 rounded-xl transition-colors">
+              <X className="w-5 h-5 text-ink-tertiary" />
+            </button>
+          </div>
+        </div>
+
+        <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+          {/* Surah */}
+          <div>
+            <label className="block text-xs font-medium text-ink-secondary mb-1.5">Surah Covered</label>
+            <div className="relative">
+              <select value={form.surah_name} onChange={(e) => setForm({ ...form, surah_name: e.target.value })} className={selectCls} data-testid="surah-select">
+                <option value="">Select Surah...</option>
+                {SURAHS.map((s, i) => <option key={i} value={s}>{i + 1}. {s}</option>)}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Ayah Range */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-ink-secondary mb-1.5">Ayah Start</label>
+              <input type="number" min={1} value={form.ayah_start} onChange={(e) => setForm({ ...form, ayah_start: parseInt(e.target.value) || 1 })} className={inputCls} data-testid="ayah-start" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-ink-secondary mb-1.5">Ayah End</label>
+              <input type="number" min={1} value={form.ayah_end} onChange={(e) => setForm({ ...form, ayah_end: parseInt(e.target.value) || 1 })} className={inputCls} data-testid="ayah-end" />
+            </div>
+          </div>
+
+          {/* Track Type */}
+          <div>
+            <label className="block text-xs font-medium text-ink-secondary mb-1.5">Track Type</label>
+            <div className="flex gap-2">
+              {TRACK_TYPES.map((t) => (
+                <button key={t} onClick={() => setForm({ ...form, track_type: t })}
+                  className={`flex-1 py-2 rounded-xl text-xs font-medium transition-all ${form.track_type === t ? 'bg-brand text-white shadow-sm' : 'bg-[#F5F5F7] text-ink-secondary hover:bg-surface-subtle'}`}
+                  data-testid={`track-${t.split(' ')[0].toLowerCase()}`}>
+                  {t.split(' ')[0]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Grading Sliders */}
+          <div>
+            <label className="block text-xs font-medium text-ink-secondary mb-2">Grading (1–10)</label>
+            <div className="space-y-3">
+              {[
+                { key: 'fluency_score', label: 'Fluency' },
+                { key: 'tajweed_score', label: 'Tajweed' },
+                { key: 'makhraj_score', label: 'Makhraj' },
+              ].map(({ key, label }) => (
+                <div key={key} className="flex items-center gap-3">
+                  <span className="text-xs text-ink-secondary w-16">{label}</span>
+                  <input type="range" min={1} max={10} value={form.grading[key]}
+                    onChange={(e) => setGrade(key, parseInt(e.target.value))}
+                    className="flex-1 h-1.5 rounded-full appearance-none bg-surface-subtle accent-brand"
+                    data-testid={`grade-${key}`} />
+                  <span className="text-sm font-semibold text-brand w-6 text-right tabular-nums">{form.grading[key]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="block text-xs font-medium text-ink-secondary mb-1.5">Teacher Notes</label>
+            <textarea value={form.teacher_comments} onChange={(e) => setForm({ ...form, teacher_comments: e.target.value })}
+              placeholder="Any observations, areas of improvement..."
+              className="w-full h-20 p-3 rounded-xl bg-[#F5F5F7] border-none text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand/20"
+              data-testid="teacher-notes" />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-black/5 bg-[#F5F5F7]/50">
+          <Button onClick={handleSubmit} disabled={submitting} className="w-full" data-testid="submit-report-btn">
+            <Send className="w-4 h-4" />{submitting ? 'Saving...' : 'Submit Report & End Class'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+// ==================== RATE TEACHER MODAL (Student) ====================
+export function RateTeacherModal({ sessionId, teacherName, onSubmitted, onClose }) {
+  const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [review, setReview] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (rating === 0) { toast.error('Please select a rating'); return; }
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API}/classroom/session/${sessionId}/rate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ rating, review }),
+      });
+      if (res.ok) {
+        toast.success('Thank you for your feedback!');
+        onSubmitted?.();
+      } else {
+        toast.error('Failed to submit rating');
+      }
+    } catch {
+      toast.error('Network error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
+      <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-modal-in" onClick={(e) => e.stopPropagation()} data-testid="rate-teacher-modal">
+        <div className="p-6 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto mb-3">
+            <Star className="w-7 h-7 text-brand" />
+          </div>
+          <h2 className="text-lg font-semibold text-ink">Rate Your Teacher</h2>
+          <p className="text-xs text-ink-tertiary mt-1">How was your class with {teacherName}?</p>
+
+          {/* Stars */}
+          <div className="flex justify-center gap-2 my-5" data-testid="star-rating">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <button key={s}
+                onMouseEnter={() => setHoverRating(s)}
+                onMouseLeave={() => setHoverRating(0)}
+                onClick={() => setRating(s)}
+                className="transition-transform hover:scale-110"
+                data-testid={`star-${s}`}>
+                <Star className={`w-9 h-9 transition-colors ${(hoverRating || rating) >= s ? 'text-[#D4AF37] fill-[#D4AF37]' : 'text-ink-faint'}`} />
+              </button>
+            ))}
+          </div>
+
+          {/* Review */}
+          <textarea value={review} onChange={(e) => setReview(e.target.value)}
+            placeholder="Share your experience (optional)..."
+            className="w-full h-20 p-3 rounded-xl bg-[#F5F5F7] border-none text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand/20 text-left"
+            data-testid="review-input" />
+
+          <Button onClick={handleSubmit} disabled={submitting} className="w-full mt-4" data-testid="submit-rating-btn">
+            {submitting ? 'Submitting...' : 'Submit Rating'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
