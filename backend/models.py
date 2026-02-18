@@ -204,6 +204,8 @@ class Notification(BaseModel):
         "teacher_approved", "teacher_pending", "system"
     ]
     related_id: Optional[str] = None  # booking_id, teacher_id, student_id, etc.
+    link: Optional[str] = None  # Frontend route to navigate to
+    action_required: bool = False  # Indicates if user action is needed
     is_read: bool = False
     created_at: datetime
 
