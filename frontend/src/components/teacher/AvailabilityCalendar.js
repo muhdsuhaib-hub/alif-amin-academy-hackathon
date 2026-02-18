@@ -103,8 +103,8 @@ export default function AvailabilityCalendar({ teacherId }) {
 
   const fetchSlots = useCallback(async () => {
     if (!teacherId) return;
-    const startDate = weekDates[0].toISOString().split('T')[0];
-    const endDate = weekDates[6].toISOString().split('T')[0];
+    const startDate = localDateStr(weekDates[0]);
+    const endDate = localDateStr(weekDates[6]);
     try {
       const r = await fetch(`${API}/booking/teacher-availability/${teacherId}?start_date=${startDate}&end_date=${endDate}`, { credentials: 'include' });
       if (r.ok) {
