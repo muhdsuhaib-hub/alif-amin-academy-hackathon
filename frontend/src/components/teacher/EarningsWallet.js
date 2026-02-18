@@ -55,7 +55,7 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
 
   const fetchTransactions = async () => {
     try {
-      const r = await fetch(`${API}/tutor-earnings/transactions/${teacherId}?limit=50`, { credentials: 'include' });
+      const r = await fetch(`${API}/teachers/${teacherId}/transactions?limit=50`, { credentials: 'include' });
       if (r.ok) { const d = await r.json(); setTransactions(d.transactions || []); }
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
