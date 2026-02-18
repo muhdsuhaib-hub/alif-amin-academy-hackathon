@@ -231,7 +231,6 @@ async def create_booking(req: CreateBookingRequest, request: Request):
             "end_time_utc": end_time.isoformat(),
             "duration_minutes": req.duration_minutes,
             "credits_charged": credits_needed,
-            "session_id": session_id,
             "status": "scheduled"
         },
         "wallet_balance": {
