@@ -74,27 +74,27 @@ COMMISSION_CONFIG: Dict[str, TierConfig] = {
     TierLevel.NEW: TierConfig(
         level=1,
         name="New Tutor",
-        commission_rate=0.30,  # 30% platform fee
+        commission_rate=0.40,  # 40% platform fee
         badge="new",
         icon="seedling",
         color="#6B7280",
-        requirements_description="Default tier for all new tutors"
+        requirements_description="Default tier for all new tutors (< 20 sessions)"
     ),
     TierLevel.RATED: TierConfig(
         level=2,
         name="Rated Tutor",
-        commission_rate=0.25,  # 25% platform fee
+        commission_rate=0.35,  # 35% platform fee
         badge="rated",
         icon="star",
         color="#D4AF37",
-        requirements_description="4.5+ rating with 20+ reviews",
+        requirements_description="20+ sessions with 4.5+ rating",
         min_rating=4.5,
-        min_reviews=20
+        min_sessions=20
     ),
     TierLevel.ELITE: TierConfig(
         level=3,
         name="Elite Tutor",
-        commission_rate=0.20,  # 20% platform fee
+        commission_rate=0.30,  # 30% platform fee
         badge="elite",
         icon="crown",
         color="#0F3D2E",
