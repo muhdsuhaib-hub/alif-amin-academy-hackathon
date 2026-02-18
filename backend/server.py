@@ -639,6 +639,133 @@ async def get_support_tickets(status: Optional[str] = None, current_user: User =
 
 
 
+@api_router.put("/teacher/update-profile")
+async def update_teacher_profile(data: dict, current_user: User = Depends(get_current_user)):
+    """Update teacher professional profile"""
+    if current_user.role != "teacher":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    teacher = await db.teachers.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher profile not found")
+
+    allowed = {"bio", "specializations", "years_experience"}
+    update_fields = {k: v for k, v in data.items() if k in allowed and v is not None}
+    if update_fields:
+        await db.teachers.update_one({"teacher_id": teacher["teacher_id"]}, {"$set": update_fields})
+    return {"message": "Teacher profile updated"}
+
+@api_router.get("/booking/teacher-students/{teacher_id}")
+async def get_teacher_students(teacher_id: str, current_user: User = Depends(get_current_user)):
+    """Get unique students this teacher has taught"""
+    # Get all completed bookings for this teacher
+    bookings = await db.bookings.find(
+        {"teacher_id": teacher_id, "status": {"$in": ["completed", "scheduled"]}},
+        {"_id": 0}
+    ).sort("start_time_utc", -1).to_list(500)
+
+    student_map = {}
+    for b in bookings:
+        sid = b.get("student_id")
+        if not sid or sid in student_map:
+            if sid in student_map and b.get("status") == "completed":
+                student_map[sid]["last_class_date"] = b.get("start_time_utc")
+            continue
+        student = await db.students.find_one({"student_id": sid}, {"_id": 0})
+        student_user = None
+        if student:
+            student_user = await db.users.find_one({"user_id": student.get("user_id")}, {"_id": 0})
+
+        # Get latest progress
+        progress = await db.student_progress.find_one(
+            {"student_id": sid}, {"_id": 0}
+        )
+
+        student_map[sid] = {
+            "student_id": sid,
+            "student_name": student_user.get("name", "Student") if student_user else "Student",
+            "reading_level": student.get("reading_level", "Beginner") if student else "Beginner",
+            "last_class_date": b.get("start_time_utc"),
+            "is_active": True,
+            "avg_fluency": progress.get("grading", {}).get("fluency_score") if progress else None,
+            "avg_tajweed": progress.get("grading", {}).get("tajweed_score") if progress else None,
+            "avg_makhraj": progress.get("grading", {}).get("makhraj_score") if progress else None,
+            "notes": [],
+        }
+
+    # Fetch notes for each student
+    for sid, data in student_map.items():
+        notes_cursor = db.student_progress.find(
+            {"student_id": sid, "teacher_comments": {"$exists": True, "$ne": ""}},
+            {"_id": 0, "teacher_comments": 1, "created_at": 1}
+        ).sort("created_at", -1).limit(5)
+        notes = await notes_cursor.to_list(5)
+        data["notes"] = [{"comment": n.get("teacher_comments", ""), "date": n.get("created_at")} for n in notes]
+
+    return {"students": list(student_map.values())}
+
+@api_router.get("/booking/teacher-availability/{teacher_id}")
+async def get_teacher_availability(teacher_id: str, start_date: str = None, end_date: str = None):
+    """Get teacher's availability slots for a date range"""
+    query = {"teacher_id": teacher_id}
+    if start_date:
+        query["date"] = {"$gte": start_date}
+    if end_date:
+        if "date" in query:
+            query["date"]["$lte"] = end_date
+        else:
+            query["date"] = {"$lte": end_date}
+
+    slots = await db.availability_slots.find(query, {"_id": 0}).to_list(500)
+    return {"slots": slots}
+
+@api_router.post("/booking/availability/bulk")
+async def save_availability_bulk(data: dict, current_user: User = Depends(get_current_user)):
+    """Save teacher availability for a week (replaces existing non-booked slots)"""
+    if current_user.role != "teacher":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    teacher_id = data.get("teacher_id")
+    week_start = data.get("week_start")
+    new_slots = data.get("slots", [])
+
+    if not teacher_id or not week_start:
+        raise HTTPException(status_code=400, detail="teacher_id and week_start required")
+
+    # Calculate week end
+    from datetime import timedelta
+    start = datetime.fromisoformat(week_start)
+    end = start + timedelta(days=7)
+    week_end = end.strftime('%Y-%m-%d')
+
+    # Delete existing non-booked slots for this week
+    await db.availability_slots.delete_many({
+        "teacher_id": teacher_id,
+        "date": {"$gte": week_start, "$lt": week_end},
+        "is_booked": {"$ne": True}
+    })
+
+    # Insert new slots
+    if new_slots:
+        docs = []
+        for s in new_slots:
+            slot_id = f"slot_{uuid.uuid4().hex[:12]}"
+            docs.append({
+                "slot_id": slot_id,
+                "teacher_id": teacher_id,
+                "date": s["date"],
+                "start_time": f"{s['date']}T{s['start_time']}",
+                "end_time": f"{s['date']}T{s['end_time']}",
+                "day_of_week": datetime.fromisoformat(s["date"]).strftime('%A').lower(),
+                "is_booked": False,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+        if docs:
+            await db.availability_slots.insert_many(docs)
+
+    return {"message": f"Saved {len(new_slots)} availability slots", "count": len(new_slots)}
+
+
+
 
 @api_router.post("/auth/logout")
 async def logout(response: Response, current_user: User = Depends(get_current_user), session_token: Optional[str] = Cookie(None)):
