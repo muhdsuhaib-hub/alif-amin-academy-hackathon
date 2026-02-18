@@ -24,7 +24,7 @@ const TAB_TITLES = {
   profile: 'Profile Settings',
 };
 
-export default function TeacherDashboard({ user }) {
+export default function TeacherDashboard({ user, onUserUpdate }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('home');
   const [dashboardData, setDashboardData] = useState(null);
