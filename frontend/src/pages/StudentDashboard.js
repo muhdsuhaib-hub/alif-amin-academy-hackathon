@@ -85,7 +85,7 @@ export default function StudentDashboard({ user }) {
 
   return (
     <>
-      <LayoutShell menuItems={MENU_ITEMS} activeTab={activeTab} setActiveTab={setActiveTab} tabTitles={TAB_TITLES} user={user} userRole="student" onLogout={handleLogout}>
+      <LayoutShell menuItems={MENU_ITEMS} activeTab={activeTab} setActiveTab={setActiveTab} tabTitles={TAB_TITLES} user={user} userRole="student" onLogout={handleLogout} onOpenSupport={() => setShowSupportModal(true)}>
         {activeTab === 'home' && (
           <DashboardHome
             dashboardData={dashboardData}
