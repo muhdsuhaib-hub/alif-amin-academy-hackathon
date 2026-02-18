@@ -33,10 +33,14 @@ export default function ProfileManagement({ user, teacher, onRefresh, onUserUpda
     setSaving(true);
     try {
       // Update user profile
-      await fetch(`${API}/auth/update-profile`, {
+      const userRes = await fetch(`${API}/auth/update-profile`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
         body: JSON.stringify({ name: formData.name, phone: formData.phone, timezone: formData.timezone, gender: formData.gender }),
       });
+      if (userRes.ok) {
+        const data = await userRes.json();
+        if (data.user) onUserUpdate?.(data.user);
+      }
       // Update teacher profile
       if (teacher?.teacher_id) {
         await fetch(`${API}/teacher/update-profile`, {
