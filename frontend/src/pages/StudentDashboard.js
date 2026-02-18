@@ -26,7 +26,7 @@ const TAB_TITLES = {
   account: 'Account',
 };
 
-export default function StudentDashboard({ user }) {
+export default function StudentDashboard({ user, onUserUpdate }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('home');
   const [dashboardData, setDashboardData] = useState(null);
