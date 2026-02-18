@@ -1032,6 +1032,108 @@ async def get_student_dashboard(current_user: User = Depends(get_current_user)):
     }
 
 
+
+@api_router.get("/students/dashboard-data")
+async def get_student_dashboard_data(current_user: User = Depends(get_current_user)):
+    """Comprehensive student dashboard data: next class, wallet, progress scores, recent classes."""
+    if current_user.role != "student":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    student_doc = await db.students.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    if not student_doc:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
+    student_id = student_doc["student_id"]
+    now = datetime.now(timezone.utc)
+
+    # Upcoming bookings with session_id enrichment
+    upcoming_bookings = await db.bookings.find({
+        "student_id": student_id,
+        "status": "scheduled",
+        "start_time_utc": {"$gte": now.isoformat()}
+    }, {"_id": 0}).sort("start_time_utc", 1).limit(5).to_list(5)
+
+    for b in upcoming_bookings:
+        cs = await db.class_sessions.find_one(
+            {"booking_id": b.get("booking_id")}, {"_id": 0, "session_id": 1}
+        )
+        if cs:
+            b["session_id"] = cs["session_id"]
+        # Enrich teacher name
+        if not b.get("teacher_name"):
+            teacher = await db.teachers.find_one({"teacher_id": b.get("teacher_id")}, {"_id": 0})
+            if teacher:
+                teacher_user = await db.users.find_one({"user_id": teacher.get("user_id")}, {"_id": 0})
+                b["teacher_name"] = teacher_user.get("name", "Teacher") if teacher_user else "Teacher"
+
+    # Past bookings
+    past_bookings = await db.bookings.find({
+        "student_id": student_id,
+        "status": "completed"
+    }, {"_id": 0}).sort("start_time_utc", -1).limit(5).to_list(5)
+
+    for b in past_bookings:
+        if not b.get("teacher_name"):
+            teacher = await db.teachers.find_one({"teacher_id": b.get("teacher_id")}, {"_id": 0})
+            if teacher:
+                teacher_user = await db.users.find_one({"user_id": teacher.get("user_id")}, {"_id": 0})
+                b["teacher_name"] = teacher_user.get("name", "Teacher") if teacher_user else "Teacher"
+
+    # Wallet snapshot
+    wallet = await db.student_wallets.find_one({"student_id": student_id}, {"_id": 0})
+    wallet_snapshot = {
+        "credit_balance": wallet.get("credit_balance", 0) if wallet else 0,
+        "paid_credits": wallet.get("paid_credits", 0) if wallet else 0,
+        "bonus_credits": wallet.get("bonus_credits", 0) if wallet else 0,
+    }
+
+    # Progress scores from classroom sessions
+    progress_records = await db.student_progress.find(
+        {"student_id": student_id}, {"_id": 0}
+    ).sort("created_at", -1).limit(10).to_list(10)
+
+    # Calculate average scores
+    scores = {"fluency": [], "tajweed": [], "makhraj": []}
+    for rec in progress_records:
+        grading = rec.get("grading", {})
+        if grading.get("fluency_score"):
+            scores["fluency"].append(grading["fluency_score"])
+        if grading.get("tajweed_score"):
+            scores["tajweed"].append(grading["tajweed_score"])
+        if grading.get("makhraj_score"):
+            scores["makhraj"].append(grading["makhraj_score"])
+
+    avg = lambda lst: round(sum(lst) / len(lst), 1) if lst else 0
+    progress_summary = {
+        "total_sessions": len(progress_records),
+        "avg_fluency": avg(scores["fluency"]),
+        "avg_tajweed": avg(scores["tajweed"]),
+        "avg_makhraj": avg(scores["makhraj"]),
+        "score_history": [
+            {
+                "fluency": r.get("grading", {}).get("fluency_score", 0),
+                "tajweed": r.get("grading", {}).get("tajweed_score", 0),
+                "makhraj": r.get("grading", {}).get("makhraj_score", 0),
+                "date": r.get("created_at", ""),
+            }
+            for r in reversed(progress_records)  # oldest first for chart
+        ],
+    }
+
+    # Basic progress info
+    basic_progress = await db.progress.find_one({"student_id": student_id}, {"_id": 0})
+
+    return {
+        "student": student_doc,
+        "upcoming_classes": upcoming_bookings,
+        "past_classes": past_bookings,
+        "wallet": wallet_snapshot,
+        "progress": progress_summary,
+        "basic_progress": basic_progress,
+    }
+
+
+
 @api_router.get("/admin/stats")
 async def get_admin_stats(current_user: User = Depends(get_current_user)):
     if current_user.role != "admin":
