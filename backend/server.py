@@ -1659,9 +1659,9 @@ async def get_teacher_dashboard_data(current_user: User = Depends(get_current_us
             "classes_taught": month_classes,
         },
         "wallet": {
-            "balance": teacher_wallet.get("balance", 0) if teacher_wallet else 0,
-            "total_earned": teacher_wallet.get("total_earned", 0) if teacher_wallet else 0,
-            "total_withdrawn": teacher_wallet.get("total_withdrawn", 0) if teacher_wallet else 0,
+            "balance": tutor_earnings.get("withdrawable_balance", 0) if tutor_earnings else 0,
+            "total_earned": tutor_earnings.get("total_earnings", 0) if tutor_earnings else 0,
+            "total_withdrawn": tutor_earnings.get("total_withdrawn", 0) if tutor_earnings else 0,
         },
     }
 
