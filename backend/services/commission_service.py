@@ -110,8 +110,8 @@ DOWNGRADE_RATING_THRESHOLD = 4.3
 # Session pricing configuration
 SESSION_PRICES: Dict[int, SessionPriceConfig] = {
     15: SessionPriceConfig(duration_minutes=15, base_price=15.0, credits_required=1),
-    30: SessionPriceConfig(duration_minutes=30, base_price=27.0, credits_required=2),
-    60: SessionPriceConfig(duration_minutes=60, base_price=50.0, credits_required=4),
+    30: SessionPriceConfig(duration_minutes=30, base_price=30.0, credits_required=2),
+    60: SessionPriceConfig(duration_minutes=60, base_price=60.0, credits_required=4),
 }
 
 
