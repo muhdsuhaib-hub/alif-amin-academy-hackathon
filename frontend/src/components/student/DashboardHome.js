@@ -1,107 +1,285 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Video, Plus } from 'lucide-react';
-import Card from '../Card';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, Clock, Video, Plus, Wallet, TrendingUp, BookOpen, ChevronRight, Sparkles } from 'lucide-react';
 
-const useCountdownTimer = (targetTime) => {
-  const [timeLeft, setTimeLeft] = useState('');
-  const [canJoin, setCanJoin] = useState(false);
+const useCountdown = (targetTime) => {
+  const [state, setState] = useState({ text: '', canJoin: false, isNear: false });
   useEffect(() => {
-    const updateTimer = () => {
-      const now = new Date();
-      const target = new Date(targetTime);
+    const update = () => {
+      const now = Date.now();
+      const target = new Date(targetTime).getTime();
       const diff = target - now;
-      if (diff <= 5 * 60 * 1000 && diff > -60 * 60 * 1000) { setCanJoin(true); setTimeLeft('Ready to join'); }
-      else if (diff > 0) { setCanJoin(false); const h = Math.floor(diff / 3600000); const m = Math.floor((diff % 3600000) / 60000); setTimeLeft(h > 0 ? `Starts in ${h}h ${m}m` : `Starts in ${m}m`); }
-      else { setCanJoin(false); setTimeLeft('Class ended'); }
+      const fiveMin = 5 * 60 * 1000;
+      const oneHour = 60 * 60 * 1000;
+      const twentyFourHours = 24 * 60 * 60 * 1000;
+
+      if (diff <= fiveMin && diff > -oneHour) {
+        setState({ text: 'Ready to join', canJoin: true, isNear: true });
+      } else if (diff > 0 && diff <= twentyFourHours) {
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        setState({ text: h > 0 ? `${h}h ${m}m` : `${m}m`, canJoin: false, isNear: true });
+      } else if (diff > twentyFourHours) {
+        const days = Math.floor(diff / 86400000);
+        setState({ text: `${days} day${days > 1 ? 's' : ''} away`, canJoin: false, isNear: false });
+      } else {
+        setState({ text: 'Class ended', canJoin: false, isNear: false });
+      }
     };
-    updateTimer();
-    const interval = setInterval(updateTimer, 30000);
-    return () => clearInterval(interval);
+    update();
+    const i = setInterval(update, 30000);
+    return () => clearInterval(i);
   }, [targetTime]);
-  return { timeLeft, canJoin };
+  return state;
 };
 
-const NextClassCard = ({ booking }) => {
-  const { timeLeft, canJoin } = useCountdownTimer(booking.start_time_utc);
+function SmartHeroCountdown({ booking }) {
+  const navigate = useNavigate();
+  const { text, canJoin } = useCountdown(booking.start_time_utc);
+  const classroomUrl = booking.session_id ? `/classroom/${booking.session_id}` : null;
+
   return (
-    <div className="bg-gradient-to-br from-brand to-brand-light rounded-lg p-6 text-white relative overflow-hidden" data-testid="next-class-card">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
+    <div
+      className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-800 via-emerald-700 to-emerald-900 p-6 sm:p-8 text-white"
+      data-testid="hero-countdown-card"
+    >
+      {/* Decorative circles */}
+      <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5" />
+      <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/5" />
+
       <div className="relative z-10">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <p className="text-white/70 text-small mb-1">Upcoming Session</p>
-            <h3 className="text-h2 font-bold">{booking.teacher_name || 'Your Teacher'}</h3>
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-xs font-medium bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+            Next Session
+          </span>
+          <span className="text-xs font-medium bg-amber-500/30 text-amber-200 px-3 py-1 rounded-full backdrop-blur-sm">
+            {text}
+          </span>
+        </div>
+
+        <h2 className="text-xl sm:text-2xl font-bold mb-1">
+          {booking.teacher_name || 'Your Teacher'}
+        </h2>
+        <p className="text-emerald-200/80 text-sm mb-6">
+          {booking.duration_minutes || 30} minute session
+        </p>
+
+        <div className="flex flex-wrap items-center gap-4 mb-6 text-sm text-emerald-100">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 opacity-70" />
+            {new Date(booking.start_time_utc).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
           </div>
-          <div className="flex items-center gap-2 bg-white/20 px-3 py-1.5 rounded-full text-small">
-            <Clock className="w-3.5 h-3.5" />{booking.duration_minutes || 30} min
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 opacity-70" />
+            {new Date(booking.start_time_utc).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
           </div>
         </div>
-        <div className="flex items-center gap-4 mb-6 text-body">
-          <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-white/70" /><span>{new Date(booking.start_time_utc).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</span></div>
-          <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-white/70" /><span>{new Date(booking.start_time_utc).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
+
+        <button
+          onClick={() => classroomUrl && navigate(classroomUrl)}
+          disabled={!canJoin || !classroomUrl}
+          data-testid="join-class-btn"
+          className={`inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-sm transition-all duration-200 ${
+            canJoin && classroomUrl
+              ? 'bg-white text-emerald-800 hover:bg-emerald-50 shadow-lg active:scale-[0.97]'
+              : 'bg-white/15 text-white/60 cursor-not-allowed backdrop-blur-sm'
+          }`}
+        >
+          <Video className="w-4 h-4" />
+          {canJoin ? 'Join Classroom' : `Starts in ${text}`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SmartHeroBookPrompt({ onOpenBooking }) {
+  return (
+    <div
+      className="relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-6 sm:p-8"
+      data-testid="hero-book-prompt"
+    >
+      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-emerald-50" />
+      <div className="relative z-10 text-center sm:text-left">
+        <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
+          <Sparkles className="w-3.5 h-3.5" />
+          Start Learning
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-white/80 text-small">{timeLeft}</span>
-          {booking.meet_link ? (
-            <a href={canJoin ? booking.meet_link : '#'} target={canJoin ? '_blank' : '_self'} rel="noopener noreferrer"
-              onClick={(e) => !canJoin && e.preventDefault()} data-testid="join-class-btn"
-              className={`flex items-center gap-2 px-6 py-3 rounded-md font-medium transition-all ${canJoin ? 'bg-success hover:bg-success/90 cursor-pointer' : 'bg-white/20 cursor-not-allowed'}`}>
-              <Video className="w-5 h-5" />{canJoin ? 'Join Class' : timeLeft}
-            </a>
-          ) : <span className="text-white/60 text-small">Link will be available soon</span>}
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">
+          Ready for your next Quran session?
+        </h2>
+        <p className="text-sm text-slate-500 mb-6 max-w-md">
+          Book a 1-on-1 lesson with a qualified teacher and continue your journey.
+        </p>
+        <button
+          onClick={onOpenBooking}
+          data-testid="book-first-class-btn"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-700 text-white font-semibold text-sm hover:bg-emerald-800 transition-all active:scale-[0.97] shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          Book a Session
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ProgressWidget({ progress }) {
+  const hasData = progress.total_sessions > 0;
+  const overall = hasData ? Math.round((progress.avg_fluency + progress.avg_tajweed + progress.avg_makhraj) / 3) : 0;
+
+  return (
+    <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-5" data-testid="progress-widget">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <TrendingUp className="w-4 h-4 text-emerald-600" />
+          </div>
+          <span className="text-sm font-semibold text-slate-900">My Progress</span>
+        </div>
+        {hasData && (
+          <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full">
+            {overall}/10
+          </span>
+        )}
+      </div>
+      {hasData ? (
+        <div className="space-y-3">
+          {[
+            { label: 'Fluency', value: progress.avg_fluency, color: 'bg-emerald-500' },
+            { label: 'Tajweed', value: progress.avg_tajweed, color: 'bg-emerald-400' },
+            { label: 'Makhraj', value: progress.avg_makhraj, color: 'bg-emerald-300' },
+          ].map((item) => (
+            <div key={item.label}>
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="text-slate-600">{item.label}</span>
+                <span className="font-medium text-slate-900">{item.value}/10</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                <div className={`h-full rounded-full ${item.color} transition-all duration-500`} style={{ width: `${(item.value / 10) * 100}%` }} />
+              </div>
+            </div>
+          ))}
+          <p className="text-[11px] text-slate-400 mt-1">{progress.total_sessions} session{progress.total_sessions !== 1 ? 's' : ''} completed</p>
+        </div>
+      ) : (
+        <div className="text-center py-4">
+          <p className="text-xs text-slate-400">Complete your first session to see progress</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WalletWidget({ wallet, onNavigateWallet }) {
+  return (
+    <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-5" data-testid="wallet-widget">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
+            <Wallet className="w-4 h-4 text-amber-600" />
+          </div>
+          <span className="text-sm font-semibold text-slate-900">Wallet</span>
+        </div>
+        <button
+          onClick={onNavigateWallet}
+          className="text-xs font-medium text-amber-600 hover:text-amber-700 flex items-center gap-0.5"
+          data-testid="wallet-view-all-btn"
+        >
+          View <ChevronRight className="w-3 h-3" />
+        </button>
+      </div>
+      <div className="bg-gradient-to-br from-emerald-800 to-emerald-900 rounded-2xl p-4 text-white">
+        <p className="text-emerald-200/60 text-[11px] font-medium uppercase tracking-wider mb-1">Balance</p>
+        <p className="text-2xl font-bold">{wallet.credit_balance || 0} <span className="text-base font-normal text-emerald-200/70">credits</span></p>
+        <div className="flex gap-4 mt-3 text-xs text-emerald-200/60">
+          <span>Paid: {wallet.paid_credits || 0}</span>
+          <span>Bonus: {wallet.bonus_credits || 0}</span>
         </div>
       </div>
     </div>
   );
-};
+}
 
-export default function DashboardHome({ bookings, onOpenBooking }) {
-  const upcomingBookings = bookings.filter(b => b.status === 'scheduled' && new Date(b.start_time_utc) > new Date());
-  const pastBookings = bookings.filter(b => b.status === 'completed').slice(0, 3);
-  const nextClass = upcomingBookings[0];
+function QuickBookCard({ onOpenBooking }) {
+  return (
+    <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-5" data-testid="quick-book-card">
+      <h3 className="text-sm font-semibold text-slate-900 mb-1">Book a Class</h3>
+      <p className="text-xs text-slate-500 mb-4">Choose teacher, date & duration</p>
+      <button
+        onClick={onOpenBooking}
+        data-testid="quick-book-btn"
+        className="w-full h-11 rounded-2xl bg-amber-100 text-amber-800 font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:bg-amber-200"
+      >
+        <Plus className="w-4 h-4" />
+        Book a Session
+      </button>
+    </div>
+  );
+}
+
+function RecentClassesList({ classes }) {
+  return (
+    <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-5" data-testid="recent-classes">
+      <h3 className="text-sm font-semibold text-slate-900 mb-4">Recent Classes</h3>
+      {classes.length === 0 ? (
+        <div className="text-center py-6">
+          <BookOpen className="w-8 h-8 mx-auto mb-2 text-slate-200" />
+          <p className="text-xs text-slate-400">No past classes yet</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {classes.map((b) => (
+            <div key={b.booking_id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/80 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                <BookOpen className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-slate-900 truncate">{b.teacher_name || 'Teacher'}</p>
+                <p className="text-xs text-slate-500">
+                  {new Date(b.start_time_utc).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} &middot; {b.duration_minutes || 30} min
+                </p>
+              </div>
+              <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full flex-shrink-0">
+                Completed
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function DashboardHome({ dashboardData, onOpenBooking, onNavigateTab }) {
+  const upcomingClasses = dashboardData?.upcoming_classes || [];
+  const pastClasses = dashboardData?.past_classes || [];
+  const wallet = dashboardData?.wallet || {};
+  const progress = dashboardData?.progress || {};
+  const nextClass = upcomingClasses[0];
 
   return (
-    <div className="p-4 lg:p-8 space-y-6 stagger-children" data-testid="dashboard-home">
-      <section>
-        <h2 className="text-body font-semibold mb-4 text-ink">Next Class</h2>
-        {nextClass ? <NextClassCard booking={nextClass} /> : (
-          <Card className="p-8 text-center">
-            <Calendar className="w-10 h-10 mx-auto mb-4 text-ink-faint" />
-            <p className="text-ink-tertiary mb-5 text-body">No upcoming classes scheduled</p>
-            <button onClick={onOpenBooking} data-testid="book-first-class-btn" className="inline-flex items-center justify-center rounded-md font-medium text-small h-11 px-6 bg-brand text-white hover:bg-brand-light shadow-apple-xs transition-all duration-200 active:scale-[0.97]">Book Your First Class</button>
-          </Card>
+    <div className="p-4 lg:p-8 max-w-6xl mx-auto" data-testid="dashboard-home">
+      {/* Smart Hero */}
+      <section className="mb-6">
+        {nextClass ? (
+          <SmartHeroCountdown booking={nextClass} />
+        ) : (
+          <SmartHeroBookPrompt onOpenBooking={onOpenBooking} />
         )}
       </section>
 
-      <Card className="p-6">
-        <h2 className="text-body font-semibold text-ink mb-1">Book a New Class</h2>
-        <p className="text-small text-ink-tertiary mb-4">Choose your teacher, date, time and session duration.</p>
-        <button onClick={onOpenBooking} data-testid="quick-book-btn"
-          className="w-full h-12 rounded-md bg-gold text-white font-semibold flex items-center justify-center gap-2 transition-all active:scale-[0.98] hover:bg-gold-dark">
-          <Plus className="w-4 h-4" />Book a Session
-        </button>
-      </Card>
+      {/* Widgets Grid */}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <ProgressWidget progress={progress} />
+        <WalletWidget wallet={wallet} onNavigateWallet={() => onNavigateTab?.('wallet')} />
+        <QuickBookCard onOpenBooking={onOpenBooking} />
+      </section>
 
-      <Card className="p-6">
-        <h2 className="text-body font-semibold mb-4 text-ink">Recent Classes</h2>
-        {pastBookings.length === 0 ? (
-          <div className="text-center py-8"><Clock className="w-8 h-8 mx-auto mb-3 text-ink-faint" /><p className="text-ink-tertiary text-body">No past classes yet</p></div>
-        ) : (
-          <div className="space-y-2">
-            {pastBookings.map((b) => (
-              <div key={b.booking_id} className="p-4 rounded-md bg-surface-subtle border border-ink-faint/20">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-medium text-small text-ink">{new Date(b.start_time_utc).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
-                    <p className="text-small text-ink-secondary">{b.teacher_name || 'Teacher'} &middot; {b.duration_minutes || 30} min</p>
-                  </div>
-                  <span className="text-caption px-2 py-0.5 rounded-full bg-surface-muted text-ink-secondary">Completed</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
+      {/* Recent Classes */}
+      <section>
+        <RecentClassesList classes={pastClasses} />
+      </section>
     </div>
   );
 }
