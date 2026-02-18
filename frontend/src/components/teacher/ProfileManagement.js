@@ -6,7 +6,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const SPECIALTIES = ['Tajweed', 'Hifz', 'Arabic for Kids', 'Quran Recitation', 'Islamic Studies', 'Nooraniah', 'Qirat'];
 
-export default function ProfileManagement({ user, teacher, onRefresh }) {
+export default function ProfileManagement({ user, teacher, onRefresh, onUserUpdate }) {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
