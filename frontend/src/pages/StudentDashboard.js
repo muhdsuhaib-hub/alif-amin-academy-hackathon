@@ -33,6 +33,7 @@ export default function StudentDashboard({ user }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
   const [studentId, setStudentId] = useState(null);
 
