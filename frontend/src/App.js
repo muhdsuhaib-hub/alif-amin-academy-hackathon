@@ -176,7 +176,7 @@ function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/" replace />;
   }
 
-  return React.cloneElement(children, { user });
+  return React.cloneElement(children, { user, onUserUpdate: setUser });
 }
 
 function AppRouter() {
