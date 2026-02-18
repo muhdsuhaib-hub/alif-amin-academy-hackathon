@@ -67,6 +67,7 @@ export default function StudentDashboard({ user }) {
     <>
       <LayoutShell menuItems={MENU_ITEMS} activeTab={activeTab} setActiveTab={setActiveTab} tabTitles={TAB_TITLES} user={user} userRole="student" onLogout={handleLogout}>
         {activeTab === 'home' && <DashboardHome bookings={bookings} onOpenBooking={() => setShowBookingModal(true)} />}
+        {activeTab === 'progress' && <ProgressTracker studentId={studentId} />}
         {activeTab === 'wallet' && <WalletPage user={user} />}
         {activeTab === 'schedule' && <MySchedule bookings={bookings} onRefresh={fetchBookings} onEdit={setEditingBooking} onOpenBooking={() => setShowBookingModal(true)} />}
         {activeTab === 'account' && <AccountPage user={user} />}
