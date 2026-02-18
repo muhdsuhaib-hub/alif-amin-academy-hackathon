@@ -178,6 +178,8 @@ async def credit_tutor_earnings(
             "description": description,
             "reference_id": booking_id,
             "session_payment_record_id": session_payment_record_id,
+            "student_id": student_id,
+            "duration_minutes": duration_minutes,
             "created_at": now_iso
         }, session=session)
 
