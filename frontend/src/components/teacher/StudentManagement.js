@@ -1,179 +1,131 @@
-import React, { useState } from 'react';
-import { Users, FileText, Download, X, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
-import Card, { CardHeader, CardBody } from '../Card';
-import Badge from '../Badge';
-import Button from '../Button';
+import React, { useState, useEffect } from 'react';
+import { Users, BookOpen, TrendingUp, X, Clock, ChevronRight } from 'lucide-react';
 import Spinner from '../Spinner';
 
-export default function StudentManagement({ teacherData, students, setStudents }) {
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [selectedStudentForReport, setSelectedStudentForReport] = useState(null);
-  const [reportData, setReportData] = useState({ attendance: '4/4', progress: '', notes: '' });
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-  const getLastLessonStatus = (lastSession) => {
-    if (!lastSession) return 'never';
-    const daysSince = Math.floor((Date.now() - new Date(lastSession).getTime()) / 86400000);
-    if (daysSince > 14) return 'inactive';
-    if (daysSince > 7) return 'warning';
-    return 'active';
+function StudentDetailDrawer({ student, onClose }) {
+  if (!student) return null;
+  return (
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 animate-fade-in" onClick={onClose}>
+      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[85vh] overflow-y-auto animate-modal-in shadow-xl" onClick={e => e.stopPropagation()} data-testid="student-detail-drawer">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <h2 className="text-base font-semibold text-slate-900">{student.student_name}</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100"><X className="w-4 h-4 text-slate-400" /></button>
+        </div>
+        <div className="p-6 space-y-4">
+          {/* Scores */}
+          <div>
+            <h3 className="text-xs font-medium text-slate-500 mb-3 uppercase tracking-wider">Current Scores</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: 'Fluency', value: student.avg_fluency, color: 'text-emerald-700' },
+                { label: 'Tajweed', value: student.avg_tajweed, color: 'text-amber-700' },
+                { label: 'Makhraj', value: student.avg_makhraj, color: 'text-blue-700' },
+              ].map(s => (
+                <div key={s.label} className="p-3 rounded-xl bg-slate-50 text-center">
+                  <p className="text-[11px] text-slate-400">{s.label}</p>
+                  <p className={`text-lg font-bold ${s.color}`}>{s.value || '—'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Past Notes */}
+          <div>
+            <h3 className="text-xs font-medium text-slate-500 mb-3 uppercase tracking-wider">Past Notes</h3>
+            {(!student.notes || student.notes.length === 0) ? (
+              <p className="text-xs text-slate-400 text-center py-4">No notes yet</p>
+            ) : (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {student.notes.map((note, i) => (
+                  <div key={i} className="p-3 rounded-xl bg-slate-50">
+                    <p className="text-sm text-slate-700">{note.comment}</p>
+                    <p className="text-[11px] text-slate-400 mt-1">{note.date ? new Date(note.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function StudentManagement({ teacherId }) {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  useEffect(() => {
+    if (teacherId) fetchStudents();
+  }, [teacherId]);
+
+  const fetchStudents = async () => {
+    try {
+      const r = await fetch(`${API}/booking/teacher-students/${teacherId}`, { credentials: 'include' });
+      if (r.ok) {
+        const data = await r.json();
+        setStudents(data.students || []);
+      }
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
-  const sendReminder = (student) => toast.success(`Reminder sent to ${student.name}!`);
-  const generateReport = () => {
-    if (!selectedStudentForReport) return;
-    toast.success('Report generated! Check your downloads folder.');
-    setShowReportModal(false);
-  };
-
-  const statusConfig = {
-    active:   { label: 'Active',    color: 'success' },
-    warning:  { label: '7+ days',   color: 'warning', icon: true },
-    inactive: { label: '14+ days',  color: 'danger',  icon: true },
-    never:    { label: 'New',       color: 'neutral' },
-  };
-
-  const levelConfig = {
-    beginner:    { label: 'Just Starting', color: 'info' },
-    slow:        { label: 'Reads Slowly',  color: 'warning' },
-    comfortable: { label: 'Comfortable',   color: 'success' },
-    advanced:    { label: 'Advanced',      color: 'brand' },
-  };
-
-  const inputCls = 'h-12 w-full rounded-md border border-ink-faint/40 bg-surface-card px-4 text-body placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand/40 transition-all';
+  if (loading) return <div className="p-8 flex justify-center"><Spinner /></div>;
 
   return (
-    <div className="space-y-6">
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: 'Active Students', value: students.filter(s => getLastLessonStatus(s.last_session) === 'active').length, color: 'text-brand', testId: 'active-students-count' },
-          { label: 'Need Attention', value: students.filter(s => getLastLessonStatus(s.last_session) === 'warning').length, color: 'text-coral' },
-          { label: 'Inactive (2+ weeks)', value: students.filter(s => getLastLessonStatus(s.last_session) === 'inactive').length, color: 'text-ink-tertiary' },
-        ].map((stat) => (
-          <Card key={stat.label} className="p-4">
-            <p className="text-caption text-ink-secondary mb-1">{stat.label}</p>
-            <p className={`text-h2 font-semibold ${stat.color}`} data-testid={stat.testId}>{stat.value}</p>
-          </Card>
-        ))}
+    <div className="p-4 lg:p-8 max-w-4xl mx-auto" data-testid="student-management">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">My Students</h2>
+          <p className="text-xs text-slate-500 mt-0.5">{students.length} student{students.length !== 1 ? 's' : ''}</p>
+        </div>
       </div>
 
-      {/* Student List */}
-      <Card className="overflow-hidden">
-        <CardHeader>
-          <h3 className="text-h3 font-semibold text-brand">Student List</h3>
-        </CardHeader>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-surface-subtle bg-surface-warm">
-                <th className="text-left px-4 py-3 text-caption font-medium text-ink-secondary uppercase">Full Name</th>
-                <th className="text-left px-4 py-3 text-caption font-medium text-ink-secondary uppercase">Email</th>
-                <th className="text-left px-4 py-3 text-caption font-medium text-ink-secondary uppercase">Reading Level</th>
-                <th className="text-left px-4 py-3 text-caption font-medium text-ink-secondary uppercase">Last Lesson</th>
-                <th className="text-left px-4 py-3 text-caption font-medium text-ink-secondary uppercase">Status</th>
-                <th className="text-right px-4 py-3 text-caption font-medium text-ink-secondary uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-surface-subtle">
-              {students.map(student => {
-                const status = getLastLessonStatus(student.last_session);
-                const sc = statusConfig[status];
-                const lc = levelConfig[student.current_level] || { label: student.current_level || 'Not Set', color: 'neutral' };
-                return (
-                  <tr key={student.student_id} className="hover:bg-surface-subtle/50 transition-colors">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-brand flex items-center justify-center text-white text-small font-medium flex-shrink-0">
-                          {student.name?.charAt(0) || 'S'}
-                        </div>
-                        <span className="font-medium text-small text-ink">{student.name || 'Unknown'}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-small text-ink-secondary">{student.email || '-'}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge color={lc.color}>{lc.label}</Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`text-small font-medium ${
-                        status === 'active' ? 'text-success' :
-                        status === 'warning' ? 'text-warning' :
-                        status === 'inactive' ? 'text-danger' : 'text-ink-tertiary'
-                      }`}>
-                        {student.last_session ? new Date(student.last_session).toLocaleDateString() : 'Never'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge color={sc.color}>
-                        {sc.icon && <AlertCircle className="w-3 h-3 mr-1" />}
-                        {sc.label}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {(status === 'warning' || status === 'inactive') && (
-                          <Button size="sm" variant="gold" onClick={() => sendReminder(student)} data-testid={`send-reminder-${student.student_id}`}>
-                            Send Reminder
-                          </Button>
-                        )}
-                        <Button size="sm" variant="secondary" onClick={() => { setSelectedStudentForReport(student); setShowReportModal(true); }} data-testid={`generate-report-${student.student_id}`}>
-                          <FileText className="w-3 h-3" />Report
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {students.length === 0 && (
-          <div className="p-8 text-center">
-            <Users className="w-12 h-12 mx-auto mb-3 text-ink-faint" />
-            <p className="text-ink-secondary">No students yet</p>
+      <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm overflow-hidden">
+        {students.length === 0 ? (
+          <div className="px-5 py-12 text-center">
+            <Users className="w-8 h-8 mx-auto mb-2 text-slate-200" />
+            <p className="text-xs text-slate-400">No students yet. They'll appear here after your first class.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-50">
+            {students.map((s) => (
+              <button
+                key={s.student_id}
+                onClick={() => setSelectedStudent(s)}
+                className="w-full px-5 py-4 flex items-center gap-3 hover:bg-slate-50/50 transition-colors text-left"
+                data-testid={`student-row-${s.student_id}`}
+              >
+                <div className="w-10 h-10 rounded-2xl bg-emerald-700 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                  {s.student_name?.charAt(0)?.toUpperCase() || 'S'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-900 truncate">{s.student_name}</p>
+                  <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                    <span className="flex items-center gap-1"><BookOpen className="w-3 h-3" />{s.reading_level || 'Beginner'}</span>
+                    {s.last_class_date && (
+                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{new Date(s.last_class_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                    s.is_active !== false ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    {s.is_active !== false ? 'Active' : 'Inactive'}
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-slate-300" />
+                </div>
+              </button>
+            ))}
           </div>
         )}
-      </Card>
+      </div>
 
-      {/* Report Card Modal */}
-      {showReportModal && selectedStudentForReport && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in" onClick={() => setShowReportModal(false)}>
-          <div className="bg-surface-card rounded-xl w-full max-w-md p-6 animate-modal-in" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-h3 text-brand">Generate Report Card</h3>
-              <button onClick={() => setShowReportModal(false)} className="p-2 hover:bg-surface-subtle rounded-full transition-colors">
-                <X className="w-5 h-5 text-ink-tertiary" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div className="p-4 rounded-md bg-surface-warm">
-                <p className="text-small font-medium text-brand">{selectedStudentForReport.name}</p>
-                <p className="text-caption text-ink-secondary">{selectedStudentForReport.current_level}</p>
-              </div>
-              <div>
-                <label className="block text-small font-medium mb-2 text-ink-secondary">Attendance (This Month)</label>
-                <input type="text" value={reportData.attendance} onChange={(e) => setReportData({ ...reportData, attendance: e.target.value })} placeholder="e.g., 4/4" className={inputCls} />
-              </div>
-              <div>
-                <label className="block text-small font-medium mb-2 text-ink-secondary">Progress</label>
-                <input type="text" value={reportData.progress} onChange={(e) => setReportData({ ...reportData, progress: e.target.value })} placeholder="e.g., Completed Surah Al-Mulk" className={inputCls} />
-              </div>
-              <div>
-                <label className="block text-small font-medium mb-2 text-ink-secondary">Additional Notes</label>
-                <textarea value={reportData.notes} onChange={(e) => setReportData({ ...reportData, notes: e.target.value })} placeholder="Comments for parents..."
-                  className="w-full h-24 p-3 rounded-md border border-ink-faint/40 bg-surface-card resize-none text-body placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand/40 transition-all" />
-              </div>
-              <Button onClick={generateReport} className="w-full" data-testid="generate-pdf-btn">
-                <Download className="w-4 h-4" />Generate PDF Report
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <StudentDetailDrawer student={selectedStudent} onClose={() => setSelectedStudent(null)} />
     </div>
   );
 }

@@ -1,191 +1,190 @@
 import React, { useState } from 'react';
-import { Star, CheckCircle, Video, Upload, Award, Save } from 'lucide-react';
+import { Camera, User, Mail, Phone, Globe, Save, BookOpen, FileText } from 'lucide-react';
 import { toast } from 'sonner';
-import Card, { CardHeader, CardBody } from '../Card';
-import Badge from '../Badge';
-import Button from '../Button';
-import Spinner from '../Spinner';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-export default function ProfileManagement({ teacherData, user }) {
-  const [profile, setProfile] = useState({
-    bio: teacherData?.bio || '',
-    meetLink: teacherData?.meet_link || '',
-    specializations: teacherData?.specializations || [],
-    yearsExperience: teacherData?.years_experience || 0,
+const SPECIALTIES = ['Tajweed', 'Hifz', 'Arabic for Kids', 'Quran Recitation', 'Islamic Studies', 'Nooraniah', 'Qirat'];
+
+export default function ProfileManagement({ user, teacher, onRefresh }) {
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    phone: user?.phone || '',
+    timezone: user?.timezone || 'Asia/Kuala_Lumpur',
+    gender: user?.gender || '',
+    bio: teacher?.bio || '',
+    specializations: teacher?.specializations || [],
+    years_experience: teacher?.years_experience || 0,
   });
-  const [videoFile, setVideoFile] = useState(null);
-  const [certificateFile, setCertificateFile] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const specialties = [
-    'Hifz (Memorization)', 'Tajweed', 'Qiraat', 'Arabic for Kids',
-    'Arabic for Adults', 'English Speaking', 'Malay Speaking', 'Female Students Only',
-  ];
+  const handleChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
 
-  const toggleSpecialty = (s) => setProfile(p => ({
-    ...p,
-    specializations: p.specializations.includes(s) ? p.specializations.filter(x => x !== s) : [...p.specializations, s],
-  }));
+  const toggleSpecialty = (spec) => {
+    setFormData(prev => ({
+      ...prev,
+      specializations: prev.specializations.includes(spec)
+        ? prev.specializations.filter(s => s !== spec)
+        : [...prev.specializations, spec],
+    }));
+  };
 
-  const handleSaveProfile = async () => {
+  const handleSave = async () => {
     setSaving(true);
     try {
-      const r = await fetch(`${API}/teachers/${teacherData.teacher_id}/profile`, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(profile),
+      // Update user profile
+      await fetch(`${API}/auth/update-profile`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ name: formData.name, phone: formData.phone, timezone: formData.timezone, gender: formData.gender }),
       });
-      toast.success(r.ok ? 'Profile updated successfully!' : 'Profile saved (demo mode)');
-    } catch {
-      toast.success('Profile saved (demo mode)');
-    } finally {
-      setSaving(false);
-    }
+      // Update teacher profile
+      if (teacher?.teacher_id) {
+        await fetch(`${API}/teacher/update-profile`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ bio: formData.bio, specializations: formData.specializations, years_experience: formData.years_experience }),
+        });
+      }
+      toast.success('Profile updated successfully');
+      onRefresh?.();
+    } catch { toast.error('Failed to save profile'); }
+    finally { setSaving(false); }
   };
 
-  const handleVideoUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 50 * 1024 * 1024) { toast.error('Video must be under 50MB'); return; }
-    setVideoFile(file);
-    toast.success('Video selected! Save profile to upload.');
-  };
+  const timezones = [
+    'Asia/Kuala_Lumpur', 'Asia/Singapore', 'Asia/Jakarta', 'Asia/Dubai',
+    'Asia/Riyadh', 'Europe/London', 'America/New_York', 'America/Los_Angeles',
+    'Australia/Sydney', 'UTC',
+  ];
 
-  const handleCertificateUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setCertificateFile(file);
-    toast.success('Certificate selected! Save profile to upload.');
-  };
-
-  const inputCls = 'h-12 w-full rounded-md border border-ink-faint/40 bg-surface-card px-4 text-body placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand/40 transition-all';
+  const inputCls = 'h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 pl-11 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40 transition-all';
 
   return (
-    <div className="space-y-6">
-      {/* Profile Header */}
-      <Card className="p-6">
-        <div className="flex items-center gap-6">
-          <div className="w-24 h-24 rounded-xl bg-brand flex items-center justify-center text-white text-3xl font-medium flex-shrink-0">
-            {user?.name?.charAt(0) || 'T'}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-h2 font-semibold text-brand truncate">{user?.name}</h2>
-            <p className="text-small text-ink-secondary truncate">{user?.email}</p>
-            <div className="flex items-center gap-2 mt-2 flex-wrap">
-              {teacherData?.is_active ? (
-                <Badge color="success"><CheckCircle className="w-3 h-3 mr-1" />Verified Teacher</Badge>
-              ) : (
-                <Badge color="warning">Pending Verification</Badge>
-              )}
-              <Badge color="gold">
-                <Star className="w-3 h-3 mr-1" fill="currentColor" />
-                {teacherData?.rating?.toFixed(1) || '5.0'}
-              </Badge>
+    <div className="p-4 lg:p-8 max-w-2xl mx-auto space-y-4" data-testid="teacher-profile-page">
+      {/* Avatar */}
+      <div className="rounded-3xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-6">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-3xl bg-emerald-700 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
+              {user?.picture ? <img src={user.picture} alt={user.name} className="w-20 h-20 object-cover" /> : user?.name?.charAt(0)?.toUpperCase() || 'T'}
             </div>
+            <button className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-sm hover:bg-emerald-700 transition-colors" data-testid="teacher-avatar-upload" onClick={() => toast.info('Photo upload coming soon')}>
+              <Camera className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">{user?.name}</h2>
+            <p className="text-sm text-slate-500">{user?.email}</p>
+            <span className="inline-block mt-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Teacher</span>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Basic Info */}
-      <Card>
-        <CardHeader><h3 className="text-h3 font-semibold text-brand">Basic Information</h3></CardHeader>
-        <CardBody className="space-y-4">
-          <div>
-            <label className="block text-small font-medium mb-2 text-ink-secondary">Bio / About Me</label>
-            <textarea value={profile.bio} onChange={(e) => setProfile({ ...profile, bio: e.target.value })} placeholder="Tell students about yourself, your teaching style, and experience..."
-              className="w-full h-32 p-3 rounded-md border border-ink-faint/40 bg-surface-card resize-none text-body placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand/40 transition-all"
-              data-testid="bio-input" />
+      <div className="rounded-3xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-6">
+        <h3 className="text-sm font-semibold text-slate-900 mb-5">Personal Information</h3>
+        <div className="space-y-4">
+          <div className="relative">
+            <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Full Name</label>
+            <User className="absolute left-4 top-[calc(50%+8px)] -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <input type="text" value={formData.name} onChange={e => handleChange('name', e.target.value)} className={inputCls} data-testid="teacher-name-input" />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-small font-medium mb-2 text-ink-secondary">Years of Experience</label>
-              <input type="number" value={profile.yearsExperience} onChange={(e) => setProfile({ ...profile, yearsExperience: parseInt(e.target.value) })} className={inputCls} data-testid="experience-input" />
+          <div className="relative">
+            <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Email</label>
+            <Mail className="absolute left-4 top-[calc(50%+8px)] -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <input type="email" value={user?.email || ''} disabled className={`${inputCls} bg-slate-50 text-slate-400 cursor-not-allowed`} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="relative">
+              <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Phone</label>
+              <Phone className="absolute left-4 top-[calc(50%+8px)] -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <input type="tel" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} placeholder="+60 12 345 6789" className={inputCls} data-testid="teacher-phone-input" />
+            </div>
+            <div className="relative">
+              <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Gender</label>
+              <User className="absolute left-4 top-[calc(50%+8px)] -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+              <select value={formData.gender} onChange={e => handleChange('gender', e.target.value)} className={inputCls} data-testid="teacher-gender-select">
+                <option value="">Select</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+          </div>
+          <div className="relative">
+            <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Timezone</label>
+            <Globe className="absolute left-4 top-[calc(50%+8px)] -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <select value={formData.timezone} onChange={e => handleChange('timezone', e.target.value)} className={inputCls} data-testid="teacher-timezone-select">
+              {timezones.map(tz => <option key={tz} value={tz}>{tz.replace('_', ' ')}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Professional Info */}
+      <div className="rounded-3xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-6">
+        <h3 className="text-sm font-semibold text-slate-900 mb-5">Professional</h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Specialties</label>
+            <div className="flex flex-wrap gap-2" data-testid="specialty-tags">
+              {SPECIALTIES.map(spec => (
+                <button
+                  key={spec}
+                  onClick={() => toggleSpecialty(spec)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    formData.specializations.includes(spec)
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                  data-testid={`specialty-${spec.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  {spec}
+                </button>
+              ))}
             </div>
           </div>
           <div>
-            <label className="block text-small font-medium mb-2 text-ink-secondary">Google Meet Link</label>
-            <input type="url" value={profile.meetLink} onChange={(e) => setProfile({ ...profile, meetLink: e.target.value })} placeholder="https://meet.google.com/xxx-xxxx-xxx" className={inputCls} data-testid="meet-link-input" />
+            <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Bio</label>
+            <textarea
+              value={formData.bio}
+              onChange={e => handleChange('bio', e.target.value)}
+              placeholder="Tell students about your teaching experience..."
+              rows={4}
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40 transition-all resize-none"
+              data-testid="teacher-bio-input"
+            />
           </div>
-        </CardBody>
-      </Card>
-
-      {/* Specialties */}
-      <Card>
-        <CardHeader><h3 className="text-h3 font-semibold text-brand">Specialties & Skills</h3></CardHeader>
-        <CardBody>
-          <div className="flex flex-wrap gap-2">
-            {specialties.map(specialty => (
-              <button key={specialty} onClick={() => toggleSpecialty(specialty)}
-                className={`px-4 py-2 rounded-full text-small font-medium transition-all ${
-                  profile.specializations.includes(specialty)
-                    ? 'bg-brand text-white'
-                    : 'bg-surface-warm text-ink-secondary hover:bg-surface-subtle'
-                }`}
-                data-testid={`specialty-${specialty.replace(/\s+/g, '-').toLowerCase()}`}>
-                {profile.specializations.includes(specialty) && <CheckCircle className="w-4 h-4 inline mr-1" />}
-                {specialty}
-              </button>
-            ))}
+          <div>
+            <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Years of Experience</label>
+            <input type="number" min="0" max="50" value={formData.years_experience} onChange={e => handleChange('years_experience', parseInt(e.target.value) || 0)} className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40 transition-all" data-testid="teacher-experience-input" />
           </div>
-        </CardBody>
-      </Card>
+        </div>
+      </div>
 
-      {/* Video Introduction */}
-      <Card>
-        <CardHeader>
-          <h3 className="text-h3 font-semibold text-brand">Video Introduction</h3>
-          <p className="text-small text-ink-secondary mt-1">Upload a 1-2 minute video of yourself reciting Quran so parents can hear your voice and Tajweed quality.</p>
-        </CardHeader>
-        <CardBody>
-          <div className="border-2 border-dashed border-ink-faint/30 rounded-md p-8 text-center relative hover:border-brand/30 transition-colors">
-            {videoFile ? (
-              <div>
-                <Video className="w-12 h-12 mx-auto mb-3 text-brand" />
-                <p className="font-medium text-ink">{videoFile.name}</p>
-                <p className="text-small text-ink-secondary">{(videoFile.size / (1024 * 1024)).toFixed(2)} MB</p>
-              </div>
-            ) : (
-              <>
-                <Upload className="w-12 h-12 mx-auto mb-3 text-ink-faint" />
-                <p className="text-ink-secondary mb-1">Drag and drop or click to upload</p>
-                <p className="text-caption text-ink-tertiary">MP4, MOV up to 50MB</p>
-              </>
-            )}
-            <input type="file" accept="video/*" onChange={handleVideoUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" data-testid="video-upload-input" />
-          </div>
-        </CardBody>
-      </Card>
+      {/* Credentials */}
+      <div className="rounded-3xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-6">
+        <h3 className="text-sm font-semibold text-slate-900 mb-5">Credentials</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <button className="p-5 rounded-2xl border border-dashed border-slate-300 text-center hover:border-emerald-300 hover:bg-emerald-50/30 transition-all" data-testid="video-intro-upload" onClick={() => toast.info('Video upload coming soon')}>
+            <BookOpen className="w-6 h-6 mx-auto mb-2 text-slate-300" />
+            <p className="text-xs font-medium text-slate-500">Video Intro</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Upload MP4</p>
+          </button>
+          <button className="p-5 rounded-2xl border border-dashed border-slate-300 text-center hover:border-emerald-300 hover:bg-emerald-50/30 transition-all" data-testid="certificate-upload" onClick={() => toast.info('Certificate upload coming soon')}>
+            <FileText className="w-6 h-6 mx-auto mb-2 text-slate-300" />
+            <p className="text-xs font-medium text-slate-500">Certificates (Ijazah)</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Upload PDF/Image</p>
+          </button>
+        </div>
+      </div>
 
-      {/* Certificates */}
-      <Card>
-        <CardHeader>
-          <h3 className="text-h3 font-semibold text-brand">Ijazah / Certificates</h3>
-          <p className="text-small text-ink-secondary mt-1">Upload your credentials to get a "Verified" badge (e.g., Degree from Al-Azhar, Darul Quran).</p>
-        </CardHeader>
-        <CardBody>
-          <div className="border-2 border-dashed border-ink-faint/30 rounded-md p-8 text-center relative hover:border-gold/40 transition-colors">
-            {certificateFile ? (
-              <div>
-                <Award className="w-12 h-12 mx-auto mb-3 text-gold-dark" />
-                <p className="font-medium text-ink">{certificateFile.name}</p>
-              </div>
-            ) : (
-              <>
-                <Award className="w-12 h-12 mx-auto mb-3 text-ink-faint" />
-                <p className="text-ink-secondary mb-1">Upload your certificates</p>
-                <p className="text-caption text-ink-tertiary">PDF, JPG, PNG up to 10MB</p>
-              </>
-            )}
-            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleCertificateUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" data-testid="certificate-upload-input" />
-          </div>
-        </CardBody>
-      </Card>
-
-      {/* Save Button */}
-      <Button onClick={handleSaveProfile} disabled={saving} size="lg" className="w-full" data-testid="save-profile-btn">
-        {saving ? <Spinner size="sm" className="border-white border-t-transparent" /> : <><Save className="w-5 h-5" />Save Profile</>}
-      </Button>
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="w-full h-12 rounded-2xl bg-emerald-700 text-white font-semibold text-sm hover:bg-emerald-800 transition-all active:scale-[0.97] flex items-center justify-center gap-2 disabled:opacity-60"
+        data-testid="save-teacher-profile-btn"
+      >
+        <Save className="w-4 h-4" />{saving ? 'Saving...' : 'Save Changes'}
+      </button>
     </div>
   );
 }
