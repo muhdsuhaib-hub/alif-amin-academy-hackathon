@@ -116,6 +116,8 @@ async def credit_tutor_earnings(
     description: str,
     gross_amount: float = 0.0,
     platform_fee: float = 0.0,
+    student_id: str = "",
+    duration_minutes: int = 30,
 ):
     """
     Credit earnings to tutor wallet from a completed session.
