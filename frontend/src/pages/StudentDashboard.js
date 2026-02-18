@@ -46,9 +46,9 @@ export default function StudentDashboard({ user }) {
     if (user?.user_id) {
       fetchBookings();
       // Fetch student_id for progress tracker
-      fetch(`${API}/students/profile?user_id=${user.user_id}`, { credentials: 'include' })
+      fetch(`${API}/students/dashboard`, { credentials: 'include' })
         .then(r => r.ok ? r.json() : null)
-        .then(d => { if (d?.student_id) setStudentId(d.student_id); })
+        .then(d => { if (d?.student?.student_id) setStudentId(d.student.student_id); })
         .catch(() => {});
     }
   }, [user?.user_id, fetchBookings]);
