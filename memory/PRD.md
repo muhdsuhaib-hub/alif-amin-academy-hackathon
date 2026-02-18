@@ -39,27 +39,46 @@ Online Quran Academy connecting students with qualified teachers for 1-on-1 vide
 - **Step 5:** My Students — Table with Name/Level/Status, detail drawer with scores + past notes
 - **Step 6:** Profile Settings — Personal info, specialty tags, bio, credentials upload placeholders
 
+### Batch 5.5: Functional Repairs (Complete - Feb 19, 2026)
+- **Fix 1 (P0) Revenue Loop:** Made `credit_tutor_earnings` atomic with MongoDB transaction support (fallback to sequential). Correct flow: Gross Value → Platform Fee deduction → Net Income to teacher wallet + admin_revenue record
+- **Fix 2 (P1) Availability Manager:** Fixed booked sessions overlay (changed from student-only `/booking/my-bookings` to role-aware `/bookings`), fixed timezone consistency using local date formatting
+- **Fix 3 (P1) Profile Amnesia:** Wired `onUserUpdate` callback from `ProtectedRoute` → `TeacherDashboard` → `ProfileManagement`, backend now returns updated documents on profile save
+- **Fix 4 (P0) Platform Fee Logic:** Verified and confirmed correct pricing (15min=RM15, 30min=RM30, 60min=RM60) and tier thresholds (New <20 sessions=40%, Rated >=20+4.5★=35%, Elite >=100+4.7★=30%)
+
 ## Key API Endpoints
 - `GET /api/students/dashboard-data` — Comprehensive student dashboard
 - `GET /api/teacher/dashboard-data` — Teacher dashboard + tier + earnings
 - `POST /api/teacher/request-payout` — Submit payout request
-- `PUT /api/teacher/update-profile` — Update teacher professional info
+- `PUT /api/teacher/update-profile` — Update teacher professional info (returns updated teacher doc)
+- `PUT /api/auth/update-profile` — Update user info incl. gender (returns updated user doc)
 - `POST /api/booking/availability/bulk` — Save weekly availability slots
 - `GET /api/booking/teacher-students/{id}` — Teacher's student list
 - `GET /api/booking/teacher-availability/{id}` — Teacher availability slots
 - `POST /api/support` — Create support ticket
 - `POST /api/wallet/topup/custom` — Custom credit top-up (RM 15/credit)
+- `GET /api/bookings` — Role-aware bookings (teacher sees their bookings)
+
+## Commission System
+- **New Tutor (40%):** < 20 completed sessions
+- **Rated Tutor (35%):** >= 20 sessions AND >= 4.5 avg rating
+- **Elite Tutor (30%):** >= 100 sessions AND >= 4.7 avg rating
+- **Downgrade threshold:** Rating drops below 4.3 → back to New
+- **Session Pricing:** 1 Credit = RM 15 (15min=RM15, 30min=RM30, 60min=RM60)
+- **Revenue flow (atomic):** Student wallet deduction → Session payment record → Teacher earnings credit + Admin revenue record + Transaction history
 
 ## DB Collections
-users, students, teachers, bookings, availability_slots, class_sessions, student_progress, student_wallets, wallet_transactions, teacher_wallets, teacher_transactions, payout_requests, notifications, wallet_packages, support_tickets, system_settings
+users, students, teachers, bookings, availability_slots, class_sessions, student_progress, student_wallets, wallet_transactions, tutor_earnings, tutor_earnings_transactions, admin_revenue, session_payment_records, withdrawal_requests, notifications, wallet_packages, support_tickets, system_settings
 
-## Backlog
-- **P0:** Class Streak tracker (fire icon in header, consecutive days)
-- **P1:** Real Stripe payment integration
-- **P1:** GCS file uploads (profile pictures, video intro, certificates)
-- **P2:** PDF Report Card Generator
-- **P2:** SMS/WhatsApp notifications (Twilio)
-- **P2:** Final responsive verification pass across all breakpoints
+## Upcoming Tasks (P0/P1)
+- **My Students Page:** Build teacher UI to list students and view past session notes/performance
+- **Teacher Profile Uploads:** GCS uploads for video introductions and PDF/Image certificates
+- **Final Responsive Verification:** Mobile-perfect for both Student and Teacher platforms
+
+## Backlog (P2)
+- Real Stripe payment integration
+- Admin Report Card Generator
+- SMS/WhatsApp notifications (Twilio)
+- Admin UI for support tickets, revenue, and system settings
 
 ## Mocked Services
 - Stripe payment processing (student wallet top-up)
