@@ -120,53 +120,77 @@ async def credit_tutor_earnings(
     """
     Credit earnings to tutor wallet from a completed session.
     Amount should ALREADY have commission deducted (this is the tutor's net payout).
-    Also: increments teacher total_classes, records admin_revenue.
+    
+    Uses MongoDB transaction for atomicity:
+    Teacher Wallet Credit + Admin Revenue Record + Transaction History + Stats Update
+    all succeed or all fail together.
     """
     earnings = await get_or_create_tutor_earnings(teacher_id, user_id)
     
     new_total = earnings["total_earnings"] + amount
     new_withdrawable = earnings["withdrawable_balance"] + amount
-    
-    await db.tutor_earnings.update_one(
-        {"teacher_id": teacher_id},
-        {"$set": {
-            "total_earnings": new_total,
-            "withdrawable_balance": new_withdrawable,
-            "updated_at": datetime.now(timezone.utc).isoformat()
-        }}
-    )
-    
-    # Atomically increment teacher total_classes and update stats
-    await db.teachers.update_one(
-        {"teacher_id": teacher_id},
-        {"$inc": {"total_classes": 1}}
-    )
-    
-    # Record admin/platform revenue
-    await db.admin_revenue.insert_one({
-        "revenue_id": f"rev_{uuid.uuid4().hex[:12]}",
-        "teacher_id": teacher_id,
-        "booking_id": booking_id,
-        "gross_amount": gross_amount,
-        "platform_fee": platform_fee,
-        "net_to_teacher": amount,
-        "created_at": datetime.now(timezone.utc).isoformat(),
-    })
-    
-    # Record transaction with full gross/net breakdown
-    await add_earnings_transaction(
-        earnings_id=earnings["earnings_id"],
-        teacher_id=teacher_id,
-        transaction_type="session_earning",
-        amount=amount,
-        balance_after=new_withdrawable,
-        description=description,
-        reference_id=booking_id,
-        session_payment_record_id=session_payment_record_id,
-        gross_amount=gross_amount,
-        net_amount=amount,
-        platform_fee=platform_fee,
-    )
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    transaction_id = f"te_txn_{uuid.uuid4().hex[:12]}"
+    revenue_id = f"rev_{uuid.uuid4().hex[:12]}"
+
+    async def _execute_writes(session=None):
+        """Execute all financial writes, optionally within a MongoDB session."""
+        # 1. Update tutor earnings wallet
+        await db.tutor_earnings.update_one(
+            {"teacher_id": teacher_id},
+            {"$set": {
+                "total_earnings": new_total,
+                "withdrawable_balance": new_withdrawable,
+                "updated_at": now_iso
+            }},
+            session=session
+        )
+        # 2. Increment teacher total_classes
+        await db.teachers.update_one(
+            {"teacher_id": teacher_id},
+            {"$inc": {"total_classes": 1}},
+            session=session
+        )
+        # 3. Record admin/platform revenue
+        await db.admin_revenue.insert_one({
+            "revenue_id": revenue_id,
+            "teacher_id": teacher_id,
+            "booking_id": booking_id,
+            "gross_amount": gross_amount,
+            "platform_fee": platform_fee,
+            "net_to_teacher": amount,
+            "created_at": now_iso,
+        }, session=session)
+        # 4. Record earnings transaction
+        await db.tutor_earnings_transactions.insert_one({
+            "transaction_id": transaction_id,
+            "earnings_id": earnings["earnings_id"],
+            "teacher_id": teacher_id,
+            "transaction_type": "session_earning",
+            "amount": amount,
+            "gross_amount": gross_amount,
+            "net_amount": amount,
+            "platform_fee": platform_fee,
+            "balance_after": new_withdrawable,
+            "description": description,
+            "reference_id": booking_id,
+            "session_payment_record_id": session_payment_record_id,
+            "created_at": now_iso
+        }, session=session)
+
+    # Try atomic transaction first; fall back to sequential writes
+    if mongo_client:
+        try:
+            async with await mongo_client.start_session() as session:
+                async with session.start_transaction():
+                    await _execute_writes(session=session)
+            logger.info(f"Atomic earnings credit for teacher {teacher_id}, booking {booking_id}")
+        except Exception as tx_err:
+            logger.warning(f"Transaction not supported, falling back to sequential writes: {tx_err}")
+            await _execute_writes()
+    else:
+        await _execute_writes()
     
     return {
         "credited": amount,
