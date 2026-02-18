@@ -114,19 +114,24 @@ export default function AvailabilityCalendar({ teacherId }) {
       }
     } catch (e) { console.error('Fetch availability error:', e); }
 
-    // Fetch booked sessions overlay
+    // Fetch booked sessions overlay (use /bookings which handles teacher role)
     try {
-      const r2 = await fetch(`${API}/booking/my-bookings`, { credentials: 'include' });
+      const r2 = await fetch(`${API}/bookings?status=scheduled`, { credentials: 'include' });
       if (r2.ok) {
         const data2 = await r2.json();
+        const bookingsList = Array.isArray(data2) ? data2 : (data2.bookings || []);
         const booked = {};
-        (data2.bookings || []).filter(b => b.status === 'scheduled').forEach(b => {
+        bookingsList.filter(b => b.status === 'scheduled').forEach(b => {
           const start = new Date(b.start_time_utc);
-          const dur = b.duration_minutes || 30;
+          const end = b.end_time_utc ? new Date(b.end_time_utc) : new Date(start.getTime() + (b.duration_minutes || 30) * 60000);
+          const dur = (end - start) / 60000;
           for (let m = 0; m < dur; m += 30) {
             const slotDate = new Date(start.getTime() + m * 60000);
-            const key = `${slotDate.toISOString().split('T')[0]}T${String(slotDate.getHours()).padStart(2, '0')}:${slotDate.getMinutes() === 0 ? '00' : '30'}`;
-            booked[key] = b.student_name || 'Booked';
+            const dateStr = slotDate.toISOString().split('T')[0];
+            const h = slotDate.getUTCHours();
+            const min = slotDate.getUTCMinutes();
+            const key = `${dateStr}T${String(h).padStart(2, '0')}:${min < 30 ? '00' : '30'}`;
+            booked[key] = b.student?.user?.name || b.student_name || 'Booked';
           }
         });
         setBookedSlots(booked);
