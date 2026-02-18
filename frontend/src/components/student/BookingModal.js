@@ -201,7 +201,7 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
               </div>
 
               <button
-                onClick={() => setStep(2)}
+                onClick={() => { fetchTeachers(selectedDate, selectedTime); setStep(2); }}
                 disabled={!selectedDate || !selectedTime || !hasEnoughCredits}
                 className="w-full h-12 rounded-2xl bg-emerald-700 text-white font-semibold text-sm hover:bg-emerald-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
                 data-testid="booking-next-btn"
