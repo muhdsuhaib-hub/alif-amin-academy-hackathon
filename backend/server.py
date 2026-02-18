@@ -593,12 +593,14 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
 @api_router.put("/auth/update-profile")
 async def update_profile(profile_data: dict, current_user: User = Depends(get_current_user)):
     """Update user profile fields"""
-    allowed_fields = {"name", "phone", "timezone"}
+    allowed_fields = {"name", "phone", "timezone", "gender"}
     update_fields = {k: v for k, v in profile_data.items() if k in allowed_fields and v is not None}
     if not update_fields:
         raise HTTPException(status_code=400, detail="No valid fields to update")
     await db.users.update_one({"user_id": current_user.user_id}, {"$set": update_fields})
-    return {"message": "Profile updated successfully"}
+    # Return updated user data so frontend can update state
+    updated_user = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    return {"message": "Profile updated successfully", "user": updated_user}
 
 
 @api_router.post("/support")
