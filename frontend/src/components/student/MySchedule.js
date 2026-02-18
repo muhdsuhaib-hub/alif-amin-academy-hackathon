@@ -197,11 +197,14 @@ export default function MySchedule({ bookings: initialBookings, onOpenBooking, o
                 >
                   <span>{day.getDate()}</span>
                   <div className="flex gap-0.5 mt-0.5">
-                    {dayClasses.some(c => c.status === 'scheduled') && (
-                      <div className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-emerald-500'}`} />
+                    {dayClasses.some(c => c.status === 'scheduled' && new Date(c.start_time_utc).getTime() > Date.now()) && (
+                      <div className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-blue-500'}`} />
                     )}
                     {dayClasses.some(c => c.status === 'completed') && (
-                      <div className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white/60' : 'bg-slate-300'}`} />
+                      <div className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white/80' : 'bg-emerald-500'}`} />
+                    )}
+                    {dayClasses.some(c => c.status === 'scheduled' && (c.end_time_utc ? new Date(c.end_time_utc).getTime() : new Date(c.start_time_utc).getTime() + (c.duration_minutes || 30) * 60000) < Date.now()) && (
+                      <div className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white/50' : 'bg-slate-300'}`} />
                     )}
                   </div>
                 </button>
