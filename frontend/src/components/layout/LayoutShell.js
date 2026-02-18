@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, User, Settings, HelpCircle, ChevronDown } from 'lucide-react';
+import { Menu, X, LogOut, User, HelpCircle, ChevronDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,8 +26,7 @@ export function Avatar({ name = '', picture, size = 'md' }) {
   );
 }
 
-function ProfileDropdown({ user, userRole, onLogout, onNavigateTab }) {
-  const navigate = useNavigate();
+function ProfileDropdown({ user, userRole, onLogout, onNavigateTab, onOpenSupport }) {
 
   const roleLabels = { student: 'Student', teacher: 'Teacher', admin: 'Admin' };
 
@@ -62,20 +61,10 @@ function ProfileDropdown({ user, userRole, onLogout, onNavigateTab }) {
           <User className="w-4 h-4 mr-2.5 text-slate-400" />
           My Profile
         </DropdownMenuItem>
-        {userRole === 'student' && (
-          <DropdownMenuItem
-            data-testid="profile-dropdown-settings"
-            className="rounded-xl cursor-pointer text-sm text-slate-700 hover:bg-slate-50 focus:bg-slate-50 py-2"
-            onClick={() => onNavigateTab?.('account')}
-          >
-            <Settings className="w-4 h-4 mr-2.5 text-slate-400" />
-            Settings
-          </DropdownMenuItem>
-        )}
         <DropdownMenuItem
           data-testid="profile-dropdown-support"
           className="rounded-xl cursor-pointer text-sm text-slate-700 hover:bg-slate-50 focus:bg-slate-50 py-2"
-          onClick={() => window.open('mailto:hello.alifamin@gmail.com', '_blank')}
+          onClick={() => onOpenSupport?.()}
         >
           <HelpCircle className="w-4 h-4 mr-2.5 text-slate-400" />
           Support
