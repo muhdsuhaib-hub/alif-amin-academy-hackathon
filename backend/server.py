@@ -1625,17 +1625,16 @@ async def get_teacher_dashboard_data(current_user: User = Depends(get_current_us
         sessions_to_next = 0
         progress_pct = 100
 
-    # Month earnings
+    # Month earnings — read from tutor_earnings (the ACTUAL earnings wallet)
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
-    month_earnings_cursor = db.teacher_wallets.find_one({"teacher_id": teacher_id}, {"_id": 0})
-    teacher_wallet = await month_earnings_cursor if month_earnings_cursor else None
+    tutor_earnings = await db.tutor_earnings.find_one({"teacher_id": teacher_id}, {"_id": 0})
 
-    # Get monthly transaction totals
-    monthly_txns = await db.teacher_transactions.find({
+    # Get monthly transaction totals from tutor_earnings_transactions (correct collection)
+    monthly_txns = await db.tutor_earnings_transactions.find({
         "teacher_id": teacher_id,
         "created_at": {"$gte": month_start},
         "transaction_type": "session_earning"
-    }, {"_id": 0, "net_amount": 1, "gross_amount": 1}).to_list(100)
+    }, {"_id": 0, "net_amount": 1, "gross_amount": 1, "amount": 1, "platform_fee": 1}).to_list(100)
 
     month_net = sum(t.get("net_amount", t.get("amount", 0)) for t in monthly_txns)
     month_gross = sum(t.get("gross_amount", 0) for t in monthly_txns)
