@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, Wallet, Calendar, User } from 'lucide-react';
+import { Home, Wallet, Calendar, User, TrendingUp } from 'lucide-react';
 import { PageLoader } from '../components/Spinner';
 import LayoutShell from '../components/layout/LayoutShell';
 import { DashboardHome, WalletPage, MySchedule, AccountPage, BookingModal } from '../components/student';
+import ProgressTracker from '../components/student/ProgressTracker';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 const MENU_ITEMS = [
   { id: 'home', label: 'Home', icon: Home },
+  { id: 'progress', label: 'Progress', icon: TrendingUp },
   { id: 'wallet', label: 'Wallet', icon: Wallet },
   { id: 'schedule', label: 'Schedule', icon: Calendar },
   { id: 'account', label: 'Account', icon: User },
@@ -17,6 +19,7 @@ const MENU_ITEMS = [
 
 const TAB_TITLES = {
   home: 'Dashboard',
+  progress: 'My Progress',
   wallet: 'Wallet',
   schedule: 'My Schedule',
   account: 'Account',
