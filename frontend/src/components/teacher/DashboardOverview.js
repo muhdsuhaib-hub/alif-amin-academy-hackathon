@@ -126,14 +126,15 @@ function EarningsWidget({ stats }) {
         <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
           <DollarSign className="w-4 h-4 text-amber-600" />
         </div>
-        <span className="text-sm font-semibold text-slate-900">This Month</span>
+        <span className="text-sm font-semibold text-slate-900">Financial Snapshot</span>
       </div>
-      <p className="text-2xl font-bold text-amber-600 tabular-nums" data-testid="month-earnings">RM {stats.net_earnings.toFixed(0)}</p>
-      <p className="text-[11px] text-slate-400 mt-0.5">net earnings</p>
-      <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-        <span>{stats.classes_taught} classes</span>
-        <span>Gross: RM {stats.gross_earnings.toFixed(0)}</span>
-      </div>
+      <p className="text-3xl font-bold text-emerald-700 tabular-nums" data-testid="month-net-earnings">
+        RM {(stats.net_earnings || 0).toFixed(2)}
+      </p>
+      <p className="text-[11px] text-slate-400 mt-0.5 uppercase tracking-wider">Net Income This Month</p>
+      <p className="text-sm text-slate-500 mt-3 tabular-nums" data-testid="month-gross-earnings">
+        Gross Generated: RM {(stats.gross_earnings || 0).toFixed(2)}
+      </p>
     </div>
   );
 }
