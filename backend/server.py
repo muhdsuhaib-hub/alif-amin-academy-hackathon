@@ -601,6 +601,44 @@ async def update_profile(profile_data: dict, current_user: User = Depends(get_cu
     return {"message": "Profile updated successfully"}
 
 
+@api_router.post("/support")
+async def create_support_ticket(ticket_data: dict, current_user: User = Depends(get_current_user)):
+    """Create a support ticket"""
+    subject = ticket_data.get("subject", "general")
+    message = ticket_data.get("message", "").strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="Message is required")
+    if subject not in ("technical", "billing", "general"):
+        raise HTTPException(status_code=400, detail="Invalid subject")
+
+    ticket_id = f"ticket_{uuid.uuid4().hex[:12]}"
+    ticket_doc = {
+        "ticket_id": ticket_id,
+        "user_id": current_user.user_id,
+        "user_name": current_user.name,
+        "user_email": current_user.email,
+        "user_role": current_user.role,
+        "subject": subject,
+        "message": message,
+        "status": "open",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.support_tickets.insert_one(ticket_doc)
+    return {"message": "Support ticket created", "ticket_id": ticket_id}
+
+@api_router.get("/admin/support-tickets")
+async def get_support_tickets(status: Optional[str] = None, current_user: User = Depends(get_current_user)):
+    """Admin: List support tickets"""
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    query = {}
+    if status:
+        query["status"] = status
+    tickets = await db.support_tickets.find(query, {"_id": 0}).sort("created_at", -1).limit(100).to_list(100)
+    return {"tickets": tickets, "count": len(tickets)}
+
+
+
 
 @api_router.post("/auth/logout")
 async def logout(response: Response, current_user: User = Depends(get_current_user), session_token: Optional[str] = Cookie(None)):
