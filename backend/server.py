@@ -640,7 +640,7 @@ async def get_support_tickets(status: Optional[str] = None, current_user: User =
 
 
 @api_router.put("/teacher/update-profile")
-async def update_teacher_profile(data: dict, current_user: User = Depends(get_current_user)):
+async def update_teacher_profile_v2(data: dict, current_user: User = Depends(get_current_user)):
     """Update teacher professional profile"""
     if current_user.role != "teacher":
         raise HTTPException(status_code=403, detail="Not authorized")
@@ -655,7 +655,7 @@ async def update_teacher_profile(data: dict, current_user: User = Depends(get_cu
     return {"message": "Teacher profile updated"}
 
 @api_router.get("/booking/teacher-students/{teacher_id}")
-async def get_teacher_students(teacher_id: str, current_user: User = Depends(get_current_user)):
+async def get_teacher_students_v2(teacher_id: str, current_user: User = Depends(get_current_user)):
     """Get unique students this teacher has taught"""
     # Get all completed bookings for this teacher
     bookings = await db.bookings.find(
@@ -704,7 +704,7 @@ async def get_teacher_students(teacher_id: str, current_user: User = Depends(get
     return {"students": list(student_map.values())}
 
 @api_router.get("/booking/teacher-availability/{teacher_id}")
-async def get_teacher_availability(teacher_id: str, start_date: str = None, end_date: str = None):
+async def get_teacher_availability_v2(teacher_id: str, start_date: str = None, end_date: str = None):
     """Get teacher's availability slots for a date range"""
     query = {"teacher_id": teacher_id}
     if start_date:
