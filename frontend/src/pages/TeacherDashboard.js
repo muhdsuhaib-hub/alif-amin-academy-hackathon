@@ -75,7 +75,7 @@ export default function TeacherDashboard({ user, onUserUpdate }) {
         {activeTab === 'availability' && <AvailabilityCalendar teacherId={teacherId} />}
         {activeTab === 'earnings' && <EarningsWallet dashboardData={dashboardData} user={user} onRefresh={fetchDashboardData} />}
         {activeTab === 'students' && <StudentManagement teacherId={teacherId} />}
-        {activeTab === 'profile' && <ProfileManagement user={user} teacher={dashboardData?.teacher} onRefresh={fetchDashboardData} />}
+        {activeTab === 'profile' && <ProfileManagement user={user} teacher={dashboardData?.teacher} onRefresh={fetchDashboardData} onUserUpdate={onUserUpdate} />}
       </LayoutShell>
       <SupportModal isOpen={showSupportModal} onClose={() => setShowSupportModal(false)} user={user} />
     </>
