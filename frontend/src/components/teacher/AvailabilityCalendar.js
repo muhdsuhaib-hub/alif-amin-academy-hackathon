@@ -17,8 +17,12 @@ function getWeekDates(offset = 0) {
   });
 }
 
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function slotKey(date, hour, half) {
-  return `${date.toISOString().split('T')[0]}T${String(hour).padStart(2, '0')}:${half ? '30' : '00'}`;
+  return `${localDateStr(date)}T${String(hour).padStart(2, '0')}:${half ? '30' : '00'}`;
 }
 
 function timeOptions() {
