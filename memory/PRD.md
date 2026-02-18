@@ -1,77 +1,80 @@
 # Alif Amin Academy - Product Requirements Document
 
-## Original Problem Statement
-Build a web-based platform for an online Quran Academy named "Alif Amin Academy". The platform connects students with qualified Quran teachers for 1-on-1 video lessons with a full virtual classroom module.
+## Overview
+Online Quran Academy platform connecting students with qualified teachers for 1-on-1 video lessons.
 
 ## Tech Stack
-- **Frontend:** React, Tailwind CSS, Shadcn UI, lucide-react, @tanstack/react-query, livekit-client, @livekit/components-react, recharts
-- **Backend:** FastAPI (Python), MongoDB (motor), livekit-api, websockets
-- **Auth:** JWT Email/Password + Custom Google OAuth 2.0
-- **Realtime:** FastAPI WebSockets (pointer/page/highlight/hand/chat/end-class sync)
-- **Video:** LiveKit WebRTC (wss://alif-amin-web-app-ubmi3yue.livekit.cloud)
+- **Frontend:** React, Tailwind CSS, Shadcn UI, react-query, livekit-client, recharts
+- **Backend:** FastAPI, motor (async MongoDB), Pydantic, WebSockets, livekit-server-sdk
+- **Database:** MongoDB
+- **Auth:** JWT-based + Google OAuth
+- **Cloud:** Google Cloud Storage (recordings), LiveKit (video)
 
-## ALL 8 PHASES — COMPLETE
+## Design Standard
+"Apple-Islamic" aesthetic:
+- Background: `bg-slate-50` (never pure white for page bg)
+- Glassmorphism: `bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm`
+- Primary: `emerald-700 / emerald-600`
+- Secondary (Premium): `amber-600 / amber-100`
+- Typography: `text-slate-900` headings, `text-slate-500` secondary
+- Rounding: `rounded-3xl` containers, `rounded-2xl` internal cards
 
-### Phase 1: Clean Slate
-- Removed old classroom/WebRTC code, fresh unified architecture
+## Core Architecture
+```
+/app/backend/       - FastAPI with motor, Pydantic models
+/app/frontend/src/  - React with Tailwind + Shadcn UI
+  components/layout/ - LayoutShell (sidebar + header)
+  components/student/ - Dashboard, Booking, Wallet, Schedule, Account, Progress
+  pages/            - Route-level pages
+```
 
-### Phase 2: Database Architecture
-- ClassSession, StudentProgress, InteractiveActivity models (Pydantic validated, raw Motor)
-- Collections: class_sessions, student_progress, activities, session_ratings, session_payment_records
+## Key DB Collections
+- `users`, `students`, `teachers`, `bookings`, `availability_slots`
+- `class_sessions`, `student_progress`, `student_wallets`, `wallet_transactions`
+- `notifications`, `wallet_packages`
 
-### Phase 3: Booking Logic & Calendar Sync
-- Auto ClassSession creation on booking (with UUID meet_link_slug)
-- GET /api/classroom/next-class with is_joinable flag (5-min early join window)
-- 9 classroom CRUD endpoints
+## Completed Features
 
-### Phase 4: Digital Mushaf Engine
-- api.quran.com/api/v4 with 604-page Madani pagination
-- react-query pre-fetching (next 2 pages), QuranNavigator (Surah/Page/Juz)
-- Floating glassmorphism Teacher Toolbar (pointer, highlighter, page nav, fullscreen)
+### Phase 1-8: Virtual Classroom (Complete)
+- LiveKit video/audio integration
+- WebSocket real-time sync (pointer, page turns, highlights, raise hand)
+- Digital Mushaf with page navigation
+- Session progress reporting and teacher revenue calculation
+- Admin monitoring dashboard
+- GCS recording storage
 
-### Phase 5: Real-Time Sync & LiveKit Video
-- LiveKit token generation, WebSocket sync (POINTER_MOVE, PAGE_CHANGE, HIGHLIGHT_SYNC, CHAT, RAISE_HAND, LOWER_HAND, END_CLASS)
-- Pointer throttled at 50ms, recording toggle with stealth mode
+### Batch 4: Student Experience Overhaul (Complete - Feb 18, 2026)
+- **Step 0:** Legacy Google Meet cleanup - all `meet_link` references removed
+- **Step 1:** Global Header with Shadcn DropdownMenu profile dropdown, smart notification bell with navigation links
+- **Step 2:** Dashboard Home redesign - Smart Hero (countdown/booking prompt), Progress/Wallet/QuickBook widgets
+- **Step 3:** Booking Modal 3-step wizard (Configure -> Teacher Selection -> Review & Confirm)
+- **Step 4:** Wallet page - Digital Credit Card UI, paginated transaction history, top-up modal with packages
+- **Step 5:** Schedule page - Interactive calendar bound to live booking data, session list with join/cancel actions
+- **Step 6:** Account Settings - Profile form (name, phone, timezone), password change section
+- **Step 7:** Progress Tracker - Score summary cards, trend chart, recent classes list
 
-### Phase 6: Apple-Style Classroom UI
-- 75/25 split layout (Desktop), stacked (Mobile)
-- Glassmorphism toolbar/control bar (backdrop-blur-xl, rounded-3xl)
-- VideoStrip with participant tiles, ChatPanel, Recording indicator (visibility-aware)
+## API Endpoints
+- `POST /api/sessions/create` - Create class session from booking
+- `GET /api/sessions/token/{room_name}` - LiveKit access token
+- `WS /api/ws/classroom/{session_id}` - Real-time classroom events
+- `POST /api/sessions/progress` - Submit student progress
+- `GET /api/students/dashboard-data` - Comprehensive dashboard data
+- `PUT /api/auth/update-profile` - Update user profile fields
+- `GET /api/wallet/balance` - Student wallet balance
+- `GET /api/wallet/transactions` - Transaction history
+- `POST /api/booking/create` - Create booking
 
-### Phase 7: End Class & Revenue
-- Session Report Modal (mandatory): Surah, Ayah range, Track type, Grading sliders 1-10, Notes
-- Revenue trigger: progress → session complete → wallet deduction → teacher earnings
-- Rate Teacher Modal: 5-star + review → cumulative average update
-- Raise Hand: golden glow border, teacher toast, WS broadcast
+## Backlog
+- **P0:** Final responsive verification pass (Step 7)
+- **P1:** Real Stripe payment integration (replace mocked flow)
+- **P2:** PDF Report Card Generator
+- **P2:** SMS/WhatsApp notifications (Twilio)
+- **P2:** GCS profile picture upload in Account settings
 
-### Phase 8: Progress & Monitoring
-- Student Progress Tracker: Score trend line chart (recharts), avg scores, recent classes
-- Admin Session Monitor: Live sessions list, Stealth Join (muted/no camera/name="System"), Stealth Record (visible=false), Session history table, Detail modal (progress/rating/payment/recording)
-- Admin Student Report: GET /api/classroom/admin/reports/student/{id} — aggregated JSON for PDF generation
-- Session playback: recording_url accessible in admin detail view
+## Credentials
+- Admin: muhdsuhaib@gmail.com, hello.alifamin@gmail.com
+- LiveKit: Environment variables (LIVEKIT_URL, LIVEKIT_API_KEY)
+- GCS: /app/backend/credentials/gcs-key.json
 
-## Bug Fixes (All Sessions)
-- MongoDB ObjectId serialization in auth/register
-- User role parsing in ClassroomPage
-- Pydantic session_id optional for progress
-- StudentDashboard wrong API endpoint for student_id
-
-## Mocked Integrations
-- Stripe payment processing (backend mock endpoints ready)
-- File storage (teacher profile media)
-- GCS recording storage (recording_url field exists, no actual upload)
-
-## Upcoming (P1)
-- Real Stripe Payments integration
-- GCS file upload for recordings/certificates
-- PDF Report Card generator
-
-## Future (P2)
-- Google Meet API integration
-- Twilio SMS/WhatsApp notifications
-- Advanced analytics dashboard
-
-## Key Credentials
-- LiveKit: wss://alif-amin-web-app-ubmi3yue.livekit.cloud (keys in backend/.env)
-- GCS Bucket: alif-amin-recordings
-- Admin emails: muhdsuhaib@gmail.com, hello.alifamin@gmail.com
+## Mocked Services
+- Stripe payment processing (wallet top-up flow)
