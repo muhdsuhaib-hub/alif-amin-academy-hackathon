@@ -28,30 +28,43 @@ const TAB_TITLES = {
 export default function StudentDashboard({ user }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('home');
+  const [dashboardData, setDashboardData] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
   const [studentId, setStudentId] = useState(null);
 
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      const res = await fetch(`${API}/students/dashboard-data`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setDashboardData(data);
+        setStudentId(data.student?.student_id);
+        // Merge upcoming + past for booking-dependent tabs
+        const all = [...(data.upcoming_classes || []), ...(data.past_classes || [])];
+        setBookings(all);
+      }
+    } catch (error) { console.error('Dashboard data error:', error); }
+    finally { setLoading(false); }
+  }, []);
+
   const fetchBookings = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/bookings/student?user_id=${user?.user_id}`, { credentials: 'include' });
-      if (res.ok) { const data = await res.json(); setBookings(data.bookings || []); }
-    } catch (error) { console.error('Error:', error); }
-    finally { setLoading(false); }
-  }, [user?.user_id]);
+      const res = await fetch(`${API}/booking/my-bookings`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setBookings(data.bookings || []);
+      }
+    } catch (error) { console.error('Bookings error:', error); }
+  }, []);
 
   useEffect(() => {
     if (user?.user_id) {
-      fetchBookings();
-      // Fetch student_id for progress tracker
-      fetch(`${API}/students/dashboard`, { credentials: 'include' })
-        .then(r => r.ok ? r.json() : null)
-        .then(d => { if (d?.student?.student_id) setStudentId(d.student.student_id); })
-        .catch(() => {});
+      fetchDashboardData();
     }
-  }, [user?.user_id, fetchBookings]);
+  }, [user?.user_id, fetchDashboardData]);
 
   const handleLogout = async () => {
     try {
@@ -61,18 +74,38 @@ export default function StudentDashboard({ user }) {
     } catch (e) { console.error('Logout error:', e); }
   };
 
+  const handleBookingSuccess = () => {
+    fetchDashboardData();
+    fetchBookings();
+  };
+
   if (loading) return <PageLoader />;
 
   return (
     <>
       <LayoutShell menuItems={MENU_ITEMS} activeTab={activeTab} setActiveTab={setActiveTab} tabTitles={TAB_TITLES} user={user} userRole="student" onLogout={handleLogout}>
-        {activeTab === 'home' && <DashboardHome bookings={bookings} onOpenBooking={() => setShowBookingModal(true)} />}
+        {activeTab === 'home' && (
+          <DashboardHome
+            dashboardData={dashboardData}
+            onOpenBooking={() => setShowBookingModal(true)}
+            onNavigateTab={setActiveTab}
+          />
+        )}
         {activeTab === 'progress' && <ProgressTracker studentId={studentId} />}
         {activeTab === 'wallet' && <WalletPage user={user} />}
         {activeTab === 'schedule' && <MySchedule bookings={bookings} onRefresh={fetchBookings} onEdit={setEditingBooking} onOpenBooking={() => setShowBookingModal(true)} />}
         {activeTab === 'account' && <AccountPage user={user} />}
       </LayoutShell>
-      <BookingModal isOpen={showBookingModal || !!editingBooking} onClose={() => { setShowBookingModal(false); setEditingBooking(null); }} editBooking={editingBooking} user={user} existingBookings={bookings.filter(b => b.status === 'scheduled')} teachers={[]} selectedTeacher={editingBooking?.teacher_id || (bookings.find(b => b.teacher_id) || {}).teacher_id || null} onSuccess={fetchBookings} />
+      <BookingModal
+        isOpen={showBookingModal || !!editingBooking}
+        onClose={() => { setShowBookingModal(false); setEditingBooking(null); }}
+        editBooking={editingBooking}
+        user={user}
+        existingBookings={bookings.filter(b => b.status === 'scheduled')}
+        teachers={[]}
+        selectedTeacher={editingBooking?.teacher_id || null}
+        onSuccess={handleBookingSuccess}
+      />
     </>
   );
 }
