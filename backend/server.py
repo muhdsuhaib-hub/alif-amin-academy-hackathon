@@ -654,7 +654,8 @@ async def update_teacher_profile_v2(data: dict, current_user: User = Depends(get
     update_fields = {k: v for k, v in data.items() if k in allowed and v is not None}
     if update_fields:
         await db.teachers.update_one({"teacher_id": teacher["teacher_id"]}, {"$set": update_fields})
-    return {"message": "Teacher profile updated"}
+    updated_teacher = await db.teachers.find_one({"teacher_id": teacher["teacher_id"]}, {"_id": 0})
+    return {"message": "Teacher profile updated", "teacher": updated_teacher}
 
 @api_router.get("/booking/teacher-students/{teacher_id}")
 async def get_teacher_students_v2(teacher_id: str, current_user: User = Depends(get_current_user)):
