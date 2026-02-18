@@ -1,59 +1,52 @@
 <analysis>**original_problem_statement:**
 The user wants to build a web-based platform for an online Quran Academy named Alif Amin Academy. The platform connects students with qualified Quran teachers for 1-on-1 video lessons.
 
-**LATEST USER REQUESTS:**
-1.  **Apple-Inspired Redesign:** Refactor the entire web application UI/UX into a premium, clean, Apple-inspired design system without altering any backend logic or features. This involves standardizing all components (buttons, forms, tables), typography, spacing, and colors, and creating a reusable component library.
-2.  **Onboarding Flow Bug (FIXED):** A bug where the onboarding flow failed to redirect to the sign-up page needed to be fixed.
-
-**PRODUCT REQUIREMENTS (Overall):**
-*   **User Roles:** Student/Parent, Teacher, and Super Admin.
-*   **Authentication:** Google OAuth and Email/Password login.
-*   **Dashboards:** Role-based dashboards for Admin, Teacher, and Student.
-*   **Financial System:** A credit-based wallet for students, a tiered commission system for tutors, and a tutor earnings wallet with a withdrawal workflow.
-*   **Booking System:** A pop-up modal for booking sessions.
+The most recent request is to execute Batch 4: Student Experience Overhaul. This is a comprehensive refactoring of the entire student-facing platform (dashboard, booking, wallet, etc.) to a premium, responsive, Apple-Islamic design standard, while removing all mock data and fixing broken navigation.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application (React, FastAPI, MongoDB). The application has undergone a massive frontend refactoring to implement a consistent, premium, Apple-inspired design system. A new centralized component library has been created, and most pages and components have been updated to use it. A critical bug preventing new user registration via the onboarding flow has been identified, fixed, and verified. The refactoring of the UI is nearly complete, with only a few teacher-specific components remaining.
+A full-stack application using React, FastAPI, and MongoDB. The core feature, a Virtual Classroom with LiveKit for video and WebSockets for real-time data synchronization (pointer, page turns, etc.), has been successfully built and tested across multiple phases. The backend uses a raw  driver for database consistency, with Pydantic models for validation. The application is integrated with Google Cloud Storage for recordings. The agent has just begun the Student Experience Overhaul by starting to remove legacy code.
 
 **Last working item**:
-- **Last item agent was working:** The agent was in the final stages of a large-scale UI refactoring. The immediate next step is to refactor the last set of teacher-specific components to align with the new design system.
+- **Last item agent was working:** The agent was executing **Step 0 of Batch 4: Student Experience Overhaul**. This step involves a critical cleanup of the backend codebase, removing all legacy references to Google Meet URLs from , , and  to ensure the platform exclusively uses the new internal LiveKit classroom. The agent has issued the commands to perform this cleanup but has not yet verified the outcome.
 - **Status:** IN PROGRESS
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** Frontend testing agent. Once the final components are refactored, a full regression test of the entire application is critical to ensure no functionality was broken during the extensive UI overhaul.
+- **Which testing method agent to use?** Backend testing agent. It's crucial to run tests to confirm that removing the legacy code did not break the booking and session creation flows. After that, a frontend testing agent will be needed for the UI changes.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- No pending issues. The previously reported onboarding bug has been resolved.
+- No outstanding bugs. The current work is feature-focused.
 
 **In progress Task List**:
-- **Task 1: Complete Apple-Inspired UI Redesign (P0)**
-    - **Where to resume:** Refactor the remaining teacher components located at . The specific files are: , , , and . These files need to be updated to remove inline styles and use the new reusable components from  (e.g., , ).
-    - **What will be achieved with this?** This will complete the full UI/UX overhaul, ensuring every part of the application adheres to the new, consistent, and maintainable design system.
+- **Task 1: Execute Batch 4: Student Experience Overhaul (P0)**
+    - **Where to resume:** The legacy code removal is in progress. The immediate next step is to verify that the backend services restart correctly after the changes. Following that, the agent must proceed to **Step 1: Refactor the Global Navigation & Header**, which involves creating a universal header with a functional profile dropdown and a smart notification system for all user roles (Student, Teacher, Admin).
+    - **What will be achieved with this?** This task will transform the student-facing part of the application from an MVP state to a polished, fully functional, and responsive experience that aligns with the user's strict Apple-Islamic design specification.
     - **Status:** IN PROGRESS
-    - **Should Test frontend/backend/both after fix?** Frontend (Full Regression Test)
-    - **Blocked on something:** No
+    - **Should Test frontend/backend/both after fix?** Both. The backend needs verification immediately after the cleanup, and the frontend will require extensive testing as new components are built.
+    - **Blocked on something:** No.
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks (P1):**
-    - **Implement Real Stripe Payments:** Replace the mocked payment logic in  with a full Stripe integration.
-    - **Real-time Classroom Features:** Implement the Live Pen/Pointer for the Digital Mushaf using WebSockets.
-    - **File Storage:** Implement file uploads (e.g., for teacher profile videos and verification certificates).
+- **Upcoming Tasks (P0, as part of Batch 4):**
+  - **Step 2: Dashboard Home (/student/dashboard):** Redesign the student dashboard with a Smart Hero section (showing a class countdown or a booking prompt) and data-driven widgets for progress and wallet balance.
+  - **Step 3: Booking Logic Overhaul:** Implement a multi-step booking wizard that filters available teachers based on date and duration.
+  - **Step 4: Wallet & Transactions (/student/wallet):** Redesign the wallet page with a Digital Credit Card UI and paginated, icon-based transaction history.
+  - **Step 5: Schedule & Calendar (/student/schedule):** Bind the student's calendar to live data, showing upcoming classes from the  collection.
+  - **Step 6: Account Settings (/account):** Implement profile picture uploads (to GCS) and add forms for timezone and password changes.
+  - **Step 7: Final Verification:** Ensure the entire student platform is fully responsive and free of mock data.
 - **Future Tasks (P2):**
-    - **Google Meet API Integration:** Automate the creation of Google Meet links for classes.
-    - **Notifications:** Integrate a service like Twilio for SMS/WhatsApp notifications.
-    - **PDF Report Card Generator:** Implement the Report Card Generator feature.
+    - **Implement Real Stripe Payments:** Replace the mocked payment logic with a full Stripe integration.
+    - **PDF Report Card Generator:** Implement the Report Card Generator feature for admins.
+    - **SMS/WhatsApp Notifications:** Integrate a service like Twilio.
 
 **Completed work in this session**
-- **Onboarding Bug Fix:**
-  - Identified a stale closure issue in  that prevented redirection.
-  - Fixed the logic and added a loading state for better UX.
-  - Verified the fix using both a screenshot and the frontend testing agent ().
-- **UI/UX Redesign Implementation:**
-  - **Design System:** Established a new design system with standardized tokens for colors, spacing, typography, and border-radius in  and .
-  - **Component Library:** Created a new library of reusable, standardized components in , including , , , , , , and .
-  - **Page Refactoring:** Refactored the vast majority of pages and components to use the new design system and component library, including all public pages (, , ) and the core dashboard pages for Admin, Student, and Teacher.
+- **Virtual Classroom Module (Phases 1-8):**
+  - **Backend:** Implemented robust backend logic for the entire classroom lifecycle, including LiveKit token generation, WebSocket-based real-time synchronization (pointer, page-turns, raise-hand), session progress reporting that triggers teacher revenue calculation, and admin monitoring/reporting endpoints.
+  - **Frontend:** Built the complete  UI, featuring a responsive split-screen layout, the  with page-based navigation, LiveKit video integration, and interactive modals for ending a class (teacher) and rating a session (student).
+  - **Database:** Established the necessary data models (, ) using raw Motor, adhering to the user's requirement for architectural consistency.
+- **UI/UX Refactoring & Bug Fixes:**
+  - Completed the initial Apple-Inspired UI redesign across the application.
+  - Fixed multiple bugs identified by the testing agent, including MongoDB ObjectId serialization errors and incorrect API endpoint usage.
 
 **Earlier issues found/mentioned but not fixed**
 - None.
@@ -65,77 +58,79 @@ A full-stack application (React, FastAPI, MongoDB). The application has undergon
 
 
 **Key Technical Concepts**
-- **Frontend:** React, React Router, Tailwind CSS, , Shadcn UI. A new centralized design system and reusable component library has been implemented to enforce consistency.
-- **Backend:** FastAPI (Python), MongoDB with .
-- **Authentication:** JWT-based Email/Password and a custom Google OAuth 2.0 flow.
+- **Frontend:** React, React Router, Tailwind CSS, Shadcn UI, , .
+- **Backend:** FastAPI,  (for async MongoDB), Pydantic, WebSockets, .
+- **Real-time:** LiveKit for WebRTC audio/video and FastAPI WebSockets for data sync (pointer coordinates, page turns, highlights, raise hand).
+- **Authentication:** JWT-based with distinct roles (, , ).
+- **Cloud Storage:** Google Cloud Storage (GCS) for session recordings.
 
 **key DB schema**
-- No changes in this session.
+- : { teacher_id, student_id, booking_id, start_time_utc, status, meet_link_slug, recording_url }
+- : { session_id, student_id, track_type, grading: {fluency_score, ...}, teacher_comments }
+- : { email, role, avatar_url, ... }
+- : { teacher_id, student_id, slot_id, status, ... }
+- : { user_id, amount, type, description, ... }
 
 **changes in tech stack**
-- None.
+- **LiveKit** was added for video conferencing.
+- **** was added for performant data fetching on the frontend.
+- **Google Cloud Storage (GCS)** integration was added for file storage.
+- The project explicitly uses raw  for all DB operations, avoiding  to maintain consistency.
 
 **All files of reference**
-- **New Files:**
-  - : The entire new reusable component library.
-- **Heavily Updated Files:**
-  - , : Foundation of the new design system.
-  - : All pages were refactored.
-  - , : Most sub-components were refactored.
-- **Files to be updated:**
-  - 
-  - 
-  - 
-  - 
+- **Key Backend Files:** , , , .
+- **Key Frontend Files:** , , , , .
+- **Files to be created/modified next:** A new global  component, and significant refactoring of all files under .
 
 **Areas that need refactoring**:
-- The ongoing refactoring of the teacher components listed above must be completed.
+- The entire student platform is the subject of the current refactoring task (Batch 4). This includes the student dashboard, booking modal, wallet, schedule, and account pages.
 
 **key api endpoints**
-- No changes in this session.
+- : Creates a class session from a booking.
+- : Generates a LiveKit access token for a user.
+- : WebSocket endpoint for all real-time classroom events.
+- : Submits a student's progress report after class and triggers the revenue calculation.
+- : Fetches all currently active sessions for the admin monitor.
 
 **Critical Info for New Agent**
-- **The immediate P0 priority is to complete the UI refactoring** by updating the remaining four teacher components.
-- Once the refactoring is complete, **a full frontend regression test is mandatory**. The scope of the UI changes was massive, and it's crucial to ensure no existing functionality was broken.
-- The critical onboarding bug has been fixed and verified. Do not revisit it unless new issues are reported.
+- You are in the middle of executing **Batch 4: Student Experience Overhaul**. Your immediate task is to verify the successful completion of **Step 0 (Legacy Cleanup)** and then begin **Step 1 (Global Header)**.
+- **The design standard is Apple-Islamic and is non-negotiable.** Adhere strictly to the specified colors (, ), rounding (), and effects ().
+- All previous Google Meet logic is deprecated and must be fully removed. The platform now exclusively uses the internal LiveKit classroom at the route .
+- The backend uses raw , not . Maintain this consistency. Use Pydantic models for request validation before any database operations.
+- All necessary credentials for LiveKit and GCS are in the environment and should be used directly; do not mock these integrations.
 
 **documents and test reports created in this job**
--  (Report for the onboarding bug fix)
+- 
+- 
+- 
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User (Approved):** The audit is accurate and I approve the direction. Before proceeding, I want the following enforced: Remove all inline styles... Update Tailwind configuration... Define the final unified navigation... Create a reusable component library... Eliminate all !important overrides... Proceed once these are incorporated into the plan.
-2.  **Agent:** Started building the design system and component library based on user's requirements. (COMPLETED)
-3.  **Agent:** Completed the UI audit and presented the plan for the redesign. (COMPLETED)
-4.  **User (PENDING for this fork):** start by fixing the P0 onboarding bug immediately, test it, and then check in (This was addressed and completed at the start of the session).
+- The last several messages detail the comprehensive 7-step plan for Batch 4: Student Experience Overhaul, covering legacy cleanup, global navigation, dashboard redesign, booking overhaul, and more.
+- **Latest User Instruction:** The user explicitly requested to begin with cleaning up the legacy Google Meet code (Step 0) and then refactoring the Global Header (Step 1). The agent has started Step 0.
 
 **Project Health Check:**
-- **Broken:**
-  - None. The critical onboarding bug was fixed.
+- **Broken:** The entire student-facing platform (dashboard, booking, wallet) is functionally MVP but suffers from responsiveness issues, mock data, and broken navigation. This is the primary focus of the current task.
 - **Mocked:**
-  - Stripe payment processing.
-  - Tutor withdrawal payouts.
-  - Join Class button functionality.
-  - File storage for teacher profile media.
+  - Stripe payment processing remains mocked.
 
 **3rd Party Integrations**
-- **Active:**
-    - Custom Google OAuth
-    - Custom Email/Password (, )
-- **Planned:**
-    - Stripe (Backend mock endpoints are ready)
-    - Google Meet
-    - Twilio
+- **LiveKit:** Fully integrated for real-time video/audio.
+- **Google Cloud Storage (GCS):** Integrated for storing class recordings.
+- **Custom Google OAuth:** Active for user authentication.
+- **Stripe:** Planned (backend mock endpoints exist).
 
 **Testing status**
-- **Testing agent used after significant changes:** YES (For the onboarding bug fix). Will be needed again after the full UI refactor is complete.
+- **Testing agent used after significant changes:** YES, used after each major phase of the virtual classroom build. It will be essential for verifying Batch 4.
 - **Troubleshoot agent used after agent stuck in loop:** NO
-- **Test files created:** None.
-- **Known regressions:** None currently known. The previous regression in the onboarding flow was fixed.
+- **Test files created:** None. Testing is conducted via the testing agent and manual  commands.
+- **Known regressions:** None.
 
 **Credentials to test flow:**
 - **Admin:** Use a Google account with the email  or .
 - **Teacher/Student:** Use existing accounts for testing dashboard functionality.
-- **New User:** The onboarding flow from the landing page now works correctly.
+- **LiveKit Credentials:** Available as environment variables (, , etc.).
+- **GCS Credentials:** Service account key located at .
 
 **What agent forgot to execute**
-- Nothing was forgotten. The agent has been systematically executing the large, user-approved plan for the UI redesign. The task is simply in progress.</analysis>
+- Nothing has been forgotten. The agent is in the process of a large, multi-step task and has correctly started with the first user-directed action (Step 0). The next action is to verify this step and proceed to Step 1.</analysis>

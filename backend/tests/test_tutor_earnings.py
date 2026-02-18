@@ -17,7 +17,7 @@ import os
 import uuid
 from datetime import datetime, timezone, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://alif-redesign.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://student-overhaul-v4.preview.emergentagent.com')
 
 
 class TestSetup:

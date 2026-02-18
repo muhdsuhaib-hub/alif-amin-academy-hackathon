@@ -58,7 +58,7 @@ async def grant_admin_access():
     print("ADMIN ACCESS GRANTED SUCCESSFULLY")
     print("="*60)
     print("\nAdmin users can now access:")
-    print("  • URL: https://alif-redesign.preview.emergentagent.com/auth/admin")
+    print("  • URL: https://student-overhaul-v4.preview.emergentagent.com/auth/admin")
     print("  • Login with Google using one of the emails above")
     print("  • You'll be redirected to /admin/dashboard")
     print("\nAdmin Emails:")
