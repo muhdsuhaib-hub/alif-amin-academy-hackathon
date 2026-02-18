@@ -261,12 +261,12 @@ class CommissionService:
         # Check for Rated Tutor
         rated = cfg[TierLevel.RATED]
         if (rated.min_rating and average_rating >= rated.min_rating and
-            rated.min_reviews and total_reviews >= rated.min_reviews):
+            rated.min_sessions and total_sessions >= rated.min_sessions):
             return {
                 "tier_level": TierLevel.RATED.value,
                 "commission_rate": rated.commission_rate,
                 "tier_name": rated.name,
-                "reason": f"Qualified: {average_rating:.2f} rating, {total_reviews} reviews",
+                "reason": f"Qualified: {total_sessions} sessions, {average_rating:.2f} rating",
                 "metrics": metrics,
                 "changed": current_tier != TierLevel.RATED.value,
                 "is_downgrade": current_tier == TierLevel.ELITE.value
