@@ -1441,6 +1441,145 @@ async def create_student_profile(student: StudentCreate, current_user: User = De
     return {"message": "Student profile created", "student_id": student_id}
 
 
+
+@api_router.get("/teacher/dashboard-data")
+async def get_teacher_dashboard_data(current_user: User = Depends(get_current_user)):
+    """Comprehensive teacher dashboard data: next class, tier, earnings, stats."""
+    if current_user.role != "teacher":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    teacher = await db.teachers.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher profile not found")
+
+    teacher_id = teacher["teacher_id"]
+    now = datetime.now(timezone.utc)
+
+    # Upcoming bookings with student name enrichment
+    upcoming = await db.bookings.find({
+        "teacher_id": teacher_id,
+        "status": "scheduled",
+        "start_time_utc": {"$gte": now.isoformat()}
+    }, {"_id": 0}).sort("start_time_utc", 1).limit(5).to_list(5)
+
+    for b in upcoming:
+        cs = await db.class_sessions.find_one({"booking_id": b.get("booking_id")}, {"_id": 0, "session_id": 1})
+        if cs:
+            b["session_id"] = cs["session_id"]
+        if b.get("student_id"):
+            student = await db.students.find_one({"student_id": b["student_id"]}, {"_id": 0})
+            if student:
+                student_user = await db.users.find_one({"user_id": student.get("user_id")}, {"_id": 0})
+                b["student_name"] = student_user.get("name", "Student") if student_user else "Student"
+
+    # Commission tier evaluation
+    total_sessions = teacher.get("total_classes", 0)
+    avg_rating = teacher.get("rating", 0.0)
+    tier_level = "new"
+    commission_rate = 0.40
+    tier_name = "New Tutor"
+
+    if total_sessions >= 100 and avg_rating >= 4.7:
+        tier_level, commission_rate, tier_name = "elite", 0.30, "Elite Tutor"
+    elif total_sessions >= 20 and avg_rating >= 4.5:
+        tier_level, commission_rate, tier_name = "rated", 0.35, "Rated Tutor"
+
+    # Next tier progress
+    if tier_level == "new":
+        next_tier_name = "Rated Tutor"
+        sessions_to_next = max(0, 20 - total_sessions)
+        progress_pct = min(100, round((total_sessions / 20) * 100))
+    elif tier_level == "rated":
+        next_tier_name = "Elite Tutor"
+        sessions_to_next = max(0, 100 - total_sessions)
+        progress_pct = min(100, round((total_sessions / 100) * 100))
+    else:
+        next_tier_name = None
+        sessions_to_next = 0
+        progress_pct = 100
+
+    # Month earnings
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0).isoformat()
+    month_earnings_cursor = db.teacher_wallets.find_one({"teacher_id": teacher_id}, {"_id": 0})
+    teacher_wallet = await month_earnings_cursor if month_earnings_cursor else None
+
+    # Get monthly transaction totals
+    monthly_txns = await db.teacher_transactions.find({
+        "teacher_id": teacher_id,
+        "created_at": {"$gte": month_start},
+        "transaction_type": "session_earning"
+    }, {"_id": 0, "net_amount": 1, "gross_amount": 1}).to_list(100)
+
+    month_net = sum(t.get("net_amount", t.get("amount", 0)) for t in monthly_txns)
+    month_gross = sum(t.get("gross_amount", 0) for t in monthly_txns)
+    month_classes = len(monthly_txns)
+
+    return {
+        "teacher": teacher,
+        "upcoming_classes": upcoming,
+        "tier": {
+            "level": tier_level,
+            "name": tier_name,
+            "commission_rate": commission_rate,
+            "total_sessions": total_sessions,
+            "avg_rating": avg_rating,
+            "next_tier_name": next_tier_name,
+            "sessions_to_next": sessions_to_next,
+            "progress_pct": progress_pct,
+        },
+        "month_stats": {
+            "net_earnings": round(month_net, 2),
+            "gross_earnings": round(month_gross, 2),
+            "classes_taught": month_classes,
+        },
+        "wallet": {
+            "balance": teacher_wallet.get("balance", 0) if teacher_wallet else 0,
+            "total_earned": teacher_wallet.get("total_earned", 0) if teacher_wallet else 0,
+            "total_withdrawn": teacher_wallet.get("total_withdrawn", 0) if teacher_wallet else 0,
+        },
+    }
+
+@api_router.post("/teacher/request-payout")
+async def request_payout(data: dict, current_user: User = Depends(get_current_user)):
+    """Teacher requests a payout with bank details"""
+    if current_user.role != "teacher":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    teacher = await db.teachers.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher profile not found")
+
+    bank_name = data.get("bank_name", "").strip()
+    account_number = data.get("account_number", "").strip()
+    account_holder = data.get("account_holder", "").strip()
+    amount = data.get("amount", 0)
+
+    if not bank_name or not account_number or not account_holder:
+        raise HTTPException(status_code=400, detail="All bank details are required")
+
+    wallet = await db.teacher_wallets.find_one({"teacher_id": teacher["teacher_id"]}, {"_id": 0})
+    balance = wallet.get("balance", 0) if wallet else 0
+
+    if amount <= 0 or amount > balance:
+        raise HTTPException(status_code=400, detail="Invalid payout amount")
+
+    payout_id = f"payout_{uuid.uuid4().hex[:12]}"
+    payout_doc = {
+        "payout_id": payout_id,
+        "teacher_id": teacher["teacher_id"],
+        "user_id": current_user.user_id,
+        "amount": amount,
+        "bank_name": bank_name,
+        "account_number": account_number,
+        "account_holder": account_holder,
+        "status": "pending",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.payout_requests.insert_one(payout_doc)
+    return {"message": "Payout request submitted", "payout_id": payout_id}
+
+
+
 app.include_router(api_router)
 
 # Initialize admin routes with database
