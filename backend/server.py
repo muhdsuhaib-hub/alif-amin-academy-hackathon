@@ -926,14 +926,27 @@ async def log_student_progress(log_data: dict, current_user: User = Depends(get_
 
 
 @api_router.get("/teachers/{teacher_id}/transactions")
-async def get_teacher_transactions(teacher_id: str, limit: int = 50, current_user: User = Depends(get_current_user)):
-    """Get real transaction history for a teacher from tutor_earnings_transactions"""
+async def get_teacher_transactions(teacher_id: str, limit: int = 10, skip: int = 0, current_user: User = Depends(get_current_user)):
+    """Get transaction history with live student names and pagination."""
+    total = await db.tutor_earnings_transactions.count_documents({"teacher_id": teacher_id})
     transactions = await db.tutor_earnings_transactions.find(
         {"teacher_id": teacher_id},
         {"_id": 0}
-    ).sort("created_at", -1).limit(limit).to_list(limit)
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
 
-    return {"transactions": transactions}
+    # Resolve live student names via $lookup
+    for t in transactions:
+        sid = t.get("student_id")
+        if sid:
+            student_doc = await db.students.find_one({"student_id": sid}, {"_id": 0, "user_id": 1})
+            if student_doc:
+                user_doc = await db.users.find_one({"user_id": student_doc["user_id"]}, {"_id": 0, "name": 1})
+                if user_doc:
+                    t["student_name"] = user_doc["name"]
+                    dur = t.get("duration_minutes", 30)
+                    t["description"] = f"{user_doc['name']} - {dur} min session"
+
+    return {"transactions": transactions, "total": total, "limit": limit, "skip": skip}
 
 
 @api_router.get("/teachers/notes/{student_id}")
