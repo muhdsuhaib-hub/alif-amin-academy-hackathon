@@ -108,6 +108,7 @@ export default function StudentDashboard({ user }) {
         selectedTeacher={editingBooking?.teacher_id || null}
         onSuccess={handleBookingSuccess}
       />
+      <SupportModal isOpen={showSupportModal} onClose={() => setShowSupportModal(false)} user={user} />
     </>
   );
 }
