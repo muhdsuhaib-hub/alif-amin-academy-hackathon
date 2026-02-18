@@ -180,7 +180,7 @@ function Sidebar({ menuItems, activeTab, setActiveTab, isOpen, setIsOpen, user, 
   );
 }
 
-function Header({ title, user, userRole, onMenuClick, onLogout, onNavigateTab }) {
+function Header({ title, user, userRole, onMenuClick, onLogout, onNavigateTab, onOpenSupport }) {
   return (
     <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-xl border-b border-slate-200/50">
       <div className="h-[var(--header-height)] flex items-center justify-between px-4 lg:px-8">
@@ -196,7 +196,7 @@ function Header({ title, user, userRole, onMenuClick, onLogout, onNavigateTab })
         </div>
         <div className="flex items-center gap-1.5">
           <NotificationBell userId={user?.user_id} userRole={user?.role || userRole} />
-          <ProfileDropdown user={user} userRole={userRole} onLogout={onLogout} onNavigateTab={onNavigateTab} />
+          <ProfileDropdown user={user} userRole={userRole} onLogout={onLogout} onNavigateTab={onNavigateTab} onOpenSupport={onOpenSupport} />
         </div>
       </div>
     </header>
