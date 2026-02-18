@@ -45,6 +45,12 @@ Online Quran Academy connecting students with qualified teachers for 1-on-1 vide
 - **Fix 3 (P1) Profile Amnesia:** Wired `onUserUpdate` callback from `ProtectedRoute` → `TeacherDashboard` → `ProfileManagement`, backend now returns updated documents on profile save
 - **Fix 4 (P0) Platform Fee Logic:** Verified and confirmed correct pricing (15min=RM15, 30min=RM30, 60min=RM60) and tier thresholds (New <20 sessions=40%, Rated >=20+4.5★=35%, Elite >=100+4.7★=30%)
 
+### Batch 5.6: Student Logic & UX Repair (Complete - Feb 19, 2026)
+- **Fix 1 (P0) Calendar Status:** Dynamic status in ScheduleCard — Completed (green), Missed (red/gray for past scheduled), Upcoming (blue for future). Calendar dots match.
+- **Fix 2 (P0) Booking Availability:** `GET /api/booking/available-teachers` now requires `date` + `time` params. Performs strict intersection on `availability_slots`. Empty list if no teacher has that slot. No fallback to "show all."
+- **Fix 3 (P1) Teacher Quick View:** Eye icon in booking Step 2 opens glassmorphism Teacher Card modal with bio, video intro (hidden if empty), specialties, tier badge, and "Select This Teacher" button. No navigation away from booking flow.
+- **Fix 4 (P1) Student Profile State & Phone:** `onUserUpdate` wired through `ProtectedRoute` → `StudentDashboard` → `AccountPage`. Phone input replaced with `react-phone-input-2` (default: Malaysia +60, flags, auto-format).
+
 ## Key API Endpoints
 - `GET /api/students/dashboard-data` — Comprehensive student dashboard
 - `GET /api/teacher/dashboard-data` — Teacher dashboard + tier + earnings
