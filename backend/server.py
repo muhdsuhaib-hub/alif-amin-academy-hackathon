@@ -1116,7 +1116,8 @@ async def get_student_dashboard_data(current_user: User = Depends(get_current_us
         if grading.get("makhraj_score"):
             scores["makhraj"].append(grading["makhraj_score"])
 
-    avg = lambda lst: round(sum(lst) / len(lst), 1) if lst else 0
+    def avg(lst):
+        return round(sum(lst) / len(lst), 1) if lst else 0
     progress_summary = {
         "total_sessions": len(progress_records),
         "avg_fluency": avg(scores["fluency"]),
