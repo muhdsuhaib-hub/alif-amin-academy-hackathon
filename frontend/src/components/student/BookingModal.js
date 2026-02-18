@@ -215,44 +215,58 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
           {step === 2 && (
             <>
               <div>
-                <label className="block text-xs font-medium text-slate-500 mb-3 uppercase tracking-wider">Available Teachers</label>
+                <label className="block text-xs font-medium text-slate-500 mb-3 uppercase tracking-wider">Available Teachers for {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} at {new Date(`2000-01-01T${selectedTime}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}</label>
                 {loadingTeachers ? (
                   <div className="flex items-center justify-center py-8"><Spinner /></div>
                 ) : teachers.length === 0 ? (
-                  <div className="text-center py-8 text-slate-400 text-sm">No teachers available at the moment.</div>
+                  <div className="text-center py-8" data-testid="no-teachers-available">
+                    <Calendar className="w-10 h-10 mx-auto mb-3 text-slate-300" />
+                    <p className="text-slate-500 text-sm font-medium">No teachers available</p>
+                    <p className="text-slate-400 text-xs mt-1">No teacher has opened this time slot. Try a different date or time.</p>
+                  </div>
                 ) : (
                   <div className="space-y-2 max-h-[340px] overflow-y-auto" data-testid="teacher-list">
                     {teachers.map(t => (
-                      <button
+                      <div
                         key={t.teacher_id}
-                        onClick={() => setSelectedTeacher(t)}
                         data-testid={`teacher-option-${t.teacher_id}`}
-                        className={`w-full flex items-center gap-3 p-4 rounded-2xl border transition-all text-left ${
+                        className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${
                           selectedTeacher?.teacher_id === t.teacher_id
                             ? 'bg-emerald-50 border-emerald-300 ring-1 ring-emerald-200'
                             : 'bg-white border-slate-200 hover:border-emerald-200 hover:bg-slate-50'
                         }`}
                       >
-                        <div className="w-11 h-11 rounded-2xl bg-emerald-700 flex items-center justify-center text-white font-semibold flex-shrink-0 overflow-hidden">
-                          {t.picture ? <img src={t.picture} alt="" className="w-11 h-11 object-cover" /> : <User className="w-5 h-5" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm text-slate-900 truncate">{t.name}</p>
-                          <div className="flex items-center gap-2 text-xs text-slate-500">
-                            {t.specializations?.length > 0 && <span>{t.specializations.slice(0, 2).join(', ')}</span>}
-                            {t.rating > 0 && (
-                              <span className="flex items-center gap-0.5">
-                                <Star className="w-3 h-3 text-amber-500 fill-current" />{t.rating}
-                              </span>
-                            )}
+                        <button
+                          onClick={() => setSelectedTeacher(t)}
+                          className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                        >
+                          <div className="w-11 h-11 rounded-2xl bg-emerald-700 flex items-center justify-center text-white font-semibold flex-shrink-0 overflow-hidden">
+                            {t.picture ? <img src={t.picture} alt="" className="w-11 h-11 object-cover" /> : <User className="w-5 h-5" />}
                           </div>
-                        </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm text-slate-900 truncate">{t.name}</p>
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                              {t.specializations?.length > 0 && <span>{t.specializations.slice(0, 2).join(', ')}</span>}
+                              <span className="flex items-center gap-0.5">
+                                <Star className="w-3 h-3 text-amber-500 fill-current" />{t.rating > 0 ? t.rating.toFixed(1) : 'New'}
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                        <button
+                          onClick={() => setProfileTeacher(t)}
+                          className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-emerald-700 transition-all flex-shrink-0"
+                          data-testid={`view-profile-${t.teacher_id}`}
+                          title="View Profile"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
                         {selectedTeacher?.teacher_id === t.teacher_id && (
                           <div className="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
                             <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
                           </div>
                         )}
-                      </button>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -271,6 +285,91 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
                 </button>
               </div>
             </>
+          )}
+
+          {/* Teacher Profile Quick View Modal */}
+          {profileTeacher && (
+            <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-[60] animate-fade-in" onClick={() => setProfileTeacher(null)}>
+              <div
+                className="bg-white/80 backdrop-blur-2xl border border-white/30 rounded-3xl w-full max-w-md mx-4 shadow-2xl overflow-hidden animate-modal-in"
+                data-testid="teacher-profile-modal"
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-5">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-2xl bg-emerald-700 flex items-center justify-center text-white text-xl font-bold overflow-hidden flex-shrink-0">
+                        {profileTeacher.picture ? <img src={profileTeacher.picture} alt="" className="w-16 h-16 object-cover" /> : profileTeacher.name?.charAt(0) || 'T'}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900">{profileTeacher.name}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="flex items-center gap-1 text-xs text-slate-500">
+                            <Star className="w-3.5 h-3.5 text-amber-500 fill-current" />
+                            {profileTeacher.rating > 0 ? profileTeacher.rating.toFixed(1) : 'New Teacher'}
+                          </span>
+                          {profileTeacher.total_classes > 0 && (
+                            <span className="text-xs text-slate-400">&middot; {profileTeacher.total_classes} classes</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <button onClick={() => setProfileTeacher(null)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors" data-testid="close-teacher-profile">
+                      <X className="w-4 h-4 text-slate-400" />
+                    </button>
+                  </div>
+
+                  {profileTeacher.video_intro && (
+                    <div className="mb-4 rounded-2xl overflow-hidden bg-black">
+                      <video
+                        src={profileTeacher.video_intro}
+                        controls
+                        className="w-full max-h-48 object-contain"
+                        preload="metadata"
+                      />
+                    </div>
+                  )}
+
+                  {profileTeacher.bio && (
+                    <div className="mb-4">
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">About</p>
+                      <p className="text-sm text-slate-700 leading-relaxed">{profileTeacher.bio}</p>
+                    </div>
+                  )}
+
+                  {profileTeacher.specializations?.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Specialties</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {profileTeacher.specializations.map((s, i) => (
+                          <span key={i} className="text-xs px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 font-medium border border-emerald-100">{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {profileTeacher.total_classes >= 100 && profileTeacher.rating >= 4.7 ? (
+                    <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200/50 mb-4">
+                      <span className="text-amber-600 text-sm font-semibold">Elite Tutor</span>
+                      <span className="text-xs text-amber-500">Top-rated educator</span>
+                    </div>
+                  ) : profileTeacher.total_classes >= 20 && profileTeacher.rating >= 4.5 ? (
+                    <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200/50 mb-4">
+                      <span className="text-emerald-600 text-sm font-semibold">Rated Tutor</span>
+                      <span className="text-xs text-emerald-500">Verified educator</span>
+                    </div>
+                  ) : null}
+
+                  <button
+                    onClick={() => { setSelectedTeacher(profileTeacher); setProfileTeacher(null); }}
+                    className="w-full h-11 rounded-2xl bg-emerald-700 text-white font-semibold text-sm hover:bg-emerald-800 transition-all active:scale-[0.97]"
+                    data-testid="select-teacher-from-profile"
+                  >
+                    Select This Teacher
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Step 3: Review & Confirm */}
