@@ -543,6 +543,55 @@ async def confirm_topup(payment_intent_id: str, user_id: str):
     }
 
 
+@wallet_router.post("/topup/custom")
+async def custom_topup(data: dict, user_id: str):
+    """Custom top-up: buy individual credits at RM 15/credit (mocked payment)"""
+    credits = data.get("credits", 0)
+    if not isinstance(credits, int) or credits < 1 or credits > 100:
+        raise HTTPException(status_code=400, detail="Credits must be between 1 and 100")
+
+    amount_myr = credits * BASE_CREDIT_PRICE
+
+    student = await db.students.find_one({"user_id": user_id}, {"_id": 0})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    wallet = await get_or_create_wallet(student["student_id"], user_id)
+
+    new_paid = wallet.get("paid_credits", wallet.get("credit_balance", 0)) + credits
+    new_balance = new_paid + wallet.get("bonus_credits", 0)
+
+    await db.student_wallets.update_one(
+        {"wallet_id": wallet["wallet_id"]},
+        {"$set": {
+            "credit_balance": new_balance,
+            "paid_credits": new_paid,
+            "total_topup_amount": wallet.get("total_topup_amount", 0) + amount_myr,
+            "total_paid_credits_purchased": wallet.get("total_paid_credits_purchased", 0) + credits,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+
+    await add_transaction(
+        wallet_id=wallet["wallet_id"],
+        student_id=student["student_id"],
+        transaction_type="topup_paid",
+        credit_amount=credits,
+        description=f"Custom Top-up: {credits} credit{'s' if credits > 1 else ''} (RM {amount_myr})",
+        monetary_value=amount_myr,
+        payment_amount=amount_myr,
+        reference_id=f"custom_{uuid.uuid4().hex[:12]}"
+    )
+
+    return {
+        "success": True,
+        "credits_added": credits,
+        "amount_myr": amount_myr,
+        "new_balance": new_balance
+    }
+
+
+
 @wallet_router.post("/deduct")
 async def deduct_credits(request: DeductCreditsRequest, user_id: str):
     """
