@@ -28,7 +28,9 @@ async def create_notification(
     title: str,
     message: str,
     notification_type: str,
-    related_id: Optional[str] = None
+    related_id: Optional[str] = None,
+    link: Optional[str] = None,
+    action_required: bool = False
 ):
     notification_id = f"notif_{uuid.uuid4().hex[:12]}"
     notification_doc = {
@@ -38,6 +40,8 @@ async def create_notification(
         "message": message,
         "notification_type": notification_type,
         "related_id": related_id,
+        "link": link,
+        "action_required": action_required,
         "is_read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
