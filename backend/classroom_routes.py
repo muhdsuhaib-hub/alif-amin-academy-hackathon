@@ -429,6 +429,163 @@ async def admin_list_sessions(request: Request, status: Optional[str] = None):
     return {"sessions": enriched}
 
 
+# ============== ADMIN: SESSION DETAIL WITH RECORDING ==============
+
+@classroom_router.get("/admin/sessions/{session_id}/details")
+async def admin_session_details(session_id: str, request: Request):
+    """Admin gets full session details including recording URL and progress data."""
+    user = await _get_user(request)
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    session = await db.class_sessions.find_one({"session_id": session_id}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Enrich with names
+    teacher_doc = await db.teachers.find_one({"teacher_id": session["teacher_id"]}, {"_id": 0})
+    teacher_user = await db.users.find_one({"user_id": teacher_doc["user_id"]}, {"_id": 0, "name": 1, "email": 1}) if teacher_doc else None
+    student_doc = await db.students.find_one({"student_id": session["student_id"]}, {"_id": 0})
+    student_user = await db.users.find_one({"user_id": student_doc["user_id"]}, {"_id": 0, "name": 1, "email": 1}) if student_doc else None
+
+    # Get progress data for this session
+    progress = await db.student_progress.find_one({"session_id": session_id}, {"_id": 0})
+
+    # Get rating for this session
+    rating = await db.session_ratings.find_one({"session_id": session_id}, {"_id": 0})
+
+    # Get payment record
+    payment = await db.session_payment_records.find_one({"booking_id": session.get("booking_id")}, {"_id": 0})
+
+    # Recording URL (would be a signed URL in production)
+    recording_url = session.get("recording_url")
+
+    return {
+        **session,
+        "teacher_name": teacher_user.get("name") if teacher_user else "Unknown",
+        "teacher_email": teacher_user.get("email") if teacher_user else "",
+        "student_name": student_user.get("name") if student_user else "Unknown",
+        "student_email": student_user.get("email") if student_user else "",
+        "progress": progress,
+        "rating": rating,
+        "payment": payment,
+        "recording_url": recording_url,
+    }
+
+
+# ============== ADMIN: STUDENT REPORT (Aggregated) ==============
+
+@classroom_router.get("/admin/reports/student/{student_id}")
+async def admin_student_report(student_id: str, request: Request):
+    """Aggregates a student's progress into a clean JSON structure for PDF generation."""
+    user = await _get_user(request)
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    # Get student info
+    student_doc = await db.students.find_one({"student_id": student_id}, {"_id": 0})
+    if not student_doc:
+        raise HTTPException(status_code=404, detail="Student not found")
+    student_user = await db.users.find_one({"user_id": student_doc["user_id"]}, {"_id": 0, "name": 1, "email": 1})
+
+    # Get all progress records
+    progress_records = await db.student_progress.find(
+        {"student_id": student_id}, {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+
+    # Get all sessions
+    sessions = await db.class_sessions.find(
+        {"student_id": student_id, "status": "completed"}, {"_id": 0}
+    ).sort("start_time_utc", -1).to_list(100)
+
+    # Aggregate scores
+    total_sessions = len(sessions)
+    avg_fluency = avg_tajweed = avg_makhraj = 0
+    if progress_records:
+        fluency_scores = [r["grading"].get("fluency_score", 0) for r in progress_records if r.get("grading")]
+        tajweed_scores = [r["grading"].get("tajweed_score", 0) for r in progress_records if r.get("grading")]
+        makhraj_scores = [r["grading"].get("makhraj_score", 0) for r in progress_records if r.get("grading")]
+        avg_fluency = round(sum(fluency_scores) / len(fluency_scores), 1) if fluency_scores else 0
+        avg_tajweed = round(sum(tajweed_scores) / len(tajweed_scores), 1) if tajweed_scores else 0
+        avg_makhraj = round(sum(makhraj_scores) / len(makhraj_scores), 1) if makhraj_scores else 0
+
+    # Unique surahs covered
+    surahs_covered = list(set(r.get("surah_name", "") for r in progress_records if r.get("surah_name")))
+
+    # Track type breakdown
+    track_breakdown = {}
+    for r in progress_records:
+        tt = r.get("track_type", "Unknown")
+        track_breakdown[tt] = track_breakdown.get(tt, 0) + 1
+
+    return {
+        "student": {
+            "student_id": student_id,
+            "name": student_user.get("name") if student_user else "Unknown",
+            "email": student_user.get("email") if student_user else "",
+            "current_level": student_doc.get("current_level", "beginner"),
+        },
+        "summary": {
+            "total_sessions": total_sessions,
+            "total_progress_records": len(progress_records),
+            "average_scores": {
+                "fluency": avg_fluency,
+                "tajweed": avg_tajweed,
+                "makhraj": avg_makhraj,
+            },
+            "surahs_covered": surahs_covered,
+            "track_type_breakdown": track_breakdown,
+        },
+        "recent_progress": progress_records[:10],
+        "sessions": [{"session_id": s["session_id"], "start_time_utc": s["start_time_utc"], "status": s["status"]} for s in sessions[:20]],
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+# ============== ADMIN: LIVEKIT TOKEN FOR STEALTH JOIN ==============
+
+@classroom_router.post("/admin/stealth-join")
+async def admin_stealth_join(request: Request):
+    """Admin joins a room in stealth mode (muted, no camera, hidden name)."""
+    user = await _get_user(request)
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    body = await request.json()
+    room_name = body.get("room_name")
+    if not room_name:
+        raise HTTPException(status_code=400, detail="room_name required")
+
+    lk_url = os.environ.get("LIVEKIT_URL")
+    lk_key = os.environ.get("LIVEKIT_API_KEY")
+    lk_secret = os.environ.get("LIVEKIT_API_SECRET")
+
+    if not all([lk_url, lk_key, lk_secret]):
+        raise HTTPException(status_code=500, detail="LiveKit not configured")
+
+    token = livekit_api.AccessToken(api_key=lk_key, api_secret=lk_secret)
+    token = token.with_identity(f"admin_{user['user_id']}")
+    token = token.with_name("System")
+    token = token.with_grants(livekit_api.VideoGrants(
+        room_join=True,
+        room=room_name,
+        can_publish=False,
+        can_subscribe=True,
+        can_publish_data=False,
+    ))
+
+    jwt_token = token.to_jwt()
+
+    return {
+        "token": jwt_token,
+        "server_url": lk_url,
+        "identity": f"admin_{user['user_id']}",
+        "name": "System",
+        "is_stealth": True,
+    }
+
+
+
 
 # ============== LIVEKIT TOKEN GENERATION ==============
 
