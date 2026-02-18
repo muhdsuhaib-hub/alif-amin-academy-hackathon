@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Camera, User, Mail, Phone, Globe, Lock, Save } from 'lucide-react';
+import { Camera, User, Mail, Globe, Lock, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-export default function AccountPage({ user }) {
+export default function AccountPage({ user, onUserUpdate }) {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     phone: user?.phone || '',
@@ -17,15 +19,19 @@ export default function AccountPage({ user }) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Update user profile
       const r = await fetch(`${API}/auth/update-profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify(formData),
       });
-      if (r.ok) toast.success('Profile updated successfully');
-      else toast.error('Failed to update profile');
+      if (r.ok) {
+        const data = await r.json();
+        toast.success('Profile updated successfully');
+        if (data.user) onUserUpdate?.(data.user);
+      } else {
+        toast.error('Failed to update profile');
+      }
     } catch { toast.error('Network error'); }
     finally { setSaving(false); }
   };
@@ -97,16 +103,34 @@ export default function AccountPage({ user }) {
             />
           </div>
 
-          <div className="relative">
+          <div>
             <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Phone</label>
-            <Phone className="absolute left-4 top-[calc(50%+8px)] -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-            <input
-              type="tel"
+            <PhoneInput
+              country="my"
               value={formData.phone}
-              onChange={e => handleChange('phone', e.target.value)}
-              placeholder="+60 12 345 6789"
-              className={inputCls}
-              data-testid="account-phone-input"
+              onChange={phone => handleChange('phone', `+${phone}`)}
+              inputProps={{ 'data-testid': 'account-phone-input' }}
+              containerClass="phone-input-container"
+              inputClass="phone-input-field"
+              buttonClass="phone-input-flag"
+              inputStyle={{
+                height: '48px',
+                width: '100%',
+                borderRadius: '16px',
+                border: '1px solid #e2e8f0',
+                fontSize: '14px',
+                paddingLeft: '52px',
+              }}
+              buttonStyle={{
+                borderRadius: '16px 0 0 16px',
+                border: '1px solid #e2e8f0',
+                borderRight: 'none',
+                background: 'white',
+              }}
+              dropdownStyle={{
+                borderRadius: '12px',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+              }}
             />
           </div>
 
