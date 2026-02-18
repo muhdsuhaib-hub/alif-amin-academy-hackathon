@@ -75,7 +75,10 @@ async def add_earnings_transaction(
     balance_after: float,
     description: str,
     reference_id: Optional[str] = None,
-    session_payment_record_id: Optional[str] = None
+    session_payment_record_id: Optional[str] = None,
+    gross_amount: float = 0.0,
+    net_amount: float = 0.0,
+    platform_fee: float = 0.0,
 ):
     """Add a transaction record to tutor earnings history"""
     transaction_id = f"te_txn_{uuid.uuid4().hex[:12]}"
@@ -85,6 +88,9 @@ async def add_earnings_transaction(
         "teacher_id": teacher_id,
         "transaction_type": transaction_type,
         "amount": amount,
+        "gross_amount": gross_amount,
+        "net_amount": net_amount,
+        "platform_fee": platform_fee,
         "balance_after": balance_after,
         "description": description,
         "reference_id": reference_id,
