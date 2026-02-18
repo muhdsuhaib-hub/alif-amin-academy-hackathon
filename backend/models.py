@@ -51,7 +51,6 @@ class Teacher(BaseModel):
     teacher_id: str
     user_id: str
     bio: Optional[str] = None
-    meet_link: Optional[str] = None
     specializations: List[str] = []
     years_experience: int = 0
     is_active: bool = True
@@ -80,7 +79,6 @@ class TierEvaluationResult(BaseModel):
 class TeacherCreate(BaseModel):
     user_id: str
     bio: Optional[str] = None
-    meet_link: Optional[str] = None
     specializations: List[str] = []
     years_experience: int = 0
 
@@ -128,7 +126,6 @@ class Booking(BaseModel):
     end_time_utc: datetime
     status: Literal["scheduled", "completed", "cancelled", "no_show"] = "scheduled"
     booking_type: Literal["trial", "paid"] = "paid"
-    meet_link: Optional[str] = None
     created_at: datetime
     cancelled_at: Optional[datetime] = None
 
