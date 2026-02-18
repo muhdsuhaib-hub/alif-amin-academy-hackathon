@@ -96,7 +96,7 @@ export default function StudentDashboard({ user, onUserUpdate }) {
         {activeTab === 'progress' && <ProgressTracker studentId={studentId} />}
         {activeTab === 'wallet' && <WalletPage user={user} />}
         {activeTab === 'schedule' && <MySchedule bookings={bookings} onRefresh={fetchBookings} onEdit={setEditingBooking} onOpenBooking={() => setShowBookingModal(true)} />}
-        {activeTab === 'account' && <AccountPage user={user} />}
+        {activeTab === 'account' && <AccountPage user={user} onUserUpdate={onUserUpdate} />}
       </LayoutShell>
       <BookingModal
         isOpen={showBookingModal || !!editingBooking}
