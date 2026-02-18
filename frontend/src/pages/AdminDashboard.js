@@ -314,6 +314,7 @@ export default function AdminDashboard({ user }) {
         )}
 
         {activeTab === 'approvals' && <TeacherApprovals />}
+        {activeTab === 'sessions' && <SessionMonitor />}
         {activeTab === 'users' && <UserManagement />}
         {activeTab === 'bookings' && <BookingCalendar />}
         {activeTab === 'withdrawals' && <WithdrawalManagement />}
