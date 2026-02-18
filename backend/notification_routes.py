@@ -238,12 +238,20 @@ async def generate_teacher_notifications(user_id: str):
             student_name = student_user.get("name", "Your Student") if student_user else "Your Student"
             class_time = booking["start_time_utc"][:16].replace("T", " at ")
             
+            # Look up session_id for classroom link
+            session_doc = await db.class_sessions.find_one(
+                {"booking_id": booking["booking_id"]}, {"_id": 0, "session_id": 1}
+            )
+            classroom_link = f"/classroom/{session_doc['session_id']}" if session_doc else None
+            
             await create_notification(
                 user_id=user_id,
                 title="Upcoming Class",
                 message=f"You have a class with {student_name} on {class_time}. Be ready to teach!",
                 notification_type="upcoming_class",
-                related_id=booking["booking_id"]
+                related_id=booking["booking_id"],
+                link=classroom_link,
+                action_required=True
             )
             generated_count += 1
     
