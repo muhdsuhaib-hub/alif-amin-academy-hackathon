@@ -725,9 +725,11 @@ async def deduct_credits(request: DeductCreditsRequest, user_id: str):
                 amount=tutor_payout,
                 booking_id=request.booking_id,
                 session_payment_record_id=record_id,
-                description=f"{request.duration_minutes} min session with {student_name}",
+                description=f"{student_name} - {request.duration_minutes} min session",
                 gross_amount=base_session_price,
                 platform_fee=platform_commission,
+                student_id=student["student_id"],
+                duration_minutes=request.duration_minutes,
             )
     
     return {
