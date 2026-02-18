@@ -5,6 +5,7 @@ import { PageLoader } from '../components/Spinner';
 import LayoutShell from '../components/layout/LayoutShell';
 import { DashboardHome, WalletPage, MySchedule, AccountPage, BookingModal } from '../components/student';
 import ProgressTracker from '../components/student/ProgressTracker';
+import SupportModal from '../components/SupportModal';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
