@@ -538,15 +538,49 @@ async def edit_booking(booking_id: str, req: EditBookingRequest, request: Reques
 
 
 @booking_router.get("/available-teachers")
-async def get_available_teachers(request: Request):
-    """Get list of active, approved teachers for booking."""
-    teachers = await db.teachers.find(
-        {"is_active": True, "approval_status": "approved"},
-        {"_id": 0}
-    ).to_list(100)
+async def get_available_teachers(request: Request, date: Optional[str] = None, time: Optional[str] = None):
+    """
+    Get list of teachers available for a specific date and time slot.
+    Performs strict intersection: only returns teachers with an unbooked
+    availability_slot matching the requested date+time.
+    If no date/time provided, returns empty list (no random teachers).
+    """
+    if not date or not time:
+        return {"teachers": []}
 
+    # Build the slot start_time string to match against availability_slots
+    slot_start = f"{date}T{time}"
+
+    # Find availability slots that match this date+time and are NOT booked
+    matching_slots = await db.availability_slots.find(
+        {
+            "date": date,
+            "start_time": {"$lte": slot_start},
+            "is_booked": {"$ne": True},
+        },
+        {"_id": 0}
+    ).to_list(500)
+
+    # Filter: slot must contain the requested time
+    available_teacher_ids = set()
+    for slot in matching_slots:
+        s_start = slot.get("start_time", "")
+        s_end = slot.get("end_time", "")
+        if s_start <= slot_start < s_end:
+            available_teacher_ids.add(slot["teacher_id"])
+
+    if not available_teacher_ids:
+        return {"teachers": []}
+
+    # Fetch teacher details only for those with matching availability
     result = []
-    for t in teachers:
+    for teacher_id in available_teacher_ids:
+        t = await db.teachers.find_one(
+            {"teacher_id": teacher_id, "is_active": True, "approval_status": "approved"},
+            {"_id": 0}
+        )
+        if not t:
+            continue
         user_doc = await db.users.find_one({"user_id": t["user_id"]}, {"_id": 0})
         if user_doc:
             result.append({
@@ -557,6 +591,7 @@ async def get_available_teachers(request: Request):
                 "specializations": t.get("specializations", []),
                 "rating": t.get("rating", 0),
                 "total_reviews": t.get("total_reviews", 0),
+                "total_classes": t.get("total_classes", 0),
             })
 
     return {"teachers": result}
