@@ -240,49 +240,98 @@ export default function WalletPage({ user }) {
 
       {/* Top-up Modal */}
       {showTopupModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 animate-fade-in" onClick={() => setShowTopupModal(false)}>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 animate-fade-in" onClick={closeTopupModal}>
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full sm:max-w-md max-h-[85vh] overflow-y-auto animate-modal-in shadow-xl" onClick={e => e.stopPropagation()} data-testid="topup-modal">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <h2 className="text-base font-semibold text-slate-900">Top Up Credits</h2>
-              <button onClick={() => setShowTopupModal(false)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100">
-                <BookOpen className="w-4 h-4 text-slate-400" />
+              <button onClick={closeTopupModal} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100">
+                <X className="w-4 h-4 text-slate-400" />
               </button>
             </div>
-            <div className="p-6 space-y-3">
-              {packages.map(pkg => (
+
+            {/* Mode Toggle */}
+            <div className="px-6 pt-5 pb-2">
+              <div className="flex rounded-2xl bg-slate-100 p-1" data-testid="topup-mode-toggle">
                 <button
-                  key={pkg.package_id}
-                  onClick={() => setSelectedPackage(pkg)}
-                  data-testid={`package-${pkg.package_id}`}
-                  className={`w-full p-4 rounded-2xl border text-left transition-all ${
-                    selectedPackage?.package_id === pkg.package_id
-                      ? 'bg-emerald-50 border-emerald-300 ring-1 ring-emerald-200'
-                      : 'bg-white border-slate-200 hover:border-emerald-200'
-                  }`}
+                  onClick={() => { setTopupMode('package'); setCustomQuantity(''); }}
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${topupMode === 'package' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
+                  data-testid="topup-mode-package"
                 >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-sm text-slate-900">{pkg.name}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        {pkg.paid_credits} paid{pkg.bonus_credits > 0 ? ` + ${pkg.bonus_credits} bonus` : ''} credits
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-emerald-700">RM {pkg.price_myr}</p>
-                      {pkg.bonus_credits > 0 && (
-                        <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-                          +{pkg.bonus_credits} bonus
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                  Packages
                 </button>
-              ))}
+                <button
+                  onClick={() => { setTopupMode('custom'); setSelectedPackage(null); }}
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${topupMode === 'custom' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
+                  data-testid="topup-mode-custom"
+                >
+                  Custom Amount
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 pt-3 space-y-3">
+              {topupMode === 'package' ? (
+                /* Package Selection */
+                packages.map(pkg => (
+                  <button
+                    key={pkg.package_id}
+                    onClick={() => setSelectedPackage(pkg)}
+                    data-testid={`package-${pkg.package_id}`}
+                    className={`w-full p-4 rounded-2xl border text-left transition-all ${
+                      selectedPackage?.package_id === pkg.package_id
+                        ? 'bg-emerald-50 border-emerald-300 ring-1 ring-emerald-200'
+                        : 'bg-white border-slate-200 hover:border-emerald-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-sm text-slate-900">{pkg.name}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {pkg.paid_credits} paid{pkg.bonus_credits > 0 ? ` + ${pkg.bonus_credits} bonus` : ''} credits
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-emerald-700">RM {pkg.price_myr}</p>
+                        {pkg.bonus_credits > 0 && (
+                          <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                            +{pkg.bonus_credits} bonus
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                /* Custom Top-Up */
+                <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-slate-200 p-5" data-testid="custom-topup-card">
+                  <p className="text-xs font-medium text-slate-500 mb-3 uppercase tracking-wider">How many credits?</p>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={customQuantity}
+                      onChange={e => setCustomQuantity(e.target.value)}
+                      placeholder="e.g. 5"
+                      className="h-12 flex-1 rounded-2xl border border-slate-200 bg-white px-4 text-lg font-semibold text-slate-900 text-center placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      data-testid="custom-quantity-input"
+                    />
+                    <span className="text-sm text-slate-500 flex-shrink-0">credits</span>
+                  </div>
+
+                  <div className="mt-4 p-3 rounded-xl bg-slate-50 flex items-center justify-between">
+                    <span className="text-xs text-slate-500">Rate: RM 15 / credit</span>
+                    <span className="text-sm font-bold text-emerald-700" data-testid="custom-total-price">
+                      {customTotal > 0 ? `RM ${customTotal}` : 'RM 0'}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               <button
                 onClick={confirmTopup}
-                disabled={!selectedPackage || processing}
-                className="w-full h-12 rounded-2xl bg-emerald-700 text-white font-semibold text-sm hover:bg-emerald-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+                disabled={!canConfirm || processing}
+                className="w-full h-12 rounded-2xl bg-emerald-700 text-white font-semibold text-sm hover:bg-emerald-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
                 data-testid="confirm-topup-btn"
               >
                 {processing ? <><Spinner size="sm" className="border-white border-t-transparent" /> Processing...</> : 'Confirm Top Up'}
