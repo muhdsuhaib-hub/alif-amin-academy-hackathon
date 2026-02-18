@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Clock, Star, RefreshCw, AlertCircle, ArrowUpRight, ArrowDownRight, BookOpen, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { CreditCard, Clock, Star, RefreshCw, AlertCircle, ArrowUpRight, ArrowDownRight, X, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import Spinner from '../Spinner';
 
