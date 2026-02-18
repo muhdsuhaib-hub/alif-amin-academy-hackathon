@@ -51,6 +51,15 @@ Online Quran Academy connecting students with qualified teachers for 1-on-1 vide
 - **Fix 3 (P1) Teacher Quick View:** Eye icon in booking Step 2 opens glassmorphism Teacher Card modal with bio, video intro (hidden if empty), specialties, tier badge, and "Select This Teacher" button. No navigation away from booking flow.
 - **Fix 4 (P1) Student Profile State & Phone:** `onUserUpdate` wired through `ProtectedRoute` → `StudentDashboard` → `AccountPage`. Phone input replaced with `react-phone-input-2` (default: Malaysia +60, flags, auto-format).
 
+### Batch 5.7: Financial & Data Integrity Repair (Complete - Feb 19, 2026)
+- **Fix 1 (P0) Financial Math:** Executed DB migration script — corrected base_session_price from 27→30, wallet from RM 16.20→RM 18.00 (30min, 40% fee). Formula: Gross = Credits * RM 15, Net = Gross * (1 - fee%)
+- **Fix 2 (P0) Financial Snapshot Widget:** Premium glassmorphism "Financial Snapshot" card — Net Income in text-3xl bold emerald, Gross in muted text-sm. Removed redundant "classes" count
+- **Fix 3 (P0) Name Synchronization:** Transactions endpoint resolves live student names via `student_id` $lookup on users collection. Stored `student_id` + `duration_minutes` in every future transaction
+- **Fix 4 (P1) Progress & Stats:** Migration fixed `total_classes=1` for active teacher. TierWidget shows "Progress to Rated Tutor (1/20)". StatsWidget reads real `rating` from DB
+- **Fix 5 (P2) Earnings History:** Format: "[Student Name] - [Duration] min session" + "+ RM X.XX". Pagination: 10 items per page with Previous/Next controls
+- **Fix 6 (P2) Payout Validation:** Max validator against wallet balance. Red "Insufficient funds" error when amount exceeds balance. Submit disabled when invalid
+- **Fix 7 (P2) Teacher Phone Input:** Replaced with `react-phone-input-2` (Malaysia +60 default, flags, auto-formatting)
+
 ## Key API Endpoints
 - `GET /api/students/dashboard-data` — Comprehensive student dashboard
 - `GET /api/teacher/dashboard-data` — Teacher dashboard + tier + earnings
