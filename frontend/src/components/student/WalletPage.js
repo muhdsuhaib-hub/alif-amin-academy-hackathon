@@ -101,6 +101,10 @@ export default function WalletPage({ user }) {
   };
 
   const confirmTopup = async () => {
+    if (topupMode === 'custom') {
+      await confirmCustomTopup();
+      return;
+    }
     if (!selectedPackage) return;
     setProcessing(true);
     try {
@@ -114,14 +118,46 @@ export default function WalletPage({ user }) {
       if (cf.ok) {
         const r = await cf.json();
         toast.success(`Added ${r.paid_credits_added || 0} paid + ${r.bonus_credits_added || 0} bonus credits!`);
-        setShowTopupModal(false);
-        setSelectedPackage(null);
+        closeTopupModal();
         fetchWalletData();
         fetchTransactions();
       } else throw new Error('Payment confirmation failed');
     } catch (e) { toast.error(e.message || 'Top-up failed'); }
     finally { setProcessing(false); }
   };
+
+  const confirmCustomTopup = async () => {
+    const qty = parseInt(customQuantity, 10);
+    if (!qty || qty < 1 || qty > 100) { toast.error('Enter 1–100 credits'); return; }
+    setProcessing(true);
+    try {
+      const r = await fetch(`${API}/wallet/topup/custom?user_id=${user?.user_id}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ credits: qty }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        toast.success(`Added ${data.credits_added || qty} credits!`);
+        closeTopupModal();
+        fetchWalletData();
+        fetchTransactions();
+      } else {
+        const data = await r.json();
+        throw new Error(data.detail || 'Custom top-up failed');
+      }
+    } catch (e) { toast.error(e.message || 'Top-up failed'); }
+    finally { setProcessing(false); }
+  };
+
+  const closeTopupModal = () => {
+    setShowTopupModal(false);
+    setSelectedPackage(null);
+    setCustomQuantity('');
+    setTopupMode('package');
+  };
+
+  const customTotal = parseInt(customQuantity, 10) > 0 ? parseInt(customQuantity, 10) * 15 : 0;
+  const canConfirm = topupMode === 'package' ? !!selectedPackage : (parseInt(customQuantity, 10) > 0);
 
   const totalPages = Math.ceil(transactions.length / ITEMS_PER_PAGE);
   const pagedTransactions = transactions.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
