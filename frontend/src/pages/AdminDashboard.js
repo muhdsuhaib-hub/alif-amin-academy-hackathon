@@ -25,6 +25,7 @@ const API = `${BACKEND_URL}/api`;
 
 const MENU_ITEMS = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
+  { id: 'sessions', label: 'Sessions', icon: Video },
   { id: 'approvals', label: 'Approvals', icon: UserCheck },
   { id: 'users', label: 'Users', icon: Users },
   { id: 'bookings', label: 'Bookings', icon: Calendar },
@@ -35,7 +36,7 @@ const MENU_ITEMS = [
 ];
 
 const TAB_TITLES = {
-  overview: 'Overview', approvals: 'Teacher Approvals', users: 'User Management',
+  overview: 'Overview', sessions: 'Session Monitor', approvals: 'Teacher Approvals', users: 'User Management',
   bookings: 'Bookings', withdrawals: 'Withdrawals', subscriptions: 'Subscriptions',
   finance: 'Financial Reports', support: 'Support',
 };
