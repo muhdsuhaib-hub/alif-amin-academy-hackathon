@@ -100,10 +100,32 @@ export default function ProfileManagement({ user, teacher, onRefresh, onUserUpda
             <input type="email" value={user?.email || ''} disabled className={`${inputCls} bg-slate-50 text-slate-400 cursor-not-allowed`} />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="relative">
+            <div>
               <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Phone</label>
-              <Phone className="absolute left-4 top-[calc(50%+8px)] -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-              <input type="tel" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} placeholder="+60 12 345 6789" className={inputCls} data-testid="teacher-phone-input" />
+              <PhoneInput
+                country="my"
+                value={formData.phone}
+                onChange={phone => handleChange('phone', `+${phone}`)}
+                inputProps={{ 'data-testid': 'teacher-phone-input' }}
+                inputStyle={{
+                  height: '48px',
+                  width: '100%',
+                  borderRadius: '16px',
+                  border: '1px solid #e2e8f0',
+                  fontSize: '14px',
+                  paddingLeft: '52px',
+                }}
+                buttonStyle={{
+                  borderRadius: '16px 0 0 16px',
+                  border: '1px solid #e2e8f0',
+                  borderRight: 'none',
+                  background: 'white',
+                }}
+                dropdownStyle={{
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                }}
+              />
             </div>
             <div className="relative">
               <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Gender</label>
