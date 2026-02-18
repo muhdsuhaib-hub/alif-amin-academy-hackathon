@@ -922,9 +922,6 @@ async def create_booking(booking: BookingCreate, current_user: User = Depends(ge
     if not slot:
         raise HTTPException(status_code=400, detail="Time slot not available")
     
-    teacher_doc = await db.teachers.find_one({"teacher_id": booking.teacher_id}, {"_id": 0})
-    meet_link = teacher_doc.get("meet_link") if teacher_doc else None
-    
     booking_id = f"booking_{uuid.uuid4().hex[:12]}"
     booking_doc = {
         "booking_id": booking_id,
@@ -934,7 +931,6 @@ async def create_booking(booking: BookingCreate, current_user: User = Depends(ge
         "end_time_utc": booking.end_time_utc.isoformat(),
         "status": "scheduled",
         "booking_type": booking.booking_type,
-        "meet_link": meet_link,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     
@@ -944,7 +940,7 @@ async def create_booking(booking: BookingCreate, current_user: User = Depends(ge
         {"$set": {"is_booked": True}}
     )
     
-    return {"message": "Booking created", "booking_id": booking_id, "meet_link": meet_link}
+    return {"message": "Booking created", "booking_id": booking_id}
 
 
 @api_router.delete("/bookings/{booking_id}")
@@ -1238,7 +1234,6 @@ async def create_teacher_profile(teacher: TeacherCreate, current_user: User = De
         "teacher_id": teacher_id,
         "user_id": teacher.user_id,
         "bio": teacher.bio,
-        "meet_link": teacher.meet_link,
         "specializations": teacher.specializations,
         "years_experience": teacher.years_experience,
         "is_active": True,
