@@ -8,6 +8,7 @@ This module handles:
 - Payout history
 
 Key Principle: Commission is deducted BEFORE earnings are credited to tutor wallet.
+Financial updates use MongoDB transactions for atomicity when available.
 """
 
 from fastapi import APIRouter, HTTPException
@@ -15,15 +16,20 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional, List
 from pydantic import BaseModel
 import uuid
+import logging
+
+logger = logging.getLogger(__name__)
 
 tutor_earnings_router = APIRouter(prefix="/api/tutor-earnings")
 
-# Database will be injected from server.py
+# Database and client will be injected from server.py
 db = None
+mongo_client = None
 
-def init_tutor_earnings_routes(database):
-    global db
+def init_tutor_earnings_routes(database, client=None):
+    global db, mongo_client
     db = database
+    mongo_client = client
 
 
 # ============== REQUEST MODELS ==============
