@@ -7,17 +7,30 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function ScheduleCard({ booking, onCancel }) {
   const navigate = useNavigate();
-  const isScheduled = booking.status === 'scheduled';
-  const isFuture = new Date(booking.start_time_utc) > new Date();
   const now = Date.now();
   const start = new Date(booking.start_time_utc).getTime();
+  const endMs = booking.end_time_utc
+    ? new Date(booking.end_time_utc).getTime()
+    : start + (booking.duration_minutes || 30) * 60000;
   const canJoin = start - now <= 5 * 60 * 1000 && start - now > -60 * 60 * 1000;
 
-  const statusStyles = {
-    scheduled: 'bg-emerald-50 text-emerald-700',
-    completed: 'bg-slate-100 text-slate-600',
-    cancelled: 'bg-red-50 text-red-600',
-  };
+  // Dynamic status: completed stays completed, scheduled checks time
+  let displayStatus, statusStyle;
+  if (booking.status === 'completed') {
+    displayStatus = 'Completed';
+    statusStyle = 'bg-emerald-50 text-emerald-700';
+  } else if (booking.status === 'cancelled') {
+    displayStatus = 'Cancelled';
+    statusStyle = 'bg-red-50 text-red-600';
+  } else if (booking.status === 'scheduled' && endMs < now) {
+    displayStatus = 'Missed';
+    statusStyle = 'bg-slate-100 text-slate-500';
+  } else {
+    displayStatus = 'Upcoming';
+    statusStyle = 'bg-blue-50 text-blue-700';
+  }
+
+  const isFutureScheduled = booking.status === 'scheduled' && start > now;
 
   return (
     <div
@@ -37,10 +50,10 @@ function ScheduleCard({ booking, onCancel }) {
           <p className="text-xs text-slate-400 mt-0.5">{booking.teacher_name || 'Teacher'}</p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${statusStyles[booking.status] || statusStyles.completed}`}>
-            {booking.status === 'scheduled' ? 'Upcoming' : booking.status === 'cancelled' ? 'Cancelled' : 'Completed'}
+          <span data-testid={`status-badge-${booking.booking_id}`} className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${statusStyle}`}>
+            {displayStatus}
           </span>
-          {isScheduled && isFuture && (
+          {isFutureScheduled && (
             <div className="flex items-center gap-1.5">
               {canJoin && booking.session_id && (
                 <button
