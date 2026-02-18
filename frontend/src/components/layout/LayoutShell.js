@@ -205,7 +205,7 @@ function Header({ title, user, userRole, onMenuClick, onLogout, onNavigateTab, o
 
 export default function LayoutShell({
   menuItems, activeTab, setActiveTab, tabTitles = {},
-  user, userRole = 'student', roleBadge, onLogout, children,
+  user, userRole = 'student', roleBadge, onLogout, onOpenSupport, children,
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -230,6 +230,7 @@ export default function LayoutShell({
           onMenuClick={() => setSidebarOpen(true)}
           onLogout={onLogout}
           onNavigateTab={setActiveTab}
+          onOpenSupport={onOpenSupport}
         />
         <main className="animate-fade-in-up">
           {children}
