@@ -1,39 +1,119 @@
-import React, { useState } from 'react';
-import { Calendar, ChevronLeft, ChevronRight, Plus, Edit2, Trash2 } from 'lucide-react';
-import Card from '../Card';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, ChevronLeft, ChevronRight, Plus, Video, Clock, X } from 'lucide-react';
+import { toast } from 'sonner';
 
-const ScheduleCard = ({ booking, onEdit, onCancel }) => {
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+function ScheduleCard({ booking, onCancel }) {
+  const navigate = useNavigate();
   const isScheduled = booking.status === 'scheduled';
   const isFuture = new Date(booking.start_time_utc) > new Date();
-  const statusMap = { scheduled: { cls: 'bg-success/15 text-success', label: 'Upcoming' }, cancelled: { cls: 'bg-danger/15 text-danger', label: 'Cancelled' } };
-  const st = statusMap[booking.status] || { cls: 'bg-surface-muted text-ink-secondary', label: 'Completed' };
+  const now = Date.now();
+  const start = new Date(booking.start_time_utc).getTime();
+  const canJoin = start - now <= 5 * 60 * 1000 && start - now > -60 * 60 * 1000;
+
+  const statusStyles = {
+    scheduled: 'bg-emerald-50 text-emerald-700',
+    completed: 'bg-slate-100 text-slate-600',
+    cancelled: 'bg-red-50 text-red-600',
+  };
 
   return (
-    <div className={`p-4 rounded-md border ${booking.status === 'cancelled' ? 'bg-danger/5 border-danger/15' : 'bg-surface-subtle border-ink-faint/20'}`} data-testid={`schedule-card-${booking.booking_id}`}>
+    <div
+      className={`p-4 rounded-2xl border transition-all ${
+        booking.status === 'cancelled' ? 'bg-red-50/30 border-red-200/50' : 'bg-white/70 backdrop-blur-xl border-white/20 shadow-sm'
+      }`}
+      data-testid={`schedule-card-${booking.booking_id}`}
+    >
       <div className="flex items-start justify-between">
-        <div>
-          <p className="font-medium text-small text-ink">{new Date(booking.start_time_utc).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
-          <p className="text-caption text-ink-secondary">{new Date(booking.start_time_utc).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} &middot; {booking.duration_minutes || 30} min</p>
-          <p className="text-caption text-ink-tertiary mt-1">{booking.teacher_name || 'Teacher'}</p>
-          {booking.credits_charged > 0 && <p className="text-caption text-ink-tertiary">{booking.credits_charged} credit{booking.credits_charged > 1 ? 's' : ''}</p>}
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm text-slate-900">
+            {new Date(booking.start_time_utc).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+          </p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            {new Date(booking.start_time_utc).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} &middot; {booking.duration_minutes || 30} min
+          </p>
+          <p className="text-xs text-slate-400 mt-0.5">{booking.teacher_name || 'Teacher'}</p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <span className={`text-caption px-2 py-0.5 rounded-full ${st.cls}`}>{st.label}</span>
+          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${statusStyles[booking.status] || statusStyles.completed}`}>
+            {booking.status === 'scheduled' ? 'Upcoming' : booking.status === 'cancelled' ? 'Cancelled' : 'Completed'}
+          </span>
           {isScheduled && isFuture && (
-            <div className="flex items-center gap-1">
-              <button onClick={() => onEdit(booking)} data-testid={`edit-btn-${booking.booking_id}`} className="p-1.5 hover:bg-surface-card rounded-md text-ink-tertiary hover:text-brand transition-all" title="Edit"><Edit2 className="w-3.5 h-3.5" /></button>
-              <button onClick={() => onCancel(booking)} data-testid={`cancel-btn-${booking.booking_id}`} className="p-1.5 hover:bg-danger/10 rounded-md text-ink-tertiary hover:text-danger transition-all" title="Cancel"><Trash2 className="w-3.5 h-3.5" /></button>
+            <div className="flex items-center gap-1.5">
+              {canJoin && booking.session_id && (
+                <button
+                  onClick={() => navigate(`/classroom/${booking.session_id}`)}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-[11px] font-medium hover:bg-emerald-700 transition-colors"
+                  data-testid={`join-btn-${booking.booking_id}`}
+                >
+                  <Video className="w-3 h-3" />Join
+                </button>
+              )}
+              <button
+                onClick={() => onCancel?.(booking)}
+                className="p-1.5 hover:bg-red-50 rounded-xl text-slate-400 hover:text-red-500 transition-all"
+                data-testid={`cancel-btn-${booking.booking_id}`}
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
           )}
         </div>
       </div>
     </div>
   );
-};
+}
 
-export default function MySchedule({ bookings, onOpenBooking, onEdit, onCancel }) {
+export default function MySchedule({ bookings: initialBookings, onOpenBooking, onRefresh, onEdit, onCancel }) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
+  const [bookings, setBookings] = useState([]);
+
+  useEffect(() => {
+    fetchScheduleBookings();
+  }, []);
+
+  const fetchScheduleBookings = async () => {
+    try {
+      const r = await fetch(`${API}/booking/my-bookings`, { credentials: 'include' });
+      if (r.ok) {
+        const data = await r.json();
+        const enriched = await Promise.all((data.bookings || []).map(async (b) => {
+          // Get session_id for join button
+          if (b.status === 'scheduled' && !b.session_id) {
+            try {
+              // We'll try to get session from class_sessions via the dashboard-data endpoint
+              // For now, the booking itself may have session_id from the creation response
+            } catch {}
+          }
+          return b;
+        }));
+        setBookings(enriched);
+      }
+    } catch (e) { console.error('Schedule fetch error:', e); }
+  };
+
+  const handleCancelBooking = async (booking) => {
+    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+    try {
+      const r = await fetch(`${API}/booking/${booking.booking_id}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ confirm_no_refund: true }),
+      });
+      const data = await r.json();
+      if (r.ok && data.success) {
+        toast.success(data.refunded ? 'Booking cancelled. Credits refunded.' : 'Booking cancelled.');
+        fetchScheduleBookings();
+        onRefresh?.();
+      } else {
+        toast.error(data.detail || 'Failed to cancel');
+      }
+    } catch { toast.error('Network error'); }
+  };
 
   const getDaysInMonth = (date) => {
     const y = date.getFullYear(), m = date.getMonth();
@@ -49,22 +129,42 @@ export default function MySchedule({ bookings, onOpenBooking, onEdit, onCancel }
   const filteredClasses = selectedDay ? getClassesForDay(selectedDay) : bookings;
 
   return (
-    <div className="p-4 lg:p-8" data-testid="my-schedule-page">
+    <div className="p-4 lg:p-8 max-w-6xl mx-auto" data-testid="my-schedule-page">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-h2 text-brand">My Schedule</h2>
-        <button onClick={onOpenBooking} data-testid="schedule-book-btn" className="flex items-center gap-2 px-5 py-2.5 rounded-md bg-brand text-white font-medium text-small hover:bg-brand-light transition-all active:scale-[0.97]"><Plus className="w-4 h-4" />New Booking</button>
+        <div>
+          <h2 className="text-lg font-bold text-slate-900">My Schedule</h2>
+          <p className="text-xs text-slate-500 mt-0.5">{bookings.filter(b => b.status === 'scheduled').length} upcoming classes</p>
+        </div>
+        <button
+          onClick={onOpenBooking}
+          data-testid="schedule-book-btn"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-700 text-white font-medium text-sm hover:bg-emerald-800 transition-all active:scale-[0.97] shadow-sm"
+        >
+          <Plus className="w-4 h-4" />Book Class
+        </button>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-h3 text-brand">{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
-            <div className="flex gap-2">
-              <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="p-2 hover:bg-surface-subtle rounded-md transition-colors"><ChevronLeft className="w-5 h-5 text-ink-secondary" /></button>
-              <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="p-2 hover:bg-surface-subtle rounded-md transition-colors"><ChevronRight className="w-5 h-5 text-ink-secondary" /></button>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Calendar */}
+        <div className="lg:col-span-2 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-5">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-sm font-semibold text-slate-900">
+              {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </h3>
+            <div className="flex gap-1">
+              <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1))} className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors">
+                <ChevronLeft className="w-4 h-4 text-slate-500" />
+              </button>
+              <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1))} className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-slate-100 transition-colors">
+                <ChevronRight className="w-4 h-4 text-slate-500" />
+              </button>
             </div>
           </div>
+
           <div className="grid grid-cols-7 gap-1 mb-2">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => <div key={d} className="text-center text-caption font-medium text-ink-tertiary py-2">{d}</div>)}
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+              <div key={d} className="text-center text-[11px] font-medium text-slate-400 py-1.5">{d}</div>
+            ))}
           </div>
           <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((day, idx) => {
@@ -73,30 +173,53 @@ export default function MySchedule({ bookings, onOpenBooking, onEdit, onCancel }
               const isSelected = selectedDay && day.toDateString() === selectedDay.toDateString();
               const dayClasses = getClassesForDay(day);
               return (
-                <button key={idx} onClick={() => setSelectedDay(isSelected ? null : day)}
-                  className={`aspect-square rounded-md flex flex-col items-center justify-center relative transition-all ${isSelected ? 'bg-brand text-white' : isToday ? 'bg-brand/10' : 'hover:bg-surface-subtle'}`}>
-                  <span className={`text-small ${isSelected ? 'font-semibold' : ''}`}>{day.getDate()}</span>
-                  <div className="flex gap-0.5 mt-1">
-                    {dayClasses.some(c => c.status === 'scheduled') && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-success'}`} />}
-                    {dayClasses.some(c => c.status === 'cancelled') && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white/60' : 'bg-danger'}`} />}
+                <button
+                  key={idx}
+                  onClick={() => setSelectedDay(isSelected ? null : day)}
+                  className={`aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all text-sm ${
+                    isSelected ? 'bg-emerald-700 text-white shadow-sm' :
+                    isToday ? 'bg-emerald-50 text-emerald-700 font-semibold' :
+                    'hover:bg-slate-50 text-slate-700'
+                  }`}
+                >
+                  <span>{day.getDate()}</span>
+                  <div className="flex gap-0.5 mt-0.5">
+                    {dayClasses.some(c => c.status === 'scheduled') && (
+                      <div className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-emerald-500'}`} />
+                    )}
+                    {dayClasses.some(c => c.status === 'completed') && (
+                      <div className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white/60' : 'bg-slate-300'}`} />
+                    )}
                   </div>
                 </button>
               );
             })}
           </div>
-          <div className="flex items-center gap-4 mt-4 pt-4 border-t border-surface-subtle">
-            <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-success" /><span className="text-caption text-ink-tertiary">Scheduled</span></div>
-            <div className="flex items-center gap-2"><div className="w-2.5 h-2.5 rounded-full bg-danger" /><span className="text-caption text-ink-tertiary">Cancelled</span></div>
+
+          <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100">
+            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-[11px] text-slate-400">Upcoming</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-slate-300" /><span className="text-[11px] text-slate-400">Completed</span></div>
           </div>
-        </Card>
-        <Card className="p-6">
-          <h3 className="text-h3 text-brand mb-4">{selectedDay ? selectedDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'All Bookings'}</h3>
+        </div>
+
+        {/* Session list */}
+        <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-5">
+          <h3 className="text-sm font-semibold text-slate-900 mb-4">
+            {selectedDay ? selectedDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'All Sessions'}
+          </h3>
           {filteredClasses.length === 0 ? (
-            <div className="text-center py-8"><Calendar className="w-10 h-10 mx-auto mb-3 text-ink-faint" /><p className="text-ink-tertiary text-small">No classes {selectedDay ? 'on this day' : 'found'}</p></div>
+            <div className="text-center py-10">
+              <Calendar className="w-8 h-8 mx-auto mb-2 text-slate-200" />
+              <p className="text-xs text-slate-400">No classes {selectedDay ? 'on this day' : 'found'}</p>
+            </div>
           ) : (
-            <div className="space-y-3 max-h-[500px] overflow-y-auto">{filteredClasses.map(b => <ScheduleCard key={b.booking_id} booking={b} onEdit={onEdit} onCancel={onCancel} />)}</div>
+            <div className="space-y-2 max-h-[480px] overflow-y-auto">
+              {filteredClasses.map(b => (
+                <ScheduleCard key={b.booking_id} booking={b} onCancel={handleCancelBooking} />
+              ))}
+            </div>
           )}
-        </Card>
+        </div>
       </div>
     </div>
   );
