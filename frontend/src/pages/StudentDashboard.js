@@ -32,6 +32,7 @@ export default function StudentDashboard({ user }) {
   const [loading, setLoading] = useState(true);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
+  const [studentId, setStudentId] = useState(null);
 
   const fetchBookings = useCallback(async () => {
     try {
@@ -41,7 +42,16 @@ export default function StudentDashboard({ user }) {
     finally { setLoading(false); }
   }, [user?.user_id]);
 
-  useEffect(() => { if (user?.user_id) fetchBookings(); }, [user?.user_id, fetchBookings]);
+  useEffect(() => {
+    if (user?.user_id) {
+      fetchBookings();
+      // Fetch student_id for progress tracker
+      fetch(`${API}/students/profile?user_id=${user.user_id}`, { credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => { if (d?.student_id) setStudentId(d.student_id); })
+        .catch(() => {});
+    }
+  }, [user?.user_id, fetchBookings]);
 
   const handleLogout = async () => {
     try {
