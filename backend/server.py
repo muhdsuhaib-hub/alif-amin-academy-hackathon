@@ -577,7 +577,6 @@ async def register_teacher(current_user: User = Depends(get_current_user)):
         "total_classes": 0,
         "is_active": False,  # Pending approval
         "approval_status": "pending",
-        "meet_link": None,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.teachers.insert_one(teacher_doc)
@@ -805,8 +804,6 @@ async def update_teacher_profile(teacher_id: str, profile_data: dict, current_us
     update_fields = {}
     if "bio" in profile_data:
         update_fields["bio"] = profile_data["bio"]
-    if "meetLink" in profile_data:
-        update_fields["meet_link"] = profile_data["meetLink"]
     if "specializations" in profile_data:
         update_fields["specializations"] = profile_data["specializations"]
     if "yearsExperience" in profile_data:
