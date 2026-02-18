@@ -210,8 +210,9 @@ export default function MySchedule({ bookings: initialBookings, onOpenBooking, o
           </div>
 
           <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-100">
-            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-[11px] text-slate-400">Upcoming</span></div>
-            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-slate-300" /><span className="text-[11px] text-slate-400">Completed</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-blue-500" /><span className="text-[11px] text-slate-400">Upcoming</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-[11px] text-slate-400">Completed</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-slate-300" /><span className="text-[11px] text-slate-400">Missed</span></div>
           </div>
         </div>
 
