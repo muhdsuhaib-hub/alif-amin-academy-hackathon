@@ -62,6 +62,7 @@ Online Quran Academy connecting students with qualified teachers for 1-on-1 vide
 - `GET /api/booking/teacher-availability/{id}` — Teacher availability slots
 - `POST /api/support` — Create support ticket
 - `POST /api/wallet/topup/custom` — Custom credit top-up (RM 15/credit)
+- `GET /api/booking/available-teachers?date=&time=` — Strict availability-filtered teacher list
 - `GET /api/bookings` — Role-aware bookings (teacher sees their bookings)
 
 ## Commission System
