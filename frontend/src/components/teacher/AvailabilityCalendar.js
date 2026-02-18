@@ -208,7 +208,7 @@ export default function AvailabilityCalendar({ teacherId }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ teacher_id: teacherId, week_start: weekDates[0].toISOString().split('T')[0], slots: availableSlots }),
+        body: JSON.stringify({ teacher_id: teacherId, week_start: localDateStr(weekDates[0]), slots: availableSlots }),
       });
       if (r.ok) { toast.success('Availability saved!'); fetchSlots(); }
       else toast.error('Failed to save');
