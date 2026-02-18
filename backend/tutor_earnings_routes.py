@@ -107,13 +107,14 @@ async def credit_tutor_earnings(
     amount: float,
     booking_id: str,
     session_payment_record_id: str,
-    description: str
+    description: str,
+    gross_amount: float = 0.0,
+    platform_fee: float = 0.0,
 ):
     """
     Credit earnings to tutor wallet from a completed session.
     Amount should ALREADY have commission deducted (this is the tutor's net payout).
-    
-    Earnings go directly to withdrawable_balance (no pending period for MVP).
+    Also: increments teacher total_classes, records admin_revenue.
     """
     earnings = await get_or_create_tutor_earnings(teacher_id, user_id)
     
@@ -129,7 +130,24 @@ async def credit_tutor_earnings(
         }}
     )
     
-    # Record transaction
+    # Atomically increment teacher total_classes and update stats
+    await db.teachers.update_one(
+        {"teacher_id": teacher_id},
+        {"$inc": {"total_classes": 1}}
+    )
+    
+    # Record admin/platform revenue
+    await db.admin_revenue.insert_one({
+        "revenue_id": f"rev_{uuid.uuid4().hex[:12]}",
+        "teacher_id": teacher_id,
+        "booking_id": booking_id,
+        "gross_amount": gross_amount,
+        "platform_fee": platform_fee,
+        "net_to_teacher": amount,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+    
+    # Record transaction with full gross/net breakdown
     await add_earnings_transaction(
         earnings_id=earnings["earnings_id"],
         teacher_id=teacher_id,
@@ -138,7 +156,10 @@ async def credit_tutor_earnings(
         balance_after=new_withdrawable,
         description=description,
         reference_id=booking_id,
-        session_payment_record_id=session_payment_record_id
+        session_payment_record_id=session_payment_record_id,
+        gross_amount=gross_amount,
+        net_amount=amount,
+        platform_fee=platform_fee,
     )
     
     return {
