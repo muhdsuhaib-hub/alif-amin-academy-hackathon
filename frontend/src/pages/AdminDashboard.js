@@ -14,6 +14,7 @@ import SupportTickets from '../components/admin/SupportTickets';
 import SubscriptionManagement from '../components/admin/SubscriptionManagement';
 import TeacherApprovals from '../components/admin/TeacherApprovals';
 import WithdrawalManagement from '../components/admin/WithdrawalManagement';
+import SessionMonitor from '../components/admin/SessionMonitor';
 import LayoutShell from '../components/layout/LayoutShell';
 import { PageLoader } from '../components/Spinner';
 import Card from '../components/Card';
