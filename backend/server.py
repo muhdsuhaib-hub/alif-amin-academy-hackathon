@@ -1621,3 +1621,18 @@ app.add_middleware(
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+@app.on_event("startup")
+async def seed_system_settings():
+    """Seed commission tiers into system_settings so admins can adjust them."""
+    existing = await db.system_settings.find_one({"key": "commission_tiers"})
+    if not existing:
+        await db.system_settings.insert_one({
+            "key": "commission_tiers",
+            "tiers": {
+                "new": {"name": "New Tutor", "commission_rate": 0.40, "min_sessions": 0, "min_rating": 0},
+                "rated": {"name": "Rated Tutor", "commission_rate": 0.35, "min_sessions": 20, "min_rating": 4.5},
+                "elite": {"name": "Elite Tutor", "commission_rate": 0.30, "min_sessions": 100, "min_rating": 4.7},
+            },
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        })
