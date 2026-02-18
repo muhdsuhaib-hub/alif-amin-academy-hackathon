@@ -1706,7 +1706,7 @@ init_commission_routes(db)
 app.include_router(commission_router)
 
 # Initialize tutor earnings routes with database
-init_tutor_earnings_routes(db)
+init_tutor_earnings_routes(db, client)
 app.include_router(tutor_earnings_router)
 
 # Initialize booking routes with database
