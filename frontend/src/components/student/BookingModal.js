@@ -40,23 +40,26 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
   const [selectedDuration, setSelectedDuration] = useState(30);
   const [walletBalance, setWalletBalance] = useState(null);
   const [booking, setBooking] = useState(false);
+  const [profileTeacher, setProfileTeacher] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
-      fetchTeachers();
       fetchWalletBalance();
       setStep(1);
       setSelectedTeacher(null);
+      setTeachers([]);
+      setProfileTeacher(null);
       const t = new Date();
       t.setDate(t.getDate() + 1);
       setSelectedDate(t.toISOString().split('T')[0]);
     }
   }, [isOpen]);
 
-  const fetchTeachers = async () => {
+  const fetchTeachers = async (date, time) => {
+    if (!date || !time) return;
     setLoadingTeachers(true);
     try {
-      const r = await fetch(`${API}/booking/available-teachers`, { credentials: 'include' });
+      const r = await fetch(`${API}/booking/available-teachers?date=${date}&time=${time}`, { credentials: 'include' });
       if (r.ok) { const d = await r.json(); setTeachers(d.teachers || []); }
     } catch (e) { console.error(e); }
     finally { setLoadingTeachers(false); }
