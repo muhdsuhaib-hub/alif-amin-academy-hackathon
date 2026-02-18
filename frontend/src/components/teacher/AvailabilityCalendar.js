@@ -131,10 +131,7 @@ export default function AvailabilityCalendar({ teacherId }) {
           const dur = (end - start) / 60000;
           for (let m = 0; m < dur; m += 30) {
             const slotDate = new Date(start.getTime() + m * 60000);
-            const dateStr = slotDate.toISOString().split('T')[0];
-            const h = slotDate.getUTCHours();
-            const min = slotDate.getUTCMinutes();
-            const key = `${dateStr}T${String(h).padStart(2, '0')}:${min < 30 ? '00' : '30'}`;
+            const key = `${localDateStr(slotDate)}T${String(slotDate.getHours()).padStart(2, '0')}:${slotDate.getMinutes() < 30 ? '00' : '30'}`;
             booked[key] = b.student?.user?.name || b.student_name || 'Booked';
           }
         });
