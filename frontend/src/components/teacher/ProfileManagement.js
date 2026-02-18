@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Camera, User, Mail, Phone, Globe, Save, BookOpen, FileText } from 'lucide-react';
+import { Camera, User, Mail, Globe, Save, BookOpen, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/style.css';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
