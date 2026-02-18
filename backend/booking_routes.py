@@ -150,9 +150,8 @@ async def create_booking(req: CreateBookingRequest, request: Request):
         from wallet_routes import deduct_from_bonus_batches
         await deduct_from_bonus_batches(wallet["wallet_id"], bonus_to_deduct)
 
-    # Get teacher's meet link and name
+    # Get teacher's name
     teacher_user = await db.users.find_one({"user_id": teacher["user_id"]}, {"_id": 0})
-    meet_link = teacher.get("meet_link")
     teacher_name = teacher_user.get("name", "Unknown") if teacher_user else "Unknown"
 
     # Create booking record
@@ -169,7 +168,6 @@ async def create_booking(req: CreateBookingRequest, request: Request):
         "bonus_credits_charged": bonus_to_deduct,
         "status": "scheduled",
         "booking_type": "paid",
-        "meet_link": meet_link,
         "teacher_name": teacher_name,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
@@ -233,8 +231,7 @@ async def create_booking(req: CreateBookingRequest, request: Request):
             "end_time_utc": end_time.isoformat(),
             "duration_minutes": req.duration_minutes,
             "credits_charged": credits_needed,
-            "meet_link": meet_link,
-            "meet_link_slug": meet_link_slug,
+            "session_id": session_id,
             "status": "scheduled"
         },
         "wallet_balance": {
@@ -270,7 +267,6 @@ async def get_my_bookings(request: Request, status: Optional[str] = None):
         enriched.append({
             **b,
             "teacher_name": b.get("teacher_name") or (teacher_user.get("name") if teacher_user else "Unknown"),
-            "meet_link": b.get("meet_link") or (teacher.get("meet_link") if teacher else None),
             "duration_minutes": b.get("duration_minutes", 30),
             "credits_charged": b.get("credits_charged", 0),
         })
@@ -459,7 +455,6 @@ async def edit_booking(booking_id: str, req: EditBookingRequest, request: Reques
         teacher_user = await db.users.find_one({"user_id": new_teacher["user_id"]}, {"_id": 0})
         update_fields["teacher_id"] = req.teacher_id
         update_fields["teacher_name"] = teacher_user.get("name", "Unknown") if teacher_user else "Unknown"
-        update_fields["meet_link"] = new_teacher.get("meet_link")
 
     if req.duration_minutes:
         update_fields["duration_minutes"] = new_duration
@@ -562,7 +557,6 @@ async def get_available_teachers(request: Request):
                 "specializations": t.get("specializations", []),
                 "rating": t.get("rating", 0),
                 "total_reviews": t.get("total_reviews", 0),
-                "meet_link": t.get("meet_link"),
             })
 
     return {"teachers": result}
