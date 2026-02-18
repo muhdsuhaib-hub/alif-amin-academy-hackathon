@@ -923,34 +923,13 @@ async def log_student_progress(log_data: dict, current_user: User = Depends(get_
 
 
 @api_router.get("/teachers/{teacher_id}/transactions")
-async def get_teacher_transactions(teacher_id: str, current_user: User = Depends(get_current_user)):
-    """Get transaction history for a teacher"""
-    # Get all completed bookings for this teacher
-    bookings = await db.bookings.find(
-        {"teacher_id": teacher_id, "status": "completed"},
+async def get_teacher_transactions(teacher_id: str, limit: int = 50, current_user: User = Depends(get_current_user)):
+    """Get real transaction history for a teacher from tutor_earnings_transactions"""
+    transactions = await db.tutor_earnings_transactions.find(
+        {"teacher_id": teacher_id},
         {"_id": 0}
-    ).to_list(1000)
-    
-    transactions = []
-    for booking in bookings:
-        # Get student info
-        student = await db.students.find_one({"student_id": booking.get("student_id")}, {"_id": 0})
-        user = None
-        if student:
-            user = await db.users.find_one({"user_id": student.get("user_id")}, {"_id": 0})
-        
-        # Use platform standard credit pricing
-        rate = 15  # RM15 per credit (platform standard)
-        
-        transactions.append({
-            "id": booking.get("booking_id"),
-            "date": booking.get("start_time_utc", "")[:10],
-            "student": user.get("name", "Unknown") if user else "Unknown",
-            "type": "Trial Class" if booking.get("booking_type") == "trial" else "Class Fee",
-            "amount": 0 if booking.get("booking_type") == "trial" else rate,
-            "status": "completed"
-        })
-    
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+
     return {"transactions": transactions}
 
 
