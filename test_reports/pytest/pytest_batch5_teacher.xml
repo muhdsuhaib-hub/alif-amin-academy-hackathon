@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="19" time="42.806" timestamp="2026-02-18T12:20:25.446540+00:00" hostname="agent-env-bd6c4c9d-62e2-47e2-a699-4773d001afd0"><testcase classname="backend.tests.test_batch5_teacher.TestTeacherDashboardData" name="test_dashboard_data_returns_tier_info" time="0.239" /><testcase classname="backend.tests.test_batch5_teacher.TestTeacherDashboardData" name="test_dashboard_data_returns_upcoming_classes" time="0.139" /><testcase classname="backend.tests.test_batch5_teacher.TestTeacherDashboardData" name="test_dashboard_data_returns_month_stats" time="0.131" /><testcase classname="backend.tests.test_batch5_teacher.TestTeacherDashboardData" name="test_dashboard_data_returns_teacher_info" time="0.122" /><testcase classname="backend.tests.test_batch5_teacher.TestTeacherDashboardData" name="test_dashboard_data_requires_auth" time="0.102" /><testcase classname="backend.tests.test_batch5_teacher.TestTeacherDashboardData" name="test_dashboard_data_requires_teacher_role" time="0.105" /><testcase classname="backend.tests.test_batch5_teacher.TestSystemSettings" name="test_commission_tiers_api_exists" time="0.184" /><testcase classname="backend.tests.test_batch5_teacher.TestAvailabilityBulkSave" name="test_save_availability_slots" time="0.132" /><testcase classname="backend.tests.test_batch5_teacher.TestAvailabilityBulkSave" name="test_get_teacher_availability" time="0.126" /><testcase classname="backend.tests.test_batch5_teacher.TestAvailabilityBulkSave" name="test_bulk_save_requires_auth" time="0.101" /><testcase classname="backend.tests.test_batch5_teacher.TestTeacherRequestPayout" name="test_request_payout_validation" time="0.104" /><testcase classname="backend.tests.test_batch5_teacher.TestTeacherRequestPayout" name="test_request_payout_amount_validation" time="0.123" /><testcase classname="backend.tests.test_batch5_teacher.TestTeacherRequestPayout" name="test_request_payout_requires_teacher_role" time="0.115" /><testcase classname="backend.tests.test_batch5_teacher.TestTeacherStudents" name="test_get_teacher_students" time="0.105" /><testcase classname="backend.tests.test_batch5_teacher.TestTeacherProfileUpdate" name="test_update_teacher_bio" time="0.217" /><testcase classname="backend.tests.test_batch5_teacher.TestTeacherProfileUpdate" name="test_update_teacher_specializations" time="10.128" /><testcase classname="backend.tests.test_batch5_teacher.TestTeacherProfileUpdate" name="test_update_profile_requires_teacher" time="20.046"><failure message="requests.exceptions.ConnectTimeout: HTTPSConnectionPool(host='student-overhaul-v4.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/teacher/update-profile (Caused by ConnectTimeoutError(&lt;HTTPSConnection(host='student-overhaul-v4.preview.emergentagent.com', port=443) at 0xfb817d57af50&gt;, 'Connection to student-overhaul-v4.preview.emergentagent.com timed out. (connect timeout=10)'))">/root/.venv/lib/python3.11/site-packages/urllib3/connection.py:204: in _new_conn
+    sock = connection.create_connection(
+/root/.venv/lib/python3.11/site-packages/urllib3/util/connection.py:85: in create_connection
+    raise err
+/root/.venv/lib/python3.11/site-packages/urllib3/util/connection.py:73: in create_connection
+    sock.connect(sa)
+E   TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+/root/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py:787: in urlopen
+    response = self._make_request(
+/root/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py:488: in _make_request
+    raise new_e
+/root/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py:464: in _make_request
+    self._validate_conn(conn)
+/root/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py:1093: in _validate_conn
+    conn.connect()
+/root/.venv/lib/python3.11/site-packages/urllib3/connection.py:759: in connect
+    self.sock = sock = self._new_conn()
+                       ^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/urllib3/connection.py:213: in _new_conn
+    raise ConnectTimeoutError(
+E   urllib3.exceptions.ConnectTimeoutError: (&lt;HTTPSConnection(host='student-overhaul-v4.preview.emergentagent.com', port=443) at 0xfb817d57af50&gt;, 'Connection to student-overhaul-v4.preview.emergentagent.com timed out. (connect timeout=10)')
+
+The above exception was the direct cause of the following exception:
+/root/.venv/lib/python3.11/site-packages/requests/adapters.py:644: in send
+    resp = conn.urlopen(
+/root/.venv/lib/python3.11/site-packages/urllib3/connectionpool.py:841: in urlopen
+    retries = retries.increment(
+/root/.venv/lib/python3.11/site-packages/urllib3/util/retry.py:519: in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='student-overhaul-v4.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/teacher/update-profile (Caused by ConnectTimeoutError(&lt;HTTPSConnection(host='student-overhaul-v4.preview.emergentagent.com', port=443) at 0xfb817d57af50&gt;, 'Connection to student-overhaul-v4.preview.emergentagent.com timed out. (connect timeout=10)'))
+
+During handling of the above exception, another exception occurred:
+backend/tests/test_batch5_teacher.py:298: in test_update_profile_requires_teacher
+    r = requests.put(
+/root/.venv/lib/python3.11/site-packages/requests/api.py:130: in put
+    return request("put", url, data=data, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/api.py:59: in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:589: in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/sessions.py:703: in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/root/.venv/lib/python3.11/site-packages/requests/adapters.py:665: in send
+    raise ConnectTimeout(e, request=request)
+E   requests.exceptions.ConnectTimeout: HTTPSConnectionPool(host='student-overhaul-v4.preview.emergentagent.com', port=443): Max retries exceeded with url: /api/teacher/update-profile (Caused by ConnectTimeoutError(&lt;HTTPSConnection(host='student-overhaul-v4.preview.emergentagent.com', port=443) at 0xfb817d57af50&gt;, 'Connection to student-overhaul-v4.preview.emergentagent.com timed out. (connect timeout=10)'))</failure></testcase><testcase classname="backend.tests.test_batch5_teacher.TestTeacherTransactions" name="test_get_teacher_transactions" time="10.158" /><testcase classname="backend.tests.test_batch5_teacher.TestAPIHealth" name="test_api_root" time="0.138" /></testsuite></testsuites>
