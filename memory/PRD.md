@@ -86,6 +86,8 @@ Online Quran Academy connecting students with qualified teachers for 1-on-1 vide
 users, students, teachers, bookings, availability_slots, class_sessions, student_progress, student_wallets, wallet_transactions, tutor_earnings, tutor_earnings_transactions, admin_revenue, session_payment_records, withdrawal_requests, notifications, wallet_packages, support_tickets, system_settings
 
 ## Upcoming Tasks (P0/P1)
+- **Batch 5.8 Epic 1:** Admin Observer Mode routing refinement (most logic already implemented)
+- **Batch 5.8 Epic 3:** Interactive Mushaf (Quran.com V4 API, word-level DOM, Tajweed highlight, Surah navigation fix)
 - **My Students Page:** Build teacher UI to list students and view past session notes/performance
 - **Teacher Profile Uploads:** GCS uploads for video introductions and PDF/Image certificates
 - **Final Responsive Verification:** Mobile-perfect for both Student and Teacher platforms
