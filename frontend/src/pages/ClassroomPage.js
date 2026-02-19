@@ -1,20 +1,15 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { LiveKitRoom } from '@livekit/components-react';
+import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { toast } from 'sonner';
 import DigitalMushaf from '../components/classroom/DigitalMushaf';
 import QuranNavigator from '../components/classroom/QuranNavigator';
-import { VideoStrip, ControlBar } from '../components/classroom/LiveKitRoom';
+import GreenRoom from '../components/classroom/GreenRoom';
+import { VideoStrip, MobileVideoRow, ControlDock, AVSettingsModal } from '../components/classroom/LiveKitRoom';
 import { SessionReportModal, RateTeacherModal } from '../components/classroom/EndClassModals';
 import Spinner from '../components/Spinner';
-import {
-  BookOpen,
-  MessageSquare,
-  X,
-  Send,
-  Hand,
-} from 'lucide-react';
+import { Hand, X, Send } from 'lucide-react';
 
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND}/api`;
@@ -27,47 +22,35 @@ function useClassroomWS(roomId, onMessage) {
 
   useEffect(() => {
     if (!roomId) return;
-
     function connect() {
       const ws = new WebSocket(`${WS_BASE}/api/classroom/ws/${roomId}`);
       wsRef.current = ws;
-      ws.onmessage = (e) => {
-        try { onMessage(JSON.parse(e.data)); } catch {}
-      };
+      ws.onmessage = (e) => { try { onMessage(JSON.parse(e.data)); } catch {} };
       ws.onclose = () => { reconnectRef.current = setTimeout(connect, 2000); };
       ws.onerror = () => ws.close();
     }
-
     connect();
     return () => { clearTimeout(reconnectRef.current); wsRef.current?.close(); };
   }, [roomId]);
 
   const send = useCallback((msg) => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify(msg));
-    }
+    if (wsRef.current?.readyState === WebSocket.OPEN) wsRef.current.send(JSON.stringify(msg));
   }, []);
-
   return send;
 }
 
-// ==================== POINTER THROTTLE ====================
 function useThrottledSend(send, delay = 50) {
   const lastRef = useRef(0);
   return useCallback((msg) => {
     const now = Date.now();
-    if (now - lastRef.current >= delay) {
-      lastRef.current = now;
-      send(msg);
-    }
+    if (now - lastRef.current >= delay) { lastRef.current = now; send(msg); }
   }, [send, delay]);
 }
 
-// ==================== CHAT PANEL ====================
-function ChatPanel({ send, messages, onClose }) {
+// ==================== CHAT DRAWER ====================
+function ChatDrawer({ send, messages, onClose }) {
   const [text, setText] = useState('');
   const bottomRef = useRef(null);
-
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const handleSend = () => {
@@ -77,24 +60,24 @@ function ChatPanel({ send, messages, onClose }) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white/50 backdrop-blur-xl" data-testid="chat-panel">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-black/5">
-        <h3 className="text-sm font-semibold text-ink">Chat</h3>
-        <button onClick={onClose} className="p-1 hover:bg-black/5 rounded-lg"><X className="w-4 h-4 text-ink-tertiary" /></button>
+    <div className="flex flex-col h-full bg-slate-900/80 backdrop-blur-xl" data-testid="chat-drawer">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+        <h3 className="text-sm font-semibold text-white">Chat</h3>
+        <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-4 h-4 text-white/40" /></button>
       </div>
       <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {messages.map((m, i) => (
-          <div key={i} className={`text-xs px-3 py-2 rounded-xl max-w-[85%] ${m.self ? 'ml-auto bg-brand/10 text-brand' : 'bg-surface-subtle text-ink'}`}>
-            {!m.self && <p className="font-semibold mb-0.5 text-ink-secondary">{m.sender}</p>}
+          <div key={i} className={`text-xs px-3 py-2 rounded-xl max-w-[85%] ${m.self ? 'ml-auto bg-emerald-600/20 text-emerald-300' : 'bg-white/5 text-white/80'}`}>
+            {!m.self && <p className="font-semibold mb-0.5 text-white/50">{m.sender}</p>}
             <p>{m.text}</p>
           </div>
         ))}
         <div ref={bottomRef} />
       </div>
-      <div className="flex items-center gap-2 p-3 border-t border-black/5">
+      <div className="flex items-center gap-2 p-3 border-t border-white/5">
         <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Type a message..." className="flex-1 h-9 px-3 rounded-xl bg-surface-subtle text-sm border-none focus:outline-none focus:ring-2 focus:ring-brand/20" data-testid="chat-input" />
-        <button onClick={handleSend} className="p-2 rounded-xl bg-brand text-white hover:bg-brand-light transition-all" data-testid="chat-send">
+          placeholder="Type a message..." className="flex-1 h-9 px-3 rounded-xl bg-white/5 text-sm text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-white/20" data-testid="chat-input" />
+        <button onClick={handleSend} className="p-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 transition-all" data-testid="chat-send">
           <Send className="w-4 h-4" />
         </button>
       </div>
@@ -102,19 +85,15 @@ function ChatPanel({ send, messages, onClose }) {
   );
 }
 
-// ==================== RAISE HAND NOTIFICATION (Teacher Toast) ====================
+// ==================== RAISE HAND TOAST ====================
 function RaiseHandToast({ studentName, onLower }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 bg-white/80 backdrop-blur-xl rounded-2xl border border-[#D4AF37]/30 shadow-xl" data-testid="raise-hand-toast">
-      <div className="w-8 h-8 rounded-xl bg-[#D4AF37]/15 flex items-center justify-center">
-        <Hand className="w-4 h-4 text-[#D4AF37]" />
+    <div className="flex items-center gap-3 px-4 py-3 bg-white/90 backdrop-blur-xl rounded-2xl border border-amber-300/30 shadow-xl" data-testid="raise-hand-toast">
+      <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center">
+        <Hand className="w-4 h-4 text-amber-600" />
       </div>
-      <div className="flex-1">
-        <p className="text-sm font-medium text-ink">{studentName} raised their hand</p>
-      </div>
-      <button onClick={onLower} className="text-xs font-medium text-ink-secondary hover:text-ink px-2 py-1 rounded-lg hover:bg-black/5 transition-all" data-testid="lower-hand-action">
-        Lower
-      </button>
+      <p className="text-sm font-medium text-slate-900 flex-1">{studentName} raised their hand</p>
+      <button onClick={onLower} className="text-xs font-medium text-slate-500 hover:text-slate-900 px-2 py-1 rounded-lg hover:bg-slate-100 transition-all" data-testid="lower-hand-action">Lower</button>
     </div>
   );
 }
@@ -129,6 +108,8 @@ export default function ClassroomPage() {
   const [lkToken, setLkToken] = useState(null);
   const [lkUrl, setLkUrl] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [joined, setJoined] = useState(false);
+  const [joinConfig, setJoinConfig] = useState(null);
 
   // Real-time state
   const [currentPage, setCurrentPage] = useState(1);
@@ -138,14 +119,18 @@ export default function ClassroomPage() {
   const [chatMessages, setChatMessages] = useState([]);
   const [raisedHands, setRaisedHands] = useState({});
   const [myHandRaised, setMyHandRaised] = useState(false);
+  const [observerIds, setObserverIds] = useState([]);
 
   // UI state
   const [showNavigator, setShowNavigator] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
 
   const isTeacher = user?.role === 'teacher';
+  const isAdmin = user?.role === 'admin';
+  const isObserver = joinConfig?.mode === 'observer';
 
   // WS message handler
   const handleWSMessage = useCallback((msg) => {
@@ -155,79 +140,72 @@ export default function ClassroomPage() {
         setHighlights(msg.highlights || []);
         setRecording(msg.recording || { active: false, visible: false });
         break;
-      case 'POINTER_MOVE':
-        setPointerPos({ x: msg.x, y: msg.y });
-        break;
-      case 'PAGE_CHANGE':
-        setCurrentPage(msg.page);
-        break;
-      case 'HIGHLIGHT_SYNC':
-        setHighlights(msg.highlights || []);
-        break;
-      case 'RECORDING_STARTED':
-        setRecording({ active: true, visible: msg.visible });
-        break;
-      case 'RECORDING_STOPPED':
-        setRecording({ active: false, visible: false });
-        break;
-      case 'CHAT':
-        setChatMessages((p) => [...p, { text: msg.text, sender: msg.sender || 'Participant', self: false }]);
-        break;
+      case 'POINTER_MOVE': setPointerPos({ x: msg.x, y: msg.y }); break;
+      case 'PAGE_CHANGE': setCurrentPage(msg.page); break;
+      case 'HIGHLIGHT_SYNC': setHighlights(msg.highlights || []); break;
+      case 'RECORDING_STARTED': setRecording({ active: true, visible: msg.visible }); break;
+      case 'RECORDING_STOPPED': setRecording({ active: false, visible: false }); break;
+      case 'CHAT': setChatMessages(p => [...p, { text: msg.text, sender: msg.sender || 'Participant', self: false }]); break;
       case 'RAISE_HAND':
-        setRaisedHands((p) => ({ ...p, [msg.identity]: msg.name || 'Student' }));
+        setRaisedHands(p => ({ ...p, [msg.identity]: msg.name || 'Student' }));
         toast.custom(() => <RaiseHandToast studentName={msg.name || 'Student'} onLower={() => handleLowerHand(msg.identity)} />, { duration: 8000 });
         break;
       case 'LOWER_HAND':
-        setRaisedHands((p) => { const n = { ...p }; delete n[msg.identity]; return n; });
+        setRaisedHands(p => { const n = { ...p }; delete n[msg.identity]; return n; });
         if (msg.identity === user?.user_id) setMyHandRaised(false);
         break;
-      case 'END_CLASS':
-        // Student: show rating modal
-        setShowRatingModal(true);
-        break;
-      default:
-        break;
+      case 'END_CLASS': setShowRatingModal(true); break;
+      default: break;
     }
   }, [user]);
 
   const send = useClassroomWS(session?.meet_link_slug, handleWSMessage);
   const throttledSend = useThrottledSend(send, 50);
 
-  // Init
+  // Init — fetch session + user data (but don't connect to LiveKit yet)
   useEffect(() => {
     async function init() {
       try {
         const meRes = await fetch(`${API}/auth/me`, { credentials: 'include' });
         if (!meRes.ok) { navigate('/auth'); return; }
         const meData = await meRes.json();
-        const userData = meData.user || meData;
-        setUser(userData);
+        setUser(meData.user || meData);
 
         const sRes = await fetch(`${API}/classroom/session/${sessionId}`, { credentials: 'include' });
         if (!sRes.ok) { toast.error('Session not found'); navigate(-1); return; }
-        const sData = await sRes.json();
-        setSession(sData);
-
-        const tRes = await fetch(`${API}/classroom/livekit/token`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-          body: JSON.stringify({ room_name: sData.meet_link_slug }),
-        });
-        if (tRes.ok) {
-          const tData = await tRes.json();
-          setLkToken(tData.token);
-          setLkUrl(tData.server_url);
-        }
-
-        if (userData.role === 'teacher') {
-          await fetch(`${API}/classroom/session/${sessionId}/go-live`, { method: 'POST', credentials: 'include' });
-        }
+        setSession(await sRes.json());
       } catch { toast.error('Failed to connect'); }
       finally { setLoading(false); }
     }
     init();
   }, [sessionId, navigate]);
 
-  // Teacher: page change
+  // Join from Green Room — request LiveKit token
+  const handleJoinFromLobby = useCallback(async (config) => {
+    setJoinConfig(config);
+    try {
+      const tRes = await fetch(`${API}/classroom/livekit/token`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ room_name: session.meet_link_slug }),
+      });
+      if (tRes.ok) {
+        const tData = await tRes.json();
+        setLkToken(tData.token);
+        setLkUrl(tData.server_url);
+        setJoined(true);
+      }
+      // Teacher: go live
+      if (user?.role === 'teacher') {
+        await fetch(`${API}/classroom/session/${sessionId}/go-live`, { method: 'POST', credentials: 'include' });
+      }
+      // Admin observer: track ID
+      if (config.mode === 'observer') {
+        setObserverIds(prev => [...prev, user?.user_id]);
+      }
+    } catch { toast.error('Failed to join room'); }
+  }, [session, sessionId, user]);
+
+  // Handlers
   const handlePageChange = useCallback((page) => {
     setCurrentPage(page);
     if (isTeacher) send({ type: 'PAGE_CHANGE', page });
@@ -245,37 +223,48 @@ export default function ClassroomPage() {
     let page = 1;
     if (nav.type === 'page') page = nav.page;
     else if (nav.type === 'juz') page = Math.round((nav.juz - 1) * 20.13 + 1);
+    else if (nav.type === 'surah') {
+      // Surah start pages (approximate, will be refined in Epic 3)
+      page = nav.page || 1;
+    }
     handlePageChange(page);
     setShowNavigator(false);
   }, [handlePageChange]);
 
   const handleChatSend = useCallback((msg) => {
     send({ ...msg, sender: user?.name || 'Me' });
-    setChatMessages((p) => [...p, { text: msg.text, sender: 'You', self: true }]);
+    setChatMessages(p => [...p, { text: msg.text, sender: 'You', self: true }]);
   }, [send, user]);
 
-  // Raise / Lower Hand
   const handleRaiseHand = useCallback(() => {
     send({ type: 'RAISE_HAND', identity: user?.user_id, name: user?.name || 'Student' });
     setMyHandRaised(true);
-    setRaisedHands((p) => ({ ...p, [user?.user_id]: user?.name }));
+    setRaisedHands(p => ({ ...p, [user?.user_id]: user?.name }));
   }, [send, user]);
 
   const handleLowerHand = useCallback((identity) => {
     const targetId = identity || user?.user_id;
     send({ type: 'LOWER_HAND', identity: targetId });
-    setRaisedHands((p) => { const n = { ...p }; delete n[targetId]; return n; });
+    setRaisedHands(p => { const n = { ...p }; delete n[targetId]; return n; });
     if (targetId === user?.user_id) setMyHandRaised(false);
   }, [send, user]);
 
-  // End Class
+  const handleStartRecording = useCallback(() => {
+    toast.success('Recording initialized', { description: 'Cloud recording will be connected in a future update.' });
+    setRecording({ active: true, visible: true });
+    send({ type: 'RECORDING_STARTED', visible: true });
+  }, [send]);
+
+  // End Class — Admin routes to /admin/dashboard, NOT logout
   const handleEndClass = useCallback(() => {
-    if (isTeacher) {
+    if (isAdmin) {
+      navigate('/admin/dashboard');
+    } else if (isTeacher) {
       setShowReportModal(true);
     } else {
       navigate('/student/dashboard');
     }
-  }, [isTeacher, navigate]);
+  }, [isTeacher, isAdmin, navigate]);
 
   const handleReportSubmitted = useCallback(() => {
     setShowReportModal(false);
@@ -296,73 +285,99 @@ export default function ClassroomPage() {
     return () => clearTimeout(t);
   }, [pointerPos]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-[#F5F5F7]"><Spinner message="Entering classroom..." /></div>;
+  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Spinner message="Loading classroom..." /></div>;
 
+  // ==================== GREEN ROOM (PRE-JOIN) ====================
+  if (!joined) {
+    return <GreenRoom user={user} session={session} onJoin={handleJoinFromLobby} isAdmin={isAdmin} />;
+  }
+
+  // ==================== MAIN CLASSROOM LAYOUT ====================
   const roomContent = (
-    <div className="h-screen flex flex-col bg-[#F5F5F7] overflow-hidden" data-testid="classroom-page">
-      {/* Top Bar */}
-      <div className="flex items-center justify-between px-4 py-2.5 bg-white/70 backdrop-blur-xl border-b border-black/5 z-40 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-          <h1 className="text-sm font-semibold text-ink truncate">
-            {session?.teacher_name || 'Teacher'} & {session?.student_name || 'Student'}
-          </h1>
-          {Object.keys(raisedHands).length > 0 && isTeacher && (
-            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#D4AF37]/15 text-[#D4AF37]">
-              <Hand className="w-3 h-3" />
-              <span className="text-xs font-medium">{Object.keys(raisedHands).length}</span>
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5">
-          {isTeacher && (
-            <button onClick={() => setShowNavigator(!showNavigator)}
-              className={`p-2 rounded-xl transition-all ${showNavigator ? 'bg-brand text-white' : 'hover:bg-black/5 text-ink-secondary'}`}
-              title="Quran Navigator" data-testid="nav-toggle">
-              <BookOpen className="w-4 h-4" />
-            </button>
-          )}
-          <button onClick={() => setShowChat(!showChat)}
-            className={`p-2 rounded-xl transition-all ${showChat ? 'bg-brand text-white' : 'hover:bg-black/5 text-ink-secondary'}`}
-            title="Chat" data-testid="chat-toggle">
-            <MessageSquare className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
+    <div className="h-screen flex flex-col bg-slate-900 overflow-hidden" data-testid="classroom-page">
+      {/* CRITICAL: RoomAudioRenderer plays ALL remote audio tracks */}
+      <RoomAudioRenderer />
 
-      {/* Main Content */}
+      {/* Observer banner */}
+      {isObserver && (
+        <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-1.5 text-center flex-shrink-0" data-testid="observer-banner">
+          <span className="text-[11px] font-medium text-amber-400">Observer Mode — You are invisible to participants</span>
+        </div>
+      )}
+
+      {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
+        {/* Left: Quran Navigator (Desktop slide-out) */}
         {showNavigator && isTeacher && (
-          <div className="w-72 border-r border-black/5 bg-white/60 backdrop-blur-xl flex-shrink-0 overflow-hidden">
+          <div className="hidden md:block w-72 border-r border-white/5 bg-slate-900/90 backdrop-blur-xl flex-shrink-0 overflow-hidden">
             <QuranNavigator onNavigate={handleNavigate} onClose={() => setShowNavigator(false)} />
           </div>
         )}
 
-        {/* Left: Mushaf Stage */}
+        {/* Center: Mushaf Stage (maximized) */}
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-          <div className="md:hidden flex-shrink-0 h-28 border-b border-black/5 bg-black/5 overflow-x-auto">
-            <div className="flex gap-2 p-2 h-full"><VideoStrip raisedHands={raisedHands} /></div>
+          {/* Mobile: Video row pinned top */}
+          <div className="md:hidden flex-shrink-0 border-b border-white/5 bg-slate-800/50">
+            <MobileVideoRow raisedHands={raisedHands} observerIds={observerIds} />
           </div>
+          {/* Mushaf fills remaining viewport */}
           <div className="flex-1 overflow-hidden">
-            <DigitalMushaf currentPage={currentPage} onPageChange={handlePageChange} isTeacher={isTeacher}
+            <DigitalMushaf
+              currentPage={currentPage} onPageChange={handlePageChange} isTeacher={isTeacher}
               pointerPosition={!isTeacher ? pointerPos : null} highlights={highlights}
-              onPointerMove={isTeacher ? handlePointerMove : undefined} onHighlight={isTeacher ? handleHighlight : undefined} />
+              onPointerMove={isTeacher ? handlePointerMove : undefined}
+              onHighlight={isTeacher ? handleHighlight : undefined}
+            />
           </div>
         </div>
 
-        {/* Right: Video / Chat */}
-        <div className="hidden md:flex flex-col w-[280px] flex-shrink-0 border-l border-black/5 bg-black/3">
+        {/* Right Sidebar: Video Tiles + Chat Drawer (Desktop only, max 20% width) */}
+        <div className="hidden md:flex flex-col flex-shrink-0 border-l border-white/5 bg-slate-900/80 transition-all duration-300"
+          style={{ width: showChat ? '360px' : '240px' }}
+        >
           {showChat ? (
-            <ChatPanel send={handleChatSend} messages={chatMessages} onClose={() => setShowChat(false)} />
+            <div className="flex flex-1 overflow-hidden">
+              {/* Video tiles (compressed) */}
+              <div className="w-[120px] flex-shrink-0 border-r border-white/5 overflow-hidden">
+                <VideoStrip raisedHands={raisedHands} observerIds={observerIds} />
+              </div>
+              {/* Chat drawer */}
+              <div className="flex-1 overflow-hidden">
+                <ChatDrawer send={handleChatSend} messages={chatMessages} onClose={() => setShowChat(false)} />
+              </div>
+            </div>
           ) : (
-            <VideoStrip raisedHands={raisedHands} />
+            <VideoStrip raisedHands={raisedHands} observerIds={observerIds} />
           )}
         </div>
       </div>
 
-      {/* Control Bar */}
-      <ControlBar onEndClass={handleEndClass} isRecording={recording.active && recording.visible} isTeacher={isTeacher}
-        isHandRaised={myHandRaised} onRaiseHand={handleRaiseHand} onLowerHand={() => handleLowerHand()} />
+      {/* Mobile chat (slides from bottom) */}
+      {showChat && (
+        <div className="md:hidden fixed inset-x-0 bottom-0 top-1/2 z-40 rounded-t-3xl overflow-hidden shadow-2xl">
+          <ChatDrawer send={handleChatSend} messages={chatMessages} onClose={() => setShowChat(false)} />
+        </div>
+      )}
+
+      {/* Centralized Control Dock */}
+      <ControlDock
+        onEndClass={handleEndClass}
+        isRecording={recording.active && recording.visible}
+        isTeacher={isTeacher}
+        isHandRaised={myHandRaised}
+        onRaiseHand={handleRaiseHand}
+        onLowerHand={() => handleLowerHand()}
+        showChat={showChat}
+        onToggleChat={() => setShowChat(!showChat)}
+        showNavigator={showNavigator}
+        onToggleNavigator={() => setShowNavigator(!showNavigator)}
+        onToggleSettings={() => setShowSettings(!showSettings)}
+        onStartRecording={handleStartRecording}
+        isObserver={isObserver}
+      />
+
+      {/* Settings Modal */}
+      {showSettings && <AVSettingsModal onClose={() => setShowSettings(false)} />}
 
       {/* End Class Modals */}
       {showReportModal && <SessionReportModal sessionId={sessionId} onSubmitted={handleReportSubmitted} onClose={() => setShowReportModal(false)} />}
@@ -372,7 +387,14 @@ export default function ClassroomPage() {
 
   if (lkToken && lkUrl) {
     return (
-      <LiveKitRoom token={lkToken} serverUrl={lkUrl} connect={true} video={true} audio={true} data-testid="livekit-room">
+      <LiveKitRoom
+        token={lkToken}
+        serverUrl={lkUrl}
+        connect={true}
+        video={joinConfig?.cameraEnabled ?? true}
+        audio={joinConfig?.micEnabled ?? true}
+        data-testid="livekit-room"
+      >
         {roomContent}
       </LiveKitRoom>
     );
