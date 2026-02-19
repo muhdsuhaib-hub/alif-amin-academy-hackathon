@@ -60,6 +60,23 @@ Online Quran Academy connecting students with qualified teachers for 1-on-1 vide
 - **Fix 6 (P2) Payout Validation:** Max validator against wallet balance. Red "Insufficient funds" error when amount exceeds balance. Submit disabled when invalid
 - **Fix 7 (P2) Teacher Phone Input:** Replaced with `react-phone-input-2` (Malaysia +60 default, flags, auto-formatting)
 
+### Batch 5.8 Epic 4+2: Virtual Classroom Overhaul (Complete - Feb 19, 2026)
+- **Epic 4 (P0) A/V Core & Green Room:**
+  - Pre-Call Lobby (Green Room): Camera preview, mic level meter (bouncing green bars via Web Audio API), device selection, mandatory "Join Now" button (bypasses browser autoplay)
+  - Zero Audio Fix: Added `RoomAudioRenderer` inside LiveKitRoom (was completely missing)
+  - A/V Settings Modal: Camera/Mic/Speaker device selection via gear icon
+  - Network Quality Indicators: ConnectionBadge on video tiles (signal bars)
+  - Recording Placeholder: Toast "Recording initialized" for teachers
+- **Epic 2 (P0) Premium EdTech Layout:**
+  - Centralized Control Dock: Floating glassmorphism bottom bar (Mic, Camera, Settings, Raise Hand, Quran Nav, Chat, Record, End Class)
+  - Desktop: Dark theme, Quran maximized center stage, video tiles stacked in 20% right sidebar
+  - Chat as slide-out drawer: Video tiles compress (never hidden), chat overlays on mobile
+  - Mobile-First: Video row pinned top, Quran fills viewport, icon-only dock bottom
+- **Epic 1 (P0) Admin Observer Mode:**
+  - Pre-join modal: "Join as Observer" (invisible, A/V blocked) or "Join as Participant"
+  - Observer filtered from video grid, banner shows "invisible to participants"
+  - End Class routes admin to `/admin/dashboard` (not logout)
+
 ## Key API Endpoints
 - `GET /api/students/dashboard-data` — Comprehensive student dashboard
 - `GET /api/teacher/dashboard-data` — Teacher dashboard + tier + earnings
