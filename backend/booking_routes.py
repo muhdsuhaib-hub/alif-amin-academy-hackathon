@@ -110,6 +110,32 @@ async def create_booking(req: CreateBookingRequest, request: Request):
     if not teacher.get("is_active", False):
         raise HTTPException(status_code=400, detail="Teacher is not currently active")
 
+    # HOTFIX 5.8.1: Overlap prevention — check for existing sessions
+    overlap = await db.class_sessions.find_one({
+        "teacher_id": req.teacher_id,
+        "status": "scheduled",
+        "start_time_utc": {"$lt": end_time.isoformat()},
+        "end_time_utc": {"$gt": start_time.isoformat()},
+    })
+    if overlap:
+        raise HTTPException(
+            status_code=409,
+            detail="This time slot has just been booked by someone else. Please select another time."
+        )
+
+    # Also check the bookings collection for overlap
+    booking_overlap = await db.bookings.find_one({
+        "teacher_id": req.teacher_id,
+        "status": "scheduled",
+        "start_time_utc": {"$lt": end_time.isoformat()},
+        "end_time_utc": {"$gt": start_time.isoformat()},
+    })
+    if booking_overlap:
+        raise HTTPException(
+            status_code=409,
+            detail="This time slot has just been booked by someone else. Please select another time."
+        )
+
     # Calculate credits needed
     credits_needed = DURATION_CREDITS[req.duration_minutes]
 
