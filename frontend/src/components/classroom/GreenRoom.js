@@ -1,5 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Mic, MicOff, Video, VideoOff, Settings, ChevronDown, Monitor } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, Settings, ChevronDown, Monitor, Volume2 } from 'lucide-react';
+
+// Professional chime using Web Audio API
+function playTestChime() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const now = ctx.currentTime;
+  // Three-note ascending chime (C5, E5, G5)
+  [523.25, 659.25, 783.99].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, now + i * 0.15);
+    gain.gain.linearRampToValueAtTime(0.25, now + i * 0.15 + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.5);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(now + i * 0.15);
+    osc.stop(now + i * 0.15 + 0.6);
+  });
+  setTimeout(() => ctx.close(), 1500);
+}
 
 function MicLevelMeter({ stream }) {
   const canvasRef = useRef(null);
