@@ -137,13 +137,27 @@ export default function ClassroomPage() {
   const handleWSMessage = useCallback((msg) => {
     switch (msg.type) {
       case 'ROOM_STATE':
-        setCurrentPage(msg.page || 1);
-        setHighlights(msg.highlights || []);
+        if (msg.chapter) setCurrentChapter(msg.chapter);
+        if (msg.wordHighlights) setWordHighlights(msg.wordHighlights);
         setRecording(msg.recording || { active: false, visible: false });
         break;
+      case 'NAVIGATE':
+        if (msg.chapter) setCurrentChapter(msg.chapter);
+        break;
+      case 'HIGHLIGHT_WORD': {
+        const key = `${msg.verseKey}:${msg.wordPos}`;
+        setWordHighlights(prev => {
+          const next = { ...prev };
+          if (msg.action === 'add') next[key] = true;
+          else delete next[key];
+          return next;
+        });
+        break;
+      }
+      case 'CLEAR_HIGHLIGHTS':
+        setWordHighlights({});
+        break;
       case 'POINTER_MOVE': setPointerPos({ x: msg.x, y: msg.y }); break;
-      case 'PAGE_CHANGE': setCurrentPage(msg.page); break;
-      case 'HIGHLIGHT_SYNC': setHighlights(msg.highlights || []); break;
       case 'RECORDING_STARTED': setRecording({ active: true, visible: msg.visible }); break;
       case 'RECORDING_STOPPED': setRecording({ active: false, visible: false }); break;
       case 'CHAT': setChatMessages(p => [...p, { text: msg.text, sender: msg.sender || 'Participant', self: false }]); break;
