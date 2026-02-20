@@ -24,6 +24,7 @@ from commission_routes import commission_router, init_commission_routes
 from tutor_earnings_routes import tutor_earnings_router, init_tutor_earnings_routes, credit_tutor_earnings
 from booking_routes import booking_router, init_booking_routes
 from classroom_routes import classroom_router, init_classroom_routes
+from quran_routes import quran_router, init_quran_routes
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
