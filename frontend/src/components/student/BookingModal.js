@@ -106,7 +106,7 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
   if (!isOpen) return null;
 
   const times = [];
-  for (let h = 6; h <= 22; h++) {
+  for (let h = 0; h < 24; h++) {
     times.push(`${String(h).padStart(2, '0')}:00`);
     times.push(`${String(h).padStart(2, '0')}:30`);
   }
