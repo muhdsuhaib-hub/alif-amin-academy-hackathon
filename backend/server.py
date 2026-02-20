@@ -660,52 +660,112 @@ async def update_teacher_profile_v2(data: dict, current_user: User = Depends(get
 
 @api_router.get("/booking/teacher-students/{teacher_id}")
 async def get_teacher_students_v2(teacher_id: str, current_user: User = Depends(get_current_user)):
-    """Get unique students this teacher has taught"""
-    # Get all completed bookings for this teacher
-    bookings = await db.bookings.find(
-        {"teacher_id": teacher_id, "status": {"$in": ["completed", "scheduled"]}},
-        {"_id": 0}
-    ).sort("start_time_utc", -1).to_list(500)
+    """Get unique students this teacher has taught, aggregated from class_sessions."""
+    # Aggregate from class_sessions (primary source of truth for classroom data)
+    pipeline = [
+        {"$match": {"teacher_id": teacher_id}},
+        {"$group": {
+            "_id": "$student_id",
+            "total_sessions": {"$sum": 1},
+            "last_session_date": {"$max": "$start_time_utc"},
+        }},
+        {"$sort": {"last_session_date": -1}},
+    ]
+    aggregated = await db.class_sessions.aggregate(pipeline).to_list(200)
 
-    student_map = {}
-    for b in bookings:
-        sid = b.get("student_id")
-        if not sid or sid in student_map:
-            if sid in student_map and b.get("status") == "completed":
-                student_map[sid]["last_class_date"] = b.get("start_time_utc")
+    # Also check bookings for any that might not have class_sessions yet
+    booking_pipeline = [
+        {"$match": {"teacher_id": teacher_id, "status": {"$in": ["completed", "scheduled"]}}},
+        {"$group": {
+            "_id": "$student_id",
+            "total_bookings": {"$sum": 1},
+            "last_booking_date": {"$max": "$start_time_utc"},
+        }},
+    ]
+    booking_agg = await db.bookings.aggregate(booking_pipeline).to_list(200)
+    booking_map = {b["_id"]: b for b in booking_agg if b["_id"]}
+
+    # Merge both sources
+    student_ids = set()
+    merged = {}
+    for item in aggregated:
+        sid = item["_id"]
+        if not sid:
             continue
+        student_ids.add(sid)
+        bdata = booking_map.get(sid, {})
+        merged[sid] = {
+            "total_sessions": max(item["total_sessions"], bdata.get("total_bookings", 0)),
+            "last_session_date": item["last_session_date"] or bdata.get("last_booking_date"),
+        }
+    # Add bookings-only students
+    for sid, bdata in booking_map.items():
+        if sid and sid not in student_ids:
+            student_ids.add(sid)
+            merged[sid] = {
+                "total_sessions": bdata["total_bookings"],
+                "last_session_date": bdata["last_booking_date"],
+            }
+
+    results = []
+    for sid in student_ids:
         student = await db.students.find_one({"student_id": sid}, {"_id": 0})
         student_user = None
+        picture = None
         if student:
             student_user = await db.users.find_one({"user_id": student.get("user_id")}, {"_id": 0})
+            if student_user:
+                picture = student_user.get("picture")
 
-        # Get latest progress
-        progress = await db.student_progress.find_one(
-            {"student_id": sid}, {"_id": 0}
-        )
+        # Get latest progress scores (average over last 5 records)
+        progress_records = await db.student_progress.find(
+            {"student_id": sid},
+            {"_id": 0, "grading": 1, "created_at": 1}
+        ).sort("created_at", -1).limit(5).to_list(5)
 
-        student_map[sid] = {
+        fluency_scores = [r["grading"]["fluency_score"] for r in progress_records if r.get("grading", {}).get("fluency_score")]
+        tajweed_scores = [r["grading"]["tajweed_score"] for r in progress_records if r.get("grading", {}).get("tajweed_score")]
+        makhraj_scores = [r["grading"]["makhraj_score"] for r in progress_records if r.get("grading", {}).get("makhraj_score")]
+
+        avg_f = round(sum(fluency_scores) / len(fluency_scores), 1) if fluency_scores else None
+        avg_t = round(sum(tajweed_scores) / len(tajweed_scores), 1) if tajweed_scores else None
+        avg_m = round(sum(makhraj_scores) / len(makhraj_scores), 1) if makhraj_scores else None
+
+        # Get session notes from this teacher
+        notes_cursor = db.student_progress.find(
+            {"student_id": sid, "teacher_id": teacher_id, "teacher_comments": {"$exists": True, "$ne": ""}},
+            {"_id": 0, "teacher_comments": 1, "created_at": 1, "grading": 1}
+        ).sort("created_at", -1).limit(10)
+        notes = await notes_cursor.to_list(10)
+
+        m = merged[sid]
+        results.append({
             "student_id": sid,
             "student_name": student_user.get("name", "Student") if student_user else "Student",
+            "picture": picture,
             "reading_level": student.get("reading_level", "Beginner") if student else "Beginner",
-            "last_class_date": b.get("start_time_utc"),
+            "current_level": student.get("current_level") if student else None,
+            "total_sessions": m["total_sessions"],
+            "last_session_date": m["last_session_date"],
             "is_active": True,
-            "avg_fluency": progress.get("grading", {}).get("fluency_score") if progress else None,
-            "avg_tajweed": progress.get("grading", {}).get("tajweed_score") if progress else None,
-            "avg_makhraj": progress.get("grading", {}).get("makhraj_score") if progress else None,
-            "notes": [],
-        }
+            "avg_fluency": avg_f,
+            "avg_tajweed": avg_t,
+            "avg_makhraj": avg_m,
+            "notes": [
+                {
+                    "comment": n.get("teacher_comments", ""),
+                    "date": n.get("created_at"),
+                    "fluency": n.get("grading", {}).get("fluency_score"),
+                    "tajweed": n.get("grading", {}).get("tajweed_score"),
+                    "makhraj": n.get("grading", {}).get("makhraj_score"),
+                }
+                for n in notes
+            ],
+        })
 
-    # Fetch notes for each student
-    for sid, data in student_map.items():
-        notes_cursor = db.student_progress.find(
-            {"student_id": sid, "teacher_comments": {"$exists": True, "$ne": ""}},
-            {"_id": 0, "teacher_comments": 1, "created_at": 1}
-        ).sort("created_at", -1).limit(5)
-        notes = await notes_cursor.to_list(5)
-        data["notes"] = [{"comment": n.get("teacher_comments", ""), "date": n.get("created_at")} for n in notes]
-
-    return {"students": list(student_map.values())}
+    # Sort by last_session_date descending
+    results.sort(key=lambda x: x.get("last_session_date") or "", reverse=True)
+    return {"students": results}
 
 @api_router.get("/booking/teacher-availability/{teacher_id}")
 async def get_teacher_availability_v2(teacher_id: str, start_date: str = None, end_date: str = None):
