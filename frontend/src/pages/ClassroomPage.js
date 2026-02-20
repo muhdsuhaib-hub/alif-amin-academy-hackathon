@@ -112,8 +112,9 @@ export default function ClassroomPage() {
   const [joinConfig, setJoinConfig] = useState(null);
 
   // Real-time state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [highlights, setHighlights] = useState([]);
+  const [currentChapter, setCurrentChapter] = useState(1);
+  const [wordHighlights, setWordHighlights] = useState({});
+  const [highlighterActive, setHighlighterActive] = useState(false);
   const [pointerPos, setPointerPos] = useState(null);
   const [recording, setRecording] = useState({ active: false, visible: false });
   const [chatMessages, setChatMessages] = useState([]);
