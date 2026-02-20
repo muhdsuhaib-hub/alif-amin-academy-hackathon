@@ -31,7 +31,7 @@ function StudentDetailDrawer({ student, onClose }) {
     <>
       <div className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-40 animate-fade-in" onClick={onClose} />
       <div
-        className="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-white shadow-2xl z-50 flex flex-col animate-slide-in-right"
+        className="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-white shadow-2xl z-50 flex flex-col animate-drawer-in-right"
         data-testid="student-detail-drawer"
       >
         {/* Header */}
