@@ -348,10 +348,14 @@ export default function ClassroomPage() {
           {/* Mushaf fills remaining viewport */}
           <div className="flex-1 overflow-hidden">
             <DigitalMushaf
-              currentPage={currentPage} onPageChange={handlePageChange} isTeacher={isTeacher}
-              pointerPosition={!isTeacher ? pointerPos : null} highlights={highlights}
+              currentChapter={currentChapter}
+              onChapterChange={handleChapterChange}
+              isTeacher={isTeacher}
+              highlighterActive={highlighterActive}
+              wordHighlights={wordHighlights}
+              onHighlightWord={handleHighlightWord}
+              pointerPosition={!isTeacher ? pointerPos : null}
               onPointerMove={isTeacher ? handlePointerMove : undefined}
-              onHighlight={isTeacher ? handleHighlight : undefined}
             />
           </div>
         </div>
