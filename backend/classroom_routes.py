@@ -663,7 +663,7 @@ async def toggle_recording(session_id: str, request: Request):
 
 # ============== WEBSOCKET REAL-TIME SYNC ==============
 
-# Room state: {room_id: {connections: set(), page: int, highlights: [], recording: {}}}
+# Room state: {room_id: {connections, chapter, wordHighlights, recording}}
 classroom_rooms = {}
 
 
@@ -687,26 +687,24 @@ async def broadcast_to_room(room_id, message, exclude=None):
 async def classroom_websocket(websocket: WebSocket, room_id: str):
     """
     WebSocket endpoint for real-time classroom sync.
-    Events: POINTER_MOVE, PAGE_CHANGE, HIGHLIGHT, RECORDING_STARTED/STOPPED
+    Events: NAVIGATE, HIGHLIGHT_WORD, CLEAR_HIGHLIGHTS, POINTER_MOVE, CHAT, etc.
     """
     await websocket.accept()
 
-    # Register connection
     if room_id not in classroom_rooms:
         classroom_rooms[room_id] = {
             "connections": set(),
-            "page": 1,
-            "highlights": [],
+            "chapter": 1,
+            "wordHighlights": {},
             "recording": {"active": False, "visible": False},
         }
     classroom_rooms[room_id]["connections"].add(websocket)
 
-    # Send current room state on join
     state = classroom_rooms[room_id]
     await websocket.send_text(json.dumps({
         "type": "ROOM_STATE",
-        "page": state["page"],
-        "highlights": state["highlights"],
+        "chapter": state["chapter"],
+        "wordHighlights": state["wordHighlights"],
         "recording": state["recording"],
     }))
 
@@ -717,50 +715,51 @@ async def classroom_websocket(websocket: WebSocket, room_id: str):
             msg_type = msg.get("type")
 
             if msg_type == "POINTER_MOVE":
-                # Broadcast pointer coords to everyone except sender
                 await broadcast_to_room(room_id, msg, exclude=websocket)
-
-            elif msg_type == "PAGE_CHANGE":
-                # Teacher changes page — sync all
-                classroom_rooms[room_id]["page"] = msg.get("page", 1)
-                await broadcast_to_room(room_id, msg, exclude=websocket)
-
-            elif msg_type == "HIGHLIGHT":
-                # Add/remove highlight and broadcast
-                hl = {"verseKey": msg.get("verseKey"), "color": msg.get("color")}
-                highlights = classroom_rooms[room_id]["highlights"]
-                existing = next((i for i, h in enumerate(highlights) if h["verseKey"] == hl["verseKey"]), None)
-                if existing is not None:
-                    highlights.pop(existing)
-                else:
-                    highlights.append(hl)
-                await broadcast_to_room(room_id, {
-                    "type": "HIGHLIGHT_SYNC",
-                    "highlights": highlights,
-                }, exclude=None)
 
             elif msg_type == "NAVIGATE":
-                # Surah/Juz navigation — resolves to page
-                classroom_rooms[room_id]["page"] = msg.get("page", 1)
+                chapter = msg.get("chapter", 1)
+                classroom_rooms[room_id]["chapter"] = chapter
+                classroom_rooms[room_id]["wordHighlights"] = {}
                 await broadcast_to_room(room_id, {
-                    "type": "PAGE_CHANGE",
-                    "page": msg.get("page", 1),
+                    "type": "NAVIGATE",
+                    "chapter": chapter,
                 }, exclude=websocket)
 
+            elif msg_type == "HIGHLIGHT_WORD":
+                verse_key = msg.get("verseKey")
+                word_pos = msg.get("wordPos")
+                action = msg.get("action", "add")
+                key = f"{verse_key}:{word_pos}"
+                wh = classroom_rooms[room_id]["wordHighlights"]
+                if action == "add":
+                    wh[key] = True
+                else:
+                    wh.pop(key, None)
+                await broadcast_to_room(room_id, msg, exclude=websocket)
+
+            elif msg_type == "CLEAR_HIGHLIGHTS":
+                classroom_rooms[room_id]["wordHighlights"] = {}
+                await broadcast_to_room(room_id, msg, exclude=websocket)
+
             elif msg_type == "RAISE_HAND":
-                # Student raises/lowers hand — broadcast to all
                 await broadcast_to_room(room_id, msg, exclude=None)
 
             elif msg_type == "LOWER_HAND":
-                # Teacher or student lowers hand — broadcast to all
                 await broadcast_to_room(room_id, msg, exclude=None)
 
             elif msg_type == "CHAT":
-                # Chat message — broadcast to all except sender
                 await broadcast_to_room(room_id, msg, exclude=websocket)
 
             elif msg_type == "END_CLASS":
-                # Teacher ended class — notify student
+                await broadcast_to_room(room_id, msg, exclude=websocket)
+
+            elif msg_type == "RECORDING_STARTED":
+                classroom_rooms[room_id]["recording"] = {"active": True, "visible": msg.get("visible", True)}
+                await broadcast_to_room(room_id, msg, exclude=websocket)
+
+            elif msg_type == "RECORDING_STOPPED":
+                classroom_rooms[room_id]["recording"] = {"active": False, "visible": False}
                 await broadcast_to_room(room_id, msg, exclude=websocket)
 
     except WebSocketDisconnect:
