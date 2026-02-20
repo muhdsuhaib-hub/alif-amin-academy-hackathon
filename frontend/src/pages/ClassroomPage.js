@@ -403,6 +403,8 @@ export default function ClassroomPage() {
         onToggleSettings={() => setShowSettings(!showSettings)}
         onStartRecording={handleStartRecording}
         isObserver={isObserver}
+        highlighterActive={highlighterActive}
+        onToggleHighlighter={() => setHighlighterActive(!highlighterActive)}
       />
 
       {/* Settings Modal */}
