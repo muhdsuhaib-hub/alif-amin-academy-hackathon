@@ -221,18 +221,33 @@ export default function ClassroomPage() {
   }, [session, sessionId, user]);
 
   // Handlers
-  const handlePageChange = useCallback((page) => {
-    setCurrentPage(page);
-    if (isTeacher) send({ type: 'PAGE_CHANGE', page });
+  const handleChapterChange = useCallback((chapter) => {
+    setCurrentChapter(chapter);
+    setWordHighlights({});
+    if (isTeacher) send({ type: 'NAVIGATE', chapter });
   }, [isTeacher, send]);
+
+  const handleHighlightWord = useCallback((verseKey, wordPos) => {
+    const key = `${verseKey}:${wordPos}`;
+    const isCurrentlyHighlighted = !!wordHighlights[key];
+    const action = isCurrentlyHighlighted ? 'remove' : 'add';
+    setWordHighlights(prev => {
+      const next = { ...prev };
+      if (action === 'add') next[key] = true;
+      else delete next[key];
+      return next;
+    });
+    send({ type: 'HIGHLIGHT_WORD', verseKey, wordPos, action });
+  }, [wordHighlights, send]);
+
+  const handleClearHighlights = useCallback(() => {
+    setWordHighlights({});
+    send({ type: 'CLEAR_HIGHLIGHTS' });
+  }, [send]);
 
   const handlePointerMove = useCallback((pos) => {
     throttledSend({ type: 'POINTER_MOVE', x: pos.x, y: pos.y });
   }, [throttledSend]);
-
-  const handleHighlight = useCallback((hl) => {
-    send({ type: 'HIGHLIGHT', verseKey: hl.verseKey, color: hl.color });
-  }, [send]);
 
   const handleNavigate = useCallback((nav) => {
     let page = 1;
