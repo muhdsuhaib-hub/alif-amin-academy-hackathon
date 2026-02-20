@@ -12,7 +12,7 @@ import '@livekit/components-styles';
 import {
   Mic, MicOff, Video, VideoOff, Settings, Hand, BookOpen,
   MessageSquare, Radio, PhoneOff, ChevronDown, X,
-  Wifi, WifiOff, Signal,
+  Wifi, WifiOff, Signal, Highlighter,
 } from 'lucide-react';
 
 // ==================== CONNECTION QUALITY BADGE ====================
