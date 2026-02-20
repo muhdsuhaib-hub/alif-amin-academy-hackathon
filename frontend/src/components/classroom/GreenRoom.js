@@ -243,6 +243,14 @@ export default function GreenRoom({ user, session, onJoin, isAdmin }) {
               {micOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
             </button>
             <button
+              onClick={playTestChime}
+              className="p-3.5 rounded-2xl bg-white/10 text-white hover:bg-white/15 transition-all"
+              data-testid="greenroom-test-speaker"
+              title="Test Speaker"
+            >
+              <Volume2 className="w-5 h-5" />
+            </button>
+            <button
               onClick={() => setShowSettings(!showSettings)}
               className="p-3.5 rounded-2xl bg-white/10 text-white hover:bg-white/15 transition-all"
               data-testid="greenroom-settings-btn"
