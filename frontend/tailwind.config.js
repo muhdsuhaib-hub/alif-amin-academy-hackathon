@@ -107,6 +107,11 @@ module.exports = {
         }
       },
 
+      /* ── Font Family ── */
+      fontFamily: {
+        quran: ["'KFGQPC Uthmanic Script HAFS'", "'Amiri'", 'serif'],
+      },
+
       /* ── Typography ── */
       fontSize: {
         'display': ['3.5rem', { lineHeight: '1.05', letterSpacing: '-0.025em', fontWeight: '600' }],
