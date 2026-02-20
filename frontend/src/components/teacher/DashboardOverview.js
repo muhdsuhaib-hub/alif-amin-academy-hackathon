@@ -6,14 +6,27 @@ function useCountdown(targetTime) {
   const [state, setState] = React.useState({ text: '', canJoin: false });
   React.useEffect(() => {
     const update = () => {
-      const diff = new Date(targetTime).getTime() - Date.now();
-      const fiveMin = 5 * 60 * 1000;
+      const now = new Date();
+      const target = new Date(targetTime);
+      const diff = target.getTime() - now.getTime();
       const oneHour = 60 * 60 * 1000;
-      if (diff <= fiveMin && diff > -oneHour) setState({ text: 'Ready to join', canJoin: true });
-      else if (diff > 0 && diff <= 24 * 3600000) {
-        const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
-        setState({ text: h > 0 ? `${h}h ${m}m` : `${m}m`, canJoin: false });
-      } else setState({ text: diff > 0 ? `${Math.floor(diff / 86400000)}d away` : 'Ended', canJoin: false });
+      const isToday = now.toLocaleDateString() === target.toLocaleDateString();
+
+      if (diff > -oneHour && isToday) {
+        if (diff <= 0) {
+          setState({ text: 'In progress', canJoin: true });
+        } else {
+          const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
+          setState({ text: h > 0 ? `${h}h ${m}m` : `${m}m`, canJoin: true });
+        }
+      } else if (diff > 0) {
+        const days = Math.floor(diff / 86400000);
+        if (days > 0) setState({ text: `${days}d away`, canJoin: false });
+        else {
+          const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
+          setState({ text: h > 0 ? `${h}h ${m}m` : `${m}m`, canJoin: false });
+        }
+      } else setState({ text: 'Ended', canJoin: false });
     };
     update();
     const i = setInterval(update, 30000);

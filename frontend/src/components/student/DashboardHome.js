@@ -6,22 +6,33 @@ const useCountdown = (targetTime) => {
   const [state, setState] = useState({ text: '', canJoin: false, isNear: false });
   useEffect(() => {
     const update = () => {
-      const now = Date.now();
-      const target = new Date(targetTime).getTime();
-      const diff = target - now;
-      const fiveMin = 5 * 60 * 1000;
+      const now = new Date();
+      const target = new Date(targetTime);
+      const diff = target.getTime() - now.getTime();
       const oneHour = 60 * 60 * 1000;
-      const twentyFourHours = 24 * 60 * 60 * 1000;
 
-      if (diff <= fiveMin && diff > -oneHour) {
-        setState({ text: 'Ready to join', canJoin: true, isNear: true });
-      } else if (diff > 0 && diff <= twentyFourHours) {
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        setState({ text: h > 0 ? `${h}h ${m}m` : `${m}m`, canJoin: false, isNear: true });
-      } else if (diff > twentyFourHours) {
+      // Check if class is today (compare local dates)
+      const isToday = now.toLocaleDateString() === target.toLocaleDateString();
+
+      if (diff > -oneHour && isToday) {
+        // Class is today and hasn't ended more than 1h ago — allow join
+        if (diff <= 0) {
+          setState({ text: 'In progress', canJoin: true, isNear: true });
+        } else {
+          const h = Math.floor(diff / 3600000);
+          const m = Math.floor((diff % 3600000) / 60000);
+          const timeText = h > 0 ? `${h}h ${m}m` : `${m}m`;
+          setState({ text: timeText, canJoin: true, isNear: true });
+        }
+      } else if (diff > 0) {
         const days = Math.floor(diff / 86400000);
-        setState({ text: `${days} day${days > 1 ? 's' : ''} away`, canJoin: false, isNear: false });
+        if (days > 0) {
+          setState({ text: `${days} day${days > 1 ? 's' : ''} away`, canJoin: false, isNear: false });
+        } else {
+          const h = Math.floor(diff / 3600000);
+          const m = Math.floor((diff % 3600000) / 60000);
+          setState({ text: h > 0 ? `${h}h ${m}m` : `${m}m`, canJoin: false, isNear: true });
+        }
       } else {
         setState({ text: 'Class ended', canJoin: false, isNear: false });
       }

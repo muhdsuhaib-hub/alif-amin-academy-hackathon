@@ -252,32 +252,74 @@ async def get_calendar_bookings(
 @admin_router.post("/calendar/manual-booking")
 async def create_manual_booking(booking: ManualBooking):
     booking_id = f"booking_{uuid.uuid4().hex[:12]}"
-    
-    # Get teacher info for meet link
+
+    # Validate teacher
     teacher = await db.teachers.find_one({"teacher_id": booking.teacher_id}, {"_id": 0})
     if not teacher:
         raise HTTPException(status_code=404, detail="Teacher not found")
-    
-    start_time = datetime.fromisoformat(booking.start_time_utc)
+
+    # Validate student
+    student = await db.students.find_one({"student_id": booking.student_id}, {"_id": 0})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    # Parse start time with timezone awareness
+    start_time = datetime.fromisoformat(booking.start_time_utc.replace("Z", "+00:00"))
+    if start_time.tzinfo is None:
+        start_time = start_time.replace(tzinfo=timezone.utc)
     end_time = start_time + timedelta(minutes=booking.duration_minutes)
-    
+
+    # Get teacher name
+    teacher_user = await db.users.find_one({"user_id": teacher["user_id"]}, {"_id": 0})
+    teacher_name = teacher_user.get("name", "Unknown") if teacher_user else "Unknown"
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    # Create booking record (mirrors student booking flow exactly)
     booking_doc = {
         "booking_id": booking_id,
         "student_id": booking.student_id,
         "teacher_id": booking.teacher_id,
         "start_time_utc": start_time.isoformat(),
         "end_time_utc": end_time.isoformat(),
+        "duration_minutes": booking.duration_minutes,
+        "credits_charged": 0,
+        "paid_credits_charged": 0,
+        "bonus_credits_charged": 0,
         "status": "scheduled",
         "booking_type": booking.booking_type,
-        "meet_link": teacher.get("meet_link"),
+        "teacher_name": teacher_name,
         "notes": booking.notes,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": now_iso,
         "created_by": "admin"
     }
-    
     await db.bookings.insert_one(booking_doc)
-    
-    return {"message": "Manual booking created", "booking_id": booking_id}
+
+    # Create class_sessions record (critical for dashboard join button)
+    session_id = f"cs_{uuid.uuid4().hex[:12]}"
+    meet_link_slug = str(uuid.uuid4())
+    await db.class_sessions.insert_one({
+        "session_id": session_id,
+        "teacher_id": booking.teacher_id,
+        "student_id": booking.student_id,
+        "booking_id": booking_id,
+        "slot_id": None,
+        "start_time_utc": start_time.isoformat(),
+        "end_time_utc": end_time.isoformat(),
+        "status": "booked",
+        "meet_link_slug": meet_link_slug,
+        "recording_url": None,
+        "recording_visibility": "hidden",
+        "created_at": now_iso,
+        "updated_at": now_iso,
+    })
+
+    return {
+        "message": "Manual booking created",
+        "booking_id": booking_id,
+        "session_id": session_id,
+        "meet_link_slug": meet_link_slug,
+    }
 
 
 @admin_router.delete("/calendar/bookings/{booking_id}")

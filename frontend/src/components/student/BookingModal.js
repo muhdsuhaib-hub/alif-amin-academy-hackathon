@@ -81,8 +81,8 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
     if (!selectedTeacher || !selectedDate || !selectedTime) { toast.error('Please fill in all fields'); return; }
     setBooking(true);
     try {
-      // Construct UTC time explicitly to avoid timezone issues
-      const startDt = new Date(`${selectedDate}T${selectedTime}:00Z`);
+      // Construct in user's LOCAL timezone, then .toISOString() converts to UTC
+      const startDt = new Date(`${selectedDate}T${selectedTime}:00`);
       if (isNaN(startDt.getTime())) { toast.error('Invalid date or time selected'); setBooking(false); return; }
 
       const r = await fetch(`${API}/booking/create`, {
