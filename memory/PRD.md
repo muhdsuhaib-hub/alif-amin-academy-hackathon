@@ -77,6 +77,11 @@ Online Quran Academy connecting students with qualified teachers for 1-on-1 vide
   - Observer filtered from video grid, banner shows "invisible to participants"
   - End Class routes admin to `/admin/dashboard` (not logout)
 
+### Hotfix 5.8.1: Booking Flow Rescue (Complete - Feb 19, 2026)
+- **Hotfix 1 (P0) 24-Hour Time Dropdown:** Expanded from 6AM-10:30PM to full 00:00-23:30 (48 options) with clean AM/PM formatting
+- **Hotfix 2 (P0) Network Error Fix:** Fixed date construction to use explicit UTC ('Z' suffix), improved error handling with specific messages for 409 Conflict vs generic failures
+- **Hotfix 3 (P0) Overlap Prevention:** Backend checks BOTH `class_sessions` AND `bookings` collections for time overlap before any credit deduction. Returns 409 Conflict with user-friendly message. Frontend `available-teachers` endpoint now passes `duration` param and excludes teachers with overlapping sessions
+
 ## Key API Endpoints
 - `GET /api/students/dashboard-data` — Comprehensive student dashboard
 - `GET /api/teacher/dashboard-data` — Teacher dashboard + tier + earnings
