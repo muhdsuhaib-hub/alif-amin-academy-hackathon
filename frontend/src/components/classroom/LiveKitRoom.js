@@ -211,7 +211,7 @@ function AVSettingsModal({ onClose }) {
 function ControlDock({
   onEndClass, isRecording, isTeacher, isHandRaised, onRaiseHand, onLowerHand,
   showChat, onToggleChat, showNavigator, onToggleNavigator, onToggleSettings,
-  onStartRecording, isObserver,
+  onStartRecording, isObserver, highlighterActive, onToggleHighlighter,
 }) {
   const { localParticipant } = useLocalParticipant();
   const [micOn, setMicOn] = useState(!isObserver);
