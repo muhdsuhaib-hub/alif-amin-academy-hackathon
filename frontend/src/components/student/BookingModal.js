@@ -81,13 +81,17 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
     if (!selectedTeacher || !selectedDate || !selectedTime) { toast.error('Please fill in all fields'); return; }
     setBooking(true);
     try {
+      // Construct UTC time explicitly to avoid timezone issues
+      const startDt = new Date(`${selectedDate}T${selectedTime}:00Z`);
+      if (isNaN(startDt.getTime())) { toast.error('Invalid date or time selected'); setBooking(false); return; }
+
       const r = await fetch(`${API}/booking/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           teacher_id: selectedTeacher.teacher_id,
-          start_time_utc: new Date(`${selectedDate}T${selectedTime}:00`).toISOString(),
+          start_time_utc: startDt.toISOString(),
           duration_minutes: selectedDuration,
         }),
       });
@@ -96,10 +100,15 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
         toast.success(`Session booked with ${selectedTeacher.name}!`);
         onSuccess?.();
         onClose();
+      } else if (r.status === 409) {
+        toast.error(data.detail || 'This time slot has just been booked. Please select another time.');
       } else {
-        toast.error(data.detail || 'Booking failed');
+        toast.error(data.detail || 'Booking failed. Please try again.');
       }
-    } catch { toast.error('Network error. Please try again.'); }
+    } catch (e) {
+      console.error('Booking error:', e);
+      toast.error('Connection error. Please check your internet and try again.');
+    }
     finally { setBooking(false); }
   };
 
