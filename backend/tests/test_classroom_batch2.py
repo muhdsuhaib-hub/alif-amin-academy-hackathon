@@ -18,7 +18,7 @@ import json
 import asyncio
 from datetime import datetime, timedelta, timezone
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://batch-5-5-fixes.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://mushaf-interactive.preview.emergentagent.com').rstrip('/')
 WS_BASE = BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://')
 
 # Test credentials
