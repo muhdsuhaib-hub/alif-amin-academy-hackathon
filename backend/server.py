@@ -1792,8 +1792,10 @@ app.include_router(booking_router)
 # Initialize classroom routes with database
 init_classroom_routes(db, get_current_user)
 init_quran_routes(db)
+init_upload_routes(db)
 app.include_router(classroom_router)
 app.include_router(quran_router)
+app.include_router(upload_router)
 
 app.add_middleware(
     CORSMiddleware,
