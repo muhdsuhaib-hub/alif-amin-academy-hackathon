@@ -284,6 +284,13 @@ function ControlDock({
         </button>
       )}
 
+      {/* Tajweed Highlighter (teacher) */}
+      {isTeacher && (
+        <button onClick={onToggleHighlighter} className={btn(highlighterActive, false)} title={highlighterActive ? 'Disable Highlighter' : 'Enable Highlighter'} data-testid="dock-highlighter">
+          <Highlighter className="w-4 h-4 md:w-5 md:h-5" />
+        </button>
+      )}
+
       {/* Chat */}
       <button onClick={onToggleChat} className={btn(showChat, false)} title="Chat" data-testid="dock-chat">
         <MessageSquare className="w-4 h-4 md:w-5 md:h-5" />
