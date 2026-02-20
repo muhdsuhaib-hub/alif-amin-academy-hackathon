@@ -25,6 +25,7 @@ from tutor_earnings_routes import tutor_earnings_router, init_tutor_earnings_rou
 from booking_routes import booking_router, init_booking_routes
 from classroom_routes import classroom_router, init_classroom_routes
 from quran_routes import quran_router, init_quran_routes
+from upload_routes import upload_router, init_upload_routes
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
