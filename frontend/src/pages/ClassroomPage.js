@@ -335,7 +335,7 @@ export default function ClassroomPage() {
         {/* Left: Quran Navigator (Desktop slide-out) */}
         {showNavigator && isTeacher && (
           <div className="hidden md:block w-72 border-r border-white/5 bg-slate-900/90 backdrop-blur-xl flex-shrink-0 overflow-hidden">
-            <QuranNavigator onNavigate={handleNavigate} onClose={() => setShowNavigator(false)} />
+            <QuranNavigator onNavigate={handleNavigate} onClose={() => setShowNavigator(false)} onClearHighlights={handleClearHighlights} />
           </div>
         )}
 
