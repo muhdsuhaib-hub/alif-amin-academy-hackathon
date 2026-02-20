@@ -59,7 +59,7 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
     if (!date || !time) return;
     setLoadingTeachers(true);
     try {
-      const r = await fetch(`${API}/booking/available-teachers?date=${date}&time=${time}`, { credentials: 'include' });
+      const r = await fetch(`${API}/booking/available-teachers?date=${date}&time=${time}&duration=${selectedDuration}`, { credentials: 'include' });
       if (r.ok) { const d = await r.json(); setTeachers(d.teachers || []); }
     } catch (e) { console.error(e); }
     finally { setLoadingTeachers(false); }
