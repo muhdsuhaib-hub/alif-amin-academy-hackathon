@@ -563,20 +563,19 @@ async def edit_booking(booking_id: str, req: EditBookingRequest, request: Reques
 
 
 @booking_router.get("/available-teachers")
-async def get_available_teachers(request: Request, date: Optional[str] = None, time: Optional[str] = None):
+async def get_available_teachers(request: Request, date: Optional[str] = None, time: Optional[str] = None, duration: int = 30):
     """
-    Get list of teachers available for a specific date and time slot.
+    Get list of teachers available for a specific date, time, and duration.
     Performs strict intersection: only returns teachers with an unbooked
-    availability_slot matching the requested date+time.
-    If no date/time provided, returns empty list (no random teachers).
+    availability_slot matching the requested date+time, AND no overlapping
+    existing bookings for the full duration.
     """
     if not date or not time:
         return {"teachers": []}
 
-    # Build the slot start_time string to match against availability_slots
     slot_start = f"{date}T{time}"
 
-    # Find availability slots that match this date+time and are NOT booked
+    # Find availability slots that match this date and contain the requested time
     matching_slots = await db.availability_slots.find(
         {
             "date": date,
@@ -586,7 +585,6 @@ async def get_available_teachers(request: Request, date: Optional[str] = None, t
         {"_id": 0}
     ).to_list(500)
 
-    # Filter: slot must contain the requested time
     available_teacher_ids = set()
     for slot in matching_slots:
         s_start = slot.get("start_time", "")
@@ -597,7 +595,34 @@ async def get_available_teachers(request: Request, date: Optional[str] = None, t
     if not available_teacher_ids:
         return {"teachers": []}
 
-    # Fetch teacher details only for those with matching availability
+    # Overlap filter: exclude teachers with existing bookings that overlap
+    try:
+        start_dt = datetime.fromisoformat(f"{date}T{time}:00+00:00")
+        end_dt = start_dt + timedelta(minutes=duration)
+        start_iso = start_dt.isoformat()
+        end_iso = end_dt.isoformat()
+
+        # Check both bookings and class_sessions for overlaps
+        for collection_name in ["bookings", "class_sessions"]:
+            col = db[collection_name]
+            overlapping = await col.find(
+                {
+                    "teacher_id": {"$in": list(available_teacher_ids)},
+                    "status": "scheduled",
+                    "start_time_utc": {"$lt": end_iso},
+                    "end_time_utc": {"$gt": start_iso},
+                },
+                {"_id": 0, "teacher_id": 1}
+            ).to_list(500)
+            for o in overlapping:
+                available_teacher_ids.discard(o["teacher_id"])
+    except Exception:
+        pass  # If date parsing fails, skip overlap filter
+
+    if not available_teacher_ids:
+        return {"teachers": []}
+
+    # Fetch teacher details
     result = []
     for teacher_id in available_teacher_ids:
         t = await db.teachers.find_one(
