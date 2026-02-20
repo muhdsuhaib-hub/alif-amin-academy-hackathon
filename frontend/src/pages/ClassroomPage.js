@@ -250,16 +250,11 @@ export default function ClassroomPage() {
   }, [throttledSend]);
 
   const handleNavigate = useCallback((nav) => {
-    let page = 1;
-    if (nav.type === 'page') page = nav.page;
-    else if (nav.type === 'juz') page = Math.round((nav.juz - 1) * 20.13 + 1);
-    else if (nav.type === 'surah') {
-      // Surah start pages (approximate, will be refined in Epic 3)
-      page = nav.page || 1;
+    if (nav.type === 'surah' && nav.chapter) {
+      handleChapterChange(nav.chapter);
     }
-    handlePageChange(page);
     setShowNavigator(false);
-  }, [handlePageChange]);
+  }, [handleChapterChange]);
 
   const handleChatSend = useCallback((msg) => {
     send({ ...msg, sender: user?.name || 'Me' });
