@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: 'KFGQPC Uthmanic Script HAFS';
-  src: url('/fonts/KFGQPC_Uthmanic_Script_HAFS_Regular.ttf') format('truetype');
+  src: url('./assets/fonts/KFGQPC_Uthmanic_Script_HAFS_Regular.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
