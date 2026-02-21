@@ -1247,11 +1247,13 @@ async def get_student_dashboard(current_user: User = Depends(get_current_user)):
     if not student_doc:
         raise HTTPException(status_code=404, detail="Student profile not found")
     
+    # Include classes that started up to 2 hours ago (in-progress sessions)
+    upcoming_cutoff = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
     upcoming_bookings = await db.bookings.find({
         "student_id": student_doc["student_id"],
         "status": "scheduled",
-        "start_time_utc": {"$gte": datetime.now(timezone.utc).isoformat()}
-    }, {"_id": 0}).sort("start_time_utc", 1).limit(5).to_list(5)
+        "start_time_utc": {"$gte": upcoming_cutoff}
+    }, {"_id": 0}).sort("start_time_utc", 1).limit(10).to_list(10)
     
     past_bookings = await db.bookings.find({
         "student_id": student_doc["student_id"],
