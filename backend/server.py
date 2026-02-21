@@ -1542,6 +1542,7 @@ async def get_admin_stats(current_user: User = Depends(get_current_user)):
         "total_users": total_users,
         "total_students": total_students,
         "total_teachers": total_teachers,
+        "pending_approvals": pending_approvals,
         "total_bookings": total_bookings,
         "new_signups_today": new_signups_today,
         "new_signups_week": new_signups_week,
