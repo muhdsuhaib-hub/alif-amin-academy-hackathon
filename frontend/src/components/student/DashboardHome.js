@@ -2,37 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, Video, Plus, Wallet, TrendingUp, BookOpen, ChevronRight, Sparkles } from 'lucide-react';
 
-const useCountdown = (targetTime) => {
+const useCountdown = (targetTime, durationMin = 60) => {
   const [state, setState] = useState({ text: '', canJoin: false, isNear: false });
   useEffect(() => {
     const update = () => {
       const now = new Date();
       const target = new Date(targetTime);
       const diff = target.getTime() - now.getTime();
-      const oneHour = 60 * 60 * 1000;
+      const fiveMin = 5 * 60 * 1000;
+      const classEnd = target.getTime() + durationMin * 60 * 1000;
+      const isOver = now.getTime() > classEnd;
 
-      // Check if class is today (compare local dates)
-      const isToday = now.toLocaleDateString() === target.toLocaleDateString();
-
-      if (diff > -oneHour && isToday) {
-        // Class is today and hasn't ended more than 1h ago — allow join
-        if (diff <= 0) {
-          setState({ text: 'In progress', canJoin: true, isNear: true });
-        } else {
-          const h = Math.floor(diff / 3600000);
-          const m = Math.floor((diff % 3600000) / 60000);
-          const timeText = h > 0 ? `${h}h ${m}m` : `${m}m`;
-          setState({ text: timeText, canJoin: true, isNear: true });
-        }
-      } else if (diff > 0) {
+      if (isOver) {
+        setState({ text: 'Class ended', canJoin: false, isNear: false });
+      } else if (diff <= fiveMin) {
+        // Within 5 min or class in progress
+        setState({ text: diff <= 0 ? 'In progress' : 'Ready to join', canJoin: true, isNear: true });
+      } else if (diff > 0 && diff <= 24 * 3600000) {
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        setState({ text: h > 0 ? `${h}h ${m}m` : `${m}m`, canJoin: false, isNear: true });
+      } else if (diff > 24 * 3600000) {
         const days = Math.floor(diff / 86400000);
-        if (days > 0) {
-          setState({ text: `${days} day${days > 1 ? 's' : ''} away`, canJoin: false, isNear: false });
-        } else {
-          const h = Math.floor(diff / 3600000);
-          const m = Math.floor((diff % 3600000) / 60000);
-          setState({ text: h > 0 ? `${h}h ${m}m` : `${m}m`, canJoin: false, isNear: true });
-        }
+        setState({ text: `${days} day${days > 1 ? 's' : ''} away`, canJoin: false, isNear: false });
       } else {
         setState({ text: 'Class ended', canJoin: false, isNear: false });
       }
@@ -40,7 +32,7 @@ const useCountdown = (targetTime) => {
     update();
     const i = setInterval(update, 30000);
     return () => clearInterval(i);
-  }, [targetTime]);
+  }, [targetTime, durationMin]);
   return state;
 };
 
