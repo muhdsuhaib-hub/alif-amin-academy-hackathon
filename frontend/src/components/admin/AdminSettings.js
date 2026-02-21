@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Settings, Key, Save, Shield, Plus, Trash2, Lock, Eye, EyeOff, X } from 'lucide-react';
+import { Settings, Key, Save, Shield, Plus, Trash2, Lock, Eye, EyeOff, X, Edit, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import Card from '../Card';
 import Spinner from '../Spinner';
