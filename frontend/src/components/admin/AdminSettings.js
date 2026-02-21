@@ -121,6 +121,27 @@ export default function AdminSettings() {
     finally { setSaving(false); }
   };
 
+  const handleDeleteKey = async (keyName) => {
+    const pin = localStorage.getItem('_admin_pin_cache');
+    if (!pin) { toast.error('Session expired. Re-enter PIN.'); setUnlocked(false); setPinMode('verify'); return; }
+    try {
+      const r = await fetch(`${API}/admin/settings/custom-key/${encodeURIComponent(keyName)}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ admin_pin: pin }) });
+      if (r.ok) { toast.success(`Deleted "${keyName}"`); fetchSettings(); }
+      else { const e = await r.json(); toast.error(e.detail || 'Failed'); }
+    } catch { toast.error('Error deleting key'); }
+  };
+
+  const handleEditKey = async (keyName) => {
+    const pin = localStorage.getItem('_admin_pin_cache');
+    if (!pin) { toast.error('Session expired. Re-enter PIN.'); setUnlocked(false); setPinMode('verify'); return; }
+    if (!editValue.trim()) { toast.error('Value is required'); return; }
+    try {
+      const r = await fetch(`${API}/admin/settings/custom-key/${encodeURIComponent(keyName)}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ value: editValue, admin_pin: pin }) });
+      if (r.ok) { toast.success(`Updated "${keyName}"`); setEditingKey(null); setEditValue(''); fetchSettings(); }
+      else { const e = await r.json(); toast.error(e.detail || 'Failed'); }
+    } catch { toast.error('Error updating key'); }
+  };
+
   if (loading) return <div className="flex justify-center py-12"><Spinner /></div>;
 
   if (!unlocked && pinMode) return <PinModal mode={pinMode} onVerified={handleUnlocked} onClose={() => setPinMode(null)} />;
