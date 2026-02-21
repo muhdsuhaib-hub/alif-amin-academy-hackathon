@@ -1442,3 +1442,83 @@ async def update_settings(body: AdminSettingsUpdate, request: Request):
     await db.admin_settings.update_one({"_id_key": "global"}, {"$set": updates_to_save}, upsert=True)
     return {"success": True}
 
+
+
+@admin_router.put("/settings/custom-key/{key_name}")
+async def update_custom_key(key_name: str, request: Request):
+    """Update a single custom key value. Requires admin PIN."""
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    admin_user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
+    if not admin_user or admin_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    body = await request.json()
+    new_value = body.get("value", "").strip()
+    admin_pin = body.get("admin_pin", "")
+
+    stored_hash = admin_user.get("admin_pin_hash")
+    if not stored_hash:
+        raise HTTPException(status_code=400, detail="PIN_NOT_SET")
+    if not admin_pin or not bcrypt.checkpw(admin_pin.encode(), stored_hash.encode()):
+        raise HTTPException(status_code=403, detail="Invalid PIN")
+
+    settings = await db.admin_settings.find_one({"_id_key": "global"}, {"_id": 0})
+    customs = settings.get("custom_keys", []) if settings else []
+    found = False
+    for ck in customs:
+        if ck["name"] == key_name:
+            if new_value:
+                ck["encrypted_value"] = _encrypt_value(new_value)
+            found = True
+            break
+    if not found:
+        raise HTTPException(status_code=404, detail="Custom key not found")
+
+    await db.admin_settings.update_one({"_id_key": "global"}, {"$set": {"custom_keys": customs}})
+    return {"success": True}
+
+
+@admin_router.delete("/settings/custom-key/{key_name}")
+async def delete_custom_key(key_name: str, request: Request):
+    """Delete a custom key. Requires admin PIN."""
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    admin_user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
+    if not admin_user or admin_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    body = await request.json()
+    admin_pin = body.get("admin_pin", "")
+
+    stored_hash = admin_user.get("admin_pin_hash")
+    if not stored_hash:
+        raise HTTPException(status_code=400, detail="PIN_NOT_SET")
+    if not admin_pin or not bcrypt.checkpw(admin_pin.encode(), stored_hash.encode()):
+        raise HTTPException(status_code=403, detail="Invalid PIN")
+
+    settings = await db.admin_settings.find_one({"_id_key": "global"}, {"_id": 0})
+    customs = settings.get("custom_keys", []) if settings else []
+    new_customs = [ck for ck in customs if ck["name"] != key_name]
+    if len(new_customs) == len(customs):
+        raise HTTPException(status_code=404, detail="Custom key not found")
+
+    await db.admin_settings.update_one({"_id_key": "global"}, {"$set": {"custom_keys": new_customs}})
+    return {"success": True}
+
