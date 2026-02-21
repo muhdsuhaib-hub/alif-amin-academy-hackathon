@@ -164,7 +164,7 @@ export default function WalletPage({ user }) {
 
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
   const getAmountColor = (type, amount) => {
-    if (type.includes('deduction') || type.includes('expired')) return 'text-red-500';
+    if (type && (type.includes('deduction') || type.includes('expired'))) return 'text-red-500';
     return amount > 0 ? 'text-emerald-600' : 'text-red-500';
   };
 

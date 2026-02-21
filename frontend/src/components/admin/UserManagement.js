@@ -64,8 +64,7 @@ export default function UserManagement() {
       localStorage.setItem('user', JSON.stringify(data.user));
       const route = data.user.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
       toast.success(`Logged in as ${data.user.name}`);
-      navigate(route);
-      window.location.reload();
+      navigate(route, { state: { user: data.user }, replace: true });
     } catch { toast.error('Impersonation failed'); }
   };
 
@@ -247,7 +246,8 @@ export default function UserManagement() {
               ))}
               <div><label className="block text-xs font-medium text-slate-500 mb-1.5">Role</label><select value={selectedUser.role || 'student'} onChange={e => setSelectedUser({ ...selectedUser, role: e.target.value })} className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20" data-testid="edit-role"><option value="student">Student</option><option value="teacher">Teacher</option><option value="admin">Admin</option></select></div>
 
-              {/* Wallet Adjustment Section */}
+              {/* Wallet Adjustment Section (students only) */}
+              {selectedUser.role === 'student' && (
               <div className="border-t border-slate-100 pt-4">
                 <div className="flex items-center gap-2 mb-3"><Wallet className="w-4 h-4 text-emerald-600" /><p className="text-xs font-semibold text-slate-700">Wallet Adjustment</p></div>
                 <div className="grid grid-cols-2 gap-3">
@@ -255,6 +255,7 @@ export default function UserManagement() {
                   <div><label className="block text-[10px] text-slate-500 mb-1">Reason</label><input type="text" value={walletReason} onChange={e => setWalletReason(e.target.value)} placeholder="Refund, bonus..." className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20" data-testid="wallet-reason" /></div>
                 </div>
               </div>
+              )}
             </div>
             <div className="px-6 py-4 border-t border-slate-100 flex gap-3">
               <button onClick={handleUpdate} className="flex-1 h-11 rounded-xl bg-emerald-700 text-white text-sm font-medium hover:bg-emerald-800 transition-all" data-testid="save-user-btn">Save Changes</button>

@@ -27,8 +27,11 @@ function MicLevelMeter({ stream }) {
   const rafRef = useRef(null);
 
   useEffect(() => {
-    if (!stream) return;
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!stream || !stream.getAudioTracks || stream.getAudioTracks().length === 0) return;
+    let audioCtx;
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) { return; }
     const source = audioCtx.createMediaStreamSource(stream);
     const analyser = audioCtx.createAnalyser();
     analyser.fftSize = 256;
