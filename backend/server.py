@@ -1577,7 +1577,6 @@ async def get_all_users_paginated(
     total = await db.users.count_documents(query)
     skip = (page - 1) * limit
     users = await db.users.find(query, {"_id": 0}).skip(skip).limit(limit).sort("created_at", -1).to_list(limit)
-    import math
     return {"users": users, "total": total, "page": page, "pages": math.ceil(total / limit) if total else 1}
 
 
