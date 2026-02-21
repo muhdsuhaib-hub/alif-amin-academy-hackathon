@@ -2,36 +2,28 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Video, Calendar, Clock, DollarSign, TrendingUp, Flame, Award, Star, Users } from 'lucide-react';
 
-function useCountdown(targetTime) {
+function useCountdown(targetTime, durationMin = 60) {
   const [state, setState] = React.useState({ text: '', canJoin: false });
   React.useEffect(() => {
     const update = () => {
       const now = new Date();
       const target = new Date(targetTime);
       const diff = target.getTime() - now.getTime();
-      const oneHour = 60 * 60 * 1000;
-      const isToday = now.toLocaleDateString() === target.toLocaleDateString();
+      const fiveMin = 5 * 60 * 1000;
+      const classEnd = target.getTime() + durationMin * 60 * 1000;
+      const isOver = now.getTime() > classEnd;
 
-      if (diff > -oneHour && isToday) {
-        if (diff <= 0) {
-          setState({ text: 'In progress', canJoin: true });
-        } else {
-          const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
-          setState({ text: h > 0 ? `${h}h ${m}m` : `${m}m`, canJoin: true });
-        }
-      } else if (diff > 0) {
-        const days = Math.floor(diff / 86400000);
-        if (days > 0) setState({ text: `${days}d away`, canJoin: false });
-        else {
-          const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
-          setState({ text: h > 0 ? `${h}h ${m}m` : `${m}m`, canJoin: false });
-        }
-      } else setState({ text: 'Ended', canJoin: false });
+      if (isOver) setState({ text: 'Ended', canJoin: false });
+      else if (diff <= fiveMin) setState({ text: diff <= 0 ? 'In progress' : 'Ready', canJoin: true });
+      else if (diff > 0 && diff <= 24 * 3600000) {
+        const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000);
+        setState({ text: h > 0 ? `${h}h ${m}m` : `${m}m`, canJoin: false });
+      } else setState({ text: diff > 0 ? `${Math.floor(diff / 86400000)}d away` : 'Ended', canJoin: false });
     };
     update();
     const i = setInterval(update, 30000);
     return () => clearInterval(i);
-  }, [targetTime]);
+  }, [targetTime, durationMin]);
   return state;
 }
 
