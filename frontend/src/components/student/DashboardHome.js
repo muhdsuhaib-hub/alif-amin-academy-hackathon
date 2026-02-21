@@ -222,6 +222,11 @@ function QuickBookCard({ onOpenBooking }) {
 }
 
 function RecentClassesList({ classes }) {
+  const [page, setPage] = useState(1);
+  const perPage = 5;
+  const totalPages = Math.max(1, Math.ceil(classes.length / perPage));
+  const paged = classes.slice((page - 1) * perPage, page * perPage);
+
   return (
     <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-5" data-testid="recent-classes">
       <h3 className="text-sm font-semibold text-slate-900 mb-4">Recent Classes</h3>
@@ -231,24 +236,33 @@ function RecentClassesList({ classes }) {
           <p className="text-xs text-slate-400">No past classes yet</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {classes.map((b) => (
-            <div key={b.booking_id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/80 transition-colors">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                <BookOpen className="w-4 h-4 text-emerald-600" />
+        <>
+          <div className="space-y-2">
+            {paged.map((b) => (
+              <div key={b.booking_id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50/80 hover:bg-slate-100/80 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                  <BookOpen className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-900 truncate">{b.teacher_name || 'Teacher'}</p>
+                  <p className="text-xs text-slate-500">
+                    {new Date(b.start_time_utc).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} &middot; {b.duration_minutes || 30} min
+                  </p>
+                </div>
+                <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full flex-shrink-0">Completed</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-slate-900 truncate">{b.teacher_name || 'Teacher'}</p>
-                <p className="text-xs text-slate-500">
-                  {new Date(b.start_time_utc).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} &middot; {b.duration_minutes || 30} min
-                </p>
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+              <p className="text-[10px] text-slate-400">{page}/{totalPages}</p>
+              <div className="flex gap-1">
+                <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page===1} className="text-[10px] px-2 py-1 rounded-lg border border-slate-200 disabled:opacity-40 hover:bg-slate-50">Prev</button>
+                <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page===totalPages} className="text-[10px] px-2 py-1 rounded-lg border border-slate-200 disabled:opacity-40 hover:bg-slate-50">Next</button>
               </div>
-              <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full flex-shrink-0">
-                Completed
-              </span>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );
