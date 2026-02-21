@@ -16,6 +16,8 @@ export default function SessionMonitor() {
   const [filter, setFilter] = useState('all');
   const [detailSession, setDetailSession] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [sPage, setSPage] = useState(1);
+  const SP = 10;
 
   const fetchSessions = useCallback(async () => {
     try {
