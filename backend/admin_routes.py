@@ -1091,7 +1091,6 @@ async def adjust_wallet(adj: WalletAdjustment, request: Request):
     if not wallet:
         raise HTTPException(status_code=404, detail="Wallet not found")
 
-    field = "paid_credits" if adj.amount >= 0 else "paid_credits"
     new_balance = max(0, wallet.get("paid_credits", 0) + adj.amount)
     await db.wallets.update_one(
         {"student_id": student["student_id"]},
