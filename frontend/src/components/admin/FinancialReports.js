@@ -121,10 +121,10 @@ export default function FinancialReports() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 text-sm">
-                <tr><td className="py-3 text-slate-600">Total Paid Credits Held</td><td className="py-3 text-right font-semibold">{(liability.credit_liability.total_paid_credits || 0).toLocaleString()} credits</td></tr>
+                <tr><td className="py-3 text-slate-600">Total Paid Credits Held</td><td className="py-3 text-right font-semibold">{(liability.credit_liability.total_paid_credits_outstanding || 0).toLocaleString()} credits</td></tr>
                 <tr><td className="py-3 text-slate-600">Monetary Value (Liability)</td><td className="py-3 text-right font-semibold text-amber-700">RM {(liability.credit_liability.paid_credits_monetary_value || 0).toLocaleString()}</td></tr>
-                <tr><td className="py-3 text-slate-600">Total Bonus Credits</td><td className="py-3 text-right font-semibold">{(liability.credit_liability.total_bonus_credits || 0).toLocaleString()} credits</td></tr>
-                <tr><td className="py-3 text-slate-600">Wallets with Balance</td><td className="py-3 text-right font-semibold">{liability.credit_liability.wallets_with_balance || 0}</td></tr>
+                <tr><td className="py-3 text-slate-600">Total Bonus Credits</td><td className="py-3 text-right font-semibold">{(liability.credit_liability.total_bonus_credits_outstanding || 0).toLocaleString()} credits</td></tr>
+                <tr><td className="py-3 text-slate-600">Wallets with Balance</td><td className="py-3 text-right font-semibold">{liability.wallet_summary?.wallets_with_balance || 0}</td></tr>
               </tbody>
             </table>
           </div>
