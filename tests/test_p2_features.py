@@ -7,7 +7,7 @@ import requests
 import os
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://mushaf-interactive.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://wallet-chat-webrtc.preview.emergentagent.com')
 
 # Test session tokens
 ADMIN_SESSION_TOKEN = "admin_test_session_1768310525539"
