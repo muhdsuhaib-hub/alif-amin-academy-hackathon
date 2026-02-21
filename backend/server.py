@@ -161,6 +161,23 @@ async def register_with_email(data: EmailRegister):
             "updated_at": datetime.now(timezone.utc).isoformat()
         }
         await db.progress.insert_one(progress_doc)
+    elif data.role == "teacher":
+        # Create teacher profile with pending approval status
+        teacher_id = f"teacher_{uuid.uuid4().hex[:12]}"
+        teacher_doc = {
+            "teacher_id": teacher_id,
+            "user_id": user_id,
+            "bio": "",
+            "experience_years": 0,
+            "specializations": [],
+            "languages": ["Malay", "English"],
+            "rating": 0.0,
+            "total_reviews": 0,
+            "is_active": False,
+            "approval_status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.teachers.insert_one(teacher_doc)
     
     # Create session
     session_token = f"session_{uuid.uuid4().hex}"
