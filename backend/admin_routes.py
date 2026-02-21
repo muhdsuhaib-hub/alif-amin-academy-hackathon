@@ -1021,13 +1021,78 @@ async def get_revenue_recognition(request: Request, session_token: Optional[str]
 
 
 # ============================================================
-# GOD-MODE TOOLS: Impersonation, Suspend, Wallet Adjust
+# GOD-MODE TOOLS: Impersonation, Suspend, Wallet Adjust, Admin PIN
 # ============================================================
 
-class WalletAdjustment(BaseModel):
-    user_id: str
-    amount: float
-    reason: str = "Admin adjustment"
+
+@admin_router.post("/admin-pin/set")
+async def set_admin_pin(request: Request):
+    """Set or update the admin's 6-digit security PIN (bcrypt hashed)."""
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    admin_user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
+    if not admin_user or admin_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    body = await request.json()
+    pin = body.get("pin", "")
+    if not pin or len(pin) != 6 or not pin.isdigit():
+        raise HTTPException(status_code=400, detail="PIN must be exactly 6 digits")
+    hashed = bcrypt.hashpw(pin.encode(), bcrypt.gensalt(rounds=10)).decode()
+    await db.users.update_one({"user_id": admin_user["user_id"]}, {"$set": {"admin_pin_hash": hashed}})
+    return {"success": True}
+
+
+@admin_router.post("/admin-pin/verify")
+async def verify_admin_pin(request: Request):
+    """Verify the admin's 6-digit PIN."""
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    admin_user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
+    if not admin_user or admin_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    body = await request.json()
+    pin = body.get("pin", "")
+    stored_hash = admin_user.get("admin_pin_hash")
+    if not stored_hash:
+        raise HTTPException(status_code=400, detail="PIN_NOT_SET")
+    if not bcrypt.checkpw(pin.encode(), stored_hash.encode()):
+        raise HTTPException(status_code=403, detail="Invalid PIN")
+    return {"success": True, "has_pin": True}
+
+
+@admin_router.get("/admin-pin/status")
+async def get_pin_status(request: Request):
+    """Check if the admin has set a PIN."""
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    admin_user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
+    if not admin_user or admin_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+    return {"has_pin": bool(admin_user.get("admin_pin_hash"))}
 
 
 @admin_router.post("/users/{user_id}/impersonate")
