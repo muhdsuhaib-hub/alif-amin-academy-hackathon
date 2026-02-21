@@ -28,11 +28,15 @@ function MicLevelMeter({ stream }) {
 
   useEffect(() => {
     if (!stream || !stream.getAudioTracks || stream.getAudioTracks().length === 0) return;
+    let cancelled = false;
     let audioCtx;
     try {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     } catch (e) { return; }
-    const source = audioCtx.createMediaStreamSource(stream);
+    let source;
+    try {
+      source = audioCtx.createMediaStreamSource(stream);
+    } catch (e) { audioCtx.close().catch(() => {}); return; }
     const analyser = audioCtx.createAnalyser();
     analyser.fftSize = 256;
     analyser.smoothingTimeConstant = 0.7;
@@ -40,6 +44,7 @@ function MicLevelMeter({ stream }) {
     analyserRef.current = analyser;
 
     const draw = () => {
+      if (cancelled) return;
       const canvas = canvasRef.current;
       if (!canvas || !analyserRef.current) return;
       const ctx = canvas.getContext('2d');
@@ -69,8 +74,11 @@ function MicLevelMeter({ stream }) {
     };
     draw();
     return () => {
+      cancelled = true;
       cancelAnimationFrame(rafRef.current);
-      audioCtx.close();
+      analyserRef.current = null;
+      try { source.disconnect(); } catch (e) {}
+      audioCtx.close().catch(() => {});
     };
   }, [stream]);
 
