@@ -1254,7 +1254,7 @@ async def get_settings(request: Request):
 async def update_settings(settings: AdminSettings, request: Request):
     updates = {}
     for key, val in settings.dict().items():
-        if val is not None and not ("****" in val):
+        if val is not None and "****" not in val:
             updates[key] = val
     if not updates:
         raise HTTPException(status_code=400, detail="No valid fields to update")
