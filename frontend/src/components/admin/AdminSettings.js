@@ -174,8 +174,21 @@ export default function AdminSettings() {
           <h4 className="text-xs font-semibold text-slate-700 mb-3">Custom Keys</h4>
           {(settings.custom_keys || []).map((ck, i) => (
             <div key={i} className="flex items-center gap-2 mb-2 p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-              <span className="text-xs font-medium text-slate-600 flex-1">{ck.name}</span>
-              <span className="text-[10px] text-emerald-600 font-mono">********</span>
+              {editingKey === ck.name ? (
+                <>
+                  <span className="text-xs font-medium text-slate-600 shrink-0">{ck.name}</span>
+                  <input type="password" value={editValue} onChange={e => setEditValue(e.target.value)} placeholder="New value" className="flex-1 h-7 rounded-md border border-slate-200 px-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20" data-testid={`edit-key-${ck.name}`} autoFocus />
+                  <button onClick={() => handleEditKey(ck.name)} className="p-1 rounded hover:bg-emerald-100 text-emerald-600" data-testid={`save-key-${ck.name}`}><Check className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => { setEditingKey(null); setEditValue(''); }} className="p-1 rounded hover:bg-slate-200 text-slate-400" data-testid={`cancel-key-${ck.name}`}><X className="w-3.5 h-3.5" /></button>
+                </>
+              ) : (
+                <>
+                  <span className="text-xs font-medium text-slate-600 flex-1">{ck.name}</span>
+                  <span className="text-[10px] text-emerald-600 font-mono">********</span>
+                  <button onClick={() => { setEditingKey(ck.name); setEditValue(''); }} className="p-1 rounded hover:bg-slate-200 text-slate-400" data-testid={`edit-btn-${ck.name}`}><Edit className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => handleDeleteKey(ck.name)} className="p-1 rounded hover:bg-red-100 text-red-400" data-testid={`delete-btn-${ck.name}`}><Trash2 className="w-3.5 h-3.5" /></button>
+                </>
+              )}
             </div>
           ))}
           <div className="grid grid-cols-5 gap-2 mt-2">
