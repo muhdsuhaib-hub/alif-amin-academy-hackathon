@@ -89,7 +89,7 @@ function SmartHeroCountdown({ booking }) {
           }`}
         >
           <Video className="w-4 h-4" />
-          {canJoin ? 'Join Classroom' : `Starts in ${text}`}
+          {canJoin ? 'Join Classroom' : text === 'Class ended' ? 'Class Ended' : `Starts in ${text}`}
         </button>
       </div>
     </div>
@@ -273,7 +273,14 @@ export default function DashboardHome({ dashboardData, onOpenBooking, onNavigate
   const pastClasses = dashboardData?.past_classes || [];
   const wallet = dashboardData?.wallet || {};
   const progress = dashboardData?.progress || {};
-  const nextClass = upcomingClasses[0];
+  // Filter out classes that have already ended
+  const now = new Date();
+  const activeClasses = upcomingClasses.filter(b => {
+    const start = new Date(b.start_time_utc);
+    const end = start.getTime() + (b.duration_minutes || 60) * 60 * 1000;
+    return end > now.getTime();
+  });
+  const nextClass = activeClasses[0];
 
   return (
     <div className="p-4 lg:p-8 max-w-6xl mx-auto" data-testid="dashboard-home">
