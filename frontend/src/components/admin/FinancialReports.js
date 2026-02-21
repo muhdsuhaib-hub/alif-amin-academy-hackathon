@@ -46,9 +46,9 @@ export default function FinancialReports() {
   const recognized = revenue?.revenue_recognition?.commission_earned || 0;
   const tutorPayable = revenue?.tutor_payable?.pending_payment || 0;
   const tutorPaid = revenue?.tutor_payable?.already_paid || 0;
-  const sessionVal = revenue?.session_economics?.total_session_value || 0;
-  const sessionCount = revenue?.session_economics?.completed_sessions || 0;
-  const commissionRate = revenue?.session_economics?.effective_commission_rate || 0;
+  const sessionVal = revenue?.session_summary?.total_session_value || 0;
+  const sessionCount = revenue?.session_summary?.total_completed || 0;
+  const commissionRate = revenue?.accounting_summary?.platform_margin_percent || 0;
 
   return (
     <div className="space-y-6" data-testid="financial-reports">
