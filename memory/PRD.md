@@ -63,10 +63,28 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 - Stripe payments, Cloud recording, Avatar photo upload
 - SMTP emails logged to console (no SMTP_EMAIL/SMTP_PASSWORD in env)
 
+## Hotfix 7.2: Critical Regressions & Data Sync (Feb 2026)
+
+**Bug 1 — Student Wallet Crash (P0):** Fixed `getAmountColor` null check on `transaction_type` — was calling `.includes()` on undefined when admin-created transactions used different field names.
+
+**Bug 2 — Teacher Auto-Approval Bypass (P0):** Added teacher profile creation in email registration (`POST /api/auth/register`) with `is_active: false`, `approval_status: 'pending'`. Previously teachers registered with no profile, defaulting to active.
+
+**Bug 3 — KPI & Finance Mismatches (P0):** Added `pending_approvals` count to `/api/admin/stats`. Fixed student count to only include active/trial subscriptions. Fixed FinancialReports key mismatches (`session_economics` → `session_summary`, `total_paid_credits` → `total_paid_credits_outstanding`, `wallets_with_balance` moved to `wallet_summary`).
+
+**Bug 4 — Wallet Adjustment Failure (P1):** Fixed backend to use `student_wallets` collection (was `wallets`). Fixed transaction field names to match wallet_routes convention (`transaction_type`, `credit_amount`). Hidden wallet adjustment UI for non-student users.
+
+**Bug 5 — Impersonation Onboarding Trap (P1):** Changed impersonation handler to navigate with `location.state` user data instead of `window.location.reload()`, ensuring `ProtectedRoute` uses injected user (with `onboarding_completed: true`) without calling `/api/auth/me`.
+
+**Bug 6 — "Starts in Ended" UI Glitch (P2):** Added client-side filter to exclude ended classes from "Next Session" hero in both student and teacher dashboards. Fixed countdown text from "Starts in Class ended" to "Class Ended".
+
+**Bug 7 — Settings Vault Edits (P2):** Added `PUT /api/admin/settings/custom-key/{key_name}` and `DELETE /api/admin/settings/custom-key/{key_name}` endpoints (PIN-gated). Added inline Edit/Delete buttons for each custom key in the Settings Vault UI.
+
+**Bug 8 — Pre-Call Lobby Mic Toggle Crash (P0):** Added safety checks in `MicLevelMeter`: validates stream has audio tracks before creating AudioContext, wraps `createMediaStreamSource` in try/catch, uses `cancelled` flag to prevent state updates after cleanup, properly disconnects source on unmount.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
-- Manual UAT of Hotfix 7.1
+- Manual UAT of Hotfix 7.2
 
 ### P1
 - Real Billplz/Stripe payments
