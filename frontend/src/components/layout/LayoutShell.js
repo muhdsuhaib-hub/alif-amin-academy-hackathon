@@ -210,7 +210,7 @@ export default function LayoutShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="h-screen overflow-hidden bg-slate-50">
       <Sidebar
         menuItems={menuItems}
         activeTab={activeTab}
@@ -222,7 +222,7 @@ export default function LayoutShell({
         onLogout={onLogout}
         roleBadge={roleBadge}
       />
-      <div className="lg:ml-[var(--sidebar-width)] pb-20 lg:pb-0">
+      <div className="lg:ml-[var(--sidebar-width)] h-screen flex flex-col pb-20 lg:pb-0">
         <Header
           title={tabTitles[activeTab] || 'Dashboard'}
           user={user}
@@ -232,7 +232,7 @@ export default function LayoutShell({
           onNavigateTab={setActiveTab}
           onOpenSupport={onOpenSupport}
         />
-        <main className="animate-fade-in-up">
+        <main className="flex-1 overflow-y-auto animate-fade-in-up">
           {children}
         </main>
       </div>
