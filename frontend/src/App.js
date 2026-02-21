@@ -238,12 +238,36 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 2, refetchOnWindowFocus: false } },
 });
 
+function ImpersonationBanner() {
+  const navigate = useNavigate();
+  const adminToken = localStorage.getItem('admin_return_token');
+  if (!adminToken) return null;
+  const handleReturn = () => {
+    const token = localStorage.getItem('admin_return_token');
+    localStorage.removeItem('admin_return_token');
+    const adminUser = JSON.parse(localStorage.getItem('admin_return_user') || '{}');
+    localStorage.removeItem('admin_return_user');
+    document.cookie = `session_token=${token}; path=/; SameSite=Lax`;
+    localStorage.setItem('user', JSON.stringify(adminUser));
+    navigate('/admin/dashboard');
+    window.location.reload();
+  };
+  return (
+    <div className="fixed bottom-6 right-6 z-[9999]">
+      <button onClick={handleReturn} className="flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-red-600 text-white shadow-2xl shadow-red-500/30 hover:bg-red-700 transition-all text-sm font-semibold" data-testid="return-to-admin-btn">
+        Return to Admin
+      </button>
+    </div>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="App">
         <BrowserRouter>
           <AppRouter />
+          <ImpersonationBanner />
         </BrowserRouter>
         <Toaster position="top-right" />
       </div>
