@@ -979,3 +979,290 @@ async def get_revenue_recognition(request: Request, session_token: Optional[str]
             "platform_margin_percent": round((commission_earned / (commission_earned + tutor_payable) * 100), 2) if (commission_earned + tutor_payable) > 0 else COMMISSION_RATE * 100
         }
     }
+
+
+
+# ============================================================
+# GOD-MODE TOOLS: Impersonation, Suspend, Wallet Adjust
+# ============================================================
+
+class WalletAdjustment(BaseModel):
+    user_id: str
+    amount: float
+    reason: str = "Admin adjustment"
+
+
+@admin_router.post("/users/{user_id}/impersonate")
+async def impersonate_user(user_id: str, request: Request):
+    """Create a session token for the target user so admin can login as them."""
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    admin_session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not admin_session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    admin_user = await db.users.find_one({"user_id": admin_session["user_id"]}, {"_id": 0})
+    if not admin_user or admin_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    target_user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    impersonate_token = f"imp_{uuid.uuid4().hex}"
+    await db.user_sessions.insert_one({
+        "session_token": impersonate_token,
+        "user_id": user_id,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "is_impersonation": True,
+        "admin_user_id": admin_user["user_id"],
+    })
+
+    return {
+        "token": impersonate_token,
+        "user": {
+            "user_id": target_user["user_id"],
+            "name": target_user.get("name"),
+            "email": target_user.get("email"),
+            "role": target_user.get("role"),
+            "picture": target_user.get("picture"),
+        },
+    }
+
+
+@admin_router.post("/users/{user_id}/suspend")
+async def suspend_user(user_id: str, request: Request):
+    """Toggle suspend/activate a user."""
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    admin_session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not admin_session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    admin_user = await db.users.find_one({"user_id": admin_session["user_id"]}, {"_id": 0})
+    if not admin_user or admin_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    target = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    new_status = "active" if target.get("status") == "suspended" else "suspended"
+    await db.users.update_one({"user_id": user_id}, {"$set": {"status": new_status}})
+
+    if new_status == "suspended":
+        await db.user_sessions.delete_many({"user_id": user_id})
+
+    return {"user_id": user_id, "status": new_status}
+
+
+@admin_router.post("/users/wallet-adjust")
+async def adjust_wallet(adj: WalletAdjustment, request: Request):
+    """Manually adjust a student wallet balance (refunds/credits)."""
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    admin_session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not admin_session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+
+    user = await db.users.find_one({"user_id": adj.user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    student = await db.students.find_one({"user_id": adj.user_id}, {"_id": 0})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
+    wallet = await db.wallets.find_one({"student_id": student["student_id"]}, {"_id": 0})
+    if not wallet:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+
+    field = "paid_credits" if adj.amount >= 0 else "paid_credits"
+    new_balance = max(0, wallet.get("paid_credits", 0) + adj.amount)
+    await db.wallets.update_one(
+        {"student_id": student["student_id"]},
+        {"$set": {"paid_credits": new_balance}}
+    )
+
+    await db.wallet_transactions.insert_one({
+        "transaction_id": f"tx_{uuid.uuid4().hex[:12]}",
+        "student_id": student["student_id"],
+        "type": "admin_adjustment",
+        "amount": abs(adj.amount),
+        "credits": adj.amount,
+        "description": adj.reason,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+
+    return {"success": True, "new_paid_credits": new_balance}
+
+
+# ============================================================
+# ENHANCED OVERVIEW: Today's Live Sessions with real names
+# ============================================================
+
+@admin_router.get("/overview/live-sessions")
+async def get_live_sessions(request: Request):
+    """Get today's sessions with student and teacher names."""
+    now = datetime.now(timezone.utc)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    today_end = (now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)).isoformat()
+
+    bookings = await db.bookings.find({
+        "start_time_utc": {"$gte": today_start, "$lt": today_end},
+        "status": {"$in": ["scheduled", "completed", "in_progress"]},
+    }, {"_id": 0}).sort("start_time_utc", 1).to_list(50)
+
+    results = []
+    for b in bookings:
+        student_name = "Unknown Student"
+        teacher_name = "Unknown Teacher"
+
+        if b.get("teacher_name"):
+            teacher_name = b["teacher_name"]
+        else:
+            teacher = await db.teachers.find_one({"teacher_id": b.get("teacher_id")}, {"_id": 0, "user_id": 1})
+            if teacher:
+                tu = await db.users.find_one({"user_id": teacher["user_id"]}, {"_id": 0, "name": 1})
+                if tu:
+                    teacher_name = tu.get("name", "Unknown Teacher")
+
+        student = await db.students.find_one({"student_id": b.get("student_id")}, {"_id": 0, "user_id": 1})
+        if student:
+            su = await db.users.find_one({"user_id": student["user_id"]}, {"_id": 0, "name": 1})
+            if su:
+                student_name = su.get("name", "Unknown Student")
+
+        cs = await db.class_sessions.find_one({"booking_id": b["booking_id"]}, {"_id": 0, "session_id": 1, "meet_link_slug": 1})
+
+        results.append({
+            "booking_id": b["booking_id"],
+            "student_name": student_name,
+            "teacher_name": teacher_name,
+            "start_time_utc": b["start_time_utc"],
+            "end_time_utc": b.get("end_time_utc"),
+            "status": b["status"],
+            "duration_minutes": b.get("duration_minutes", 60),
+            "session_id": cs.get("session_id") if cs else None,
+            "meet_link_slug": cs.get("meet_link_slug") if cs else None,
+        })
+
+    return {"sessions": results, "count": len(results)}
+
+
+# ============================================================
+# CONTENT LIBRARY: Learning Activities CRUD
+# ============================================================
+
+class ActivityCreate(BaseModel):
+    title: str
+    activity_type: str
+    payload: dict = {}
+    description: str = ""
+
+
+class ActivityUpdate(BaseModel):
+    title: Optional[str] = None
+    activity_type: Optional[str] = None
+    payload: Optional[dict] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+@admin_router.get("/activities")
+async def list_activities(request: Request):
+    activities = await db.learning_activities.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return {"activities": activities}
+
+
+@admin_router.post("/activities")
+async def create_activity(activity: ActivityCreate, request: Request):
+    doc = {
+        "activity_id": f"act_{uuid.uuid4().hex[:12]}",
+        "title": activity.title,
+        "activity_type": activity.activity_type,
+        "payload": activity.payload,
+        "description": activity.description,
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.learning_activities.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+
+@admin_router.put("/activities/{activity_id}")
+async def update_activity(activity_id: str, update: ActivityUpdate, request: Request):
+    updates = {k: v for k, v in update.dict().items() if v is not None}
+    if not updates:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    result = await db.learning_activities.update_one({"activity_id": activity_id}, {"$set": updates})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    updated = await db.learning_activities.find_one({"activity_id": activity_id}, {"_id": 0})
+    return updated
+
+
+@admin_router.delete("/activities/{activity_id}")
+async def delete_activity(activity_id: str, request: Request):
+    result = await db.learning_activities.delete_one({"activity_id": activity_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    return {"success": True}
+
+
+# ============================================================
+# ADMIN SETTINGS: API Key Storage
+# ============================================================
+
+class AdminSettings(BaseModel):
+    billplz_api_key: Optional[str] = None
+    billplz_collection_id: Optional[str] = None
+    gcs_credentials_json: Optional[str] = None
+    whatsapp_api_key: Optional[str] = None
+
+
+@admin_router.get("/settings")
+async def get_settings(request: Request):
+    settings = await db.admin_settings.find_one({"_id_key": "global"}, {"_id": 0})
+    if not settings:
+        return {"billplz_api_key": "", "billplz_collection_id": "", "gcs_credentials_json": "", "whatsapp_api_key": ""}
+    for key in ["billplz_api_key", "billplz_collection_id", "gcs_credentials_json", "whatsapp_api_key"]:
+        val = settings.get(key, "")
+        if val and len(val) > 8:
+            settings[key] = val[:4] + "*" * (len(val) - 8) + val[-4:]
+    return settings
+
+
+@admin_router.put("/settings")
+async def update_settings(settings: AdminSettings, request: Request):
+    updates = {}
+    for key, val in settings.dict().items():
+        if val is not None and not ("****" in val):
+            updates[key] = val
+    if not updates:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.admin_settings.update_one(
+        {"_id_key": "global"},
+        {"$set": updates},
+        upsert=True,
+    )
+    return {"success": True, "updated_fields": list(updates.keys())}
+
