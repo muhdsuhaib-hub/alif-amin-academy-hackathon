@@ -28,6 +28,10 @@ export default function UserManagement() {
   const [walletReason, setWalletReason] = useState('');
   const [openMenuId, setOpenMenuId] = useState(null);
 
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinValue, setPinValue] = useState('');
+  const [pinMode, setPinMode] = useState('verify'); // 'verify' or 'create'
+
   useEffect(() => { fetchUsers(); }, [page, filterRole, filterStatus]);
   useEffect(() => { const close = () => setOpenMenuId(null); window.addEventListener('click', close); return () => window.removeEventListener('click', close); }, []);
 
