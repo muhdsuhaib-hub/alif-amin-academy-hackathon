@@ -145,7 +145,7 @@ export default function SessionMonitor() {
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-subtle">
-              {(filter === 'all' ? sessions : sessions).map((s) => {
+              {(() => { const all = filter === 'all' ? sessions : sessions; const tp = Math.max(1, Math.ceil(all.length / SP)); const sliced = all.slice((sPage - 1) * SP, sPage * SP); return sliced.map((s) => {
                 const sc = statusConfig[s.status] || statusConfig.booked;
                 return (
                   <tr key={s.session_id} className="hover:bg-surface-subtle/50 transition-colors">
