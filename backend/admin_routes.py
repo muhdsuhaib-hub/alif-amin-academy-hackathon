@@ -2,15 +2,65 @@ from fastapi import APIRouter, HTTPException, Depends, Request, Cookie
 from datetime import datetime, timezone, timedelta
 import uuid
 import os
+import json
+import logging
+import smtplib
+from email.mime.text import MIMEText
 from typing import Optional, List
 from pydantic import BaseModel
 from models import User, Teacher, Student
+import bcrypt
+from cryptography.fernet import Fernet
+import base64
+import hashlib
 
 admin_router = APIRouter(prefix="/api/admin")
+logger = logging.getLogger(__name__)
 
 # Database will be injected from server.py
 db = None
 get_current_user = None
+
+
+def _get_fernet_key():
+    """Derive a Fernet key from a secret. Uses env var or fallback."""
+    secret = os.environ.get("ADMIN_ENCRYPT_SECRET", "alif-amin-default-secret-key-2026")
+    key = hashlib.sha256(secret.encode()).digest()
+    return Fernet(base64.urlsafe_b64encode(key))
+
+
+def _encrypt_value(value: str) -> str:
+    f = _get_fernet_key()
+    return f.encrypt(value.encode()).decode()
+
+
+def _decrypt_value(encrypted: str) -> str:
+    f = _get_fernet_key()
+    return f.decrypt(encrypted.encode()).decode()
+
+
+def _send_email(to_email: str, subject: str, body: str):
+    """Send email via SMTP. Logs to console if credentials missing."""
+    smtp_email = os.environ.get("SMTP_EMAIL")
+    smtp_password = os.environ.get("SMTP_PASSWORD")
+    sender = "hello.alifamin@gmail.com"
+
+    if not smtp_email or not smtp_password:
+        logger.info(f"[EMAIL SIMULATED] To: {to_email} | Subject: {subject} | Body:\n{body}")
+        return
+
+    try:
+        msg = MIMEText(body, "plain", "utf-8")
+        msg["Subject"] = subject
+        msg["From"] = sender
+        msg["To"] = to_email
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(smtp_email, smtp_password)
+            server.sendmail(sender, to_email, msg.as_string())
+        logger.info(f"[EMAIL SENT] To: {to_email} | Subject: {subject}")
+    except Exception as e:
+        logger.error(f"[EMAIL FAILED] {e}")
+        logger.info(f"[EMAIL FALLBACK] To: {to_email} | Subject: {subject} | Body:\n{body}")
 
 def init_admin_routes(database, auth_dependency=None):
     global db, get_current_user
