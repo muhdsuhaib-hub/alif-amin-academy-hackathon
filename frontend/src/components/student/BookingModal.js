@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Star, X, AlertCircle, ChevronRight, ChevronLeft, User, Eye } from 'lucide-react';
+import { Calendar, Clock, Star, X, AlertCircle, ChevronRight, ChevronLeft, User, Eye, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import Spinner from '../Spinner';
 
