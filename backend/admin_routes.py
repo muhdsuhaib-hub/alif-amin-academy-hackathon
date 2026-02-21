@@ -1069,6 +1069,7 @@ async def impersonate_user(user_id: str, request: Request):
             "email": target_user.get("email"),
             "role": target_user.get("role"),
             "picture": target_user.get("picture"),
+            "onboarding_completed": True,
         },
     }
 
