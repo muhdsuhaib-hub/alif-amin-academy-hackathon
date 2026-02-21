@@ -333,9 +333,31 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
                       <video
                         src={profileTeacher.video_intro}
                         controls
+                        playsInline
                         className="w-full max-h-48 object-contain"
                         preload="metadata"
                       />
+                    </div>
+                  )}
+
+                  {profileTeacher.certificates?.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Certificates & Ijazah</p>
+                      <div className="flex flex-wrap gap-2">
+                        {profileTeacher.certificates.map((cert, i) => (
+                          <a
+                            key={cert.cert_id || i}
+                            href={cert.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/30 transition-all text-xs font-medium text-slate-600"
+                            data-testid={`cert-link-${i}`}
+                          >
+                            <FileText className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                            <span className="truncate max-w-[120px]">{cert.label || cert.original_filename || 'Certificate'}</span>
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   )}
 
