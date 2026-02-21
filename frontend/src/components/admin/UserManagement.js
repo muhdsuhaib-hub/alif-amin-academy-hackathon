@@ -263,6 +263,21 @@ export default function UserManagement() {
           </div>
         </div>
       )}
+      {/* PIN Modal for Wallet Adjust */}
+      {showPinModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[60] p-4" data-testid="wallet-pin-modal">
+          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl">
+            <div className="px-6 py-4 border-b border-slate-100"><h3 className="text-sm font-bold text-slate-900">{pinMode === 'create' ? 'Create Security PIN' : 'Verify Admin PIN'}</h3><p className="text-[10px] text-slate-400 mt-1">Required to adjust wallet balance</p></div>
+            <form onSubmit={e => { e.preventDefault(); handlePinSubmit(pinValue); }} className="p-6 space-y-4">
+              <input type="password" maxLength={6} value={pinValue} onChange={e => setPinValue(e.target.value.replace(/\D/g, ''))} placeholder="6-digit PIN" className="h-12 w-full rounded-xl border border-slate-200 px-4 text-lg text-center font-mono tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-emerald-500/20" autoFocus data-testid="wallet-pin-input" />
+              <div className="flex gap-3">
+                <button type="submit" className="flex-1 h-11 rounded-xl bg-emerald-700 text-white text-sm font-medium hover:bg-emerald-800">{pinMode === 'create' ? 'Create & Adjust' : 'Verify & Adjust'}</button>
+                <button type="button" onClick={() => { setShowPinModal(false); setPinValue(''); }} className="flex-1 h-11 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
