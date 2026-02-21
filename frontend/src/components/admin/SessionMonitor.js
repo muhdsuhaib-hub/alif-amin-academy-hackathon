@@ -163,10 +163,19 @@ export default function SessionMonitor() {
                     </td>
                   </tr>
                 );
-              })}
+              })})}
             </tbody>
           </table>
         </div>
+        {(() => { const tp = Math.max(1, Math.ceil(sessions.length / SP)); return tp > 1 ? (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-surface-subtle">
+            <span className="text-xs text-ink-tertiary">Page {sPage}/{tp}</span>
+            <div className="flex gap-1.5">
+              <button onClick={() => setSPage(p => Math.max(1, p-1))} disabled={sPage===1} className="px-3 py-1.5 rounded-lg border text-xs disabled:opacity-40 hover:bg-surface-subtle">Prev</button>
+              <button onClick={() => setSPage(p => Math.min(tp, p+1))} disabled={sPage===tp} className="px-3 py-1.5 rounded-lg border text-xs disabled:opacity-40 hover:bg-surface-subtle">Next</button>
+            </div>
+          </div>
+        ) : null; })()}
         {sessions.length === 0 && (
           <div className="p-8 text-center">
             <Video className="w-12 h-12 mx-auto mb-3 text-ink-faint" />
