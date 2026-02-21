@@ -81,6 +81,8 @@ export default function AdminSettings() {
   const [showKeys, setShowKeys] = useState({});
   const [customName, setCustomName] = useState('');
   const [customValue, setCustomValue] = useState('');
+  const [editingKey, setEditingKey] = useState(null);
+  const [editValue, setEditValue] = useState('');
 
   const checkPin = useCallback(async () => {
     try {
