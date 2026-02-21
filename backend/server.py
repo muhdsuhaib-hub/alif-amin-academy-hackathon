@@ -1396,8 +1396,9 @@ async def get_admin_stats(current_user: User = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Not authorized")
     
     total_users = await db.users.count_documents({})
-    total_students = await db.students.count_documents({})
+    total_students = await db.students.count_documents({"subscription_status": {"$in": ["active", "trial"]}})
     total_teachers = await db.teachers.count_documents({"is_active": True})
+    pending_approvals = await db.teachers.count_documents({"approval_status": "pending"})
     total_bookings = await db.bookings.count_documents({})
     
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
