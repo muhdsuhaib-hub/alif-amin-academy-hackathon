@@ -1104,9 +1104,16 @@ async def suspend_user(user_id: str, request: Request):
     return {"user_id": user_id, "status": new_status}
 
 
+class WalletAdjustment(BaseModel):
+    user_id: str
+    amount: float
+    reason: str = "Admin adjustment"
+    admin_pin: Optional[str] = None
+
+
 @admin_router.post("/users/wallet-adjust")
 async def adjust_wallet(adj: WalletAdjustment, request: Request):
-    """Manually adjust a student wallet balance (refunds/credits)."""
+    """Manually adjust a student wallet balance with PIN verification."""
     token = request.cookies.get("session_token")
     if not token:
         auth = request.headers.get("Authorization")
@@ -1118,23 +1125,38 @@ async def adjust_wallet(adj: WalletAdjustment, request: Request):
     if not admin_session:
         raise HTTPException(status_code=401, detail="Invalid session")
 
+    admin_user = await db.users.find_one({"user_id": admin_session["user_id"]}, {"_id": 0})
+    if not admin_user or admin_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    # Verify Admin PIN
+    stored_pin_hash = admin_user.get("admin_pin_hash")
+    if not stored_pin_hash:
+        raise HTTPException(status_code=400, detail="PIN_NOT_SET")
+    if not adj.admin_pin:
+        raise HTTPException(status_code=400, detail="PIN_REQUIRED")
+    if not bcrypt.checkpw(adj.admin_pin.encode(), stored_pin_hash.encode()):
+        raise HTTPException(status_code=403, detail="Invalid PIN")
+
     user = await db.users.find_one({"user_id": adj.user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # Find or create student profile
     student = await db.students.find_one({"user_id": adj.user_id}, {"_id": 0})
     if not student:
-        raise HTTPException(status_code=404, detail="Student profile not found")
+        student_id = f"student_{uuid.uuid4().hex[:12]}"
+        await db.students.insert_one({"student_id": student_id, "user_id": adj.user_id, "reading_level": "Beginner", "created_at": datetime.now(timezone.utc).isoformat()})
+        student = {"student_id": student_id}
 
+    # Find or create wallet
     wallet = await db.wallets.find_one({"student_id": student["student_id"]}, {"_id": 0})
     if not wallet:
-        raise HTTPException(status_code=404, detail="Wallet not found")
+        await db.wallets.insert_one({"student_id": student["student_id"], "paid_credits": 0, "bonus_credits": 0, "created_at": datetime.now(timezone.utc).isoformat()})
+        wallet = {"paid_credits": 0}
 
     new_balance = max(0, wallet.get("paid_credits", 0) + adj.amount)
-    await db.wallets.update_one(
-        {"student_id": student["student_id"]},
-        {"$set": {"paid_credits": new_balance}}
-    )
+    await db.wallets.update_one({"student_id": student["student_id"]}, {"$set": {"paid_credits": new_balance}})
 
     await db.wallet_transactions.insert_one({
         "transaction_id": f"tx_{uuid.uuid4().hex[:12]}",
