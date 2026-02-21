@@ -1215,25 +1215,25 @@ async def adjust_wallet(adj: WalletAdjustment, request: Request):
         student = {"student_id": student_id}
 
     # Find or create wallet
-    wallet = await db.wallets.find_one({"student_id": student["student_id"]}, {"_id": 0})
+    wallet = await db.student_wallets.find_one({"student_id": student["student_id"]}, {"_id": 0})
     if not wallet:
-        await db.wallets.insert_one({"student_id": student["student_id"], "paid_credits": 0, "bonus_credits": 0, "created_at": datetime.now(timezone.utc).isoformat()})
-        wallet = {"paid_credits": 0}
+        await db.student_wallets.insert_one({"student_id": student["student_id"], "paid_credits": 0, "bonus_credits": 0, "credit_balance": 0, "created_at": datetime.now(timezone.utc).isoformat()})
+        wallet = {"paid_credits": 0, "credit_balance": 0}
 
-    new_balance = max(0, wallet.get("paid_credits", 0) + adj.amount)
-    await db.wallets.update_one({"student_id": student["student_id"]}, {"$set": {"paid_credits": new_balance}})
+    new_paid = max(0, wallet.get("paid_credits", 0) + adj.amount)
+    new_balance = max(0, wallet.get("credit_balance", 0) + adj.amount)
+    await db.student_wallets.update_one({"student_id": student["student_id"]}, {"$set": {"paid_credits": new_paid, "credit_balance": new_balance}})
 
     await db.wallet_transactions.insert_one({
         "transaction_id": f"tx_{uuid.uuid4().hex[:12]}",
         "student_id": student["student_id"],
-        "type": "admin_adjustment",
-        "amount": abs(adj.amount),
-        "credits": adj.amount,
+        "transaction_type": "admin_adjustment",
+        "credit_amount": adj.amount,
         "description": adj.reason,
         "created_at": datetime.now(timezone.utc).isoformat(),
     })
 
-    return {"success": True, "new_paid_credits": new_balance}
+    return {"success": True, "new_paid_credits": new_paid, "new_credit_balance": new_balance}
 
 
 # ============================================================
