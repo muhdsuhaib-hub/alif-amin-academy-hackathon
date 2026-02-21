@@ -1677,12 +1677,13 @@ async def get_teacher_dashboard_data(current_user: User = Depends(get_current_us
     teacher_id = teacher["teacher_id"]
     now = datetime.now(timezone.utc)
 
-    # Upcoming bookings with student name enrichment
+    # Upcoming bookings — include in-progress (started up to 2h ago)
+    upcoming_cutoff = (now - timedelta(hours=2)).isoformat()
     upcoming = await db.bookings.find({
         "teacher_id": teacher_id,
         "status": "scheduled",
-        "start_time_utc": {"$gte": now.isoformat()}
-    }, {"_id": 0}).sort("start_time_utc", 1).limit(5).to_list(5)
+        "start_time_utc": {"$gte": upcoming_cutoff}
+    }, {"_id": 0}).sort("start_time_utc", 1).limit(10).to_list(10)
 
     for b in upcoming:
         cs = await db.class_sessions.find_one({"booking_id": b.get("booking_id")}, {"_id": 0, "session_id": 1})
