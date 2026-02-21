@@ -176,7 +176,7 @@ export default function AdminDashboard({ user }) {
             <div className="space-y-6">
               {/* KPI Row */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <KpiCard label="Total Revenue" value={`RM ${stats?.revenue_mtd?.toLocaleString() || 0}`} icon={DollarSign} color="bg-emerald-50 text-emerald-700" onClick={() => setActiveTab('finance')} />
+                <KpiCard label="Net Revenue" value={`RM ${(revenue?.revenue_recognition?.commission_earned || 0).toLocaleString()}`} icon={DollarSign} color="bg-emerald-50 text-emerald-700" onClick={() => setActiveTab('finance')} />
                 <KpiCard label="Active Students" value={stats?.total_students || 0} icon={BookOpen} color="bg-blue-50 text-blue-700" onClick={() => setActiveTab('users')} />
                 <KpiCard label="Active Teachers" value={stats?.total_teachers || 0} icon={Users} color="bg-amber-50 text-amber-700" onClick={() => setActiveTab('users')} />
                 <KpiCard label="Pending Approvals" value={pendingApprovals} icon={UserCheck} color="bg-red-50 text-red-700" onClick={() => setActiveTab('approvals')} badge={pendingApprovals} />
