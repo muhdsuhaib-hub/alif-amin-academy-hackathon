@@ -166,13 +166,14 @@ async def approve_teacher(teacher_id: str):
     if not teacher:
         raise HTTPException(status_code=404, detail="Teacher not found")
     
-    # Update teacher status
+    # Update teacher status + assign base tier
     await db.teachers.update_one(
         {"teacher_id": teacher_id},
         {"$set": {
             "is_active": True,
             "approval_status": "approved",
-            "approved_at": datetime.now(timezone.utc).isoformat()
+            "approved_at": datetime.now(timezone.utc).isoformat(),
+            "commission_tier": "new",
         }}
     )
     
