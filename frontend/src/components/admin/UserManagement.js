@@ -90,15 +90,37 @@ export default function UserManagement() {
     } catch { toast.error('Error updating'); }
 
     if (walletAmount && parseFloat(walletAmount) !== 0) {
-      try {
-        const r = await fetch(`${API}/admin/users/wallet-adjust`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ user_id: selectedUser.user_id, amount: parseFloat(walletAmount), reason: walletReason || 'Admin adjustment' }) });
-        if (r.ok) { const d = await r.json(); toast.success(`Wallet adjusted. New balance: ${d.new_paid_credits}`); }
-        else { const e = await r.json(); toast.error(e.detail || 'Wallet adjustment failed'); }
-      } catch { toast.error('Wallet error'); }
+      // Wallet adjustment requires PIN — open PIN modal
+      setShowPinModal(true);
+      return;
     }
 
     setShowEditModal(false);
     fetchUsers();
+  };
+
+  const executeWalletAdjust = async (pin) => {
+    try {
+      const r = await fetch(`${API}/admin/users/wallet-adjust`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ user_id: selectedUser.user_id, amount: parseFloat(walletAmount), reason: walletReason || 'Admin adjustment', admin_pin: pin }) });
+      if (r.ok) { const d = await r.json(); toast.success(`Wallet adjusted. New balance: ${d.new_paid_credits}`); setShowPinModal(false); setShowEditModal(false); fetchUsers(); }
+      else {
+        const e = await r.json();
+        if (e.detail === 'PIN_NOT_SET') { setPinMode('create'); }
+        else toast.error(e.detail || 'Failed');
+      }
+    } catch { toast.error('Error'); }
+  };
+
+  const handlePinSubmit = async (pin) => {
+    if (pinMode === 'create') {
+      try {
+        const r = await fetch(`${API}/admin/admin-pin/set`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ pin }) });
+        if (r.ok) { toast.success('PIN created'); executeWalletAdjust(pin); }
+        else toast.error('Failed to create PIN');
+      } catch { toast.error('Error'); }
+    } else {
+      executeWalletAdjust(pin);
+    }
   };
 
   const exportToExcel = async () => {
