@@ -57,7 +57,7 @@ function HeroNextClass({ booking }) {
               : 'bg-white/15 text-white/60 cursor-not-allowed backdrop-blur-sm'
           }`}
         >
-          <Video className="w-4 h-4" />{canJoin ? 'Join Classroom' : `Starts in ${text}`}
+          <Video className="w-4 h-4" />{canJoin ? 'Join Classroom' : text === 'Ended' ? 'Class Ended' : `Starts in ${text}`}
         </button>
       </div>
     </div>
@@ -169,7 +169,14 @@ function StatsWidget({ teacher }) {
 }
 
 export default function DashboardOverview({ dashboardData, onNavigateTab }) {
-  const nextClass = dashboardData?.upcoming_classes?.[0];
+  // Filter out classes that have already ended
+  const now = new Date();
+  const upcomingClasses = (dashboardData?.upcoming_classes || []).filter(b => {
+    const start = new Date(b.start_time_utc);
+    const end = start.getTime() + (b.duration_minutes || 60) * 60 * 1000;
+    return end > now.getTime();
+  });
+  const nextClass = upcomingClasses[0];
   const tier = dashboardData?.tier || {};
   const stats = dashboardData?.month_stats || { net_earnings: 0, gross_earnings: 0, classes_taught: 0 };
   const teacher = dashboardData?.teacher || {};
