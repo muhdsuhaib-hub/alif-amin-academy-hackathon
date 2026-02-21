@@ -1353,41 +1353,92 @@ async def delete_activity(activity_id: str, request: Request):
 
 
 # ============================================================
-# ADMIN SETTINGS: API Key Storage
+# ADMIN SETTINGS: Encrypted API Key Storage with PIN Gate
 # ============================================================
 
-class AdminSettings(BaseModel):
-    billplz_api_key: Optional[str] = None
-    billplz_collection_id: Optional[str] = None
-    gcs_credentials_json: Optional[str] = None
-    whatsapp_api_key: Optional[str] = None
+SETTINGS_KEYS = ["billplz_api_key", "billplz_collection_id", "gcs_credentials_json", "whatsapp_api_key", "smtp_email", "smtp_password"]
+
+
+class AdminSettingsUpdate(BaseModel):
+    updates: Optional[dict] = None
+    custom_keys: Optional[List[dict]] = None
+    admin_pin: Optional[str] = None
 
 
 @admin_router.get("/settings")
 async def get_settings(request: Request):
+    """Return settings with keys masked (never returns decrypted values)."""
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+
     settings = await db.admin_settings.find_one({"_id_key": "global"}, {"_id": 0})
-    if not settings:
-        return {"billplz_api_key": "", "billplz_collection_id": "", "gcs_credentials_json": "", "whatsapp_api_key": ""}
-    for key in ["billplz_api_key", "billplz_collection_id", "gcs_credentials_json", "whatsapp_api_key"]:
-        val = settings.get(key, "")
-        if val and len(val) > 8:
-            settings[key] = val[:4] + "*" * (len(val) - 8) + val[-4:]
-    return settings
+    result = {}
+    for key in SETTINGS_KEYS:
+        if settings and settings.get(key):
+            result[key] = "********"
+        else:
+            result[key] = ""
+    # Include custom keys
+    custom_keys = settings.get("custom_keys", []) if settings else []
+    result["custom_keys"] = [{"name": ck.get("name", ""), "has_value": bool(ck.get("encrypted_value"))} for ck in custom_keys]
+    return result
 
 
 @admin_router.put("/settings")
-async def update_settings(settings: AdminSettings, request: Request):
-    updates = {}
-    for key, val in settings.dict().items():
-        if val is not None and "****" not in val:
-            updates[key] = val
-    if not updates:
-        raise HTTPException(status_code=400, detail="No valid fields to update")
-    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
-    await db.admin_settings.update_one(
-        {"_id_key": "global"},
-        {"$set": updates},
-        upsert=True,
-    )
-    return {"success": True, "updated_fields": list(updates.keys())}
+async def update_settings(body: AdminSettingsUpdate, request: Request):
+    """Save settings with Fernet encryption. Requires admin PIN."""
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    admin_user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
+    if not admin_user or admin_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    # Verify PIN
+    stored_hash = admin_user.get("admin_pin_hash")
+    if not stored_hash:
+        raise HTTPException(status_code=400, detail="PIN_NOT_SET")
+    if not body.admin_pin or not bcrypt.checkpw(body.admin_pin.encode(), stored_hash.encode()):
+        raise HTTPException(status_code=403, detail="Invalid PIN")
+
+    updates_to_save = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    if body.updates:
+        for key, val in body.updates.items():
+            if key in SETTINGS_KEYS and val and val != "********":
+                updates_to_save[key] = _encrypt_value(val)
+
+    if body.custom_keys:
+        existing = await db.admin_settings.find_one({"_id_key": "global"}, {"_id": 0})
+        existing_customs = existing.get("custom_keys", []) if existing else []
+        for ck in body.custom_keys:
+            name = ck.get("name", "").strip()
+            value = ck.get("value", "").strip()
+            if name and value:
+                found = False
+                for ec in existing_customs:
+                    if ec["name"] == name:
+                        ec["encrypted_value"] = _encrypt_value(value)
+                        found = True
+                        break
+                if not found:
+                    existing_customs.append({"name": name, "encrypted_value": _encrypt_value(value)})
+        updates_to_save["custom_keys"] = existing_customs
+
+    await db.admin_settings.update_one({"_id_key": "global"}, {"$set": updates_to_save}, upsert=True)
+    return {"success": True}
 
