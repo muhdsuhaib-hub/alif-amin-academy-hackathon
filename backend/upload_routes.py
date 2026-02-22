@@ -64,20 +64,19 @@ async def _get_gcs_bucket():
 
 
 async def _upload_to_gcs(contents: bytes, filename: str, content_type: str) -> Optional[str]:
-    """Upload file to GCS and make it public. Returns public URL or None if GCS not configured."""
+    """Upload file to GCS. Returns public URL or None if GCS not configured.
+    Bucket IAM policies handle public access globally (Uniform Bucket-Level Access)."""
     bucket = await _get_gcs_bucket()
     if not bucket:
         return None
     try:
         blob = bucket.blob(filename)
         blob.upload_from_string(contents, content_type=content_type)
+        logger.info(f"GCS upload success: {blob.public_url}")
+        return blob.public_url
     except Exception as e:
         logger.warning(f"GCS upload failed (falling back to local): {e}")
         return None
-    # make_public must fail loudly so IAM misconfiguration is caught immediately
-    blob.make_public()
-    logger.info(f"GCS upload success (public): {blob.public_url}")
-    return blob.public_url
 
 
 def _save_local(contents: bytes, subdir: str, filename: str) -> str:

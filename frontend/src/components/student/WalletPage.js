@@ -129,8 +129,13 @@ export default function WalletPage({ user }) {
         return;
       }
       const err = await billplzRes.json().catch(() => ({}));
-      toast.error(err.detail || 'Payment gateway error. Please contact admin.');
-    } catch (e) { toast.error('Could not connect to payment gateway.'); }
+      const rawMsg = err.detail || err.error || `HTTP ${billplzRes.status}`;
+      console.error("RAW BILLPLZ ERROR:", err);
+      toast.error(rawMsg);
+    } catch (e) {
+      console.error("RAW BILLPLZ ERROR:", e);
+      toast.error(e.message || 'Network error connecting to payment gateway.');
+    }
     finally { setProcessing(false); }
   };
 
