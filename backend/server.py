@@ -1301,11 +1301,12 @@ async def get_student_dashboard_data(current_user: User = Depends(get_current_us
     student_id = student_doc["student_id"]
     now = datetime.now(timezone.utc)
 
-    # Upcoming bookings with session_id enrichment
+    # Upcoming bookings with session_id enrichment — include in-progress classes (started up to 2h ago)
+    upcoming_cutoff = (now - timedelta(hours=2)).isoformat()
     upcoming_bookings = await db.bookings.find({
         "student_id": student_id,
         "status": "scheduled",
-        "start_time_utc": {"$gte": now.isoformat()}
+        "start_time_utc": {"$gte": upcoming_cutoff}
     }, {"_id": 0}).sort("start_time_utc", 1).limit(5).to_list(5)
 
     for b in upcoming_bookings:

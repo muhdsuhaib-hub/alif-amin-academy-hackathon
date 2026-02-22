@@ -204,9 +204,11 @@ async def get_pending_teachers():
     for teacher in pending_teachers:
         user = await db.users.find_one({"user_id": teacher["user_id"]}, {"_id": 0})
         if user:
-            teacher["user"] = user
+            teacher["user_name"] = user.get("name", "Unknown")
+            teacher["user_email"] = user.get("email", "")
+            teacher["user_phone"] = user.get("phone", "")
     
-    return {"pending_teachers": pending_teachers}
+    return {"teachers": pending_teachers}
 
 
 @admin_router.post("/teachers/{teacher_id}/approve")
