@@ -113,24 +113,35 @@ export default function GreenRoom({ user, session, onJoin, isAdmin }) {
     }
   }, []);
 
+  // Enumerate devices and immediately start preview
   useEffect(() => {
-    async function init() {
+    if (isAdmin && adminMode !== 'participant') return;
+    let active = true;
+    (async () => {
       try {
-        // Request permissions first
+        // Request permissions and enumerate
         const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-        tempStream.getTracks().forEach(t => t.stop());
-
+        if (!active) { tempStream.getTracks().forEach(t => t.stop()); return; }
         const devs = await navigator.mediaDevices.enumerateDevices();
         const cameras = devs.filter(d => d.kind === 'videoinput');
         const mics = devs.filter(d => d.kind === 'audioinput');
         setDevices({ cameras, mics });
-        if (cameras.length) setSelectedCam(cameras[0].deviceId);
-        if (mics.length) setSelectedMic(mics[0].deviceId);
+        const camId = cameras.length ? cameras[0].deviceId : '';
+        const micId = mics.length ? mics[0].deviceId : '';
+        if (cameras.length) setSelectedCam(camId);
+        if (mics.length) setSelectedMic(micId);
+        // Use tempStream directly as preview instead of stopping and re-requesting
+        if (active) {
+          setStream(tempStream);
+          if (videoRef.current) videoRef.current.srcObject = tempStream;
+        } else {
+          tempStream.getTracks().forEach(t => t.stop());
+        }
       } catch (e) {
-        console.warn('Device enumeration failed:', e);
+        console.warn('Device init failed:', e);
       }
-    }
-    if (!isAdmin || adminMode === 'participant') init();
+    })();
+    return () => { active = false; };
   }, [isAdmin, adminMode]);
 
   // Start preview stream
