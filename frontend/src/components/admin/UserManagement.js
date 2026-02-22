@@ -249,7 +249,8 @@ export default function UserManagement() {
                 </tr></thead>
                 <tbody className="divide-y divide-slate-50">
                   {users.map((u) => (
-                    <tr key={u.user_id} className="hover:bg-slate-50/50 transition-colors" data-testid={`user-row-${u.user_id}`}>
+                    <tr key={u.user_id} className={`hover:bg-slate-50/50 transition-colors ${selectedIds.includes(u.user_id) ? 'bg-red-50/30' : ''}`} data-testid={`user-row-${u.user_id}`}>
+                      <td className="px-3 py-3"><input type="checkbox" checked={selectedIds.includes(u.user_id)} onChange={() => toggleSelectOne(u.user_id)} className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500/20 cursor-pointer" data-testid={`select-user-${u.user_id}`} /></td>
                       <td className="px-5 py-3"><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-emerald-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{u.name?.charAt(0) || 'U'}</div><div className="min-w-0"><p className="text-sm font-medium text-slate-900 truncate">{u.name || 'Unknown'}</p></div></div></td>
                       <td className="px-5 py-3"><p className="text-xs text-slate-600 truncate max-w-[180px]">{u.email}</p>{u.phone && <p className="text-[10px] text-slate-400">{u.phone}</p>}</td>
                       <td className="px-5 py-3"><span className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold capitalize ${getRoleBadgeCls(u.role)}`}>{u.role || 'student'}</span></td>
