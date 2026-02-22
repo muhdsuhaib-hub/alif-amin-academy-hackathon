@@ -111,7 +111,7 @@ async def create_billplz_bill(req: CreateBillRequest, request: Request):
     student = await db.students.find_one({"user_id": user["user_id"]}, {"_id": 0})
     student_id = student["student_id"] if student else user["user_id"]
 
-    amount_cents = int(pkg["price_myr"] * 100)
+    amount_cents = int(price_myr * 100)
 
     # Call Billplz API – always production
     billplz_url = "https://www.billplz.com/api/v3"
@@ -126,7 +126,7 @@ async def create_billplz_bill(req: CreateBillRequest, request: Request):
                     "email": user.get("email", ""),
                     "name": user.get("name", "Student"),
                     "amount": amount_cents,
-                    "description": f"Alif Amin - {pkg['name']} ({pkg['paid_credits']} credits)",
+                    "description": bill_description,
                     "callback_url": callback_url,
                     "redirect_url": redirect_url,
                 },
@@ -156,10 +156,10 @@ async def create_billplz_bill(req: CreateBillRequest, request: Request):
         "billplz_bill_id": bill["id"],
         "user_id": user["user_id"],
         "student_id": student_id,
-        "package_id": req.package_id,
-        "amount_myr": pkg["price_myr"],
-        "paid_credits": pkg["paid_credits"],
-        "bonus_credits": pkg["bonus_credits"],
+        "package_id": pkg_id,
+        "amount_myr": price_myr,
+        "paid_credits": paid_credits,
+        "bonus_credits": bonus_credits,
         "status": "pending",
         "created_at": datetime.now(timezone.utc).isoformat(),
     })
