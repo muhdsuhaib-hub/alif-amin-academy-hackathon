@@ -226,7 +226,7 @@ async def billplz_redirect(request: Request):
     logger.info(f"Billplz redirect: bill_id={bill_id} paid={paid}")
 
     # Verify X-Signature if available
-    _, _, x_sig_key, _ = _get_billplz_config()
+    _, _, x_sig_key, _ = await get_billplz_config()
     if x_sig_key and x_sig:
         redirect_params = {}
         for k, v in params.items():
