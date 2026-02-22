@@ -52,7 +52,10 @@ def _verify_x_signature(params: dict, x_sig_key: str, received_sig: str) -> bool
 
 
 class CreateBillRequest(BaseModel):
-    package_id: str
+    package_id: Optional[str] = None
+    custom_credits: Optional[int] = None
+
+CREDIT_RATE_MYR = 15  # RM 15 per credit
 
 
 @payment_router.post("/billplz/create-bill")
@@ -73,10 +76,26 @@ async def create_billplz_bill(req: CreateBillRequest, request: Request):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Validate package
-    pkg = TOPUP_PACKAGES.get(req.package_id)
-    if not pkg:
-        raise HTTPException(status_code=400, detail="Invalid package")
+    # Resolve package or custom credits
+    if req.custom_credits and req.custom_credits > 0:
+        if req.custom_credits > 100:
+            raise HTTPException(status_code=400, detail="Maximum 100 credits per transaction")
+        price_myr = req.custom_credits * CREDIT_RATE_MYR
+        paid_credits = req.custom_credits
+        bonus_credits = 0
+        bill_description = f"Alif Amin - Custom Top Up ({paid_credits} credits)"
+        pkg_id = f"custom_{paid_credits}"
+    elif req.package_id:
+        pkg = TOPUP_PACKAGES.get(req.package_id)
+        if not pkg:
+            raise HTTPException(status_code=400, detail="Invalid package")
+        price_myr = pkg["price_myr"]
+        paid_credits = pkg["paid_credits"]
+        bonus_credits = pkg["bonus_credits"]
+        bill_description = f"Alif Amin - {pkg['name']} ({paid_credits} credits)"
+        pkg_id = req.package_id
+    else:
+        raise HTTPException(status_code=400, detail="Provide package_id or custom_credits")
 
     api_key, collection_id, x_sig_key, sandbox = await get_billplz_config()
     if not api_key or not collection_id:
