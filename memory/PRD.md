@@ -109,6 +109,25 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **Bug 1 — Student Lobby Media (P0):** Rewrote GreenRoom media initialization into 3 clean effects: (1) device enumeration (unconditional for all non-admin users), (2) stream creation on any device/toggle change (no `initialMount` skip pattern), (3) dedicated `stream → videoRef.srcObject` sync effect. Previous split-effect + initialMount.ref pattern caused race conditions where students never got their srcObject set.
 
+## Batch 8: Production Launch Infrastructure (Feb 2026)
+
+**Feature 1 — Billplz Payment Gateway (P0):** Created `payment_routes.py` with:
+- `POST /api/payments/billplz/create-bill` — creates a Billplz bill via their REST API (sandbox/production toggle), stores pending payment in `pending_payments` collection, returns `bill_url` for frontend redirect.
+- `POST /api/payments/billplz/callback` — server-to-server webhook with HMAC-SHA256 X-Signature verification. On verified `paid=true`, credits `student_wallets` and writes transactions.
+- `GET /api/payments/billplz/redirect` — handles user redirect back from Billplz, verifies payment, credits wallet (idempotent), redirects to `/student/wallet?payment=success|failed`.
+- Frontend: WalletPage top-up now tries Billplz first; falls back to mock Stripe if Billplz returns 503 (not configured). Handles `?payment=success` redirect param with toast notification.
+- Env keys: `BILLPLZ_API_KEY`, `BILLPLZ_COLLECTION_ID`, `BILLPLZ_X_SIGNATURE_KEY`, `BILLPLZ_SANDBOX`.
+
+**Feature 2 — GCS File Pipeline (P0):** Updated `upload_routes.py` with:
+- Lazy-initialized GCS client using `GCS_BUCKET_NAME` and `GCS_CREDENTIALS_JSON` from env.
+- Video and certificate upload endpoints now try GCS first (public URL), fall back to local `/uploads` directory if GCS is not configured or fails.
+- Env keys: `GCS_BUCKET_NAME`, `GCS_CREDENTIALS_JSON`.
+
+**Feature 3 — SMTP Email Execution (P1):** Updated `_send_email()` in `admin_routes.py`:
+- Uses `smtplib.SMTP` with STARTTLS on port 587 (configurable via `SMTP_HOST`, `SMTP_PORT`).
+- Falls back to console log simulation if `SMTP_EMAIL`/`SMTP_PASSWORD` not set.
+- Teacher approval/rejection emails now physically sent when SMTP is configured.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
