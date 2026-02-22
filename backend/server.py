@@ -1578,30 +1578,6 @@ async def get_all_users(current_user: User = Depends(get_current_user), role: Op
     return users
 
 
-@api_router.get("/admin/users/all")
-async def get_all_users_paginated(
-    current_user: User = Depends(get_current_user),
-    page: int = 1, limit: int = 20, role: Optional[str] = None,
-    status: Optional[str] = None, search: Optional[str] = None,
-):
-    if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Not authorized")
-    query = {}
-    if role:
-        query["role"] = role
-    if status:
-        query["status"] = status
-    if search:
-        query["$or"] = [
-            {"name": {"$regex": search, "$options": "i"}},
-            {"email": {"$regex": search, "$options": "i"}},
-        ]
-    total = await db.users.count_documents(query)
-    skip = (page - 1) * limit
-    users = await db.users.find(query, {"_id": 0}).skip(skip).limit(limit).sort("created_at", -1).to_list(limit)
-    return {"users": users, "total": total, "page": page, "pages": math.ceil(total / limit) if total else 1}
-
-
 @api_router.put("/admin/users/{user_id}")
 async def update_user_admin(user_id: str, request: Request, current_user: User = Depends(get_current_user)):
     if current_user.role != "admin":
