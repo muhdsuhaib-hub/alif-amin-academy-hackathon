@@ -39,12 +39,10 @@ def _decrypt_value(encrypted: str) -> str:
     return f.decrypt(encrypted.encode()).decode()
 
 
-def _send_email(to_email: str, subject: str, body: str):
-    """Send email via SMTP with TLS. Falls back to console log if credentials missing."""
-    smtp_email = os.environ.get("SMTP_EMAIL")
-    smtp_password = os.environ.get("SMTP_PASSWORD")
-    smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+async def _send_email(to_email: str, subject: str, body: str):
+    """Send email via SMTP with TLS. DB credentials first, .env fallback, then console log."""
+    from credentials import get_smtp_config
+    smtp_email, smtp_password, smtp_host, smtp_port = await get_smtp_config()
     sender = smtp_email or "hello.alifamin@gmail.com"
 
     if not smtp_email or not smtp_password:
