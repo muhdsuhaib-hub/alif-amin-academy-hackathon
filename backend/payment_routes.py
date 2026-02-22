@@ -196,7 +196,7 @@ async def billplz_callback(request: Request):
     logger.info(f"Billplz callback: bill_id={bill_id} paid={paid}")
 
     # Verify X-Signature if key is configured
-    _, _, x_sig_key, _ = _get_billplz_config()
+    _, _, x_sig_key, _ = await get_billplz_config()
     if x_sig_key and x_sig:
         if not _verify_x_signature(params, x_sig_key, x_sig):
             logger.warning(f"Billplz callback X-Signature verification FAILED for bill {bill_id}")
