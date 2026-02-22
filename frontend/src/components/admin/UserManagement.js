@@ -100,6 +100,32 @@ export default function UserManagement() {
     } catch { toast.error('Error deleting user'); }
   };
 
+  const toggleSelectAll = () => {
+    if (selectedIds.length === users.length) setSelectedIds([]);
+    else setSelectedIds(users.map(u => u.user_id));
+  };
+
+  const toggleSelectOne = (uid) => {
+    setSelectedIds(prev => prev.includes(uid) ? prev.filter(id => id !== uid) : [...prev, uid]);
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      const r = await fetch(`${API}/admin/users/bulk-delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ user_ids: selectedIds }) });
+      if (r.ok) {
+        const d = await r.json();
+        toast.success(`${d.deleted_count} users permanently deleted`);
+        setUsers(prev => prev.filter(u => !selectedIds.includes(u.user_id)));
+        setTotalUsers(prev => prev - d.deleted_count);
+        setSelectedIds([]);
+        setShowBulkDeleteModal(false);
+      } else {
+        const e = await r.json();
+        toast.error(e.detail || 'Bulk delete failed');
+      }
+    } catch { toast.error('Error deleting users'); }
+  };
+
 
   const handleEdit = (u) => { setSelectedUser({ ...u }); setWalletAmount(''); setWalletBonusAmount(''); setWalletReason(''); setShowEditModal(true); };
 
