@@ -30,6 +30,8 @@ export default function UserManagement() {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinValue, setPinValue] = useState('');
