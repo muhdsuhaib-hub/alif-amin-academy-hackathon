@@ -346,10 +346,10 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
                   )}
 
                   {Array.isArray(profileTeacher.certificates) && profileTeacher.certificates.length > 0 && profileTeacher.certificates.some(c => c.url) && (
-                    <div className="mb-4">
+                    <div className="mb-4" data-testid="teacher-certificates-container">
                       <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Certificates & Ijazah</p>
                       <div className="flex flex-wrap gap-2">
-                        {profileTeacher.certificates.map((cert, i) => (
+                        {profileTeacher.certificates.filter(c => c.url).map((cert, i) => (
                           <a
                             key={cert.cert_id || i}
                             href={cert.url}
@@ -357,6 +357,7 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
                             rel="noreferrer"
                             className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/30 transition-all text-xs font-medium text-slate-600"
                             data-testid={`cert-link-${i}`}
+                            onError={() => {}}
                           >
                             <FileText className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
                             <span className="truncate max-w-[120px]">{cert.label || cert.original_filename || 'Certificate'}</span>
