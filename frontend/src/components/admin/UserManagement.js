@@ -81,6 +81,24 @@ export default function UserManagement() {
     } catch { toast.error('Error'); }
   };
 
+  const handleDeleteUser = async () => {
+    if (!deleteTarget) return;
+    try {
+      const r = await fetch(`${API}/admin/users/${deleteTarget.user_id}`, { method: 'DELETE', credentials: 'include' });
+      if (r.ok) {
+        toast.success(`${deleteTarget.name} permanently deleted`);
+        setUsers(prev => prev.filter(u => u.user_id !== deleteTarget.user_id));
+        setTotalUsers(prev => prev - 1);
+        setShowDeleteModal(false);
+        setDeleteTarget(null);
+      } else {
+        const e = await r.json();
+        toast.error(e.detail || 'Delete failed');
+      }
+    } catch { toast.error('Error deleting user'); }
+  };
+
+
   const handleEdit = (u) => { setSelectedUser({ ...u }); setWalletAmount(''); setWalletBonusAmount(''); setWalletReason(''); setShowEditModal(true); };
 
   const handleUpdate = async () => {
