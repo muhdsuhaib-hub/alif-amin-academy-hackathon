@@ -113,12 +113,22 @@ async def create_billplz_bill(req: CreateBillRequest, request: Request):
                 timeout=15.0
             )
         if resp.status_code not in (200, 201):
-            logger.error(f"Billplz bill creation failed: {resp.status_code} {resp.text}")
-            raise HTTPException(status_code=502, detail="Billplz bill creation failed")
+            # Parse exact Billplz error for debugging
+            try:
+                billplz_err = resp.json()
+                err_msg = billplz_err.get("error", {}).get("message", []) if isinstance(billplz_err.get("error"), dict) else billplz_err.get("error", resp.text)
+                if isinstance(err_msg, list):
+                    err_msg = "; ".join(err_msg) if err_msg else resp.text
+            except Exception:
+                err_msg = resp.text
+            logger.error(f"Billplz bill creation failed: {resp.status_code} {err_msg}")
+            raise HTTPException(status_code=400, detail=f"Billplz API Error: {err_msg}")
         bill = resp.json()
+    except HTTPException:
+        raise
     except httpx.RequestError as e:
         logger.error(f"Billplz request error: {e}")
-        raise HTTPException(status_code=502, detail="Could not connect to Billplz")
+        raise HTTPException(status_code=502, detail=f"Could not connect to Billplz: {e}")
 
     # Store pending payment
     await db.pending_payments.insert_one({
