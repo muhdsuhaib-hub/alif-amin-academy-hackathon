@@ -176,6 +176,12 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **Fix 2 — Enforce Clean Basic Auth (P0):** Added explicit `api_key.strip()` before passing to `httpx auth=(key, "")` to guard against trailing whitespace/newlines from DB decryption.
 
+### Hotfix 8.7: Custom Top-Up Integration (Feb 2026)
+
+**Fix 1 — Frontend Custom Amount UI (P1):** Re-introduced custom top-up section below packages in the top-up modal. Numeric input (1–100 credits), live RM price calculation at RM 15/credit, separate "Confirm Custom Top Up" button. Selecting a package clears custom input and vice versa. Both flows use the same Billplz `create-bill` endpoint.
+
+**Fix 2 — Backend Dynamic Payload (P1):** `CreateBillRequest` now accepts optional `custom_credits` (int) alongside `package_id`. When `custom_credits` is provided, price is calculated as `credits × RM 15`, description is set to "Custom Top Up", and the pending payment record stores `pkg_id = "custom_{N}"`. Production URL and Basic Auth formatting from 8.6 remain untouched.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
