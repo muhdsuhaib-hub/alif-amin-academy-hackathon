@@ -40,10 +40,12 @@ def _decrypt_value(encrypted: str) -> str:
 
 
 def _send_email(to_email: str, subject: str, body: str):
-    """Send email via SMTP. Logs to console if credentials missing."""
+    """Send email via SMTP with TLS. Falls back to console log if credentials missing."""
     smtp_email = os.environ.get("SMTP_EMAIL")
     smtp_password = os.environ.get("SMTP_PASSWORD")
-    sender = "hello.alifamin@gmail.com"
+    smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+    sender = smtp_email or "hello.alifamin@gmail.com"
 
     if not smtp_email or not smtp_password:
         logger.info(f"[EMAIL SIMULATED] To: {to_email} | Subject: {subject} | Body:\n{body}")
@@ -54,7 +56,10 @@ def _send_email(to_email: str, subject: str, body: str):
         msg["Subject"] = subject
         msg["From"] = sender
         msg["To"] = to_email
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
             server.login(smtp_email, smtp_password)
             server.sendmail(sender, to_email, msg.as_string())
         logger.info(f"[EMAIL SENT] To: {to_email} | Subject: {subject}")
