@@ -1,7 +1,7 @@
 """
 Teacher media upload routes.
 Handles video intro and certificate uploads with chunked file support.
-Currently stores files locally; structured for easy GCS migration.
+Uses GCS when configured, falls back to local storage.
 """
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Request
 from fastapi.responses import FileResponse
@@ -10,6 +10,7 @@ from typing import Optional
 import uuid
 import os
 import logging
+import json
 
 upload_router = APIRouter(prefix="/api/teacher")
 logger = logging.getLogger(__name__)
@@ -21,10 +22,78 @@ MAX_CERT_SIZE = 10 * 1024 * 1024   # 10MB
 ALLOWED_VIDEO_EXT = {".mp4", ".mov", ".webm"}
 ALLOWED_CERT_EXT = {".pdf", ".jpg", ".jpeg", ".png"}
 
+# GCS client (lazy-initialized)
+_gcs_client = None
+_gcs_bucket = None
+
 
 def init_upload_routes(database):
     global db
     db = database
+
+
+def _get_gcs_bucket():
+    """Lazy-init GCS bucket. Returns None if GCS is not configured."""
+    global _gcs_client, _gcs_bucket
+    if _gcs_bucket is not None:
+        return _gcs_bucket
+
+    bucket_name = os.environ.get("GCS_BUCKET_NAME", "")
+    creds_json = os.environ.get("GCS_CREDENTIALS_JSON", "")
+
+    if not bucket_name:
+        return None
+
+    try:
+        from google.cloud import storage as gcs_storage
+        if creds_json:
+            # Parse JSON credentials string
+            creds_path = "/tmp/gcs_creds.json"
+            with open(creds_path, "w") as f:
+                f.write(creds_json)
+            _gcs_client = gcs_storage.Client.from_service_account_json(creds_path)
+        else:
+            # Try default credentials (e.g., GKE workload identity)
+            _gcs_client = gcs_storage.Client()
+
+        _gcs_bucket = _gcs_client.bucket(bucket_name)
+        logger.info(f"GCS initialized: bucket={bucket_name}")
+        return _gcs_bucket
+    except Exception as e:
+        logger.warning(f"GCS init failed (falling back to local): {e}")
+        return None
+
+
+async def _upload_to_gcs(contents: bytes, filename: str, content_type: str) -> Optional[str]:
+    """Upload file to GCS. Returns public URL or None on failure."""
+    bucket = _get_gcs_bucket()
+    if not bucket:
+        return None
+    try:
+        blob = bucket.blob(filename)
+        blob.upload_from_string(contents, content_type=content_type)
+        blob.make_public()
+        logger.info(f"GCS upload success: {blob.public_url}")
+        return blob.public_url
+    except Exception as e:
+        logger.warning(f"GCS upload failed (falling back to local): {e}")
+        return None
+
+
+def _save_local(contents: bytes, subdir: str, filename: str) -> str:
+    """Save file locally and return the local media path."""
+    filepath = os.path.join(UPLOAD_DIR, subdir, filename)
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    with open(filepath, "wb") as f:
+        f.write(contents)
+    return filepath
+
+
+def _build_local_url(request: Request, subdir: str, filename: str) -> str:
+    base_url = os.environ.get("REACT_APP_BACKEND_URL", "")
+    if not base_url:
+        base_url = str(request.base_url).rstrip("/")
+    return f"{base_url}/api/teacher/media/{subdir}/{filename}"
 
 
 async def _get_user_from_request(request: Request):
