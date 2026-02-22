@@ -89,7 +89,7 @@ export default function UserManagement() {
       else toast.error('Failed to update');
     } catch { toast.error('Error updating'); }
 
-    if (walletAmount && parseFloat(walletAmount) !== 0) {
+    if ((walletAmount && parseFloat(walletAmount) !== 0) || (walletBonusAmount && parseFloat(walletBonusAmount) !== 0)) {
       // Wallet adjustment requires PIN — open PIN modal
       setShowPinModal(true);
       return;
@@ -101,8 +101,8 @@ export default function UserManagement() {
 
   const executeWalletAdjust = async (pin) => {
     try {
-      const r = await fetch(`${API}/admin/users/wallet-adjust`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ user_id: selectedUser.user_id, amount: parseFloat(walletAmount), reason: walletReason || 'Admin adjustment', admin_pin: pin }) });
-      if (r.ok) { const d = await r.json(); toast.success(`Wallet adjusted. New balance: ${d.new_paid_credits}`); setShowPinModal(false); setShowEditModal(false); fetchUsers(); }
+      const r = await fetch(`${API}/admin/users/wallet-adjust`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ user_id: selectedUser.user_id, amount: parseFloat(walletAmount) || 0, bonus_amount: parseFloat(walletBonusAmount) || 0, reason: walletReason || 'Admin adjustment', admin_pin: pin }) });
+      if (r.ok) { const d = await r.json(); toast.success(`Wallet adjusted. Paid: ${d.new_paid_credits}, Bonus: ${d.new_bonus_credits}, Total: ${d.new_credit_balance}`); setShowPinModal(false); setShowEditModal(false); fetchUsers(); }
       else {
         const e = await r.json();
         if (e.detail === 'PIN_NOT_SET') { setPinMode('create'); }
