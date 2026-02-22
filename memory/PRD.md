@@ -128,6 +128,16 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 - Falls back to console log simulation if `SMTP_EMAIL`/`SMTP_PASSWORD` not set.
 - Teacher approval/rejection emails now physically sent when SMTP is configured.
 
+## Hotfix 8.1: Dynamic Credential Hydration with Fallback (Feb 2026)
+
+**Refactor — Shared Credential Resolver:** Created `credentials.py` with `get_credential(db_key, env_key)` async helper. Reads encrypted values from `admin_settings` collection (Fernet decryption) first, falls back to `os.environ.get()`. Convenience wrappers: `get_billplz_config()`, `get_gcs_config()`, `get_smtp_config()`.
+
+**Refactor 1 — Dynamic GCS:** `upload_routes.py` now calls `get_gcs_config()` per-upload (no global cache). If DB has `gcs_bucket_name` + `gcs_credentials_json`, uses `Client.from_service_account_info(json.loads(...))`. Falls back to `.env`, then local storage.
+
+**Refactor 2 — Dynamic SMTP:** `_send_email()` in `admin_routes.py` is now `async`, calls `get_smtp_config()` for DB-first SMTP credentials. All call sites updated to `await`.
+
+**Refactor 3 — Dynamic Billplz:** `payment_routes.py` uses `await get_billplz_config()` in all 3 endpoints (create-bill, callback, redirect). Removed old sync `_get_billplz_config()`.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
