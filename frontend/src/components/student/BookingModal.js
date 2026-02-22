@@ -329,7 +329,7 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
                   </div>
 
                   {profileTeacher.video_intro && typeof profileTeacher.video_intro === 'string' && (profileTeacher.video_intro.startsWith('http') || profileTeacher.video_intro.startsWith('/')) && (
-                    <div className="mb-4 rounded-2xl overflow-hidden bg-black">
+                    <div className="mb-4 rounded-2xl overflow-hidden bg-black" data-testid="teacher-video-container">
                       <video
                         src={profileTeacher.video_intro}
                         controls
@@ -337,6 +337,10 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
                         muted
                         className="w-full max-h-48 object-contain"
                         preload="metadata"
+                        onError={(e) => {
+                          const container = e.target.parentElement;
+                          container.innerHTML = '<div class="flex items-center justify-center gap-2 py-6 text-slate-400 text-xs"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Intro video temporarily unavailable</div>';
+                        }}
                       />
                     </div>
                   )}
