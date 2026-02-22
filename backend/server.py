@@ -605,8 +605,20 @@ async def register_teacher(current_user: User = Depends(get_current_user)):
 
 
 @api_router.get("/auth/me")
-async def get_current_user_info(current_user: User = Depends(get_current_user)):
-    return current_user
+async def get_current_user_info(request: Request, current_user: User = Depends(get_current_user)):
+    user_dict = current_user.dict()
+    # Convert datetime to string for JSON serialization
+    if isinstance(user_dict.get("created_at"), datetime):
+        user_dict["created_at"] = user_dict["created_at"].isoformat()
+    # Check if this is an impersonation session — force onboarding bypass
+    token = request.cookies.get("session_token")
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+    if token and token.startswith("imp_"):
+        user_dict["onboarding_completed"] = True
+    return user_dict
 
 
 
