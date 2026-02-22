@@ -158,10 +158,16 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **Fix 2 — Hydrate & Fallback Teacher Media (P1):** Backend `GET /api/booking/available-teachers` now includes `video_intro` and `certificates` in teacher response payload. Added `onError` handler on the `<video>` element in `BookingModal.js` that replaces the broken player with a "temporarily unavailable" fallback. Added defensive `.filter(c => c.url)` on certificates array and `data-testid` attributes for both containers.
 
+### Hotfix 8.4: Payment Debugging & Public Media (Feb 2026)
+
+**Fix 1 — Verbose Billplz Error Handling (P0):** Backend `POST /api/payments/billplz/create-bill` now parses the exact Billplz API error response and returns it as a `400 Bad Request` with `detail: "Billplz API Error: <reason>"`. Added `except HTTPException: raise` to prevent the catch-all from swallowing structured errors. Frontend toast now shows the actual backend error message via `.catch(() => ({}))` safe parsing.
+
+**Fix 2 — Auto-Public GCS Uploads (P1):** Moved `blob.make_public()` outside the try/except in `_upload_to_gcs()`. Upload failures still fall back to local storage, but `make_public()` failures now propagate loudly so IAM/bucket policy misconfiguration is caught immediately.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
-- Manual UAT of Hotfix 8.3 (Billplz frontend wiring, teacher media rendering)
+- Manual UAT of Hotfix 8.4 (Billplz verbose errors, GCS public uploads)
 
 ### P1
 - WhatsApp notifications integration
