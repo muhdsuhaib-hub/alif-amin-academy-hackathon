@@ -45,8 +45,8 @@ async def get_credential(key: str, env_key: str = "", default: str = "") -> str:
                 encrypted = settings.get(key, "")
                 if encrypted:
                     val = _decrypt(encrypted)
-                    if val:
-                        return val
+                    if val and val.strip():
+                        return val.strip()
         except Exception as e:
             logger.warning(f"DB credential lookup failed for {key}: {e}")
 
