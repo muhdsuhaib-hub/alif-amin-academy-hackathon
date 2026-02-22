@@ -78,7 +78,7 @@ async def create_billplz_bill(req: CreateBillRequest, request: Request):
     if not pkg:
         raise HTTPException(status_code=400, detail="Invalid package")
 
-    api_key, collection_id, x_sig_key, sandbox = _get_billplz_config()
+    api_key, collection_id, x_sig_key, sandbox = await get_billplz_config()
     if not api_key or not collection_id:
         raise HTTPException(status_code=503, detail="Billplz not configured. Add BILLPLZ_API_KEY and BILLPLZ_COLLECTION_ID to settings.")
 
