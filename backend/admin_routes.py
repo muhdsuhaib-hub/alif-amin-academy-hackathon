@@ -1543,8 +1543,8 @@ async def update_settings(body: AdminSettingsUpdate, request: Request):
     updates_to_save = {"updated_at": datetime.now(timezone.utc).isoformat()}
     if body.updates:
         for key, val in body.updates.items():
-            if key in SETTINGS_KEYS and val and val != "********":
-                updates_to_save[key] = _encrypt_value(val)
+            if key in SETTINGS_KEYS and val and val.strip() and val.strip() != "********":
+                updates_to_save[key] = _encrypt_value(val.strip())
 
     if body.custom_keys:
         existing = await db.admin_settings.find_one({"_id_key": "global"}, {"_id": 0})
