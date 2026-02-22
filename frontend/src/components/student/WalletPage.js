@@ -124,7 +124,6 @@ export default function WalletPage({ user }) {
     if (!selectedPackage) return;
     setProcessing(true);
     try {
-      // Try Billplz first
       const billplzRes = await fetch(`${API}/payments/billplz/create-bill`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
         body: JSON.stringify({ package_id: selectedPackage.package_id }),
@@ -135,27 +134,9 @@ export default function WalletPage({ user }) {
         window.location.href = bill_url;
         return;
       }
-      // If Billplz not configured (503), fall back to mock flow
-      if (billplzRes.status === 503) {
-        const c = await fetch(`${API}/wallet/topup/create-intent?user_id=${user?.user_id}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-          body: JSON.stringify({ package_id: selectedPackage.package_id, payment_method: 'stripe' }),
-        });
-        if (!c.ok) throw new Error('Failed to create payment intent');
-        const intent = await c.json();
-        const cf = await fetch(`${API}/wallet/topup/confirm?payment_intent_id=${intent.payment_intent_id}&user_id=${user?.user_id}`, { method: 'POST', credentials: 'include' });
-        if (cf.ok) {
-          const r = await cf.json();
-          toast.success(`Added ${r.paid_credits_added || 0} paid + ${r.bonus_credits_added || 0} bonus credits!`);
-          closeTopupModal();
-          fetchWalletData();
-          fetchTransactions();
-        } else throw new Error('Payment confirmation failed');
-      } else {
-        const err = await billplzRes.json();
-        throw new Error(err.detail || 'Payment creation failed');
-      }
-    } catch (e) { toast.error(e.message || 'Top-up failed'); }
+      const err = await billplzRes.json();
+      toast.error(err.detail || 'Payment gateway not available. Please contact admin.');
+    } catch (e) { toast.error('Could not connect to payment gateway.'); }
     finally { setProcessing(false); }
   };
 
