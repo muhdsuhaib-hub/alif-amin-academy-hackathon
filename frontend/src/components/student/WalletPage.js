@@ -75,6 +75,22 @@ export default function WalletPage({ user }) {
   const [topupMode, setTopupMode] = useState('package'); // 'package' | 'custom'
   const [processing, setProcessing] = useState(false);
   const [page, setPage] = useState(1);
+  const [paymentStatus, setPaymentStatus] = useState(null);
+
+  // Handle Billplz redirect back
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ps = params.get('payment');
+    if (ps === 'success') {
+      setPaymentStatus('success');
+      toast.success('Payment successful! Credits have been added.');
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (ps === 'failed') {
+      setPaymentStatus('failed');
+      toast.error('Payment was not completed.');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   useEffect(() => { fetchWalletData(); fetchTransactions(); fetchPackages(); }, [user]);
 
