@@ -128,18 +128,13 @@ async def upload_video_intro(request: Request, file: UploadFile = File(...)):
     if len(contents) > MAX_VIDEO_SIZE:
         raise HTTPException(status_code=400, detail=f"File too large. Maximum: {MAX_VIDEO_SIZE // (1024*1024)}MB")
 
-    # Save file
+    # Try GCS first, fall back to local
     filename = f"video_{uuid.uuid4().hex[:12]}{ext}"
-    filepath = os.path.join(UPLOAD_DIR, "videos", filename)
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    with open(filepath, "wb") as f:
-        f.write(contents)
-
-    # Build public URL
-    base_url = os.environ.get("REACT_APP_BACKEND_URL", "")
-    if not base_url:
-        base_url = str(request.base_url).rstrip("/")
-    public_url = f"{base_url}/api/teacher/media/videos/{filename}"
+    content_type = {"mp4": "video/mp4", "mov": "video/quicktime", "webm": "video/webm"}.get(ext.lstrip("."), "video/mp4")
+    public_url = await _upload_to_gcs(contents, f"videos/{filename}", content_type)
+    if not public_url:
+        _save_local(contents, "videos", filename)
+        public_url = _build_local_url(request, "videos", filename)
 
     # Get teacher profile
     teacher = await db.teachers.find_one({"user_id": user["user_id"]}, {"_id": 0})
