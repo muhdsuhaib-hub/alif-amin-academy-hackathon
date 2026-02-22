@@ -103,6 +103,12 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **Feature 1 — Hard Delete User (P1):** Added `DELETE /api/admin/users/{user_id}` endpoint that cascades removal across users, students, teachers, wallets, transactions, progress, bookings, sessions, and availability. Added red "Delete Permanently" action in the User Management dropdown with a severe confirmation modal.
 
+## Hotfix 7.5: Lean Bulk Actions & Component Fix (Feb 2026)
+
+**Feature 1 — Bulk Delete Users (P0):** Added checkbox column (with Select All) to User Management table. Red "Delete Selected ({count})" bar appears above table when items are selected. `POST /api/admin/users/bulk-delete` accepts array of user_ids and cascades removal across all collections. Rows removed from state instantly on success.
+
+**Bug 1 — Student Lobby Media (P0):** Rewrote GreenRoom media initialization into 3 clean effects: (1) device enumeration (unconditional for all non-admin users), (2) stream creation on any device/toggle change (no `initialMount` skip pattern), (3) dedicated `stream → videoRef.srcObject` sync effect. Previous split-effect + initialMount.ref pattern caused race conditions where students never got their srcObject set.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
