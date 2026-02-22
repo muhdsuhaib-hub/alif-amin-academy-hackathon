@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Filter, Edit, Mail, Phone, Download, X, ChevronLeft, ChevronRight, Calendar, MapPin, LogIn, Ban, Wallet, MoreHorizontal, CheckCircle } from 'lucide-react';
+import { Users, Search, Filter, Edit, Mail, Phone, Download, X, ChevronLeft, ChevronRight, Calendar, MapPin, LogIn, Ban, Wallet, MoreHorizontal, CheckCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import Card from '../Card';
