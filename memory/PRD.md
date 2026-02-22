@@ -164,6 +164,12 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **Fix 2 — Auto-Public GCS Uploads (P1):** Moved `blob.make_public()` outside the try/except in `_upload_to_gcs()`. Upload failures still fall back to local storage, but `make_public()` failures now propagate loudly so IAM/bucket policy misconfiguration is caught immediately.
 
+### Hotfix 8.5: Remove Legacy ACL & Expose Raw Payment Errors (Feb 2026)
+
+**Fix 1 — Remove blob.make_public() (P0):** Deleted `blob.make_public()` from `_upload_to_gcs()` in `upload_routes.py`. Bucket uses Uniform Bucket-Level Access; IAM policies handle public read globally. Upload failures still fall back to local storage.
+
+**Fix 2 — Expose Raw Billplz Error in UI (P0):** Frontend `WalletPage.js` now logs `console.error("RAW BILLPLZ ERROR:", ...)` and displays the exact backend `detail` or `error` string in the toast — no hardcoded fallback. Network-level failures show `e.message`.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
