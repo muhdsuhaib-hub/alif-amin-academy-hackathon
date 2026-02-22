@@ -81,6 +81,18 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **Bug 8 — Pre-Call Lobby Mic Toggle Crash (P0):** Added safety checks in `MicLevelMeter`: validates stream has audio tracks before creating AudioContext, wraps `createMediaStreamSource` in try/catch, uses `cancelled` flag to prevent state updates after cleanup, properly disconnects source on unmount.
 
+## Hotfix 7.3: Critical Logic & Data Sync Surgery (Feb 2026)
+
+**Bug 1 — Ghost Data on Users & Approvals (P0):** Removed duplicate `/admin/users/all` endpoint from server.py (admin_routes.py version retained with auth + enrichment). Fixed approvals endpoint response key from `pending_teachers` to `teachers`. Flattened user data into teacher objects (`user_name`, `user_email`).
+
+**Bug 2 — Vanishing Classroom (P0):** Fixed student `/api/students/dashboard-data` backend cutoff from `now.isoformat()` to `(now - 2h).isoformat()`, matching teacher endpoint. In-progress classes now persist in both dashboards until full duration elapses.
+
+**Bug 3 — Impersonation Landing Page Redirect (P1):** Reverted from `navigate()` (React Router, doesn't reset app state) to `window.location.href` for hard browser redirect to correct dashboard.
+
+**Bug 4 — Teacher Auto-Approval Bypass (P1):** Added frontend route guard in TeacherDashboard.js. Pending teachers see a locked "Application Under Review" screen and cannot access Availability, Earnings, or My Students tabs.
+
+**Bug 5 — Wallet Adjustment Bonus Credits (P1):** Split wallet modal into separate "Paid Credits" and "Bonus Credits" inputs. Backend `POST /api/admin/users/wallet-adjust` now accepts `amount` (paid) + `bonus_amount` fields and updates both independently. Response includes `new_paid_credits`, `new_bonus_credits`, `new_credit_balance`.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
