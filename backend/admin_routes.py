@@ -1188,7 +1188,8 @@ async def suspend_user(user_id: str, request: Request):
 
 class WalletAdjustment(BaseModel):
     user_id: str
-    amount: float
+    amount: float = 0
+    bonus_amount: float = 0
     reason: str = "Admin adjustment"
     admin_pin: Optional[str] = None
 
