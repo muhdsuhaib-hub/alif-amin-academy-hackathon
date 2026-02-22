@@ -94,13 +94,14 @@ async def create_billplz_bill(req: CreateBillRequest, request: Request):
 
     amount_cents = int(pkg["price_myr"] * 100)
 
-    # Call Billplz API
-    billplz_url = _billplz_base_url(sandbox)
+    # Call Billplz API – always production
+    billplz_url = "https://www.billplz.com/api/v3"
+    clean_api_key = api_key.strip()
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(
                 f"{billplz_url}/bills",
-                auth=(api_key, ""),
+                auth=(clean_api_key, ""),
                 data={
                     "collection_id": collection_id,
                     "email": user.get("email", ""),
