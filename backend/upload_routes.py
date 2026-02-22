@@ -34,21 +34,32 @@ async def _get_gcs_bucket():
     bucket_name, creds_json = await get_gcs_config()
 
     if not bucket_name:
+        logger.info("GCS: No bucket name configured in DB or .env, using local storage")
         return None
 
     try:
         from google.cloud import storage as gcs_storage
         if creds_json:
+            creds_json = creds_json.strip()
+            # Strip wrapping quotes if present
+            if (creds_json.startswith('"') and creds_json.endswith('"')) or (creds_json.startswith("'") and creds_json.endswith("'")):
+                creds_json = creds_json[1:-1]
             creds_dict = json.loads(creds_json)
+            print(f"[GCS] Parsed credentials: project_id={creds_dict.get('project_id')}, client_email={creds_dict.get('client_email')}")
             client = gcs_storage.Client.from_service_account_info(creds_dict)
         else:
+            print("[GCS] No credentials JSON, trying default credentials")
             client = gcs_storage.Client()
 
         bucket = client.bucket(bucket_name)
-        logger.info(f"GCS initialized: bucket={bucket_name}")
+        print(f"[GCS] Initialized successfully: bucket={bucket_name}")
         return bucket
+    except json.JSONDecodeError as e:
+        print(f"[GCS ERROR] JSON parse failed: {e}")
+        print(f"[GCS ERROR] First 200 chars of creds_json: {creds_json[:200] if creds_json else 'EMPTY'}")
+        return None
     except Exception as e:
-        logger.warning(f"GCS init failed (falling back to local): {e}")
+        print(f"[GCS ERROR] Initialization failed: {type(e).__name__}: {e}")
         return None
 
 
