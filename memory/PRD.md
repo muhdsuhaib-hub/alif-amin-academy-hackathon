@@ -131,7 +131,10 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 ## Backlog
 
 ### P0 (Awaiting UAT)
-- Manual UAT of Hotfix 7.5
+- Manual UAT of Batch 8 (Billplz, GCS, SMTP)
+- Billplz integration requires API keys to test live: BILLPLZ_API_KEY, BILLPLZ_COLLECTION_ID, BILLPLZ_X_SIGNATURE_KEY
+- GCS requires service account JSON: GCS_BUCKET_NAME, GCS_CREDENTIALS_JSON
+- SMTP requires Gmail App Password: SMTP_EMAIL, SMTP_PASSWORD
 
 ### P1
 - Real Billplz/Stripe payments
