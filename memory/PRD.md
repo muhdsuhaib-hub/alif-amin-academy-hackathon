@@ -138,6 +138,20 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **Refactor 3 — Dynamic Billplz:** `payment_routes.py` uses `await get_billplz_config()` in all 3 endpoints (create-bill, callback, redirect). Removed old sync `_get_billplz_config()`.
 
+## Hotfix 8.2: UAT Polish & Edge Case Resolution (Feb 2026)
+
+**Fix 1 — Settings PIN Cancel (P1):** PIN modal cancel now redirects to `/admin/dashboard` instead of leaving user on empty Settings page.
+
+**Fix 2 — Conditional Teacher Media (P1):** BookingModal teacher profile now validates `video_intro` is a real URL (starts with `http` or `/`) and checks certificates array has entries with valid URLs before rendering.
+
+**Fix 3 — Remove Mock Payment (P0):** Stripped mock Stripe auto-credit fallback from WalletPage. Top-up now exclusively uses Billplz. If Billplz fails/unconfigured, shows error toast — never auto-credits.
+
+**Fix 4 — GCS JSON Parsing (P0):** Added `.strip()` and wrapping-quote removal before `json.loads()`. Added explicit `print()` logging for JSON parse errors, credential project_id, and bucket init status.
+
+**Fix 5 — Graceful Security Redirects (P2):** ProtectedRoute no longer logs out unauthorized users. Students hitting `/admin` are redirected to `/student/dashboard`, teachers to `/teacher/dashboard`.
+
+**Fix 6 — Masked Password Overwrites (P1):** Backend PUT `/settings` now skips values that are empty, whitespace-only, or `"********"` via `.strip()` check. Credential resolver also strips whitespace from decrypted values.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
