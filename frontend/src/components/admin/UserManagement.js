@@ -28,6 +28,8 @@ export default function UserManagement() {
   const [walletBonusAmount, setWalletBonusAmount] = useState('');
   const [walletReason, setWalletReason] = useState('');
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinValue, setPinValue] = useState('');
