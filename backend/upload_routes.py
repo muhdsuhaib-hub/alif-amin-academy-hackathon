@@ -1,7 +1,7 @@
 """
 Teacher media upload routes.
 Handles video intro and certificate uploads with chunked file support.
-Uses GCS when configured, falls back to local storage.
+Uses GCS when configured (DB-first, .env fallback), falls back to local storage.
 """
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Request
 from fastapi.responses import FileResponse
@@ -11,6 +11,7 @@ import uuid
 import os
 import logging
 import json
+from credentials import get_gcs_config
 
 upload_router = APIRouter(prefix="/api/teacher")
 logger = logging.getLogger(__name__)
@@ -22,24 +23,15 @@ MAX_CERT_SIZE = 10 * 1024 * 1024   # 10MB
 ALLOWED_VIDEO_EXT = {".mp4", ".mov", ".webm"}
 ALLOWED_CERT_EXT = {".pdf", ".jpg", ".jpeg", ".png"}
 
-# GCS client (lazy-initialized)
-_gcs_client = None
-_gcs_bucket = None
-
 
 def init_upload_routes(database):
     global db
     db = database
 
 
-def _get_gcs_bucket():
-    """Lazy-init GCS bucket. Returns None if GCS is not configured."""
-    global _gcs_client, _gcs_bucket
-    if _gcs_bucket is not None:
-        return _gcs_bucket
-
-    bucket_name = os.environ.get("GCS_BUCKET_NAME", "")
-    creds_json = os.environ.get("GCS_CREDENTIALS_JSON", "")
+async def _get_gcs_bucket():
+    """Init GCS bucket from DB credentials first, then .env. Returns None if not configured."""
+    bucket_name, creds_json = await get_gcs_config()
 
     if not bucket_name:
         return None
@@ -47,18 +39,14 @@ def _get_gcs_bucket():
     try:
         from google.cloud import storage as gcs_storage
         if creds_json:
-            # Parse JSON credentials string
-            creds_path = "/tmp/gcs_creds.json"
-            with open(creds_path, "w") as f:
-                f.write(creds_json)
-            _gcs_client = gcs_storage.Client.from_service_account_json(creds_path)
+            creds_dict = json.loads(creds_json)
+            client = gcs_storage.Client.from_service_account_info(creds_dict)
         else:
-            # Try default credentials (e.g., GKE workload identity)
-            _gcs_client = gcs_storage.Client()
+            client = gcs_storage.Client()
 
-        _gcs_bucket = _gcs_client.bucket(bucket_name)
+        bucket = client.bucket(bucket_name)
         logger.info(f"GCS initialized: bucket={bucket_name}")
-        return _gcs_bucket
+        return bucket
     except Exception as e:
         logger.warning(f"GCS init failed (falling back to local): {e}")
         return None
@@ -66,7 +54,7 @@ def _get_gcs_bucket():
 
 async def _upload_to_gcs(contents: bytes, filename: str, content_type: str) -> Optional[str]:
     """Upload file to GCS. Returns public URL or None on failure."""
-    bucket = _get_gcs_bucket()
+    bucket = await _get_gcs_bucket()
     if not bucket:
         return None
     try:
