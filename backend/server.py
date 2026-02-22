@@ -1845,6 +1845,7 @@ init_payment_routes(db)
 app.include_router(classroom_router)
 app.include_router(quran_router)
 app.include_router(upload_router)
+app.include_router(payment_router)
 
 app.add_middleware(
     CORSMiddleware,
