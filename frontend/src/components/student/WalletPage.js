@@ -128,8 +128,8 @@ export default function WalletPage({ user }) {
         window.location.href = bill_url;
         return;
       }
-      const err = await billplzRes.json();
-      toast.error(err.detail || 'Payment gateway not available. Please contact admin.');
+      const err = await billplzRes.json().catch(() => ({}));
+      toast.error(err.detail || 'Payment gateway error. Please contact admin.');
     } catch (e) { toast.error('Could not connect to payment gateway.'); }
     finally { setProcessing(false); }
   };
