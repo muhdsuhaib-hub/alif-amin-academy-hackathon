@@ -642,6 +642,8 @@ async def get_available_teachers(request: Request, date: Optional[str] = None, t
                 "rating": t.get("rating", 0),
                 "total_reviews": t.get("total_reviews", 0),
                 "total_classes": t.get("total_classes", 0),
+                "video_intro": t.get("video_intro", ""),
+                "certificates": t.get("certificates", []),
             })
 
     return {"teachers": result}

@@ -71,8 +71,6 @@ export default function WalletPage({ user }) {
   const [loading, setLoading] = useState(true);
   const [showTopupModal, setShowTopupModal] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
-  const [customQuantity, setCustomQuantity] = useState('');
-  const [topupMode, setTopupMode] = useState('package'); // 'package' | 'custom'
   const [processing, setProcessing] = useState(false);
   const [page, setPage] = useState(1);
   const [paymentStatus, setPaymentStatus] = useState(null);
