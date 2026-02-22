@@ -173,7 +173,10 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (isAuthenticated && allowedRoles && !allowedRoles.includes(user?.role)) {
-    return <Navigate to="/" replace />;
+    const redirectPath = user?.role === 'student' ? '/student/dashboard'
+      : user?.role === 'teacher' ? '/teacher/dashboard'
+      : user?.role === 'admin' ? '/admin/dashboard' : '/';
+    return <Navigate to={redirectPath} replace />;
   }
 
   return React.cloneElement(children, { user, onUserUpdate: setUser });

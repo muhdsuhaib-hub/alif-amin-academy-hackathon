@@ -144,7 +144,7 @@ export default function AdminSettings() {
 
   if (loading) return <div className="flex justify-center py-12"><Spinner /></div>;
 
-  if (!unlocked && pinMode) return <PinModal mode={pinMode} onVerified={handleUnlocked} onClose={() => setPinMode(null)} />;
+  if (!unlocked && pinMode) return <PinModal mode={pinMode} onVerified={handleUnlocked} onClose={() => { setPinMode(null); window.location.href = '/admin/dashboard'; }} />;
 
   return (
     <div className="space-y-6 max-w-2xl" data-testid="admin-settings">

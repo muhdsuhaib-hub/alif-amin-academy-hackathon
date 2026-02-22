@@ -328,19 +328,20 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
                     </button>
                   </div>
 
-                  {profileTeacher.video_intro && (
+                  {profileTeacher.video_intro && typeof profileTeacher.video_intro === 'string' && (profileTeacher.video_intro.startsWith('http') || profileTeacher.video_intro.startsWith('/')) && (
                     <div className="mb-4 rounded-2xl overflow-hidden bg-black">
                       <video
                         src={profileTeacher.video_intro}
                         controls
                         playsInline
+                        muted
                         className="w-full max-h-48 object-contain"
                         preload="metadata"
                       />
                     </div>
                   )}
 
-                  {profileTeacher.certificates?.length > 0 && (
+                  {Array.isArray(profileTeacher.certificates) && profileTeacher.certificates.length > 0 && profileTeacher.certificates.some(c => c.url) && (
                     <div className="mb-4">
                       <p className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">Certificates & Ijazah</p>
                       <div className="flex flex-wrap gap-2">
