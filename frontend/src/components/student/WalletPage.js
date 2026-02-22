@@ -262,13 +262,12 @@ export default function WalletPage({ user }) {
               </button>
             </div>
 
-            {/* Mode Toggle removed – Billplz packages only */}
             <div className="p-6 pt-5 space-y-3">
               {/* Package Selection */}
               {packages.map(pkg => (
                 <button
                   key={pkg.package_id}
-                  onClick={() => setSelectedPackage(pkg)}
+                  onClick={() => { setSelectedPackage(pkg); setCustomCredits(''); }}
                   data-testid={`package-${pkg.package_id}`}
                   className={`w-full p-4 rounded-2xl border text-left transition-all ${
                     selectedPackage?.package_id === pkg.package_id
@@ -301,8 +300,47 @@ export default function WalletPage({ user }) {
                 className="w-full h-12 rounded-2xl bg-emerald-700 text-white font-semibold text-sm hover:bg-emerald-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2"
                 data-testid="confirm-topup-btn"
               >
-                {processing ? <><Spinner size="sm" className="border-white border-t-transparent" /> Processing...</> : 'Confirm Top Up'}
+                {processing && selectedPackage ? <><Spinner size="sm" className="border-white border-t-transparent" /> Processing...</> : 'Confirm Top Up'}
               </button>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 pt-1">
+                <div className="flex-1 h-px bg-slate-200" />
+                <span className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">or custom amount</span>
+                <div className="flex-1 h-px bg-slate-200" />
+              </div>
+
+              {/* Custom Top-Up */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-3" data-testid="custom-topup-section">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={customCredits}
+                    onChange={e => { setCustomCredits(e.target.value); setSelectedPackage(null); }}
+                    placeholder="e.g. 5"
+                    className="h-11 flex-1 rounded-xl border border-slate-200 bg-white px-4 text-base font-semibold text-slate-900 text-center placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    data-testid="custom-credits-input"
+                  />
+                  <span className="text-sm text-slate-500 flex-shrink-0">credits</span>
+                </div>
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-xs text-slate-400">RM 15 / credit</span>
+                  <span className="text-sm font-bold text-emerald-700" data-testid="custom-total-price">
+                    {parseInt(customCredits, 10) > 0 ? `RM ${parseInt(customCredits, 10) * 15}` : 'RM 0'}
+                  </span>
+                </div>
+                <button
+                  onClick={confirmCustomTopup}
+                  disabled={!(parseInt(customCredits, 10) > 0) || processing}
+                  className="w-full h-11 rounded-xl bg-slate-800 text-white font-semibold text-sm hover:bg-slate-900 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  data-testid="confirm-custom-topup-btn"
+                >
+                  {processing && !selectedPackage ? <><Spinner size="sm" className="border-white border-t-transparent" /> Processing...</> : 'Confirm Custom Top Up'}
+                </button>
+              </div>
+
               <p className="text-[11px] text-slate-400 text-center">You will be redirected to our payment gateway</p>
             </div>
           </div>
