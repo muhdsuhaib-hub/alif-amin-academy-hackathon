@@ -180,15 +180,11 @@ async def upload_certificate(request: Request, file: UploadFile = File(...), lab
         raise HTTPException(status_code=400, detail=f"File too large. Maximum: {MAX_CERT_SIZE // (1024*1024)}MB")
 
     filename = f"cert_{uuid.uuid4().hex[:12]}{ext}"
-    filepath = os.path.join(UPLOAD_DIR, "certificates", filename)
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    with open(filepath, "wb") as f:
-        f.write(contents)
-
-    base_url = os.environ.get("REACT_APP_BACKEND_URL", "")
-    if not base_url:
-        base_url = str(request.base_url).rstrip("/")
-    public_url = f"{base_url}/api/teacher/media/certificates/{filename}"
+    content_type = {".pdf": "application/pdf", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}.get(ext, "application/octet-stream")
+    public_url = await _upload_to_gcs(contents, f"certificates/{filename}", content_type)
+    if not public_url:
+        _save_local(contents, "certificates", filename)
+        public_url = _build_local_url(request, "certificates", filename)
 
     teacher = await db.teachers.find_one({"user_id": user["user_id"]}, {"_id": 0})
     if not teacher:
