@@ -1,6 +1,7 @@
 """
 Billplz payment gateway integration for Alif Amin Academy.
 Handles bill creation, redirect verification, and webhook callbacks.
+DB credentials first, .env fallback.
 """
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -14,6 +15,7 @@ import hashlib
 import httpx
 import logging
 import urllib.parse
+from credentials import get_billplz_config
 
 payment_router = APIRouter(prefix="/api/payments")
 logger = logging.getLogger(__name__)
@@ -30,15 +32,6 @@ TOPUP_PACKAGES = {
 def init_payment_routes(database):
     global db
     db = database
-
-
-def _get_billplz_config():
-    """Get Billplz credentials from env or admin settings vault."""
-    api_key = os.environ.get("BILLPLZ_API_KEY", "")
-    collection_id = os.environ.get("BILLPLZ_COLLECTION_ID", "")
-    x_sig_key = os.environ.get("BILLPLZ_X_SIGNATURE_KEY", "")
-    sandbox = os.environ.get("BILLPLZ_SANDBOX", "true").lower() == "true"
-    return api_key, collection_id, x_sig_key, sandbox
 
 
 def _billplz_base_url(sandbox: bool) -> str:
