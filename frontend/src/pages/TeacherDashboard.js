@@ -30,6 +30,7 @@ export default function TeacherDashboard({ user, onUserUpdate }) {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -37,6 +38,11 @@ export default function TeacherDashboard({ user, onUserUpdate }) {
       if (res.ok) {
         const data = await res.json();
         setDashboardData(data);
+        // Check if teacher is still pending approval
+        const teacher = data?.teacher;
+        if (teacher && (teacher.approval_status === 'pending' || teacher.is_active === false)) {
+          setIsPending(true);
+        }
       }
     } catch (error) { console.error('Dashboard data error:', error); }
     finally { setLoading(false); }
