@@ -131,6 +131,8 @@ async def get_all_users(
     query = {}
     if role:
         query["role"] = role
+    if status:
+        query["status"] = status
     if search:
         query["$or"] = [
             {"name": {"$regex": search, "$options": "i"}},
