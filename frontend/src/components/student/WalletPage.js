@@ -115,10 +115,6 @@ export default function WalletPage({ user }) {
   };
 
   const confirmTopup = async () => {
-    if (topupMode === 'custom') {
-      await confirmCustomTopup();
-      return;
-    }
     if (!selectedPackage) return;
     setProcessing(true);
     try {
@@ -128,7 +124,7 @@ export default function WalletPage({ user }) {
       });
       if (billplzRes.ok) {
         const { bill_url } = await billplzRes.json();
-        toast.info('Redirecting to Billplz payment...');
+        toast.info('Redirecting to payment gateway...');
         window.location.href = bill_url;
         return;
       }
@@ -138,38 +134,10 @@ export default function WalletPage({ user }) {
     finally { setProcessing(false); }
   };
 
-  const confirmCustomTopup = async () => {
-    const qty = parseInt(customQuantity, 10);
-    if (!qty || qty < 1 || qty > 100) { toast.error('Enter 1–100 credits'); return; }
-    setProcessing(true);
-    try {
-      const r = await fetch(`${API}/wallet/topup/custom?user_id=${user?.user_id}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        body: JSON.stringify({ credits: qty }),
-      });
-      if (r.ok) {
-        const data = await r.json();
-        toast.success(`Added ${data.credits_added || qty} credits!`);
-        closeTopupModal();
-        fetchWalletData();
-        fetchTransactions();
-      } else {
-        const data = await r.json();
-        throw new Error(data.detail || 'Custom top-up failed');
-      }
-    } catch (e) { toast.error(e.message || 'Top-up failed'); }
-    finally { setProcessing(false); }
-  };
-
   const closeTopupModal = () => {
     setShowTopupModal(false);
     setSelectedPackage(null);
-    setCustomQuantity('');
-    setTopupMode('package');
   };
-
-  const customTotal = parseInt(customQuantity, 10) > 0 ? parseInt(customQuantity, 10) * 15 : 0;
-  const canConfirm = topupMode === 'package' ? !!selectedPackage : (parseInt(customQuantity, 10) > 0);
 
   const totalPages = Math.ceil(transactions.length / ITEMS_PER_PAGE);
   const pagedTransactions = transactions.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
