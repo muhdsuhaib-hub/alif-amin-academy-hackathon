@@ -152,22 +152,23 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **Fix 6 — Masked Password Overwrites (P1):** Backend PUT `/settings` now skips values that are empty, whitespace-only, or `"********"` via `.strip()` check. Credential resolver also strips whitespace from decrypted values.
 
+### Hotfix 8.3: Frontend API Wiring & Defensive Rendering (Feb 2026)
+
+**Fix 1 — SCORCHED-EARTH: Hard-Wire Billplz (P0):** Completely removed all mock/custom top-up code from `WalletPage.js`. Removed `confirmCustomTopup`, `topupMode`, `customQuantity` state, the "Custom Amount" mode toggle, and the "demo mode" disclaimer. The only top-up path is now: select a package → POST `/api/payments/billplz/create-bill` → redirect to `bill_url`. Error toasts on failure.
+
+**Fix 2 — Hydrate & Fallback Teacher Media (P1):** Backend `GET /api/booking/available-teachers` now includes `video_intro` and `certificates` in teacher response payload. Added `onError` handler on the `<video>` element in `BookingModal.js` that replaces the broken player with a "temporarily unavailable" fallback. Added defensive `.filter(c => c.url)` on certificates array and `data-testid` attributes for both containers.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
-- Manual UAT of Batch 8 (Billplz, GCS, SMTP)
-- Billplz integration requires API keys to test live: BILLPLZ_API_KEY, BILLPLZ_COLLECTION_ID, BILLPLZ_X_SIGNATURE_KEY
-- GCS requires service account JSON: GCS_BUCKET_NAME, GCS_CREDENTIALS_JSON
-- SMTP requires Gmail App Password: SMTP_EMAIL, SMTP_PASSWORD
+- Manual UAT of Hotfix 8.3 (Billplz frontend wiring, teacher media rendering)
 
 ### P1
-- Real Billplz/Stripe payments
-- GCS migration for file storage
-- WhatsApp notifications
+- WhatsApp notifications integration
 - SMTP credentials configuration
 
 ### P2
-- Cloud recording integration
+- Cloud recording integration (Start Recording button)
 - Admin Report Card PDF export
-- Blur Background toggle
+- Blur Background toggle in A/V settings
 - SMS notifications
