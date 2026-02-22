@@ -8,7 +8,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://wallet-chat-webrtc.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://teacher-media-fix.preview.emergentagent.com').rstrip('/')
 
 # Admin session for testing
 ADMIN_SESSION = "admin_session_1f5f1fdd71f04dbe"
