@@ -243,7 +243,10 @@ export default function UserManagement() {
           <>
             <div className="w-full overflow-x-auto">
               <table className="w-full min-w-[700px]">
-                <thead><tr className="border-b border-slate-100 bg-slate-50/80">{['User', 'Contact', 'Role', 'Status', 'Registered', 'Actions'].map((h, i) => <th key={i} className={`${i === 5 ? 'text-right' : 'text-left'} px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider`}>{h}</th>)}</tr></thead>
+                <thead><tr className="border-b border-slate-100 bg-slate-50/80">
+                  <th className="px-3 py-3 w-10"><input type="checkbox" checked={users.length > 0 && selectedIds.length === users.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500/20 cursor-pointer" data-testid="select-all-checkbox" /></th>
+                  {['User', 'Contact', 'Role', 'Status', 'Registered', 'Actions'].map((h, i) => <th key={i} className={`${i === 5 ? 'text-right' : 'text-left'} px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider`}>{h}</th>)}
+                </tr></thead>
                 <tbody className="divide-y divide-slate-50">
                   {users.map((u) => (
                     <tr key={u.user_id} className="hover:bg-slate-50/50 transition-colors" data-testid={`user-row-${u.user_id}`}>
