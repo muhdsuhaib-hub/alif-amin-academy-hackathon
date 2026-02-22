@@ -252,9 +252,10 @@ export default function UserManagement() {
               <div className="border-t border-slate-100 pt-4">
                 <div className="flex items-center gap-2 mb-3"><Wallet className="w-4 h-4 text-emerald-600" /><p className="text-xs font-semibold text-slate-700">Wallet Adjustment</p></div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><label className="block text-[10px] text-slate-500 mb-1">Amount (+ add / - deduct)</label><input type="number" step="0.01" value={walletAmount} onChange={e => setWalletAmount(e.target.value)} placeholder="e.g. 10 or -5" className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20" data-testid="wallet-amount" /></div>
-                  <div><label className="block text-[10px] text-slate-500 mb-1">Reason</label><input type="text" value={walletReason} onChange={e => setWalletReason(e.target.value)} placeholder="Refund, bonus..." className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20" data-testid="wallet-reason" /></div>
+                  <div><label className="block text-[10px] text-slate-500 mb-1">Paid Credits (+ / -)</label><input type="number" step="0.01" value={walletAmount} onChange={e => setWalletAmount(e.target.value)} placeholder="e.g. 10 or -5" className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20" data-testid="wallet-amount" /></div>
+                  <div><label className="block text-[10px] text-slate-500 mb-1">Bonus Credits (+ / -)</label><input type="number" step="0.01" value={walletBonusAmount} onChange={e => setWalletBonusAmount(e.target.value)} placeholder="e.g. 5 or -3" className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20" data-testid="wallet-bonus-amount" /></div>
                 </div>
+                <div className="mt-3"><label className="block text-[10px] text-slate-500 mb-1">Reason</label><input type="text" value={walletReason} onChange={e => setWalletReason(e.target.value)} placeholder="Refund, bonus, correction..." className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20" data-testid="wallet-reason" /></div>
               </div>
               )}
             </div>
