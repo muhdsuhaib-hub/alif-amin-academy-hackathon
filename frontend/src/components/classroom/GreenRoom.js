@@ -144,8 +144,10 @@ export default function GreenRoom({ user, session, onJoin, isAdmin }) {
     return () => { active = false; };
   }, [isAdmin, adminMode]);
 
-  // Start preview stream
+  // Update stream when device selection or toggle changes
+  const initialMount = useRef(true);
   useEffect(() => {
+    if (initialMount.current) { initialMount.current = false; return; }
     if (isAdmin && adminMode !== 'participant') return;
     let active = true;
     (async () => {
@@ -154,10 +156,13 @@ export default function GreenRoom({ user, session, onJoin, isAdmin }) {
       if (active && s) {
         setStream(s);
         if (videoRef.current) videoRef.current.srcObject = s;
+      } else if (active) {
+        setStream(null);
+        if (videoRef.current) videoRef.current.srcObject = null;
       }
     })();
     return () => { active = false; };
-  }, [selectedCam, selectedMic, camOn, micOn, isAdmin, adminMode]);
+  }, [selectedCam, selectedMic, camOn, micOn]);
 
   // Cleanup
   useEffect(() => () => stream?.getTracks().forEach(t => t.stop()), []);
