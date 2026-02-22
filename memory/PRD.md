@@ -170,6 +170,12 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **Fix 2 — Expose Raw Billplz Error in UI (P0):** Frontend `WalletPage.js` now logs `console.error("RAW BILLPLZ ERROR:", ...)` and displays the exact backend `detail` or `error` string in the toast — no hardcoded fallback. Network-level failures show `e.message`.
 
+### Hotfix 8.6: Billplz Production URL & Basic Auth Formatting (Feb 2026)
+
+**Fix 1 — Force Production URL (P0):** Hardcoded `https://www.billplz.com/api/v3` in `create-bill` route, bypassing the `sandbox` flag which defaulted to `true` and was sending production keys to `billplz-sandbox.com`.
+
+**Fix 2 — Enforce Clean Basic Auth (P0):** Added explicit `api_key.strip()` before passing to `httpx auth=(key, "")` to guard against trailing whitespace/newlines from DB decryption.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
