@@ -96,7 +96,7 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 ## Backlog
 
 ### P0 (Awaiting UAT)
-- Manual UAT of Hotfix 7.2
+- Manual UAT of Hotfix 7.3
 
 ### P1
 - Real Billplz/Stripe payments
