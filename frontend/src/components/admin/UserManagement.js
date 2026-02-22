@@ -222,6 +222,19 @@ export default function UserManagement() {
         )}
       </Card>
 
+      {/* Bulk Action Bar */}
+      {selectedIds.length > 0 && (
+        <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-2xl px-5 py-3" data-testid="bulk-action-bar">
+          <p className="text-sm font-medium text-red-800">{selectedIds.length} user{selectedIds.length > 1 ? 's' : ''} selected</p>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setSelectedIds([])} className="px-3 h-9 rounded-xl border border-red-200 text-xs font-medium text-red-600 hover:bg-red-100 transition-all" data-testid="clear-selection-btn">Clear</button>
+            <button onClick={() => setShowBulkDeleteModal(true)} className="flex items-center gap-1.5 px-4 h-9 rounded-xl bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-all" data-testid="bulk-delete-btn">
+              <Trash2 className="w-3.5 h-3.5" />Delete Selected ({selectedIds.length})
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <Card className="overflow-hidden">
         {loading ? <div className="flex justify-center py-12"><Spinner /></div>
