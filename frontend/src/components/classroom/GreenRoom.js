@@ -113,56 +113,50 @@ export default function GreenRoom({ user, session, onJoin, isAdmin }) {
     }
   }, []);
 
-  // Enumerate devices and immediately start preview
+  // 1. Enumerate devices once on mount (unconditional for students + teachers)
   useEffect(() => {
     if (isAdmin && adminMode !== 'participant') return;
     let active = true;
     (async () => {
       try {
-        // Request permissions and enumerate
         const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
         if (!active) { tempStream.getTracks().forEach(t => t.stop()); return; }
+        tempStream.getTracks().forEach(t => t.stop());
         const devs = await navigator.mediaDevices.enumerateDevices();
         const cameras = devs.filter(d => d.kind === 'videoinput');
         const mics = devs.filter(d => d.kind === 'audioinput');
-        setDevices({ cameras, mics });
-        const camId = cameras.length ? cameras[0].deviceId : '';
-        const micId = mics.length ? mics[0].deviceId : '';
-        if (cameras.length) setSelectedCam(camId);
-        if (mics.length) setSelectedMic(micId);
-        // Use tempStream directly as preview instead of stopping and re-requesting
         if (active) {
-          setStream(tempStream);
-          if (videoRef.current) videoRef.current.srcObject = tempStream;
-        } else {
-          tempStream.getTracks().forEach(t => t.stop());
+          setDevices({ cameras, mics });
+          if (cameras.length) setSelectedCam(cameras[0].deviceId);
+          if (mics.length) setSelectedMic(mics[0].deviceId);
         }
-      } catch (e) {
-        console.warn('Device init failed:', e);
-      }
+      } catch (e) { console.warn('Device init failed:', e); }
     })();
     return () => { active = false; };
   }, [isAdmin, adminMode]);
 
-  // Update stream when device selection or toggle changes
-  const initialMount = useRef(true);
+  // 2. Create/recreate stream whenever device or toggle changes (runs for ALL users)
   useEffect(() => {
-    if (initialMount.current) { initialMount.current = false; return; }
     if (isAdmin && adminMode !== 'participant') return;
+    if (!camOn && !micOn) { setStream(null); return; }
     let active = true;
     (async () => {
-      stream?.getTracks().forEach(t => t.stop());
       const s = await getStream(selectedCam, selectedMic, camOn, micOn);
-      if (active && s) {
-        setStream(s);
-        if (videoRef.current) videoRef.current.srcObject = s;
-      } else if (active) {
-        setStream(null);
-        if (videoRef.current) videoRef.current.srcObject = null;
+      if (active) {
+        setStream(prev => { prev?.getTracks().forEach(t => t.stop()); return s; });
+      } else {
+        s?.getTracks().forEach(t => t.stop());
       }
     })();
     return () => { active = false; };
-  }, [selectedCam, selectedMic, camOn, micOn]);
+  }, [selectedCam, selectedMic, camOn, micOn, isAdmin, adminMode, getStream]);
+
+  // 3. Sync stream to video element (guarantees srcObject is always set)
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream || null;
+    }
+  }, [stream]);
 
   // Cleanup
   useEffect(() => () => stream?.getTracks().forEach(t => t.stop()), []);
