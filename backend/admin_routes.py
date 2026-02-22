@@ -1188,6 +1188,52 @@ async def suspend_user(user_id: str, request: Request):
     return {"user_id": user_id, "status": new_status}
 
 
+@admin_router.delete("/users/{user_id}")
+async def hard_delete_user(user_id: str, request: Request):
+    """Permanently delete a user and all associated data."""
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    admin_session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not admin_session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    admin_user = await db.users.find_one({"user_id": admin_session["user_id"]}, {"_id": 0})
+    if not admin_user or admin_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    target = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Delete from all related collections
+    await db.users.delete_one({"user_id": user_id})
+    await db.user_sessions.delete_many({"user_id": user_id})
+
+    if target.get("role") == "student":
+        student = await db.students.find_one({"user_id": user_id}, {"_id": 0})
+        if student:
+            sid = student["student_id"]
+            await db.students.delete_one({"user_id": user_id})
+            await db.student_wallets.delete_one({"student_id": sid})
+            await db.wallet_transactions.delete_many({"student_id": sid})
+            await db.progress.delete_many({"student_id": sid})
+            await db.bookings.delete_many({"student_id": sid})
+    elif target.get("role") == "teacher":
+        teacher = await db.teachers.find_one({"user_id": user_id}, {"_id": 0})
+        if teacher:
+            tid = teacher["teacher_id"]
+            await db.teachers.delete_one({"user_id": user_id})
+            await db.teacher_availability.delete_many({"teacher_id": tid})
+            await db.bookings.delete_many({"teacher_id": tid})
+
+    return {"success": True, "user_id": user_id}
+
+
+
 class WalletAdjustment(BaseModel):
     user_id: str
     amount: float = 0
