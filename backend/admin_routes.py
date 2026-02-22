@@ -240,7 +240,7 @@ async def approve_teacher(teacher_id: str):
     user = await db.users.find_one({"user_id": teacher["user_id"]}, {"_id": 0})
     if user and user.get("email"):
         name = user.get("name", "Teacher")
-        _send_email(user["email"], "Welcome to Alif Amin! Your teaching application is APPROVED",
+        await _send_email(user["email"], "Welcome to Alif Amin! Your teaching application is APPROVED",
             f"Assalamu'alaikum {name},\n\nWe have wonderful news! After reviewing your application, we are thrilled to officially welcome you as a verified Tutor at Alif Amin Academy.\n\nYour dedication to teaching the Book of Allah is exactly what our students are looking for.\n\nYour Next Steps:\n1. Log in to your Teacher Dashboard.\n2. Complete your profile by uploading your Intro Video and Certificates.\n3. Set your schedule so students can start booking your classes immediately!\n\nWe are excited to support you on this journey. May Allah bless your efforts.\n\nWarmly,\nThe Alif Amin Team")
     return {"message": "Teacher approved successfully", "teacher_id": teacher_id}
 
@@ -261,7 +261,7 @@ async def reject_teacher(teacher_id: str, body: Optional[RejectBody] = None, rea
     if user and user.get("email"):
         name = user.get("name", "Teacher")
         reason_text = f"\n\nAdmin note: {rejection_reason}" if rejection_reason else ""
-        _send_email(user["email"], "Update on your Alif Amin Academy Application",
+        await _send_email(user["email"], "Update on your Alif Amin Academy Application",
             f"Assalamu'alaikum {name},\n\nThank you so much for your interest in teaching with Alif Amin Academy and for taking the time to submit your application.\n\nAt this time, we are unable to move forward with your application. We receive a high volume of requests and must strictly match our specific requirements (e.g., Advanced Tajweed Certification, consistent teaching availability, or specific language fluency).{reason_text}\n\nWe deeply appreciate your desire to teach the Quran, and we highly encourage you to reapply in the future as our platform continues to grow. May Allah reward your noble intentions and grant you success.\n\nSincerely,\nThe Alif Amin Team")
     return {"message": "Teacher application rejected", "teacher_id": teacher_id}
 
