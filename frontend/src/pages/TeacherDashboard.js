@@ -64,24 +64,53 @@ export default function TeacherDashboard({ user, onUserUpdate }) {
 
   const teacherId = dashboardData?.teacher?.teacher_id;
 
+  // Block restricted tabs for pending teachers
+  const RESTRICTED_TABS = ['availability', 'earnings', 'students'];
+  const handleTabChange = (tab) => {
+    if (isPending && RESTRICTED_TABS.includes(tab)) {
+      return; // Block navigation for pending teachers
+    }
+    setActiveTab(tab);
+  };
+
+  // Pending approval locked screen
+  const PendingScreen = () => (
+    <div className="flex flex-col items-center justify-center py-16 px-6 text-center" data-testid="teacher-pending-screen">
+      <div className="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center mb-6">
+        <Calendar className="w-8 h-8 text-amber-500" />
+      </div>
+      <h2 className="text-xl font-bold text-slate-900 mb-2">Application Under Review</h2>
+      <p className="text-sm text-slate-500 max-w-md mb-6">
+        Your teaching application is pending Admin approval. You will receive an email once your profile has been verified. Thank you for your patience.
+      </p>
+      <div className="px-4 py-2 rounded-xl bg-amber-50 text-amber-700 text-xs font-semibold">
+        Status: Pending Approval
+      </div>
+    </div>
+  );
+
   return (
     <>
       <LayoutShell
         menuItems={MENU_ITEMS}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
         tabTitles={TAB_TITLES}
         user={user}
         userRole="teacher"
-        roleBadge="Teacher"
+        roleBadge={isPending ? 'Pending' : 'Teacher'}
         onLogout={handleLogout}
         onOpenSupport={() => setShowSupportModal(true)}
       >
-        {activeTab === 'home' && <DashboardOverview dashboardData={dashboardData} onNavigateTab={setActiveTab} />}
-        {activeTab === 'availability' && <AvailabilityCalendar teacherId={teacherId} />}
-        {activeTab === 'earnings' && <EarningsWallet dashboardData={dashboardData} user={user} onRefresh={fetchDashboardData} />}
-        {activeTab === 'students' && <StudentManagement teacherId={teacherId} />}
-        {activeTab === 'profile' && <ProfileManagement user={user} teacher={dashboardData?.teacher} onRefresh={fetchDashboardData} onUserUpdate={onUserUpdate} />}
+        {isPending && RESTRICTED_TABS.includes(activeTab) ? <PendingScreen /> : (
+          <>
+            {activeTab === 'home' && (isPending ? <PendingScreen /> : <DashboardOverview dashboardData={dashboardData} onNavigateTab={handleTabChange} />)}
+            {activeTab === 'availability' && <AvailabilityCalendar teacherId={teacherId} />}
+            {activeTab === 'earnings' && <EarningsWallet dashboardData={dashboardData} user={user} onRefresh={fetchDashboardData} />}
+            {activeTab === 'students' && <StudentManagement teacherId={teacherId} />}
+            {activeTab === 'profile' && <ProfileManagement user={user} teacher={dashboardData?.teacher} onRefresh={fetchDashboardData} onUserUpdate={onUserUpdate} />}
+          </>
+        )}
       </LayoutShell>
       <SupportModal isOpen={showSupportModal} onClose={() => setShowSupportModal(false)} user={user} />
     </>
