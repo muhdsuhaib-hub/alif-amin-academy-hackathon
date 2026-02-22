@@ -372,6 +372,29 @@ export default function UserManagement() {
           </div>
         </div>
       )}
+      {/* Bulk Delete Confirmation Modal */}
+      {showBulkDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[70] p-4" data-testid="bulk-delete-modal">
+          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl">
+            <div className="p-6 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-7 h-7 text-red-600" />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Delete {selectedIds.length} Users?</h3>
+              <p className="text-sm text-slate-500 mb-1">
+                You are about to permanently delete <span className="font-semibold text-slate-700">{selectedIds.length} user account{selectedIds.length > 1 ? 's' : ''}</span>.
+              </p>
+              <p className="text-xs text-red-600 font-medium">
+                This will permanently remove all selected users and their associated data. This cannot be undone.
+              </p>
+            </div>
+            <div className="flex gap-3 px-6 pb-6">
+              <button onClick={() => setShowBulkDeleteModal(false)} className="flex-1 h-11 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors" data-testid="cancel-bulk-delete-btn">Cancel</button>
+              <button onClick={handleBulkDelete} className="flex-1 h-11 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors" data-testid="confirm-bulk-delete-btn">Delete {selectedIds.length} Forever</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
