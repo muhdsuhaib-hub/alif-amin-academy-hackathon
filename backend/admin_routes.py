@@ -105,6 +105,7 @@ class ManualBooking(BaseModel):
 # User Management Endpoints
 @admin_router.get("/users/all")
 async def get_all_users(
+    request: Request,
     role: Optional[str] = None, 
     search: Optional[str] = None, 
     status: Optional[str] = None,
@@ -113,6 +114,20 @@ async def get_all_users(
     page: int = 1, 
     limit: int = 20
 ):
+    # Auth check
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    admin_user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
+    if not admin_user or admin_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
     query = {}
     if role:
         query["role"] = role
