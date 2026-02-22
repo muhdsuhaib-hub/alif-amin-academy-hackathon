@@ -71,6 +71,7 @@ export default function WalletPage({ user }) {
   const [loading, setLoading] = useState(true);
   const [showTopupModal, setShowTopupModal] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
+  const [customCredits, setCustomCredits] = useState('');
   const [processing, setProcessing] = useState(false);
   const [page, setPage] = useState(1);
   const [paymentStatus, setPaymentStatus] = useState(null);
@@ -139,9 +140,36 @@ export default function WalletPage({ user }) {
     finally { setProcessing(false); }
   };
 
+  const confirmCustomTopup = async () => {
+    const qty = parseInt(customCredits, 10);
+    if (!qty || qty < 1 || qty > 100) { toast.error('Enter 1–100 credits'); return; }
+    setProcessing(true);
+    try {
+      const billplzRes = await fetch(`${API}/payments/billplz/create-bill`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ custom_credits: qty }),
+      });
+      if (billplzRes.ok) {
+        const { bill_url } = await billplzRes.json();
+        toast.info('Redirecting to payment gateway...');
+        window.location.href = bill_url;
+        return;
+      }
+      const err = await billplzRes.json().catch(() => ({}));
+      const rawMsg = err.detail || err.error || `HTTP ${billplzRes.status}`;
+      console.error("RAW BILLPLZ ERROR:", err);
+      toast.error(rawMsg);
+    } catch (e) {
+      console.error("RAW BILLPLZ ERROR:", e);
+      toast.error(e.message || 'Network error connecting to payment gateway.');
+    }
+    finally { setProcessing(false); }
+  };
+
   const closeTopupModal = () => {
     setShowTopupModal(false);
     setSelectedPackage(null);
+    setCustomCredits('');
   };
 
   const totalPages = Math.ceil(transactions.length / ITEMS_PER_PAGE);
