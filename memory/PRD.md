@@ -93,6 +93,16 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **Bug 5 — Wallet Adjustment Bonus Credits (P1):** Split wallet modal into separate "Paid Credits" and "Bonus Credits" inputs. Backend `POST /api/admin/users/wallet-adjust` now accepts `amount` (paid) + `bonus_amount` fields and updates both independently. Response includes `new_paid_credits`, `new_bonus_credits`, `new_credit_balance`.
 
+## Hotfix 7.4: Advanced Logic, Filtering & Admin Controls (Feb 2026)
+
+**Bug 1 — Table Filtering & KPI Accuracy (P0):** Added missing `status` query parameter to `/api/admin/users/all` MongoDB filter. Aligned KPI stats to count from `db.users` collection (same source as table) instead of `db.students`/`db.teachers` for mathematical consistency.
+
+**Bug 2 — Impersonation "Snitch" (P0):** Modified `/api/auth/me` to detect impersonation sessions (`imp_*` token prefix) and inject `onboarding_completed: true` into the response, preventing the onboarding guard from overwriting JWT claims.
+
+**Bug 3 — WebRTC Lobby Media Init (P1):** Merged device enumeration and preview stream creation into a single sequential effect. The initial `getUserMedia` stream is reused directly as the preview (no stop→re-request round-trip), ensuring camera/mic are live on mount.
+
+**Feature 1 — Hard Delete User (P1):** Added `DELETE /api/admin/users/{user_id}` endpoint that cascades removal across users, students, teachers, wallets, transactions, progress, bookings, sessions, and availability. Added red "Delete Permanently" action in the User Management dropdown with a severe confirmation modal.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
