@@ -25,6 +25,7 @@ export default function UserManagement() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [walletAmount, setWalletAmount] = useState('');
+  const [walletBonusAmount, setWalletBonusAmount] = useState('');
   const [walletReason, setWalletReason] = useState('');
   const [openMenuId, setOpenMenuId] = useState(null);
 
@@ -64,7 +65,7 @@ export default function UserManagement() {
       localStorage.setItem('user', JSON.stringify(data.user));
       const route = data.user.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
       toast.success(`Logged in as ${data.user.name}`);
-      navigate(route, { state: { user: data.user }, replace: true });
+      window.location.href = route;
     } catch { toast.error('Impersonation failed'); }
   };
 
@@ -78,7 +79,7 @@ export default function UserManagement() {
     } catch { toast.error('Error'); }
   };
 
-  const handleEdit = (u) => { setSelectedUser({ ...u }); setWalletAmount(''); setWalletReason(''); setShowEditModal(true); };
+  const handleEdit = (u) => { setSelectedUser({ ...u }); setWalletAmount(''); setWalletBonusAmount(''); setWalletReason(''); setShowEditModal(true); };
 
   const handleUpdate = async () => {
     if (!selectedUser) return;
