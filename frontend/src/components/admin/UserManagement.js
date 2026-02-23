@@ -164,15 +164,46 @@ export default function UserManagement() {
     } catch { toast.error('Error'); }
   };
 
+  const executeTeacherBalanceAdjust = async (pin) => {
+    if (!adjustTarget) return;
+    const amt = parseFloat(adjustAmount);
+    if (!amt || !adjustDescription.trim()) { toast.error('Amount and description are required'); return; }
+    setAdjustProcessing(true);
+    try {
+      const r = await fetch(`${API}/admin/finance/adjust-tutor-balance`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ user_id: adjustTarget.user_id, amount: amt, description: adjustDescription, admin_pin: pin }),
+      });
+      const d = await r.json();
+      if (r.ok) {
+        toast.success(`Balance adjusted: ${d.message}. New balance: RM ${d.new_balance}`);
+        setShowPinModal(false);
+        setShowAdjustBalanceModal(false);
+        setPinValue('');
+      } else {
+        if (d.detail === 'PIN_NOT_SET') { setPinMode('create'); }
+        else toast.error(d.detail || 'Failed to adjust balance');
+      }
+    } catch (e) { toast.error('Network error'); }
+    finally { setAdjustProcessing(false); }
+  };
+
   const handlePinSubmit = async (pin) => {
     if (pinMode === 'create') {
       try {
         const r = await fetch(`${API}/admin/admin-pin/set`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ pin }) });
-        if (r.ok) { toast.success('PIN created'); executeWalletAdjust(pin); }
+        if (r.ok) {
+          toast.success('PIN created');
+          // Determine which operation to continue with
+          if (adjustTarget) { executeTeacherBalanceAdjust(pin); }
+          else { executeWalletAdjust(pin); }
+        }
         else toast.error('Failed to create PIN');
       } catch { toast.error('Error'); }
     } else {
-      executeWalletAdjust(pin);
+      // Determine which operation to continue with
+      if (adjustTarget) { executeTeacherBalanceAdjust(pin); }
+      else { executeWalletAdjust(pin); }
     }
   };
 
