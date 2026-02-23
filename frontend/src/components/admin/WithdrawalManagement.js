@@ -22,6 +22,12 @@ export default function WithdrawalManagement() {
 
   useEffect(() => { fetchData(); }, []);
 
+  // #2: 15-second auto-refresh polling
+  useEffect(() => {
+    const interval = setInterval(fetchData, 15000);
+    return () => clearInterval(interval);
+  }, [statusFilter]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
