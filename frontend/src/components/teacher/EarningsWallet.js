@@ -127,7 +127,7 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
       {/* Transaction History with Pagination */}
       <div className="mt-6 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm" data-testid="teacher-transactions">
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-slate-900">Earnings History</h3>
+          <h3 className="text-sm font-semibold text-slate-900">Transaction History</h3>
           {totalTxns > 0 && <span className="text-[11px] text-slate-400">{totalTxns} total</span>}
         </div>
         {loading ? (
