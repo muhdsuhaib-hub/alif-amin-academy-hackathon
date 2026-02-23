@@ -438,7 +438,7 @@ export default function UserManagement() {
         </div>
       )}
 
-      {/* Adjust Teacher Balance Modal — uses shared PIN modal */}
+      {/* Adjust Teacher Balance Modal — self-contained with inline PIN */}
       {showAdjustBalanceModal && adjustTarget && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[70] p-4 animate-fade-in" onClick={() => setShowAdjustBalanceModal(false)} data-testid="adjust-balance-modal">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -474,22 +474,51 @@ export default function UserManagement() {
                   data-testid="adjust-description-input"
                 />
               </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Admin PIN</label>
+                <input
+                  type="password"
+                  maxLength={6}
+                  value={adjustPin}
+                  onChange={e => setAdjustPin(e.target.value.replace(/\D/g, ''))}
+                  placeholder="6-digit PIN"
+                  className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm text-center font-mono tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400"
+                  data-testid="adjust-pin-input"
+                />
+              </div>
             </div>
             <div className="flex gap-3 px-6 pb-6">
               <button onClick={() => setShowAdjustBalanceModal(false)} className="flex-1 h-11 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors" data-testid="cancel-adjust-btn">Cancel</button>
               <button
-                onClick={() => {
+                onClick={async () => {
                   const amt = parseFloat(adjustAmount);
-                  if (!amt || !adjustDescription.trim()) { toast.error('Amount and description are required'); return; }
-                  setPinMode('verify');
-                  setPinValue('');
-                  setShowPinModal(true);
+                  if (!amt || !adjustDescription.trim() || !adjustPin.trim()) { toast.error('All fields are required'); return; }
+                  setAdjustProcessing(true);
+                  try {
+                    const r = await fetch(`${API}/admin/finance/adjust-tutor-balance`, {
+                      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                      body: JSON.stringify({ user_id: adjustTarget.user_id, amount: amt, description: adjustDescription, admin_pin: adjustPin }),
+                    });
+                    const d = await r.json();
+                    if (r.ok) {
+                      toast.success(`Balance adjusted: ${d.message}. New balance: RM ${d.new_balance}`);
+                      setShowAdjustBalanceModal(false);
+                      setAdjustTarget(null);
+                      setAdjustAmount('');
+                      setAdjustDescription('');
+                      setAdjustPin('');
+                    } else {
+                      if (d.detail === 'PIN_NOT_SET') toast.error('Admin PIN not set. Go to Admin Settings to create one first.');
+                      else toast.error(d.detail || 'Failed to adjust balance');
+                    }
+                  } catch (e) { toast.error('Network error'); }
+                  finally { setAdjustProcessing(false); }
                 }}
-                disabled={adjustProcessing || !adjustAmount || !adjustDescription}
+                disabled={adjustProcessing || !adjustAmount || !adjustDescription || !adjustPin}
                 className="flex-1 h-11 rounded-xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 data-testid="confirm-adjust-btn"
               >
-                {adjustProcessing ? 'Processing...' : 'Verify PIN & Adjust'}
+                {adjustProcessing ? 'Processing...' : 'Adjust Balance'}
               </button>
             </div>
           </div>
