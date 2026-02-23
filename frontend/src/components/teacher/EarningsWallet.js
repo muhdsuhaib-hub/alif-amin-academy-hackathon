@@ -162,26 +162,31 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
                 <tbody className="divide-y divide-slate-50">
                   {transactions.map((t, i) => {
                     const isWithdrawal = t.transaction_type === 'withdrawal' || t.transaction_type === 'withdrawal_request';
+                    const isAdminAdj = t.transaction_type === 'admin_adjustment';
+                    const isNegative = isWithdrawal || (isAdminAdj && t.net_amount < 0);
+                    const isPositive = t.transaction_type === 'session_earning' || (isAdminAdj && t.net_amount >= 0);
                     return (
                     <tr key={t.transaction_id || i} className="hover:bg-slate-50/50 transition-colors" data-testid={`txn-row-${i}`}>
                       <td className="px-5 py-3">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                          t.transaction_type === 'session_earning' ? 'bg-emerald-50' : isWithdrawal ? 'bg-red-50' : 'bg-slate-50'
+                          isPositive ? 'bg-emerald-50' : isNegative ? 'bg-red-50' : isAdminAdj ? 'bg-blue-50' : 'bg-slate-50'
                         }`}>
-                          {t.transaction_type === 'session_earning' ? <ArrowDownRight className="w-3.5 h-3.5 text-emerald-600" /> :
-                           isWithdrawal ? <ArrowUpRight className="w-3.5 h-3.5 text-red-500" /> :
+                          {isPositive && !isAdminAdj ? <ArrowDownRight className="w-3.5 h-3.5 text-emerald-600" /> :
+                           isNegative ? <ArrowUpRight className="w-3.5 h-3.5 text-red-500" /> :
+                           isAdminAdj ? <DollarSign className="w-3.5 h-3.5 text-blue-600" /> :
                            <DollarSign className="w-3.5 h-3.5 text-slate-500" />}
                         </div>
                       </td>
                       <td className="px-5 py-3">
                         <p className="text-sm text-slate-900 truncate max-w-[200px]">{t.student_name ? `${t.student_name} - ${t.duration_minutes || 30} min` : (t.description || t.transaction_type)}</p>
+                        {isAdminAdj && <span className="text-[10px] text-blue-500 font-medium">Admin Adjustment</span>}
                       </td>
                       <td className="px-5 py-3 text-xs text-slate-400 whitespace-nowrap">
                         {t.created_at ? new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
                       </td>
                       <td className="px-5 py-3 text-right">
-                        <span className={`text-sm font-semibold tabular-nums ${isWithdrawal ? 'text-red-500' : 'text-emerald-600'}`}>
-                          {isWithdrawal ? '- ' : '+ '}RM {(t.net_amount || t.amount || 0).toFixed(2)}
+                        <span className={`text-sm font-semibold tabular-nums ${isNegative ? 'text-red-500' : 'text-emerald-600'}`}>
+                          {isNegative ? '- ' : '+ '}RM {Math.abs(t.net_amount || t.amount || 0).toFixed(2)}
                         </span>
                       </td>
                     </tr>
