@@ -242,6 +242,23 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#7 — Modern AreaChart:** Replaced `BarChart` with smooth `AreaChart` using gradient fills (`url(#gradGross)`, `url(#gradNet)`). Two smooth lines for Gross Revenue (emerald) and Net Profit (amber). Interactive hover tooltip with exact RM values. Clean Stripe-style appearance.
 
+
+### Hotfix 9.8: Critical Logic Refinements & Admin Financial Override (Feb 2026)
+
+**#1 — Rejected Math Bug:** `total_withdrawn` on Teacher dashboard now calculated via aggregation pipeline filtering ONLY `status: approved/completed` from `withdrawal_requests`. No longer includes rejected/pending.
+
+**#2 — Auto-Refresh Polling:** 15s `setInterval` polling on Admin WithdrawalManagement and Teacher EarningsWallet (fetches fresh txn data + wallet metrics).
+
+**#3 — Ghost Buster Broadened:** Query fetches ALL sessions with `status: $in: ["Live","live","LIVE","Scheduled","scheduled"]` without date filter in DB query. Time comparison done in Python memory: `elapsed > 2 hours` from `start_time_utc` or `created_at`.
+
+**#4 — Pagination Always Visible:** Changed `totalPages > 1` to `totalPages >= 1` + added smart 7-page windowing for large page counts.
+
+**#5-7 — Secure Admin Balance Adjust:** New `POST /api/admin/finance/adjust-tutor-balance` endpoint. Accepts `user_id`, `amount` (+/-), `description`, `admin_pin`. PIN verified against `admin_settings.settings_pin` or `ADMIN_PIN` env. ACID atomic: updates `withdrawable_balance` + inserts `admin_adjustment` ledger record.
+
+**#8-10 — Admin UI "Adjust Balance":** New dropdown action on teacher rows in UserManagement. Secure modal with Amount, Reason, masked PIN input. Success toast on completion.
+
+**#11 — Teacher Ledger Recognition:** Transaction History now parses `admin_adjustment` type. Positive amounts green, negative red, "Admin Adjustment" sub-label in blue.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
