@@ -245,7 +245,7 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 ## Backlog
 
 ### P0 (Awaiting UAT)
-- Manual UAT of Hotfix 9.6
+- Manual UAT of Hotfix 9.8
 
 ### P1 (Phase C: WebRTC Engine — separate release)
 - Resilient Cloud Recording with GCS Signed URLs and media chunking
