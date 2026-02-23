@@ -2037,29 +2037,32 @@ async def get_admin_revenue_chart(
 # ============== GHOST CLASS CLEANUP (#8) ==============
 @api_router.post("/admin/sessions/cleanup-stale")
 async def cleanup_stale_sessions(current_user: User = Depends(get_current_user)):
-    """Auto-transition stale 'live'/'Live' bookings to 'completed' or 'abandoned'."""
+    """Auto-transition stale live/scheduled bookings to completed/abandoned."""
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
     now = datetime.now(timezone.utc)
-    two_hours_ago = (now - timedelta(hours=2)).isoformat()
 
-    # Match any case variant of live/scheduled status where start_time is old
+    # Broadest possible query — fetch ALL live/Live/scheduled sessions
     stale = await db.bookings.find(
-        {
-            "status": {"$regex": "^(live|scheduled)$", "$options": "i"},
-            "start_time_utc": {"$lt": two_hours_ago},
-        },
-        {"_id": 0, "booking_id": 1, "start_time_utc": 1, "duration_minutes": 1, "status": 1}
-    ).to_list(200)
+        {"status": {"$in": ["Live", "live", "LIVE", "Scheduled", "scheduled"]}},
+        {"_id": 0, "booking_id": 1, "start_time_utc": 1, "duration_minutes": 1, "status": 1, "created_at": 1}
+    ).to_list(500)
 
     cleaned = 0
+    two_hours_ms = 2 * 60 * 60 * 1000
+
     for b in stale:
+        # Try start_time_utc, fall back to created_at
+        time_str = b.get("start_time_utc") or b.get("created_at")
+        if not time_str:
+            continue
         try:
-            start = datetime.fromisoformat(b["start_time_utc"].replace("Z", "+00:00"))
+            start = datetime.fromisoformat(str(time_str).replace("Z", "+00:00"))
         except (ValueError, TypeError):
             continue
-        end_plus_buffer = start + timedelta(minutes=(b.get("duration_minutes", 60) + 120))
-        if now > end_plus_buffer:
+
+        elapsed = (now - start).total_seconds() * 1000
+        if elapsed > two_hours_ms:
             report = await db.session_reports.find_one({"booking_id": b["booking_id"]})
             new_status = "completed" if report else "abandoned"
             await db.bookings.update_one(
