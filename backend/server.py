@@ -1873,8 +1873,11 @@ async def request_payout(data: dict, current_user: User = Depends(get_current_us
 
 # ============== TEACHER ANALYTICS (#10) ==============
 @api_router.get("/teacher/analytics")
-async def get_teacher_analytics(current_user: User = Depends(get_current_user)):
-    """Teacher analytics: daily earnings (30d) and recent rating trend."""
+async def get_teacher_analytics(
+    start_date: str = None, end_date: str = None,
+    current_user: User = Depends(get_current_user),
+):
+    """Teacher analytics: daily earnings and recent rating trend with optional date range."""
     if current_user.role != "teacher":
         raise HTTPException(status_code=403, detail="Not authorized")
     teacher = await db.teachers.find_one({"user_id": current_user.user_id}, {"_id": 0})
@@ -1882,30 +1885,43 @@ async def get_teacher_analytics(current_user: User = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="Teacher profile not found")
     teacher_id = teacher["teacher_id"]
     now = datetime.now(timezone.utc)
-    thirty_days_ago = (now - timedelta(days=30)).isoformat()
 
-    # Daily earnings for last 30 days
+    # Resolve date range
+    if start_date and end_date:
+        date_from = start_date
+        date_to = end_date
+    else:
+        date_from = (now - timedelta(days=30)).strftime("%Y-%m-%d")
+        date_to = now.strftime("%Y-%m-%d")
+
+    # Daily earnings
     daily_pipeline = [
-        {"$match": {"teacher_id": teacher_id, "created_at": {"$gte": thirty_days_ago}, "transaction_type": "session_earning"}},
+        {"$match": {"teacher_id": teacher_id, "created_at": {"$gte": date_from, "$lte": date_to + "T23:59:59"}, "transaction_type": "session_earning"}},
         {"$addFields": {"date_str": {"$substr": ["$created_at", 0, 10]}}},
         {"$group": {"_id": "$date_str", "total": {"$sum": {"$ifNull": ["$net_amount", "$amount"]}}, "count": {"$sum": 1}}},
         {"$sort": {"_id": 1}},
     ]
-    daily_raw = await db.tutor_earnings_transactions.aggregate(daily_pipeline).to_list(31)
+    daily_raw = await db.tutor_earnings_transactions.aggregate(daily_pipeline).to_list(366)
     # Fill missing days
     daily_earnings = []
-    for i in range(30, -1, -1):
-        d = (now - timedelta(days=i)).strftime("%Y-%m-%d")
+    from_dt = datetime.strptime(date_from, "%Y-%m-%d")
+    to_dt = datetime.strptime(date_to, "%Y-%m-%d")
+    delta_days = (to_dt - from_dt).days
+    for i in range(delta_days + 1):
+        d = (from_dt + timedelta(days=i)).strftime("%Y-%m-%d")
         found = next((r for r in daily_raw if r["_id"] == d), None)
         daily_earnings.append({"date": d, "earnings": round(found["total"], 2) if found else 0, "sessions": found["count"] if found else 0})
 
-    # Rating trend from last 10 session reports / reviews
+    # Rating trend (date-filtered or last 10)
+    rating_query = {"teacher_id": teacher_id}
+    if start_date and end_date:
+        rating_query["created_at"] = {"$gte": date_from, "$lte": date_to + "T23:59:59"}
     reviews = await db.reviews.find(
-        {"teacher_id": teacher_id}, {"_id": 0, "rating": 1, "created_at": 1}
-    ).sort("created_at", -1).limit(10).to_list(10)
+        rating_query, {"_id": 0, "rating": 1, "created_at": 1}
+    ).sort("created_at", -1).limit(20).to_list(20)
     rating_trend = [{"date": r.get("created_at", "")[:10], "rating": r.get("rating", 0)} for r in reversed(reviews)]
 
-    return {"daily_earnings": daily_earnings, "rating_trend": rating_trend}
+    return {"daily_earnings": daily_earnings, "rating_trend": rating_trend, "date_from": date_from, "date_to": date_to}
 
 
 # ============== ADMIN SESSION HISTORY (#7) ==============
