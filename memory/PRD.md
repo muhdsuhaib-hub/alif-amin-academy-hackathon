@@ -263,9 +263,9 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#1 — 500 Crash Fix (P0):** Rewrote `POST /api/admin/finance/adjust-tutor-balance` PIN validation. Removed faulty custom logic (checking `admin_settings` collection for plaintext PIN). Now uses bcrypt verification against admin user's `admin_pin_hash` — same proven pattern as student wallet adjust in `admin_routes.py`. Added input validation try/except wrapper.
 
-**#2 — Automated Stale Session Sweeper (P0):** Removed manual `POST /api/admin/sessions/cleanup-stale` endpoint and its "Cleanup Stale Sessions" UI button. Replaced with a true background `asyncio` task launched on FastAPI startup that runs every 5 minutes. Logic: queries sessions with status `Live`/`Scheduled`, checks if current time exceeds `start_time + duration + 2h buffer`, transitions to `completed` (if session report exists) or `abandoned`.
+**#2 — Automated Stale Session Sweeper (P0):** Removed manual `POST /api/admin/sessions/cleanup-stale` endpoint and its "Cleanup Stale Sessions" UI button. Replaced with a true background `asyncio` task launched on FastAPI startup that runs every 5 minutes. **Strict timing (no grace period):** sessions go `live` when `start_time <= now < end_time`, and transition to `completed` (report exists) or `missed` the exact minute `now >= end_time`. Updates both `bookings` and `class_sessions` collections for instant sync.
 
-**#3 — Frontend PIN Modal Reuse (P0):** Removed inline PIN field from the "Adjust Teacher Balance" modal in `UserManagement.js`. Now reuses the shared PIN modal component (same `showPinModal`, `handlePinSubmit` flow) used by student wallet adjustments. Handles `PIN_NOT_SET` → create mode seamlessly.
+**#3 — Frontend PIN Modal Fix (P0):** Fixed fatal React `ReferenceError: setAdjustPin is not defined`. Rebuilt the "Adjust Teacher Balance" modal as a self-contained component with properly defined `adjustPin`/`setAdjustPin` state, inline PIN field, and direct API call. No longer depends on the shared PIN modal flow.
 
 **#4 — Omni-Role Real-Time Sync (P1):** Added 30s history polling to Admin SessionMonitor (alongside existing 15s live session polling). Teacher DashboardOverview and Student DashboardHome already had 30s auto-refresh. Status changes from the background sweeper now reflect across all roles without manual page refreshes.
 
