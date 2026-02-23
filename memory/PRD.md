@@ -225,6 +225,23 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#8 — Ghost Live Class Cleanup:** New `POST /api/admin/sessions/cleanup-stale` endpoint. Finds bookings stuck in live/scheduled past `end_time + 60min`, transitions to "completed" (if report exists) or "abandoned". Exposed as "Cleanup Stale Sessions" button in Admin Session Monitor.
 
+
+### Emergency Hotfix 9.6: Financial Leak & Advanced BI Grouping (Feb 2026)
+
+**#1 — Payout Collection Fix (P0):** Rewired `POST /api/teacher/request-payout` to insert into `withdrawal_requests` (not `payout_requests`) with correct field names (`withdrawal_id`, `account_holder_name`). Admin's WithdrawalManagement now correctly surfaces pending withdrawals.
+
+**#2 — Transaction History Withdrawal Rendering:** Frontend now recognizes both `withdrawal` and `withdrawal_request` transaction types for red negative display in the merged Transaction History table.
+
+**#3 — Ghost Buster Logic Fix:** Changed status match to case-insensitive regex `^(live|scheduled)$`. Extended cutoff to 2 hours. Added `try/except` for ISO date parsing. Logs each auto-cleaned session.
+
+**#4 — View Report Button:** Already present in SessionMonitor from Hotfix 9.5 (verified).
+
+**#5 — Rating Trend Fallback:** Backend now falls back to `session_reports` collection (checking `rating` and `average_rating` fields) when `reviews` collection has no data for the teacher.
+
+**#6 — Yearly Grouping:** Added `year` option to `group_by` parameter in `GET /api/admin/revenue/chart-data`. Backend uses `substr_len=4` for yearly aggregation. Frontend toggle includes "Yearly" button.
+
+**#7 — Modern AreaChart:** Replaced `BarChart` with smooth `AreaChart` using gradient fills (`url(#gradGross)`, `url(#gradNet)`). Two smooth lines for Gross Revenue (emerald) and Net Profit (amber). Interactive hover tooltip with exact RM values. Clean Stripe-style appearance.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
