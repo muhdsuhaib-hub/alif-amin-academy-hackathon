@@ -1917,14 +1917,29 @@ async def get_teacher_analytics(
         found = next((r for r in daily_raw if r["_id"] == d), None)
         daily_earnings.append({"date": d, "earnings": round(found["total"], 2) if found else 0, "sessions": found["count"] if found else 0})
 
-    # Rating trend (date-filtered or last 10)
+    # Rating trend — try reviews first, fallback to session_reports average_rating
     rating_query = {"teacher_id": teacher_id}
     if start_date and end_date:
         rating_query["created_at"] = {"$gte": date_from, "$lte": date_to + "T23:59:59"}
     reviews = await db.reviews.find(
         rating_query, {"_id": 0, "rating": 1, "created_at": 1}
     ).sort("created_at", -1).limit(20).to_list(20)
-    rating_trend = [{"date": r.get("created_at", "")[:10], "rating": r.get("rating", 0)} for r in reversed(reviews)]
+
+    if not reviews:
+        # Fallback: pull from session_reports (may store rating/average_rating)
+        sr_query = {"teacher_id": teacher_id}
+        if start_date and end_date:
+            sr_query["created_at"] = {"$gte": date_from, "$lte": date_to + "T23:59:59"}
+        reports = await db.session_reports.find(
+            sr_query, {"_id": 0, "rating": 1, "average_rating": 1, "created_at": 1}
+        ).sort("created_at", -1).limit(20).to_list(20)
+        rating_trend = []
+        for r in reversed(reports):
+            rt = r.get("rating") or r.get("average_rating")
+            if rt:
+                rating_trend.append({"date": r.get("created_at", "")[:10], "rating": rt})
+    else:
+        rating_trend = [{"date": r.get("created_at", "")[:10], "rating": r.get("rating", 0)} for r in reversed(reviews)]
 
     return {"daily_earnings": daily_earnings, "rating_trend": rating_trend, "date_from": date_from, "date_to": date_to}
 
