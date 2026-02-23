@@ -1854,6 +1854,109 @@ async def request_payout(data: dict, current_user: User = Depends(get_current_us
     return {"message": "Payout request submitted", "payout_id": payout_id, "new_withdrawable_balance": new_withdrawable}
 
 
+# ============== TEACHER ANALYTICS (#10) ==============
+@api_router.get("/teacher/analytics")
+async def get_teacher_analytics(current_user: User = Depends(get_current_user)):
+    """Teacher analytics: daily earnings (30d) and recent rating trend."""
+    if current_user.role != "teacher":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    teacher = await db.teachers.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher profile not found")
+    teacher_id = teacher["teacher_id"]
+    now = datetime.now(timezone.utc)
+    thirty_days_ago = (now - timedelta(days=30)).isoformat()
+
+    # Daily earnings for last 30 days
+    daily_pipeline = [
+        {"$match": {"teacher_id": teacher_id, "created_at": {"$gte": thirty_days_ago}, "transaction_type": "session_earning"}},
+        {"$addFields": {"date_str": {"$substr": ["$created_at", 0, 10]}}},
+        {"$group": {"_id": "$date_str", "total": {"$sum": {"$ifNull": ["$net_amount", "$amount"]}}, "count": {"$sum": 1}}},
+        {"$sort": {"_id": 1}},
+    ]
+    daily_raw = await db.tutor_earnings_transactions.aggregate(daily_pipeline).to_list(31)
+    # Fill missing days
+    daily_earnings = []
+    for i in range(30, -1, -1):
+        d = (now - timedelta(days=i)).strftime("%Y-%m-%d")
+        found = next((r for r in daily_raw if r["_id"] == d), None)
+        daily_earnings.append({"date": d, "earnings": round(found["total"], 2) if found else 0, "sessions": found["count"] if found else 0})
+
+    # Rating trend from last 10 session reports / reviews
+    reviews = await db.reviews.find(
+        {"teacher_id": teacher_id}, {"_id": 0, "rating": 1, "created_at": 1}
+    ).sort("created_at", -1).limit(10).to_list(10)
+    rating_trend = [{"date": r.get("created_at", "")[:10], "rating": r.get("rating", 0)} for r in reversed(reviews)]
+
+    return {"daily_earnings": daily_earnings, "rating_trend": rating_trend}
+
+
+# ============== ADMIN SESSION HISTORY (#7) ==============
+@api_router.get("/admin/sessions/history")
+async def get_admin_session_history(
+    status: str = None, limit: int = 20, offset: int = 0,
+    current_user: User = Depends(get_current_user),
+):
+    """Admin: paginated session history from bookings."""
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    query = {}
+    if status and status != "all":
+        query["status"] = status
+    total = await db.bookings.count_documents(query)
+    bookings = await db.bookings.find(query, {"_id": 0}).sort("start_time_utc", -1).skip(offset).limit(limit).to_list(limit)
+    # Enrich with names
+    for b in bookings:
+        if b.get("teacher_id"):
+            t = await db.teachers.find_one({"teacher_id": b["teacher_id"]}, {"_id": 0, "user_id": 1})
+            if t:
+                u = await db.users.find_one({"user_id": t["user_id"]}, {"_id": 0, "name": 1})
+                b["teacher_name"] = u.get("name", "Unknown") if u else "Unknown"
+        if b.get("student_id"):
+            s = await db.students.find_one({"student_id": b["student_id"]}, {"_id": 0, "user_id": 1})
+            if s:
+                u = await db.users.find_one({"user_id": s["user_id"]}, {"_id": 0, "name": 1})
+                b["student_name"] = u.get("name", "Unknown") if u else "Unknown"
+        # Attach session report if completed
+        if b.get("status") == "completed" and b.get("booking_id"):
+            report = await db.session_reports.find_one({"booking_id": b["booking_id"]}, {"_id": 0})
+            b["session_report"] = report
+    return {"bookings": bookings, "total": total, "limit": limit, "offset": offset}
+
+
+# ============== ADMIN REVENUE CHART (#9) ==============
+@api_router.get("/admin/revenue/chart-data")
+async def get_admin_revenue_chart(
+    group_by: str = "day",
+    current_user: User = Depends(get_current_user),
+):
+    """Admin: aggregated gross/net revenue for charts."""
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    now = datetime.now(timezone.utc)
+    if group_by == "month":
+        since = (now - timedelta(days=365)).isoformat()
+        substr_len = 7  # YYYY-MM
+    else:
+        since = (now - timedelta(days=30)).isoformat()
+        substr_len = 10  # YYYY-MM-DD
+
+    pipeline = [
+        {"$match": {"created_at": {"$gte": since}}},
+        {"$addFields": {"period": {"$substr": ["$created_at", 0, substr_len]}}},
+        {"$group": {
+            "_id": "$period",
+            "gross": {"$sum": "$gross_amount"},
+            "net_profit": {"$sum": "$platform_fee"},
+            "tutor_payouts": {"$sum": "$net_to_teacher"},
+            "sessions": {"$sum": 1},
+        }},
+        {"$sort": {"_id": 1}},
+    ]
+    raw = await db.admin_revenue.aggregate(pipeline).to_list(366)
+    data = [{"period": r["_id"], "gross": round(r["gross"], 2), "net_profit": round(r["net_profit"], 2), "tutor_payouts": round(r["tutor_payouts"], 2), "sessions": r["sessions"]} for r in raw]
+    return {"chart_data": data, "group_by": group_by}
+
 
 app.include_router(api_router)
 
