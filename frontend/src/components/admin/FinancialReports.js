@@ -113,11 +113,11 @@ export default function FinancialReports() {
             <p className="text-[11px] text-slate-400 mt-0.5">Platform earnings breakdown</p>
           </div>
           <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-0.5">
-            {['day', 'month'].map(g => (
-              <button key={g} onClick={() => setChartGroup(g)}
+            {['day', 'month', 'year'].map(g => (
+              <button key={g} onClick={() => { setChartGroup(g); fetchChart(g); }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all capitalize ${chartGroup === g ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
                 data-testid={`chart-group-${g}`}>
-                {g === 'day' ? 'Daily' : 'Monthly'}
+                {g === 'day' ? 'Daily' : g === 'month' ? 'Monthly' : 'Yearly'}
               </button>
             ))}
           </div>
