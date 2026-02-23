@@ -2190,3 +2190,56 @@ async def seed_system_settings():
             },
             "updated_at": datetime.now(timezone.utc).isoformat()
         })
+
+
+# ============================================================
+# BACKGROUND JOB: Automated Stale Session Sweeper (every 5 min)
+# ============================================================
+async def _sweep_stale_sessions():
+    """Background coroutine that runs every 5 minutes to auto-transition stale sessions."""
+    INTERVAL_SECONDS = 5 * 60  # 5 minutes
+    TWO_HOURS = timedelta(hours=2)
+    while True:
+        try:
+            await asyncio.sleep(INTERVAL_SECONDS)
+            now = datetime.now(timezone.utc)
+            stale = await db.bookings.find(
+                {"status": {"$in": ["Live", "live", "LIVE", "Scheduled", "scheduled"]}},
+                {"_id": 0, "booking_id": 1, "start_time_utc": 1, "duration_minutes": 1, "status": 1, "created_at": 1}
+            ).to_list(500)
+
+            cleaned = 0
+            for b in stale:
+                time_str = b.get("start_time_utc") or b.get("created_at")
+                if not time_str:
+                    continue
+                try:
+                    start = datetime.fromisoformat(str(time_str).replace("Z", "+00:00"))
+                    if start.tzinfo is None:
+                        start = start.replace(tzinfo=timezone.utc)
+                except (ValueError, TypeError):
+                    continue
+
+                duration_mins = b.get("duration_minutes", 60)
+                expected_end = start + timedelta(minutes=duration_mins)
+                if now > expected_end + TWO_HOURS:
+                    report = await db.session_reports.find_one({"booking_id": b["booking_id"]})
+                    new_status = "completed" if report else "abandoned"
+                    await db.bookings.update_one(
+                        {"booking_id": b["booking_id"]},
+                        {"$set": {"status": new_status, "auto_cleaned_at": now.isoformat()}}
+                    )
+                    cleaned += 1
+                    logger.info(f"[Sweeper] Auto-cleaned {b['booking_id']}: {b['status']} -> {new_status}")
+
+            if cleaned > 0:
+                logger.info(f"[Sweeper] Cleaned {cleaned} stale session(s) out of {len(stale)} checked")
+        except Exception as e:
+            logger.error(f"[Sweeper] Error in stale session sweep: {e}")
+
+
+@app.on_event("startup")
+async def start_stale_session_sweeper():
+    """Launch the background stale-session sweeper task."""
+    asyncio.create_task(_sweep_stale_sessions())
+    logger.info("[Sweeper] Stale session background sweeper started (interval: 5 min)")
