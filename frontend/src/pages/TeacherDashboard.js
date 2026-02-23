@@ -52,6 +52,15 @@ export default function TeacherDashboard({ user, onUserUpdate }) {
     if (user?.user_id) fetchDashboardData();
   }, [user?.user_id, fetchDashboardData]);
 
+  // #6: Background polling for dashboard data (new bookings, class updates)
+  useEffect(() => {
+    if (!user?.user_id) return;
+    const interval = setInterval(() => {
+      fetchDashboardData();
+    }, 30000); // 30s polling
+    return () => clearInterval(interval);
+  }, [user?.user_id, fetchDashboardData]);
+
   const handleLogout = async () => {
     try {
       await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' });
