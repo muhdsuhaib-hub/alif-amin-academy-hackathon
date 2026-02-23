@@ -32,6 +32,12 @@ export default function UserManagement() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [selectedIds, setSelectedIds] = useState([]);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [showAdjustBalanceModal, setShowAdjustBalanceModal] = useState(false);
+  const [adjustTarget, setAdjustTarget] = useState(null);
+  const [adjustAmount, setAdjustAmount] = useState('');
+  const [adjustDescription, setAdjustDescription] = useState('');
+  const [adjustPin, setAdjustPin] = useState('');
+  const [adjustProcessing, setAdjustProcessing] = useState(false);
 
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinValue, setPinValue] = useState('');
