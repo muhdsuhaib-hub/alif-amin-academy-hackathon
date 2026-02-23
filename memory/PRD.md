@@ -185,14 +185,16 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 ## Backlog
 
 ### P0 (Awaiting UAT)
-- Manual UAT of Hotfix 8.4 (Billplz verbose errors, GCS public uploads)
+- Manual UAT of Production Release 9.4
 
-### P1
-- WhatsApp notifications integration
-- SMTP credentials configuration
+### P1 (Phase C: WebRTC Engine — separate release)
+- Resilient Cloud Recording with GCS Signed URLs and media chunking
+- UTC Server-Side Timer with 10s WebSocket sync
+- WebSocket Heartbeat & Presence (pingInterval/pingTimeout, peer_disconnected)
+- WebSocket Activity Push (content library → classroom overlay)
 
 ### P2
-- Cloud recording integration (Start Recording button)
+- WhatsApp notifications integration
 - Admin Report Card PDF export
 - Blur Background toggle in A/V settings
 - SMS notifications
