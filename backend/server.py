@@ -2004,7 +2004,7 @@ async def get_admin_revenue_chart(
         since = (now - timedelta(days=30)).isoformat()
         until = now.isoformat()
 
-    substr_len = 7 if group_by == "month" else 10
+    substr_len = 4 if group_by == "year" else (7 if group_by == "month" else 10)
 
     pipeline = [
         {"$match": {"created_at": {"$gte": since, "$lte": until}}},
