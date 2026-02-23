@@ -463,15 +463,19 @@ async def process_withdrawal(withdrawal_id: str, update: WithdrawalRequestUpdate
             }}
         )
         
-        # Add transaction record
-        await add_earnings_transaction(
-            earnings_id=earnings["earnings_id"],
-            teacher_id=withdrawal["teacher_id"],
-            transaction_type="withdrawal_approved",
-            amount=0,  # No change to withdrawable balance
-            balance_after=earnings["withdrawable_balance"],
-            description=f"Withdrawal approved and paid to {withdrawal['bank_name']} - {withdrawal['account_number']}",
-            reference_id=withdrawal_id
+        # Update the ORIGINAL withdrawal_request transaction description instead of creating a new one
+        # Format: "Approved Withdrawal [RM X.00: Mon DD, YYYY]"
+        requested_at = withdrawal.get("created_at") or now.isoformat()
+        try:
+            req_date = datetime.fromisoformat(str(requested_at).replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            req_date = now
+        date_str = req_date.strftime("%b %d, %Y")
+        approved_desc = f"Approved Withdrawal [RM {withdrawal['amount']:.2f}: {date_str}]"
+        
+        await db.tutor_earnings_transactions.update_one(
+            {"reference_id": withdrawal_id, "transaction_type": "withdrawal_request"},
+            {"$set": {"description": approved_desc, "updated_at": now.isoformat()}}
         )
         
         return {

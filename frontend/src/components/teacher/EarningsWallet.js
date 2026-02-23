@@ -61,18 +61,18 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
     if (teacherId) fetchTransactions(0);
   }, [teacherId]);
 
-  // #2: 15-second auto-refresh for wallet metrics
+  // #2: 15-second auto-refresh for wallet metrics (silent — no flicker)
   useEffect(() => {
     if (!teacherId) return;
     const interval = setInterval(() => {
       if (onRefresh) onRefresh();
-      fetchTransactions(page);
+      fetchTransactions(page, true);
     }, 15000);
     return () => clearInterval(interval);
   }, [teacherId, page, onRefresh]);
 
-  const fetchTransactions = async (pageNum) => {
-    setLoading(true);
+  const fetchTransactions = async (pageNum, silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const skip = pageNum * PAGE_SIZE;
       const r = await fetch(`${API}/teachers/${teacherId}/transactions?limit=${PAGE_SIZE}&skip=${skip}`, { credentials: 'include' });
@@ -83,7 +83,7 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
         setPage(pageNum);
       }
     } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    finally { if (!silent) setLoading(false); }
   };
 
   const totalPages = Math.ceil(totalTxns / PAGE_SIZE);
@@ -178,7 +178,7 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
                         </div>
                       </td>
                       <td className="px-5 py-3">
-                        <p className="text-sm text-slate-900 truncate max-w-[200px]">{t.student_name ? `${t.student_name} - ${t.duration_minutes || 30} min` : (t.description || t.transaction_type)}</p>
+                        <p className="text-sm text-slate-900 break-words max-w-[280px]">{t.student_name ? `${t.student_name} - ${t.duration_minutes || 30} min` : (t.description || t.transaction_type)}</p>
                         {isAdminAdj && <span className="text-[10px] text-blue-500 font-medium">Admin Adjustment</span>}
                       </td>
                       <td className="px-5 py-3 text-xs text-slate-400 whitespace-nowrap">
