@@ -92,19 +92,6 @@ export default function SessionMonitor() {
     } catch { toast.error('Failed to start recording'); }
   };
 
-  // Ghost class cleanup (#8)
-  const handleCleanupStale = async () => {
-    try {
-      const res = await fetch(`${API}/admin/sessions/cleanup-stale`, { method: 'POST', credentials: 'include' });
-      if (res.ok) {
-        const d = await res.json();
-        toast.success(`Cleaned ${d.cleaned} stale session(s) (checked ${d.checked})`);
-        fetchHistory(page, filter, filterTeacher, filterDate);
-        fetchLive();
-      } else toast.error('Cleanup failed');
-    } catch { toast.error('Error'); }
-  };
-
   const statusConfig = {
     live: { color: 'success', label: 'LIVE' },
     scheduled: { color: 'info', label: 'Scheduled' },
