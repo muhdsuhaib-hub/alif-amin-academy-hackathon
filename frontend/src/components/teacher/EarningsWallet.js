@@ -150,14 +150,16 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {transactions.map((t, i) => (
+                  {transactions.map((t, i) => {
+                    const isWithdrawal = t.transaction_type === 'withdrawal' || t.transaction_type === 'withdrawal_request';
+                    return (
                     <tr key={t.transaction_id || i} className="hover:bg-slate-50/50 transition-colors" data-testid={`txn-row-${i}`}>
                       <td className="px-5 py-3">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                          t.transaction_type === 'session_earning' ? 'bg-emerald-50' : t.transaction_type === 'withdrawal' ? 'bg-red-50' : 'bg-slate-50'
+                          t.transaction_type === 'session_earning' ? 'bg-emerald-50' : isWithdrawal ? 'bg-red-50' : 'bg-slate-50'
                         }`}>
                           {t.transaction_type === 'session_earning' ? <ArrowDownRight className="w-3.5 h-3.5 text-emerald-600" /> :
-                           t.transaction_type === 'withdrawal' ? <ArrowUpRight className="w-3.5 h-3.5 text-red-500" /> :
+                           isWithdrawal ? <ArrowUpRight className="w-3.5 h-3.5 text-red-500" /> :
                            <DollarSign className="w-3.5 h-3.5 text-slate-500" />}
                         </div>
                       </td>
@@ -168,12 +170,13 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
                         {t.created_at ? new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
                       </td>
                       <td className="px-5 py-3 text-right">
-                        <span className={`text-sm font-semibold tabular-nums ${t.transaction_type === 'withdrawal' ? 'text-red-500' : 'text-emerald-600'}`}>
-                          {t.transaction_type === 'withdrawal' ? '- ' : '+ '}RM {(t.net_amount || t.amount || 0).toFixed(2)}
+                        <span className={`text-sm font-semibold tabular-nums ${isWithdrawal ? 'text-red-500' : 'text-emerald-600'}`}>
+                          {isWithdrawal ? '- ' : '+ '}RM {(t.net_amount || t.amount || 0).toFixed(2)}
                         </span>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
