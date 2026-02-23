@@ -2084,25 +2084,28 @@ async def adjust_tutor_balance(data: dict, current_user: User = Depends(get_curr
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    user_id = data.get("user_id", "").strip()
-    amount = float(data.get("amount", 0))
-    description = data.get("description", "").strip()
-    admin_pin = data.get("admin_pin", "").strip()
+    try:
+        user_id = data.get("user_id", "").strip()
+        amount = float(data.get("amount", 0))
+        description = data.get("description", "").strip()
+        admin_pin = data.get("admin_pin", "").strip()
+    except (ValueError, AttributeError) as e:
+        raise HTTPException(status_code=400, detail=f"Invalid input: {e}")
 
     if not user_id or not description:
         raise HTTPException(status_code=400, detail="user_id and description are required")
     if amount == 0:
         raise HTTPException(status_code=400, detail="Amount cannot be zero")
 
-    # Verify admin PIN — check admin_settings or fallback to env
-    admin_settings = await db.admin_settings.find_one({"type": "settings_pin"}, {"_id": 0})
-    stored_pin = None
-    if admin_settings:
-        stored_pin = admin_settings.get("pin") or admin_settings.get("value")
-    if not stored_pin:
-        stored_pin = os.environ.get("ADMIN_PIN", "")
-    if not stored_pin or admin_pin != stored_pin:
-        raise HTTPException(status_code=403, detail="Invalid admin PIN")
+    # Verify admin PIN using bcrypt (same pattern as wallet-adjust in admin_routes.py)
+    admin_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
+    stored_pin_hash = admin_doc.get("admin_pin_hash") if admin_doc else None
+    if not stored_pin_hash:
+        raise HTTPException(status_code=400, detail="PIN_NOT_SET")
+    if not admin_pin:
+        raise HTTPException(status_code=400, detail="PIN_REQUIRED")
+    if not bcrypt.checkpw(admin_pin.encode(), stored_pin_hash.encode()):
+        raise HTTPException(status_code=403, detail="Invalid PIN")
 
     # Verify user is a teacher
     teacher = await db.teachers.find_one({"user_id": user_id}, {"_id": 0})
