@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Video, Eye, Circle, Radio, ChevronRight, Users, Clock, FileText, Play, Download } from 'lucide-react';
+import { Video, Eye, Circle, Radio, ChevronRight, ChevronLeft, Users, Clock, FileText, Play, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import Card, { CardHeader, CardBody } from '../Card';
 import Badge from '../Badge';
@@ -8,27 +8,46 @@ import Button from '../Button';
 import Spinner from '../Spinner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const PAGE_SIZE = 20;
 
 export default function SessionMonitor() {
   const navigate = useNavigate();
-  const [sessions, setSessions] = useState([]);
+  const [liveSessions, setLiveSessions] = useState([]);
+  const [historyData, setHistoryData] = useState({ bookings: [], total: 0 });
   const [loading, setLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [page, setPage] = useState(0);
   const [detailSession, setDetailSession] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
-  const [sPage, setSPage] = useState(1);
-  const SP = 10;
 
-  const fetchSessions = useCallback(async () => {
+  // Fetch live sessions (polling)
+  const fetchLive = useCallback(async () => {
     try {
-      const q = filter === 'all' ? '' : `?status=${filter}`;
-      const res = await fetch(`${API}/classroom/admin/sessions${q}`, { credentials: 'include' });
-      if (res.ok) { const d = await res.json(); setSessions(d.sessions || []); }
+      const res = await fetch(`${API}/classroom/admin/sessions?status=live`, { credentials: 'include' });
+      if (res.ok) { const d = await res.json(); setLiveSessions(d.sessions || []); }
     } catch {}
-    finally { setLoading(false); }
-  }, [filter]);
+  }, []);
 
-  useEffect(() => { fetchSessions(); const iv = setInterval(fetchSessions, 15000); return () => clearInterval(iv); }, [fetchSessions]);
+  // Fetch paginated session history from bookings
+  const fetchHistory = useCallback(async (pageNum, statusFilter) => {
+    setHistoryLoading(true);
+    try {
+      const params = new URLSearchParams({ limit: PAGE_SIZE, offset: pageNum * PAGE_SIZE });
+      if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter);
+      const res = await fetch(`${API}/admin/sessions/history?${params}`, { credentials: 'include' });
+      if (res.ok) {
+        const d = await res.json();
+        setHistoryData({ bookings: d.bookings || [], total: d.total || 0 });
+      }
+    } catch (e) { console.error(e); }
+    finally { setHistoryLoading(false); setLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchLive(); fetchHistory(0, filter); const iv = setInterval(fetchLive, 15000); return () => clearInterval(iv); }, [fetchLive, fetchHistory, filter]);
+
+  const changePage = (p) => { setPage(p); fetchHistory(p, filter); };
+  const changeFilter = (f) => { setFilter(f); setPage(0); fetchHistory(0, f); };
 
   const handleStealthJoin = async (session) => {
     try {
@@ -36,12 +55,8 @@ export default function SessionMonitor() {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
         body: JSON.stringify({ room_name: session.meet_link_slug }),
       });
-      if (res.ok) {
-        toast.success('Joining in stealth mode...');
-        navigate(`/classroom/${session.session_id}`);
-      } else {
-        toast.error('Failed to join');
-      }
+      if (res.ok) { toast.success('Joining in stealth mode...'); navigate(`/classroom/${session.session_id}`); }
+      else toast.error('Failed to join');
     } catch { toast.error('Connection error'); }
   };
 
@@ -51,10 +66,7 @@ export default function SessionMonitor() {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
         body: JSON.stringify({ action: 'start' }),
       });
-      if (res.ok) {
-        const d = await res.json();
-        toast.success(d.visible ? 'Recording started (visible)' : 'Stealth recording started');
-      }
+      if (res.ok) { const d = await res.json(); toast.success(d.visible ? 'Recording started (visible)' : 'Stealth recording started'); }
     } catch { toast.error('Failed to start recording'); }
   };
 
@@ -62,36 +74,36 @@ export default function SessionMonitor() {
     setDetailLoading(true);
     try {
       const res = await fetch(`${API}/classroom/admin/sessions/${sessionId}/details`, { credentials: 'include' });
-      if (res.ok) { setDetailSession(await res.json()); }
+      if (res.ok) setDetailSession(await res.json());
     } catch { toast.error('Failed to load details'); }
     finally { setDetailLoading(false); }
   };
 
   const statusConfig = {
-    live: { color: 'success', label: 'LIVE', icon: Radio },
-    booked: { color: 'info', label: 'Booked', icon: Clock },
-    completed: { color: 'neutral', label: 'Completed', icon: Circle },
-    cancelled: { color: 'danger', label: 'Cancelled', icon: Circle },
+    live: { color: 'success', label: 'LIVE' },
+    scheduled: { color: 'info', label: 'Scheduled' },
+    completed: { color: 'neutral', label: 'Completed' },
+    cancelled: { color: 'danger', label: 'Cancelled' },
   };
 
-  const liveSessions = sessions.filter(s => s.status === 'live');
-  const otherSessions = sessions.filter(s => s.status !== 'live');
+  const totalPages = Math.max(1, Math.ceil(historyData.total / PAGE_SIZE));
 
-  if (loading) return <Spinner />;
+  if (loading) return <div className="flex justify-center py-12"><Spinner /></div>;
 
   return (
     <div className="space-y-6" data-testid="session-monitor">
       {/* Filters */}
-      <div className="flex items-center gap-2">
-        {['all', 'live', 'booked', 'completed'].map((f) => (
-          <button key={f} onClick={() => setFilter(f)}
+      <div className="flex items-center gap-2 flex-wrap">
+        {['all', 'scheduled', 'completed', 'cancelled'].map((f) => (
+          <button key={f} onClick={() => changeFilter(f)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all capitalize ${
-              filter === f ? 'bg-brand text-white' : 'bg-surface-warm text-ink-secondary hover:bg-surface-subtle'
+              filter === f ? 'bg-emerald-700 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300'
             }`}
             data-testid={`filter-${f}`}>
-            {f === 'live' && <Radio className="w-3 h-3 inline mr-1" />}{f}
+            {f}
           </button>
         ))}
+        <span className="ml-auto text-xs text-slate-400">{historyData.total} total sessions</span>
       </div>
 
       {/* Live Sessions (Priority) */}
@@ -100,20 +112,20 @@ export default function SessionMonitor() {
           <CardHeader className="bg-green-50/50">
             <div className="flex items-center gap-2">
               <Radio className="w-4 h-4 text-green-600 animate-pulse" />
-              <h3 className="text-h3 font-semibold text-green-800">Live Now ({liveSessions.length})</h3>
+              <h3 className="text-sm font-semibold text-green-800">Live Now ({liveSessions.length})</h3>
             </div>
           </CardHeader>
           <CardBody className="p-0">
             {liveSessions.map((s) => (
-              <div key={s.session_id} className="flex items-center gap-4 px-6 py-4 border-b border-surface-subtle last:border-0 hover:bg-green-50/30 transition-colors" data-testid={`live-session-${s.session_id}`}>
+              <div key={s.session_id} className="flex items-center gap-4 px-6 py-4 border-b border-green-100 last:border-0 hover:bg-green-50/30 transition-colors" data-testid={`live-session-${s.session_id}`}>
                 <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-ink">{s.teacher_name} & {s.student_name}</p>
-                  <p className="text-xs text-ink-tertiary">{new Date(s.start_time_utc).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p className="text-sm font-medium text-slate-900">{s.teacher_name} & {s.student_name}</p>
+                  <p className="text-xs text-slate-400">{new Date(s.start_time_utc).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button size="sm" variant="secondary" onClick={() => handleStealthJoin(s)} data-testid={`stealth-join-${s.session_id}`}>
-                    <Eye className="w-3.5 h-3.5" />Stealth Join
+                    <Eye className="w-3.5 h-3.5" />Stealth
                   </Button>
                   <Button size="sm" variant="gold" onClick={() => handleStealthRecord(s)} data-testid={`stealth-record-${s.session_id}`}>
                     <Radio className="w-3.5 h-3.5" />Record
@@ -125,61 +137,85 @@ export default function SessionMonitor() {
         </Card>
       )}
 
-      {/* Session History */}
+      {/* Session History Table (Server-side paginated) */}
       <Card className="overflow-hidden">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <h3 className="text-h3 font-semibold text-ink">Session History</h3>
-            <span className="text-small text-ink-tertiary">{sessions.length} sessions</span>
-          </div>
-        </CardHeader>
+        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-slate-900">Session History</h3>
+          {historyLoading && <Spinner className="w-4 h-4" />}
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[600px]" data-testid="session-history-table">
             <thead>
-              <tr className="border-b border-surface-subtle bg-surface-warm">
-                <th className="text-left px-4 py-3 text-caption font-medium text-ink-secondary">Status</th>
-                <th className="text-left px-4 py-3 text-caption font-medium text-ink-secondary">Teacher</th>
-                <th className="text-left px-4 py-3 text-caption font-medium text-ink-secondary">Student</th>
-                <th className="text-left px-4 py-3 text-caption font-medium text-ink-secondary">Date / Time</th>
-                <th className="text-right px-4 py-3 text-caption font-medium text-ink-secondary">Actions</th>
+              <tr className="border-b border-slate-100 bg-slate-50/60">
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Status</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Teacher</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Student</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Date / Time</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Duration</th>
+                <th className="text-right px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-subtle">
-              {(() => { const all = filter === 'all' ? sessions : sessions; const tp = Math.max(1, Math.ceil(all.length / SP)); const sliced = all.slice((sPage - 1) * SP, sPage * SP); return sliced.map((s) => {
-                const sc = statusConfig[s.status] || statusConfig.booked;
+            <tbody className="divide-y divide-slate-50">
+              {historyData.bookings.map((b, i) => {
+                const sc = statusConfig[b.status] || statusConfig.scheduled;
                 return (
-                  <tr key={s.session_id} className="hover:bg-surface-subtle/50 transition-colors">
-                    <td className="px-4 py-3">
-                      <Badge color={sc.color}>{sc.label}</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-ink">{s.teacher_name}</td>
-                    <td className="px-4 py-3 text-sm text-ink">{s.student_name}</td>
-                    <td className="px-4 py-3 text-sm text-ink-secondary">{new Date(s.start_time_utc).toLocaleString()}</td>
+                  <tr key={b.booking_id || i} className="hover:bg-slate-50/50 transition-colors" data-testid={`history-row-${i}`}>
+                    <td className="px-4 py-3"><Badge color={sc.color}>{sc.label}</Badge></td>
+                    <td className="px-4 py-3 text-sm text-slate-900">{b.teacher_name || 'Unknown'}</td>
+                    <td className="px-4 py-3 text-sm text-slate-900">{b.student_name || 'Unknown'}</td>
+                    <td className="px-4 py-3 text-sm text-slate-500 whitespace-nowrap">{b.start_time_utc ? new Date(b.start_time_utc).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}</td>
+                    <td className="px-4 py-3 text-sm text-slate-500">{b.duration_minutes || 30} min</td>
                     <td className="px-4 py-3 text-right">
-                      <button onClick={() => handleViewDetails(s.session_id)}
-                        className="text-xs font-medium text-brand hover:underline" data-testid={`view-details-${s.session_id}`}>
-                        Details <ChevronRight className="w-3 h-3 inline" />
-                      </button>
+                      {b.session_report ? (
+                        <span className="text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">Report Available</span>
+                      ) : (
+                        <span className="text-[11px] text-slate-300">-</span>
+                      )}
                     </td>
                   </tr>
                 );
-              })})}
+              })}
             </tbody>
           </table>
         </div>
-        {(() => { const tp = Math.max(1, Math.ceil(sessions.length / SP)); return tp > 1 ? (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-surface-subtle">
-            <span className="text-xs text-ink-tertiary">Page {sPage}/{tp}</span>
-            <div className="flex gap-1.5">
-              <button onClick={() => setSPage(p => Math.max(1, p-1))} disabled={sPage===1} className="px-3 py-1.5 rounded-lg border text-xs disabled:opacity-40 hover:bg-surface-subtle">Prev</button>
-              <button onClick={() => setSPage(p => Math.min(tp, p+1))} disabled={sPage===tp} className="px-3 py-1.5 rounded-lg border text-xs disabled:opacity-40 hover:bg-surface-subtle">Next</button>
+
+        {/* Server-side Pagination */}
+        {totalPages > 1 && (
+          <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between">
+            <button onClick={() => changePage(page - 1)} disabled={page === 0}
+              className="flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-emerald-700 disabled:text-slate-300 disabled:cursor-not-allowed transition-colors"
+              data-testid="history-prev">
+              <ChevronLeft className="w-3.5 h-3.5" />Prev
+            </button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                let pageNum = i;
+                if (totalPages > 7) {
+                  if (page < 4) pageNum = i;
+                  else if (page > totalPages - 4) pageNum = totalPages - 7 + i;
+                  else pageNum = page - 3 + i;
+                }
+                return (
+                  <button key={pageNum} onClick={() => changePage(pageNum)}
+                    className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${page === pageNum ? 'bg-emerald-700 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100'}`}
+                    data-testid={`history-page-${pageNum + 1}`}>
+                    {pageNum + 1}
+                  </button>
+                );
+              })}
             </div>
+            <button onClick={() => changePage(page + 1)} disabled={page >= totalPages - 1}
+              className="flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-emerald-700 disabled:text-slate-300 disabled:cursor-not-allowed transition-colors"
+              data-testid="history-next">
+              Next<ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
-        ) : null; })()}
-        {sessions.length === 0 && (
+        )}
+
+        {historyData.bookings.length === 0 && !historyLoading && (
           <div className="p-8 text-center">
-            <Video className="w-12 h-12 mx-auto mb-3 text-ink-faint" />
-            <p className="text-sm text-ink-secondary">No sessions found</p>
+            <Video className="w-10 h-10 mx-auto mb-2 text-slate-200" />
+            <p className="text-sm text-slate-400">No sessions found</p>
           </div>
         )}
       </Card>
@@ -188,78 +224,40 @@ export default function SessionMonitor() {
       {detailSession && (
         <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDetailSession(null)}>
           <div className="bg-white rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="session-detail-modal">
-            <div className="px-6 py-5 border-b border-black/5">
-              <h2 className="text-lg font-semibold text-ink">Session Details</h2>
-              <p className="text-xs text-ink-tertiary mt-0.5">{detailSession.session_id}</p>
+            <div className="px-6 py-5 border-b border-slate-100">
+              <h2 className="text-lg font-semibold text-slate-900">Session Details</h2>
+              <p className="text-xs text-slate-400 mt-0.5">{detailSession.session_id}</p>
             </div>
             <div className="px-6 py-4 space-y-4">
-              {/* Participants */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 rounded-xl bg-surface-warm">
-                  <p className="text-caption text-ink-tertiary">Teacher</p>
-                  <p className="text-sm font-medium text-ink">{detailSession.teacher_name}</p>
-                  <p className="text-xs text-ink-tertiary">{detailSession.teacher_email}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-surface-warm">
-                  <p className="text-caption text-ink-tertiary">Student</p>
-                  <p className="text-sm font-medium text-ink">{detailSession.student_name}</p>
-                  <p className="text-xs text-ink-tertiary">{detailSession.student_email}</p>
-                </div>
+                <div className="p-3 rounded-xl bg-slate-50"><p className="text-[11px] text-slate-400">Teacher</p><p className="text-sm font-medium text-slate-900">{detailSession.teacher_name}</p></div>
+                <div className="p-3 rounded-xl bg-slate-50"><p className="text-[11px] text-slate-400">Student</p><p className="text-sm font-medium text-slate-900">{detailSession.student_name}</p></div>
               </div>
-
-              {/* Progress */}
               {detailSession.progress && (
-                <div className="p-4 rounded-xl bg-brand/5 border border-brand/10">
-                  <p className="text-sm font-semibold text-brand mb-2">Session Progress</p>
+                <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-100">
+                  <p className="text-sm font-semibold text-emerald-800 mb-2">Session Progress</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    <p><span className="text-ink-tertiary">Surah:</span> {detailSession.progress.surah_name}</p>
-                    <p><span className="text-ink-tertiary">Ayah:</span> {detailSession.progress.ayah_start}–{detailSession.progress.ayah_end}</p>
-                    <p><span className="text-ink-tertiary">Track:</span> {detailSession.progress.track_type}</p>
+                    <p><span className="text-slate-500">Surah:</span> {detailSession.progress.surah_name}</p>
+                    <p><span className="text-slate-500">Ayah:</span> {detailSession.progress.ayah_start}-{detailSession.progress.ayah_end}</p>
                   </div>
-                  {detailSession.progress.grading && (
-                    <div className="flex gap-3 mt-2">
-                      {Object.entries(detailSession.progress.grading).map(([k, v]) => (
-                        <span key={k} className="text-xs font-medium px-2 py-1 rounded bg-white">{k.replace('_score', '')}: <span className="text-brand">{v}/10</span></span>
-                      ))}
-                    </div>
-                  )}
-                  {detailSession.progress.teacher_comments && <p className="text-xs text-ink-secondary mt-2 italic">"{detailSession.progress.teacher_comments}"</p>}
                 </div>
               )}
-
-              {/* Rating */}
               {detailSession.rating && (
-                <div className="p-3 rounded-xl bg-[#D4AF37]/5 border border-[#D4AF37]/10">
-                  <p className="text-sm font-semibold text-[#D4AF37]">Student Rating: {'★'.repeat(detailSession.rating.rating)}{'☆'.repeat(5 - detailSession.rating.rating)}</p>
-                  {detailSession.rating.review && <p className="text-xs text-ink-secondary mt-1">"{detailSession.rating.review}"</p>}
+                <div className="p-3 rounded-xl bg-amber-50/50 border border-amber-100">
+                  <p className="text-sm font-semibold text-amber-700">Rating: {'★'.repeat(detailSession.rating.rating)}{'☆'.repeat(5 - detailSession.rating.rating)}</p>
+                  {detailSession.rating.review && <p className="text-xs text-slate-500 mt-1 italic">"{detailSession.rating.review}"</p>}
                 </div>
               )}
-
-              {/* Recording */}
-              {detailSession.recording_url && (
-                <div className="p-3 rounded-xl bg-surface-warm flex items-center gap-3">
-                  <Play className="w-5 h-5 text-brand" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-ink">Recording Available</p>
-                    <p className="text-xs text-ink-tertiary">Quality assurance playback</p>
-                  </div>
-                  <a href={detailSession.recording_url} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-brand text-white hover:bg-brand-light transition-all">
-                    <Download className="w-4 h-4" />
-                  </a>
-                </div>
-              )}
-
-              {/* Payment */}
               {detailSession.payment && (
-                <div className="p-3 rounded-xl bg-surface-warm text-xs space-y-1">
-                  <p className="text-sm font-semibold text-ink mb-1">Payment Record</p>
-                  <p><span className="text-ink-tertiary">Credits Used:</span> {detailSession.payment.credits_used}</p>
-                  <p><span className="text-ink-tertiary">Tutor Payout:</span> RM{detailSession.payment.tutor_payout}</p>
-                  <p><span className="text-ink-tertiary">Platform Commission:</span> RM{detailSession.payment.platform_commission}</p>
+                <div className="p-3 rounded-xl bg-slate-50 text-xs space-y-1">
+                  <p className="text-sm font-semibold text-slate-900 mb-1">Payment</p>
+                  <p><span className="text-slate-400">Credits:</span> {detailSession.payment.credits_used}</p>
+                  <p><span className="text-slate-400">Tutor Payout:</span> RM{detailSession.payment.tutor_payout}</p>
+                  <p><span className="text-slate-400">Platform Fee:</span> RM{detailSession.payment.platform_commission}</p>
                 </div>
               )}
             </div>
-            <div className="px-6 py-4 border-t border-black/5">
+            <div className="px-6 py-4 border-t border-slate-100">
               <Button variant="secondary" onClick={() => setDetailSession(null)} className="w-full">Close</Button>
             </div>
           </div>
