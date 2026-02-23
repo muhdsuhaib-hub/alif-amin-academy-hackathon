@@ -139,31 +139,45 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
           </div>
         ) : (
           <>
-            <div className="divide-y divide-slate-50">
-              {transactions.map((t, i) => (
-                <div key={t.transaction_id || i} className="px-5 py-3.5 flex items-center gap-3 hover:bg-slate-50/50 transition-colors" data-testid={`txn-row-${i}`}>
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                    t.transaction_type === 'session_earning' ? 'bg-emerald-50' : t.transaction_type === 'withdrawal' ? 'bg-red-50' : 'bg-slate-50'
-                  }`}>
-                    {t.transaction_type === 'session_earning' ? <ArrowDownRight className="w-4 h-4 text-emerald-600" /> :
-                     t.transaction_type === 'withdrawal' ? <ArrowUpRight className="w-4 h-4 text-red-500" /> :
-                     <DollarSign className="w-4 h-4 text-slate-500" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-slate-900 truncate">{t.student_name ? `${t.student_name} - ${t.duration_minutes || 30} min session` : (t.description || t.transaction_type)}</p>
-                    <p className="text-[11px] text-slate-400">
-                      {t.created_at ? new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
-                    </p>
-                  </div>
-                  <span className={`text-sm font-semibold tabular-nums ${
-                    t.transaction_type === 'withdrawal' ? 'text-red-500' : 'text-emerald-600'
-                  }`}>
-                    {t.transaction_type === 'withdrawal' ? '- ' : '+ '}RM {(t.net_amount || t.amount || 0).toFixed(2)}
-                  </span>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[540px]" data-testid="txn-table">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-slate-50/60">
+                    <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Type</th>
+                    <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Description</th>
+                    <th className="text-left px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Date</th>
+                    <th className="text-right px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {transactions.map((t, i) => (
+                    <tr key={t.transaction_id || i} className="hover:bg-slate-50/50 transition-colors" data-testid={`txn-row-${i}`}>
+                      <td className="px-5 py-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                          t.transaction_type === 'session_earning' ? 'bg-emerald-50' : t.transaction_type === 'withdrawal' ? 'bg-red-50' : 'bg-slate-50'
+                        }`}>
+                          {t.transaction_type === 'session_earning' ? <ArrowDownRight className="w-3.5 h-3.5 text-emerald-600" /> :
+                           t.transaction_type === 'withdrawal' ? <ArrowUpRight className="w-3.5 h-3.5 text-red-500" /> :
+                           <DollarSign className="w-3.5 h-3.5 text-slate-500" />}
+                        </div>
+                      </td>
+                      <td className="px-5 py-3">
+                        <p className="text-sm text-slate-900 truncate max-w-[200px]">{t.student_name ? `${t.student_name} - ${t.duration_minutes || 30} min` : (t.description || t.transaction_type)}</p>
+                      </td>
+                      <td className="px-5 py-3 text-xs text-slate-400 whitespace-nowrap">
+                        {t.created_at ? new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <span className={`text-sm font-semibold tabular-nums ${t.transaction_type === 'withdrawal' ? 'text-red-500' : 'text-emerald-600'}`}>
+                          {t.transaction_type === 'withdrawal' ? '- ' : '+ '}RM {(t.net_amount || t.amount || 0).toFixed(2)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            {/* Pagination */}
+            {/* Numbered Pagination */}
             {totalPages > 1 && (
               <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between">
                 <button
@@ -172,9 +186,22 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
                   className="flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-emerald-700 disabled:text-slate-300 disabled:cursor-not-allowed transition-colors"
                   data-testid="txn-prev-btn"
                 >
-                  <ChevronLeft className="w-3.5 h-3.5" />Previous
+                  <ChevronLeft className="w-3.5 h-3.5" />Prev
                 </button>
-                <span className="text-[11px] text-slate-400">Page {page + 1} of {totalPages}</span>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => fetchTransactions(i)}
+                      data-testid={`txn-page-${i + 1}`}
+                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
+                        page === i ? 'bg-emerald-700 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100'
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
                 <button
                   onClick={() => fetchTransactions(page + 1)}
                   disabled={page >= totalPages - 1}
