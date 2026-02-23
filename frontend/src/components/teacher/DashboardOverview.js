@@ -196,30 +196,53 @@ function StatsWidget({ teacher }) {
   );
 }
 
-/* -------- Analytics Charts (#10) -------- */
+/* -------- Analytics Charts (#10) with Date Filters (#4) -------- */
 function AnalyticsCharts() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [filterMode, setFilterMode] = useState('30d'); // '30d' | 'month' | 'year' | 'custom'
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const r = await fetch(`${API}/teacher/analytics`, { credentials: 'include' });
-        if (r.ok) setData(await r.json());
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
-    })();
+  const fetchAnalytics = useCallback(async (mode, from, to) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      const now = new Date();
+      if (mode === 'month') {
+        params.set('start_date', `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`);
+        params.set('end_date', now.toISOString().slice(0, 10));
+      } else if (mode === 'year') {
+        params.set('start_date', `${now.getFullYear()}-01-01`);
+        params.set('end_date', now.toISOString().slice(0, 10));
+      } else if (mode === 'custom' && from && to) {
+        params.set('start_date', from);
+        params.set('end_date', to);
+      }
+      // Default (30d) sends no params, backend defaults to 30d
+      const r = await fetch(`${API}/teacher/analytics?${params}`, { credentials: 'include' });
+      if (r.ok) setData(await r.json());
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   }, []);
 
-  if (loading) return <Skeleton className="h-64 w-full" />;
-  if (!data) return null;
+  useEffect(() => { fetchAnalytics('30d'); }, [fetchAnalytics]);
 
-  const earningsData = (data.daily_earnings || []).map(d => ({
-    date: d.date.slice(5), // MM-DD
+  const handleFilter = (mode) => {
+    setFilterMode(mode);
+    if (mode !== 'custom') fetchAnalytics(mode);
+  };
+
+  const applyCustom = () => {
+    if (customFrom && customTo) fetchAnalytics('custom', customFrom, customTo);
+  };
+
+  const earningsData = (data?.daily_earnings || []).map(d => ({
+    date: d.date.slice(5),
     earnings: d.earnings,
   }));
 
-  const ratingData = (data.rating_trend || []).map(d => ({
+  const ratingData = (data?.rating_trend || []).map(d => ({
     date: d.date?.slice(5) || '',
     rating: d.rating,
   }));
@@ -237,63 +260,90 @@ function AnalyticsCharts() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" data-testid="teacher-analytics-charts">
-      {/* Daily Earnings Chart */}
-      <div className="rounded-2xl bg-white border border-slate-200/60 shadow-sm p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
-            <BarChart3 className="w-4 h-4 text-emerald-600" />
-          </div>
-          <div>
-            <span className="text-sm font-semibold text-slate-900">Daily Earnings</span>
-            <p className="text-[11px] text-slate-400">Last 30 days</p>
-          </div>
-        </div>
-        {earningsData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={earningsData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} interval="preserveStartEnd" />
-              <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} width={45} />
-              <Tooltip content={<CustomTooltip />} />
-              <Line type="monotone" dataKey="earnings" name="RM" stroke="#059669" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#059669' }} />
-            </LineChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="h-[200px] flex flex-col items-center justify-center text-slate-400">
-            <BarChart3 className="w-8 h-8 mb-2 opacity-30" />
-            <p className="text-xs">No earnings data yet</p>
+    <div className="space-y-4" data-testid="teacher-analytics-charts">
+      {/* Date Filter Bar */}
+      <div className="flex flex-wrap items-center gap-2" data-testid="analytics-date-filter">
+        {[
+          { id: '30d', label: 'Last 30 Days' },
+          { id: 'month', label: 'This Month' },
+          { id: 'year', label: 'This Year' },
+          { id: 'custom', label: 'Custom Range' },
+        ].map(f => (
+          <button key={f.id} onClick={() => handleFilter(f.id)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${filterMode === f.id ? 'bg-emerald-700 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-300'}`}
+            data-testid={`filter-${f.id}`}>{f.label}</button>
+        ))}
+        {filterMode === 'custom' && (
+          <div className="flex items-center gap-2 ml-auto">
+            <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+              className="h-8 px-2 rounded-lg border border-slate-200 text-xs" data-testid="filter-custom-from" />
+            <span className="text-xs text-slate-400">to</span>
+            <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+              className="h-8 px-2 rounded-lg border border-slate-200 text-xs" data-testid="filter-custom-to" />
+            <button onClick={applyCustom}
+              className="h-8 px-3 rounded-lg bg-emerald-700 text-white text-xs font-semibold" data-testid="filter-apply-custom">Apply</button>
           </div>
         )}
       </div>
 
-      {/* Rating Trend Chart */}
-      <div className="rounded-2xl bg-white border border-slate-200/60 shadow-sm p-5">
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
-            <Star className="w-4 h-4 text-amber-500" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Daily Earnings Chart */}
+        <div className="rounded-2xl bg-white border border-slate-200/60 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <BarChart3 className="w-4 h-4 text-emerald-600" />
+            </div>
+            <div>
+              <span className="text-sm font-semibold text-slate-900">Daily Earnings</span>
+              <p className="text-[11px] text-slate-400">{data?.date_from?.slice(5)} — {data?.date_to?.slice(5)}</p>
+            </div>
           </div>
-          <div>
-            <span className="text-sm font-semibold text-slate-900">Rating Trend</span>
-            <p className="text-[11px] text-slate-400">Last 10 reviews</p>
-          </div>
+          {loading ? <Skeleton className="h-[200px] w-full" /> : earningsData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={earningsData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} interval="preserveStartEnd" />
+                <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} width={45} />
+                <Tooltip content={<CustomTooltip />} />
+                <Line type="monotone" dataKey="earnings" name="RM" stroke="#059669" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#059669' }} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[200px] flex flex-col items-center justify-center text-slate-400">
+              <BarChart3 className="w-8 h-8 mb-2 opacity-30" />
+              <p className="text-xs">No earnings data yet</p>
+            </div>
+          )}
         </div>
-        {ratingData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={ratingData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} />
-              <YAxis domain={[0, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 10, fill: '#94a3b8' }} width={30} />
-              <Tooltip content={<CustomTooltip />} />
-              <Line type="monotone" dataKey="rating" name="Rating" stroke="#d97706" strokeWidth={2} dot={{ r: 3, fill: '#d97706' }} activeDot={{ r: 5, fill: '#d97706' }} />
-            </LineChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="h-[200px] flex flex-col items-center justify-center text-slate-400">
-            <Star className="w-8 h-8 mb-2 opacity-30" />
-            <p className="text-xs">No reviews yet</p>
+
+        {/* Rating Trend Chart */}
+        <div className="rounded-2xl bg-white border border-slate-200/60 shadow-sm p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
+              <Star className="w-4 h-4 text-amber-500" />
+            </div>
+            <div>
+              <span className="text-sm font-semibold text-slate-900">Rating Trend</span>
+              <p className="text-[11px] text-slate-400">{ratingData.length} review{ratingData.length !== 1 ? 's' : ''}</p>
+            </div>
           </div>
-        )}
+          {loading ? <Skeleton className="h-[200px] w-full" /> : ratingData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={ratingData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                <YAxis domain={[0, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 10, fill: '#94a3b8' }} width={30} />
+                <Tooltip content={<CustomTooltip />} />
+                <Line type="monotone" dataKey="rating" name="Rating" stroke="#d97706" strokeWidth={2} dot={{ r: 3, fill: '#d97706' }} activeDot={{ r: 5, fill: '#d97706' }} connectNulls />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[200px] flex flex-col items-center justify-center text-slate-400">
+              <Star className="w-8 h-8 mb-2 opacity-30" />
+              <p className="text-xs">No reviews yet</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
