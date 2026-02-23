@@ -167,9 +167,6 @@ function EarningsWidget({ stats }) {
         RM {(stats.net_earnings || 0).toFixed(2)}
       </p>
       <p className="text-[11px] text-slate-400 mt-0.5 uppercase tracking-wider">Net Income This Month</p>
-      <p className="text-sm text-slate-500 mt-3 tabular-nums" data-testid="month-gross-earnings">
-        Gross Generated: RM {(stats.gross_earnings || 0).toFixed(2)}
-      </p>
     </div>
   );
 }
