@@ -7,7 +7,7 @@ import requests
 import os
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://teacher-media-fix.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://crash-resolution-3.preview.emergentagent.com')
 
 # Test session tokens
 ADMIN_SESSION_TOKEN = "admin_test_session_1768310525539"
