@@ -44,6 +44,9 @@ export default function FinancialReports() {
   const [chartGroup, setChartGroup] = useState('day');
   const [chartLoading, setChartLoading] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [chartFilterMode, setChartFilterMode] = useState('30d');
+  const [chartCustomFrom, setChartCustomFrom] = useState('');
+  const [chartCustomTo, setChartCustomTo] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
