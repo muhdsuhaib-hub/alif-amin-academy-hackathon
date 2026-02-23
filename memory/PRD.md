@@ -274,6 +274,14 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 ### P0 (Awaiting UAT)
 - Manual UAT of Hotfix 9.9
 
+### Hotfix 9.10: Ledger Polish, Flicker Fix & Description Format (Feb 2026)
+
+**#1 — Stop UI Flicker:** Teacher Transaction History was remounting with a spinner every 15s. Added `silent` flag to `fetchTransactions()` — background polls skip `setLoading(true)`, so the DOM stays stable. Only initial load and manual page changes show the spinner.
+
+**#2 — +RM 0.00 Approval Bug Fixed:** Removed the `add_earnings_transaction` call when admin approves a withdrawal. No new `withdrawal_approved` ledger entry is created. Instead, the original `withdrawal_request` transaction's description is updated in-place to: `"Approved Withdrawal [RM X.00: Mon DD, YYYY]"`.
+
+**#3 — Text Wrapping:** Removed `truncate max-w-[200px]` from the Description column in the Transaction History table. Replaced with `break-words max-w-[280px]` so full descriptions wrap naturally.
+
 ### P1 (Earlier Issues)
 - "View Report" button rendering verification (code exists, depends on session_report data)
 - Teacher Transaction History pagination (code exists with `totalPages >= 1`)
