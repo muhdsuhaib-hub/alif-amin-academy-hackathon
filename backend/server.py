@@ -1927,15 +1927,20 @@ async def get_teacher_analytics(
 # ============== ADMIN SESSION HISTORY (#7) ==============
 @api_router.get("/admin/sessions/history")
 async def get_admin_session_history(
-    status: str = None, limit: int = 20, offset: int = 0,
+    status: str = None, teacher_id: str = None, date: str = None,
+    limit: int = 20, offset: int = 0,
     current_user: User = Depends(get_current_user),
 ):
-    """Admin: paginated session history from bookings."""
+    """Admin: paginated session history from bookings with filters."""
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
     query = {}
     if status and status != "all":
         query["status"] = status
+    if teacher_id:
+        query["teacher_id"] = teacher_id
+    if date:
+        query["start_time_utc"] = {"$gte": date, "$lte": date + "T23:59:59"}
     total = await db.bookings.count_documents(query)
     bookings = await db.bookings.find(query, {"_id": 0}).sort("start_time_utc", -1).skip(offset).limit(limit).to_list(limit)
     # Enrich with names
@@ -1951,7 +1956,7 @@ async def get_admin_session_history(
                 u = await db.users.find_one({"user_id": s["user_id"]}, {"_id": 0, "name": 1})
                 b["student_name"] = u.get("name", "Unknown") if u else "Unknown"
         # Attach session report if completed
-        if b.get("status") == "completed" and b.get("booking_id"):
+        if b.get("status") in ("completed", "abandoned") and b.get("booking_id"):
             report = await db.session_reports.find_one({"booking_id": b["booking_id"]}, {"_id": 0})
             b["session_report"] = report
     return {"bookings": bookings, "total": total, "limit": limit, "offset": offset}
@@ -1960,22 +1965,29 @@ async def get_admin_session_history(
 # ============== ADMIN REVENUE CHART (#9) ==============
 @api_router.get("/admin/revenue/chart-data")
 async def get_admin_revenue_chart(
-    group_by: str = "day",
+    group_by: str = "day", start_date: str = None, end_date: str = None,
     current_user: User = Depends(get_current_user),
 ):
-    """Admin: aggregated gross/net revenue for charts."""
+    """Admin: aggregated gross/net revenue for charts with optional date range."""
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
     now = datetime.now(timezone.utc)
-    if group_by == "month":
+
+    # Resolve date range
+    if start_date and end_date:
+        since = start_date
+        until = end_date + "T23:59:59"
+    elif group_by == "month":
         since = (now - timedelta(days=365)).isoformat()
-        substr_len = 7  # YYYY-MM
+        until = now.isoformat()
     else:
         since = (now - timedelta(days=30)).isoformat()
-        substr_len = 10  # YYYY-MM-DD
+        until = now.isoformat()
+
+    substr_len = 7 if group_by == "month" else 10
 
     pipeline = [
-        {"$match": {"created_at": {"$gte": since}}},
+        {"$match": {"created_at": {"$gte": since, "$lte": until}}},
         {"$addFields": {"period": {"$substr": ["$created_at", 0, substr_len]}}},
         {"$group": {
             "_id": "$period",
@@ -1989,6 +2001,37 @@ async def get_admin_revenue_chart(
     raw = await db.admin_revenue.aggregate(pipeline).to_list(366)
     data = [{"period": r["_id"], "gross": round(r["gross"], 2), "net_profit": round(r["net_profit"], 2), "tutor_payouts": round(r["tutor_payouts"], 2), "sessions": r["sessions"]} for r in raw]
     return {"chart_data": data, "group_by": group_by}
+
+
+# ============== GHOST CLASS CLEANUP (#8) ==============
+@api_router.post("/admin/sessions/cleanup-stale")
+async def cleanup_stale_sessions(current_user: User = Depends(get_current_user)):
+    """Auto-transition stale 'live' bookings to 'completed' or 'abandoned'."""
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    now = datetime.now(timezone.utc)
+    cutoff = (now - timedelta(minutes=60)).isoformat()
+
+    # Find bookings stuck in live/scheduled status past their end time + 60 min
+    stale = await db.bookings.find(
+        {"status": {"$in": ["live", "scheduled"]}, "start_time_utc": {"$lt": cutoff}},
+        {"_id": 0, "booking_id": 1, "start_time_utc": 1, "duration_minutes": 1, "status": 1}
+    ).to_list(100)
+
+    cleaned = 0
+    for b in stale:
+        end_time = datetime.fromisoformat(b["start_time_utc"].replace("Z", "+00:00")) + timedelta(minutes=(b.get("duration_minutes", 60) + 60))
+        if now > end_time:
+            # Check if report exists
+            report = await db.session_reports.find_one({"booking_id": b["booking_id"]})
+            new_status = "completed" if report else "abandoned"
+            await db.bookings.update_one(
+                {"booking_id": b["booking_id"]},
+                {"$set": {"status": new_status, "auto_cleaned_at": now.isoformat()}}
+            )
+            cleaned += 1
+
+    return {"cleaned": cleaned, "checked": len(stale)}
 
 
 app.include_router(api_router)
