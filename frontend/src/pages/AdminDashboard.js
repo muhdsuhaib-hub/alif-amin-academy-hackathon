@@ -154,7 +154,7 @@ export default function AdminDashboard({ user }) {
     try { const r = await fetch(`${API}/admin/overview/live-sessions`, { credentials: 'include' }); if (r.ok) setLiveSessions((await r.json()).sessions || []); } catch (e) { console.error(e); }
   }, []);
 
-  useEffect(() => { fetchStats(); fetchLiability(); fetchRevenue(); fetchCommissionSummary(); fetchLiveSessions(); }, [fetchStats, fetchLiability, fetchRevenue, fetchCommissionSummary, fetchLiveSessions]);
+  useEffect(() => { fetchStats(); fetchLiability(); fetchRevenue(); fetchCommissionSummary(); }, [fetchStats, fetchLiability, fetchRevenue, fetchCommissionSummary]);
 
   const runTierEvaluation = async () => {
     try { const r = await fetch(`${API}/commission/evaluate-all`, { method: 'POST', credentials: 'include' }); if (r.ok) { const d = await r.json(); fetchCommissionSummary(); toast.success(`Tier evaluation complete! Upgraded: ${d.upgraded?.length || 0}`); } } catch (e) { console.error(e); }
@@ -182,24 +182,7 @@ export default function AdminDashboard({ user }) {
                 <KpiCard label="Pending Approvals" value={pendingApprovals} icon={UserCheck} color="bg-red-50 text-red-700" onClick={() => setActiveTab('approvals')} badge={pendingApprovals} />
               </div>
 
-              {/* Live Sessions */}
-              <Card className="overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <h3 className="text-sm font-bold text-slate-900">Today's Sessions</h3>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{liveSessions.length}</span>
-                  </div>
-                  <button onClick={fetchLiveSessions} className="p-2 rounded-lg hover:bg-slate-100 transition-colors"><RefreshCw className="w-4 h-4 text-slate-400" /></button>
-                </div>
-                {liveSessions.length === 0 ? (
-                  <div className="p-8 text-center"><Clock className="w-8 h-8 mx-auto mb-2 text-slate-200" /><p className="text-xs text-slate-400">No sessions scheduled for today</p></div>
-                ) : (
-                  <div className="divide-y divide-slate-50 max-h-[300px] overflow-y-auto">
-                    {liveSessions.map((s) => <LiveSessionRow key={s.booking_id} session={s} />)}
-                  </div>
-                )}
-              </Card>
+              {/* Live Sessions — UI torn down for rebuild. LiveSessionRow component preserved. */}
 
               {/* Quick Stats */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

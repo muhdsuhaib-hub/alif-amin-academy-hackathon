@@ -56,14 +56,14 @@ export default function SessionMonitor() {
     finally { setHistoryLoading(false); setLoading(false); }
   }, []);
 
+  // Live session polling disabled — UI torn down for rebuild.
+  // handleStealthJoin and handleStealthRecord preserved below for WebRTC reuse.
+
   useEffect(() => {
-    fetchLive();
     fetchHistory(0, filter, filterTeacher, filterDate);
-    // Poll both live sessions AND history for real-time sync across all roles
-    const livePoll = setInterval(fetchLive, 15000);
     const historyPoll = setInterval(() => fetchHistory(page, filter, filterTeacher, filterDate), 30000);
-    return () => { clearInterval(livePoll); clearInterval(historyPoll); };
-  }, [fetchLive, fetchHistory, filter, filterTeacher, filterDate]);
+    return () => { clearInterval(historyPoll); };
+  }, [fetchHistory, filter, filterTeacher, filterDate]);
 
   const changePage = (p) => { setPage(p); fetchHistory(p, filter, filterTeacher, filterDate); };
   const handleFilterChange = (f) => { setFilter(f); setPage(0); fetchHistory(0, f, filterTeacher, filterDate); };
@@ -149,36 +149,7 @@ export default function SessionMonitor() {
         )}
       </div>
 
-      {/* Live Sessions */}
-      {liveSessions.length > 0 && (
-        <Card className="overflow-hidden border-green-200">
-          <CardHeader className="bg-green-50/50">
-            <div className="flex items-center gap-2">
-              <Radio className="w-4 h-4 text-green-600 animate-pulse" />
-              <h3 className="text-sm font-semibold text-green-800">Live Now ({liveSessions.length})</h3>
-            </div>
-          </CardHeader>
-          <CardBody className="p-0">
-            {liveSessions.map((s) => (
-              <div key={s.session_id} className="flex items-center gap-4 px-6 py-4 border-b border-green-100 last:border-0 hover:bg-green-50/30 transition-colors" data-testid={`live-session-${s.session_id}`}>
-                <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900">{s.teacher_name} & {s.student_name}</p>
-                  <p className="text-xs text-slate-400">{s.start_time_utc ? new Date(s.start_time_utc).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => handleStealthJoin(s)} data-testid={`stealth-join-${s.session_id}`}>
-                    <Eye className="w-3.5 h-3.5" />Stealth
-                  </Button>
-                  <Button size="sm" variant="gold" onClick={() => handleStealthRecord(s)} data-testid={`stealth-record-${s.session_id}`}>
-                    <Radio className="w-3.5 h-3.5" />Record
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </CardBody>
-        </Card>
-      )}
+      {/* Live Sessions — UI removed for rebuild. WebRTC functions (handleStealthJoin, handleStealthRecord) preserved. */}
 
       {/* Session History Table */}
       <Card className="overflow-hidden">
