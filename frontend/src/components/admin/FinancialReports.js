@@ -160,15 +160,25 @@ export default function FinancialReports() {
           <div className="h-[280px] flex items-center justify-center"><Spinner /></div>
         ) : chartData.length > 0 ? (
           <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={chartData} barGap={2}>
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="gradGross" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#059669" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#059669" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="gradNet" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#d97706" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#d97706" stopOpacity={0} />
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#94a3b8' }} interval="preserveStartEnd" />
               <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} width={50} tickFormatter={v => `RM${v}`} />
               <Tooltip content={<ChartTooltip />} />
               <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="gross" name="Gross Revenue" fill="#059669" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="net_profit" name="Net Profit" fill="#d97706" radius={[4, 4, 0, 0]} />
-            </BarChart>
+              <Area type="monotone" dataKey="gross" name="Gross Revenue" stroke="#059669" strokeWidth={2} fill="url(#gradGross)" dot={false} activeDot={{ r: 4, fill: '#059669', stroke: '#fff', strokeWidth: 2 }} />
+              <Area type="monotone" dataKey="net_profit" name="Net Profit" stroke="#d97706" strokeWidth={2} fill="url(#gradNet)" dot={false} activeDot={{ r: 4, fill: '#d97706', stroke: '#fff', strokeWidth: 2 }} />
+            </AreaChart>
           </ResponsiveContainer>
         ) : (
           <div className="h-[280px] flex flex-col items-center justify-center text-slate-400">
