@@ -36,7 +36,6 @@ export default function UserManagement() {
   const [adjustTarget, setAdjustTarget] = useState(null);
   const [adjustAmount, setAdjustAmount] = useState('');
   const [adjustDescription, setAdjustDescription] = useState('');
-  const [adjustPin, setAdjustPin] = useState('');
   const [adjustProcessing, setAdjustProcessing] = useState(false);
 
   const [showPinModal, setShowPinModal] = useState(false);
