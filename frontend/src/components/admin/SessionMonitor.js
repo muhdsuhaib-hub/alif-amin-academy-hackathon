@@ -160,9 +160,6 @@ export default function SessionMonitor() {
             <X className="w-3 h-3" />Clear
           </button>
         )}
-        <button onClick={handleCleanupStale} className="ml-auto px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors" data-testid="cleanup-stale-btn">
-          Cleanup Stale Sessions
-        </button>
       </div>
 
       {/* Live Sessions */}
