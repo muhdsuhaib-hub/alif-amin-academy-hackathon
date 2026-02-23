@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { DollarSign, TrendingUp, Wallet, AlertTriangle, RefreshCw, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { DollarSign, TrendingUp, Wallet, AlertTriangle, RefreshCw } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import Card from '../Card';
 import Spinner from '../Spinner';
 
@@ -20,9 +21,28 @@ function MetricCard({ title, subtitle, value, color, icon: Icon, border }) {
   );
 }
 
+const ChartTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-white/95 backdrop-blur-sm border border-slate-200 rounded-xl px-3 py-2 shadow-lg text-xs">
+      <p className="font-medium text-slate-700 mb-1">{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full" style={{ background: p.color }} />
+          <span className="text-slate-500">{p.name}:</span>
+          <span className="font-semibold text-slate-800">RM {(p.value || 0).toFixed(2)}</span>
+        </p>
+      ))}
+    </div>
+  );
+};
+
 export default function FinancialReports() {
   const [revenue, setRevenue] = useState(null);
   const [liability, setLiability] = useState(null);
+  const [chartData, setChartData] = useState([]);
+  const [chartGroup, setChartGroup] = useState('day');
+  const [chartLoading, setChartLoading] = useState(true);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
@@ -38,7 +58,22 @@ export default function FinancialReports() {
     finally { setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const fetchChart = useCallback(async (groupBy) => {
+    setChartLoading(true);
+    try {
+      const r = await fetch(`${API}/admin/revenue/chart-data?group_by=${groupBy}`, { credentials: 'include' });
+      if (r.ok) {
+        const d = await r.json();
+        setChartData((d.chart_data || []).map(item => ({
+          ...item,
+          label: groupBy === 'month' ? item.period : item.period.slice(5),
+        })));
+      }
+    } catch (e) { console.error(e); }
+    finally { setChartLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchData(); fetchChart(chartGroup); }, [fetchData, fetchChart, chartGroup]);
 
   if (loading) return <div className="flex justify-center py-12"><Spinner /></div>;
 
@@ -59,31 +94,50 @@ export default function FinancialReports() {
 
       {/* Primary Financial Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <MetricCard
-          title="Deferred Revenue (Liability)"
-          subtitle="Cash collected but not yet earned — student wallet balances"
-          value={`RM ${deferred.toLocaleString()}`}
-          color="bg-amber-50 text-amber-700"
-          icon={AlertTriangle}
-          border="border-l-4 border-l-amber-400"
-        />
-        <MetricCard
-          title="Recognized Revenue (Profit)"
-          subtitle="Platform commission from completed sessions"
-          value={`RM ${recognized.toLocaleString()}`}
-          color="bg-emerald-50 text-emerald-700"
-          icon={TrendingUp}
-          border="border-l-4 border-l-emerald-500"
-        />
-        <MetricCard
-          title="Tutor Payable (Owed)"
-          subtitle="Owed to tutors minus processed withdrawals"
-          value={`RM ${tutorPayable.toLocaleString()}`}
-          color="bg-red-50 text-red-700"
-          icon={Wallet}
-          border="border-l-4 border-l-red-400"
-        />
+        <MetricCard title="Deferred Revenue (Liability)" subtitle="Cash collected but not yet earned" value={`RM ${deferred.toLocaleString()}`} color="bg-amber-50 text-amber-700" icon={AlertTriangle} border="border-l-4 border-l-amber-400" />
+        <MetricCard title="Recognized Revenue (Profit)" subtitle="Platform commission from completed sessions" value={`RM ${recognized.toLocaleString()}`} color="bg-emerald-50 text-emerald-700" icon={TrendingUp} border="border-l-4 border-l-emerald-500" />
+        <MetricCard title="Tutor Payable (Owed)" subtitle="Owed to tutors minus processed withdrawals" value={`RM ${tutorPayable.toLocaleString()}`} color="bg-red-50 text-red-700" icon={Wallet} border="border-l-4 border-l-red-400" />
       </div>
+
+      {/* Revenue Chart (#9) */}
+      <Card className="p-6" data-testid="revenue-chart-card">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Gross Revenue vs Net Profit</h3>
+            <p className="text-[11px] text-slate-400 mt-0.5">Platform earnings breakdown</p>
+          </div>
+          <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-0.5">
+            {['day', 'month'].map(g => (
+              <button key={g} onClick={() => setChartGroup(g)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all capitalize ${chartGroup === g ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'}`}
+                data-testid={`chart-group-${g}`}>
+                {g === 'day' ? 'Daily' : 'Monthly'}
+              </button>
+            ))}
+          </div>
+        </div>
+        {chartLoading ? (
+          <div className="h-[280px] flex items-center justify-center"><Spinner /></div>
+        ) : chartData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={chartData} barGap={2}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#94a3b8' }} interval="preserveStartEnd" />
+              <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} width={50} tickFormatter={v => `RM${v}`} />
+              <Tooltip content={<ChartTooltip />} />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
+              <Bar dataKey="gross" name="Gross Revenue" fill="#059669" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="net_profit" name="Net Profit" fill="#d97706" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-[280px] flex flex-col items-center justify-center text-slate-400">
+            <DollarSign className="w-10 h-10 mb-2 opacity-30" />
+            <p className="text-sm">No revenue data yet</p>
+            <p className="text-xs mt-1">Data will appear after completed sessions</p>
+          </div>
+        )}
+      </Card>
 
       {/* Session Economics */}
       <Card className="p-6">
