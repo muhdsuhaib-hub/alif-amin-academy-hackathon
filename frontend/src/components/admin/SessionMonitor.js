@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Video, Eye, Circle, Radio, ChevronRight, ChevronLeft, Users, Clock, FileText, Play, Download } from 'lucide-react';
+import { Video, Eye, Radio, ChevronRight, ChevronLeft, Clock, FileText, Filter, Calendar, X } from 'lucide-react';
 import { toast } from 'sonner';
 import Card, { CardHeader, CardBody } from '../Card';
 import Badge from '../Badge';
@@ -17,11 +17,22 @@ export default function SessionMonitor() {
   const [loading, setLoading] = useState(true);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [filter, setFilter] = useState('all');
+  const [filterTeacher, setFilterTeacher] = useState('');
+  const [filterDate, setFilterDate] = useState('');
+  const [teachers, setTeachers] = useState([]);
   const [page, setPage] = useState(0);
-  const [detailSession, setDetailSession] = useState(null);
-  const [detailLoading, setDetailLoading] = useState(false);
+  const [reportModal, setReportModal] = useState(null);
 
-  // Fetch live sessions (polling)
+  // Fetch teachers list for filter
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch(`${API}/teachers`, { credentials: 'include' });
+        if (r.ok) setTeachers(await r.json());
+      } catch {}
+    })();
+  }, []);
+
   const fetchLive = useCallback(async () => {
     try {
       const res = await fetch(`${API}/classroom/admin/sessions?status=live`, { credentials: 'include' });
@@ -29,12 +40,13 @@ export default function SessionMonitor() {
     } catch {}
   }, []);
 
-  // Fetch paginated session history from bookings
-  const fetchHistory = useCallback(async (pageNum, statusFilter) => {
+  const fetchHistory = useCallback(async (pageNum, statusFilter, teacherId, date) => {
     setHistoryLoading(true);
     try {
       const params = new URLSearchParams({ limit: PAGE_SIZE, offset: pageNum * PAGE_SIZE });
       if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter);
+      if (teacherId) params.append('teacher_id', teacherId);
+      if (date) params.append('date', date);
       const res = await fetch(`${API}/admin/sessions/history?${params}`, { credentials: 'include' });
       if (res.ok) {
         const d = await res.json();
@@ -44,10 +56,18 @@ export default function SessionMonitor() {
     finally { setHistoryLoading(false); setLoading(false); }
   }, []);
 
-  useEffect(() => { fetchLive(); fetchHistory(0, filter); const iv = setInterval(fetchLive, 15000); return () => clearInterval(iv); }, [fetchLive, fetchHistory, filter]);
+  useEffect(() => {
+    fetchLive();
+    fetchHistory(0, filter, filterTeacher, filterDate);
+    const iv = setInterval(fetchLive, 15000);
+    return () => clearInterval(iv);
+  }, [fetchLive, fetchHistory, filter, filterTeacher, filterDate]);
 
-  const changePage = (p) => { setPage(p); fetchHistory(p, filter); };
-  const changeFilter = (f) => { setFilter(f); setPage(0); fetchHistory(0, f); };
+  const changePage = (p) => { setPage(p); fetchHistory(p, filter, filterTeacher, filterDate); };
+  const handleFilterChange = (f) => { setFilter(f); setPage(0); fetchHistory(0, f, filterTeacher, filterDate); };
+  const handleTeacherFilter = (tid) => { setFilterTeacher(tid); setPage(0); fetchHistory(0, filter, tid, filterDate); };
+  const handleDateFilter = (d) => { setFilterDate(d); setPage(0); fetchHistory(0, filter, filterTeacher, d); };
+  const clearFilters = () => { setFilter('all'); setFilterTeacher(''); setFilterDate(''); setPage(0); fetchHistory(0, 'all', '', ''); };
 
   const handleStealthJoin = async (session) => {
     try {
@@ -66,17 +86,21 @@ export default function SessionMonitor() {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
         body: JSON.stringify({ action: 'start' }),
       });
-      if (res.ok) { const d = await res.json(); toast.success(d.visible ? 'Recording started (visible)' : 'Stealth recording started'); }
+      if (res.ok) toast.success('Recording started');
     } catch { toast.error('Failed to start recording'); }
   };
 
-  const handleViewDetails = async (sessionId) => {
-    setDetailLoading(true);
+  // Ghost class cleanup (#8)
+  const handleCleanupStale = async () => {
     try {
-      const res = await fetch(`${API}/classroom/admin/sessions/${sessionId}/details`, { credentials: 'include' });
-      if (res.ok) setDetailSession(await res.json());
-    } catch { toast.error('Failed to load details'); }
-    finally { setDetailLoading(false); }
+      const res = await fetch(`${API}/admin/sessions/cleanup-stale`, { method: 'POST', credentials: 'include' });
+      if (res.ok) {
+        const d = await res.json();
+        toast.success(`Cleaned ${d.cleaned} stale session(s) (checked ${d.checked})`);
+        fetchHistory(page, filter, filterTeacher, filterDate);
+        fetchLive();
+      } else toast.error('Cleanup failed');
+    } catch { toast.error('Error'); }
   };
 
   const statusConfig = {
@@ -84,18 +108,20 @@ export default function SessionMonitor() {
     scheduled: { color: 'info', label: 'Scheduled' },
     completed: { color: 'neutral', label: 'Completed' },
     cancelled: { color: 'danger', label: 'Cancelled' },
+    abandoned: { color: 'warning', label: 'Abandoned' },
   };
 
   const totalPages = Math.max(1, Math.ceil(historyData.total / PAGE_SIZE));
+  const hasActiveFilters = filter !== 'all' || filterTeacher || filterDate;
 
   if (loading) return <div className="flex justify-center py-12"><Spinner /></div>;
 
   return (
     <div className="space-y-6" data-testid="session-monitor">
-      {/* Filters */}
+      {/* Status Filters */}
       <div className="flex items-center gap-2 flex-wrap">
-        {['all', 'scheduled', 'completed', 'cancelled'].map((f) => (
-          <button key={f} onClick={() => changeFilter(f)}
+        {['all', 'scheduled', 'completed', 'cancelled', 'abandoned'].map((f) => (
+          <button key={f} onClick={() => handleFilterChange(f)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all capitalize ${
               filter === f ? 'bg-emerald-700 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300'
             }`}
@@ -103,10 +129,41 @@ export default function SessionMonitor() {
             {f}
           </button>
         ))}
-        <span className="ml-auto text-xs text-slate-400">{historyData.total} total sessions</span>
+        <span className="ml-auto text-xs text-slate-400">{historyData.total} sessions</span>
       </div>
 
-      {/* Live Sessions (Priority) */}
+      {/* Advanced Filters Row (#7) */}
+      <div className="flex flex-wrap items-center gap-3 bg-white/70 rounded-2xl border border-slate-200/60 p-3" data-testid="advanced-filters">
+        <Filter className="w-4 h-4 text-slate-400 flex-shrink-0" />
+        <select
+          value={filterTeacher}
+          onChange={(e) => handleTeacherFilter(e.target.value)}
+          className="h-9 px-3 rounded-xl border border-slate-200 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          data-testid="filter-teacher-select"
+        >
+          <option value="">All Teachers</option>
+          {teachers.map(t => (
+            <option key={t.teacher_id} value={t.teacher_id}>{t.user?.name || 'Unknown'}</option>
+          ))}
+        </select>
+        <input
+          type="date"
+          value={filterDate}
+          onChange={(e) => handleDateFilter(e.target.value)}
+          className="h-9 px-3 rounded-xl border border-slate-200 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          data-testid="filter-date-input"
+        />
+        {hasActiveFilters && (
+          <button onClick={clearFilters} className="flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-700 transition-colors" data-testid="clear-filters">
+            <X className="w-3 h-3" />Clear
+          </button>
+        )}
+        <button onClick={handleCleanupStale} className="ml-auto px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors" data-testid="cleanup-stale-btn">
+          Cleanup Stale Sessions
+        </button>
+      </div>
+
+      {/* Live Sessions */}
       {liveSessions.length > 0 && (
         <Card className="overflow-hidden border-green-200">
           <CardHeader className="bg-green-50/50">
@@ -121,7 +178,7 @@ export default function SessionMonitor() {
                 <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-900">{s.teacher_name} & {s.student_name}</p>
-                  <p className="text-xs text-slate-400">{new Date(s.start_time_utc).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <p className="text-xs text-slate-400">{s.start_time_utc ? new Date(s.start_time_utc).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button size="sm" variant="secondary" onClick={() => handleStealthJoin(s)} data-testid={`stealth-join-${s.session_id}`}>
@@ -137,14 +194,14 @@ export default function SessionMonitor() {
         </Card>
       )}
 
-      {/* Session History Table (Server-side paginated) */}
+      {/* Session History Table */}
       <Card className="overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-900">Session History</h3>
           {historyLoading && <Spinner className="w-4 h-4" />}
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px]" data-testid="session-history-table">
+          <table className="w-full min-w-[700px]" data-testid="session-history-table">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/60">
                 <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Status</th>
@@ -152,7 +209,7 @@ export default function SessionMonitor() {
                 <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Student</th>
                 <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Date / Time</th>
                 <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Duration</th>
-                <th className="text-right px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Details</th>
+                <th className="text-right px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -167,7 +224,13 @@ export default function SessionMonitor() {
                     <td className="px-4 py-3 text-sm text-slate-500">{b.duration_minutes || 30} min</td>
                     <td className="px-4 py-3 text-right">
                       {b.session_report ? (
-                        <span className="text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">Report Available</span>
+                        <button
+                          onClick={() => setReportModal(b.session_report)}
+                          className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg hover:bg-emerald-100 transition-colors"
+                          data-testid={`view-report-${i}`}
+                        >
+                          <FileText className="w-3 h-3" />View Report
+                        </button>
                       ) : (
                         <span className="text-[11px] text-slate-300">-</span>
                       )}
@@ -179,7 +242,7 @@ export default function SessionMonitor() {
           </table>
         </div>
 
-        {/* Server-side Pagination */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between">
             <button onClick={() => changePage(page - 1)} disabled={page === 0}
@@ -220,45 +283,51 @@ export default function SessionMonitor() {
         )}
       </Card>
 
-      {/* Session Detail Modal */}
-      {detailSession && (
-        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDetailSession(null)}>
-          <div className="bg-white rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="session-detail-modal">
-            <div className="px-6 py-5 border-b border-slate-100">
-              <h2 className="text-lg font-semibold text-slate-900">Session Details</h2>
-              <p className="text-xs text-slate-400 mt-0.5">{detailSession.session_id}</p>
+      {/* Session Report Modal */}
+      {reportModal && (
+        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setReportModal(null)}>
+          <div className="bg-white rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()} data-testid="session-report-modal">
+            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-slate-900">Session Report</h2>
+              <button onClick={() => setReportModal(null)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100">
+                <X className="w-4 h-4 text-slate-400" />
+              </button>
             </div>
             <div className="px-6 py-4 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 rounded-xl bg-slate-50"><p className="text-[11px] text-slate-400">Teacher</p><p className="text-sm font-medium text-slate-900">{detailSession.teacher_name}</p></div>
-                <div className="p-3 rounded-xl bg-slate-50"><p className="text-[11px] text-slate-400">Student</p><p className="text-sm font-medium text-slate-900">{detailSession.student_name}</p></div>
-              </div>
-              {detailSession.progress && (
+              {reportModal.summary && (
+                <div className="p-4 rounded-xl bg-slate-50">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Summary</p>
+                  <p className="text-sm text-slate-800">{reportModal.summary}</p>
+                </div>
+              )}
+              {reportModal.tajweed_notes && (
                 <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-100">
-                  <p className="text-sm font-semibold text-emerald-800 mb-2">Session Progress</p>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <p><span className="text-slate-500">Surah:</span> {detailSession.progress.surah_name}</p>
-                    <p><span className="text-slate-500">Ayah:</span> {detailSession.progress.ayah_start}-{detailSession.progress.ayah_end}</p>
+                  <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-1">Tajweed Notes</p>
+                  <p className="text-sm text-slate-700">{reportModal.tajweed_notes}</p>
+                </div>
+              )}
+              {(reportModal.current_surah || reportModal.current_ayah) && (
+                <div className="p-4 rounded-xl bg-amber-50/50 border border-amber-100">
+                  <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-1">Progress</p>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    {reportModal.current_surah && <p><span className="text-slate-500">Surah:</span> {reportModal.current_surah}</p>}
+                    {reportModal.current_ayah && <p><span className="text-slate-500">Ayah:</span> {reportModal.current_ayah}</p>}
+                    {reportModal.fluency_rating && <p><span className="text-slate-500">Fluency:</span> {reportModal.fluency_rating}</p>}
                   </div>
                 </div>
               )}
-              {detailSession.rating && (
-                <div className="p-3 rounded-xl bg-amber-50/50 border border-amber-100">
-                  <p className="text-sm font-semibold text-amber-700">Rating: {'★'.repeat(detailSession.rating.rating)}{'☆'.repeat(5 - detailSession.rating.rating)}</p>
-                  {detailSession.rating.review && <p className="text-xs text-slate-500 mt-1 italic">"{detailSession.rating.review}"</p>}
+              {reportModal.homework && (
+                <div className="p-4 rounded-xl bg-slate-50">
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Homework</p>
+                  <p className="text-sm text-slate-700">{reportModal.homework}</p>
                 </div>
               )}
-              {detailSession.payment && (
-                <div className="p-3 rounded-xl bg-slate-50 text-xs space-y-1">
-                  <p className="text-sm font-semibold text-slate-900 mb-1">Payment</p>
-                  <p><span className="text-slate-400">Credits:</span> {detailSession.payment.credits_used}</p>
-                  <p><span className="text-slate-400">Tutor Payout:</span> RM{detailSession.payment.tutor_payout}</p>
-                  <p><span className="text-slate-400">Platform Fee:</span> RM{detailSession.payment.platform_commission}</p>
-                </div>
-              )}
+              <div className="text-[11px] text-slate-400">
+                Report ID: {reportModal.report_id || 'N/A'} | Created: {reportModal.created_at ? new Date(reportModal.created_at).toLocaleString() : 'N/A'}
+              </div>
             </div>
             <div className="px-6 py-4 border-t border-slate-100">
-              <Button variant="secondary" onClick={() => setDetailSession(null)} className="w-full">Close</Button>
+              <Button variant="secondary" onClick={() => setReportModal(null)} className="w-full">Close</Button>
             </div>
           </div>
         </div>
