@@ -1767,9 +1767,20 @@ async def get_teacher_dashboard_data(current_user: User = Depends(get_current_us
         "wallet": {
             "balance": tutor_earnings.get("withdrawable_balance", 0) if tutor_earnings else 0,
             "total_earned": tutor_earnings.get("total_earnings", 0) if tutor_earnings else 0,
-            "total_withdrawn": tutor_earnings.get("total_withdrawn", 0) if tutor_earnings else 0,
+            "total_withdrawn": 0,  # Will be calculated below from approved withdrawals only
         },
     }
+
+    # #1: total_withdrawn ONLY counts approved/completed withdrawals
+    if tutor_earnings:
+        approved_pipeline = [
+            {"$match": {"teacher_id": teacher_id, "status": {"$in": ["approved", "completed", "Approved", "Completed"]}}},
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
+        ]
+        approved_agg = await db.withdrawal_requests.aggregate(approved_pipeline).to_list(1)
+        result["wallet"]["total_withdrawn"] = round(approved_agg[0]["total"], 2) if approved_agg else 0
+
+    return result
 
 @api_router.post("/teacher/request-payout")
 async def request_payout(data: dict, current_user: User = Depends(get_current_user)):
