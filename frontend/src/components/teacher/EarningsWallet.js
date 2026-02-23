@@ -7,6 +7,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const PAGE_SIZE = 10;
 
 function IncomeCreditCard({ wallet, tier }) {
+  const netRate = tier?.commission_rate != null ? Math.round((1 - tier.commission_rate) * 100) : 60;
   return (
     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-800 via-emerald-700 to-emerald-900 p-6 sm:p-8 text-white shadow-lg" data-testid="teacher-credit-card">
       <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-amber-500/10" />
@@ -30,8 +31,12 @@ function IncomeCreditCard({ wallet, tier }) {
           </div>
         </div>
         {tier && (
-          <div className="mt-4 pt-4 border-t border-white/10 text-xs text-emerald-200/50">
-            Platform Fee: {Math.round(tier.commission_rate * 100)}% ({tier.name})
+          <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-3">
+            <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5" data-testid="net-earnings-rate">
+              <ArrowUpRight className="w-3.5 h-3.5 text-emerald-300" />
+              <span className="text-sm font-bold text-emerald-200">You earn {netRate}%</span>
+            </div>
+            <span className="text-[11px] text-emerald-200/40">{tier.name}</span>
           </div>
         )}
       </div>
