@@ -182,6 +182,30 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **Fix 2 — Backend Dynamic Payload (P1):** `CreateBillRequest` now accepts optional `custom_credits` (int) alongside `package_id`. When `custom_credits` is provided, price is calculated as `credits × RM 15`, description is set to "Custom Top Up", and the pending payment record stores `pkg_id = "custom_{N}"`. Production URL and Basic Auth formatting from 8.6 remain untouched.
 
+### Production Release 9.4: Enterprise WebRTC, Financial BI, UI/UX Overhaul (Feb 2026)
+
+**Phase A — Financial Integrity & Teacher Polish:**
+
+**#5 — Dynamic Net Earnings Rate (P1):** IncomeCreditCard in `EarningsWallet.js` now dynamically calculates net take-home from `tier.commission_rate` (60%/65%/70%). Hidden platform fee; replaced with positive "You earn X%" pill. TierWidget also shows dynamic net rate.
+
+**#6 — ACID Payout Requests (P0):** `POST /api/teacher/request-payout` now uses MongoDB transactions (`client.start_session()`) for atomic balance verification + deduction + payout record creation. Falls back to sequential writes if transactions are unavailable. Reads from `tutor_earnings.withdrawable_balance` (single source of truth).
+
+**#10 — Teacher Analytics Charts (P1):** New `GET /api/teacher/analytics` endpoint returns daily earnings (30d, gap-filled) and rating trend (last 10 reviews). Frontend renders Recharts LineCharts in DashboardOverview.
+
+**#11 — Teacher Dashboard Modernization (P1):** Complete rewrite of `DashboardOverview.js` with skeleton loaders, improved empty state with illustration and CTA, modernized card layouts with drop shadows, consistent spacing.
+
+**#12 — Earning History Pagination (P1):** Converted transaction list to structured HTML `<table>` with explicit numbered page buttons (1, 2, 3... Prev/Next).
+
+**#13 — Header Nav Fix (P1):** Fixed "My Profile" dropdown in `LayoutShell.js` from `onNavigateTab('account')` to `onNavigateTab('profile')`.
+
+**Phase B — Admin BI & Session Monitoring:**
+
+**#7 — Session History Aggregation (P1):** New `GET /api/admin/sessions/history` with server-side pagination (limit/offset), status filtering, and teacher/student name enrichment. `SessionMonitor.js` rewritten with live sessions panel + paginated history table.
+
+**#8 — Master Calendar View (P1):** `BookingCalendar.js` rewritten as full CSS Grid monthly calendar. Day cells show color-coded booking dots. Click-to-expand day detail panel. Month navigation with today highlight.
+
+**#9 — Admin BI Charts (P1):** New `GET /api/admin/revenue/chart-data` aggregation pipeline (daily/monthly grouping). `FinancialReports.js` rewritten with Recharts BarChart for Gross Revenue vs Net Profit, metric cards, and session economics breakdown.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
