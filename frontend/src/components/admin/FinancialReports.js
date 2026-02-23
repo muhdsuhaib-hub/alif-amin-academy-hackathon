@@ -105,9 +105,9 @@ export default function FinancialReports() {
         <MetricCard title="Tutor Payable (Owed)" subtitle="Owed to tutors minus processed withdrawals" value={`RM ${tutorPayable.toLocaleString()}`} color="bg-red-50 text-red-700" icon={Wallet} border="border-l-4 border-l-red-400" />
       </div>
 
-      {/* Revenue Chart (#9) */}
+      {/* Revenue Chart (#9) with Date Filters (#5) */}
       <Card className="p-6" data-testid="revenue-chart-card">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
           <div>
             <h3 className="text-sm font-bold text-slate-900">Gross Revenue vs Net Profit</h3>
             <p className="text-[11px] text-slate-400 mt-0.5">Platform earnings breakdown</p>
@@ -121,6 +121,40 @@ export default function FinancialReports() {
               </button>
             ))}
           </div>
+        </div>
+        {/* Date Filter Bar */}
+        <div className="flex flex-wrap items-center gap-2 mb-4" data-testid="chart-date-filter">
+          {[
+            { id: '30d', label: 'Last 30 Days' },
+            { id: 'month', label: 'This Month' },
+            { id: 'year', label: 'This Year' },
+            { id: 'custom', label: 'Custom Range' },
+          ].map(f => (
+            <button key={f.id} onClick={() => {
+              setChartFilterMode(f.id);
+              if (f.id !== 'custom') {
+                const now = new Date();
+                let from, to = now.toISOString().slice(0, 10);
+                if (f.id === 'month') from = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+                else if (f.id === 'year') from = `${now.getFullYear()}-01-01`;
+                else { from = null; to = null; }
+                fetchChart(chartGroup, from, to);
+              }
+            }}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${chartFilterMode === f.id ? 'bg-emerald-700 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:border-emerald-300'}`}
+              data-testid={`chart-filter-${f.id}`}>{f.label}</button>
+          ))}
+          {chartFilterMode === 'custom' && (
+            <div className="flex items-center gap-2 ml-auto">
+              <input type="date" value={chartCustomFrom} onChange={e => setChartCustomFrom(e.target.value)}
+                className="h-8 px-2 rounded-lg border border-slate-200 text-xs" data-testid="chart-custom-from" />
+              <span className="text-xs text-slate-400">to</span>
+              <input type="date" value={chartCustomTo} onChange={e => setChartCustomTo(e.target.value)}
+                className="h-8 px-2 rounded-lg border border-slate-200 text-xs" data-testid="chart-custom-to" />
+              <button onClick={() => { if (chartCustomFrom && chartCustomTo) fetchChart(chartGroup, chartCustomFrom, chartCustomTo); }}
+                className="h-8 px-3 rounded-lg bg-emerald-700 text-white text-xs font-semibold" data-testid="chart-apply-custom">Apply</button>
+            </div>
+          )}
         </div>
         {chartLoading ? (
           <div className="h-[280px] flex items-center justify-center"><Spinner /></div>
