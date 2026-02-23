@@ -280,6 +280,11 @@ export default function UserManagement() {
                                   <Wallet className="w-3.5 h-3.5 text-emerald-500" />Adjust Wallet
                                 </button>
                               )}
+                              {u.role === 'teacher' && (
+                                <button onClick={() => { setAdjustTarget(u); setShowAdjustBalanceModal(true); setAdjustAmount(''); setAdjustDescription(''); setAdjustPin(''); setOpenMenuId(null); }} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 transition-colors" data-testid={`adjust-balance-${u.user_id}`}>
+                                  <Wallet className="w-3.5 h-3.5 text-amber-500" />Adjust Balance
+                                </button>
+                              )}
                               <div className="h-px bg-slate-100 my-1" />
                               <button onClick={() => { handleSuspend(u); setOpenMenuId(null); }} className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-xs transition-colors ${u.status === 'suspended' ? 'text-emerald-600 hover:bg-emerald-50' : 'text-red-600 hover:bg-red-50'}`} data-testid={`suspend-${u.user_id}`}>
                                 {u.status === 'suspended' ? <><CheckCircle className="w-3.5 h-3.5" />Activate User</> : <><Ban className="w-3.5 h-3.5" />Suspend User</>}
