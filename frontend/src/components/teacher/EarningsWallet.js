@@ -190,8 +190,8 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
                 </tbody>
               </table>
             </div>
-            {/* Numbered Pagination */}
-            {totalPages > 1 && (
+            {/* Numbered Pagination — always show when there are transactions */}
+            {totalPages >= 1 && (
               <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between">
                 <button
                   onClick={() => fetchTransactions(page - 1)}
@@ -202,18 +202,26 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
                   <ChevronLeft className="w-3.5 h-3.5" />Prev
                 </button>
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => fetchTransactions(i)}
-                      data-testid={`txn-page-${i + 1}`}
-                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
-                        page === i ? 'bg-emerald-700 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
+                  {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
+                    let pageNum = i;
+                    if (totalPages > 7) {
+                      if (page < 4) pageNum = i;
+                      else if (page > totalPages - 4) pageNum = totalPages - 7 + i;
+                      else pageNum = page - 3 + i;
+                    }
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => fetchTransactions(pageNum)}
+                        data-testid={`txn-page-${pageNum + 1}`}
+                        className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
+                          page === pageNum ? 'bg-emerald-700 text-white shadow-sm' : 'text-slate-500 hover:bg-slate-100'
+                        }`}
+                      >
+                        {pageNum + 1}
+                      </button>
+                    );
+                  })}
                 </div>
                 <button
                   onClick={() => fetchTransactions(page + 1)}
