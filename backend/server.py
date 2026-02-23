@@ -2011,23 +2011,29 @@ async def get_admin_revenue_chart(
 # ============== GHOST CLASS CLEANUP (#8) ==============
 @api_router.post("/admin/sessions/cleanup-stale")
 async def cleanup_stale_sessions(current_user: User = Depends(get_current_user)):
-    """Auto-transition stale 'live' bookings to 'completed' or 'abandoned'."""
+    """Auto-transition stale 'live'/'Live' bookings to 'completed' or 'abandoned'."""
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Not authorized")
     now = datetime.now(timezone.utc)
-    cutoff = (now - timedelta(minutes=60)).isoformat()
+    two_hours_ago = (now - timedelta(hours=2)).isoformat()
 
-    # Find bookings stuck in live/scheduled status past their end time + 60 min
+    # Match any case variant of live/scheduled status where start_time is old
     stale = await db.bookings.find(
-        {"status": {"$in": ["live", "scheduled"]}, "start_time_utc": {"$lt": cutoff}},
+        {
+            "status": {"$regex": "^(live|scheduled)$", "$options": "i"},
+            "start_time_utc": {"$lt": two_hours_ago},
+        },
         {"_id": 0, "booking_id": 1, "start_time_utc": 1, "duration_minutes": 1, "status": 1}
-    ).to_list(100)
+    ).to_list(200)
 
     cleaned = 0
     for b in stale:
-        end_time = datetime.fromisoformat(b["start_time_utc"].replace("Z", "+00:00")) + timedelta(minutes=(b.get("duration_minutes", 60) + 60))
-        if now > end_time:
-            # Check if report exists
+        try:
+            start = datetime.fromisoformat(b["start_time_utc"].replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            continue
+        end_plus_buffer = start + timedelta(minutes=(b.get("duration_minutes", 60) + 120))
+        if now > end_plus_buffer:
             report = await db.session_reports.find_one({"booking_id": b["booking_id"]})
             new_status = "completed" if report else "abandoned"
             await db.bookings.update_one(
@@ -2035,6 +2041,7 @@ async def cleanup_stale_sessions(current_user: User = Depends(get_current_user))
                 {"$set": {"status": new_status, "auto_cleaned_at": now.isoformat()}}
             )
             cleaned += 1
+            logger.info(f"Auto-cleaned stale session {b['booking_id']}: {b['status']} -> {new_status}")
 
     return {"cleaned": cleaned, "checked": len(stale)}
 
