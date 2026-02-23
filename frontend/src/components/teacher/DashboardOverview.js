@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Video, Calendar, Clock, DollarSign, TrendingUp, Flame, Award, Star, Users } from 'lucide-react';
+import { Video, Calendar, Clock, DollarSign, TrendingUp, Flame, Award, Star, Users, BarChart3 } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function useCountdown(targetTime, durationMin = 60) {
   const [state, setState] = React.useState({ text: '', canJoin: false });
@@ -27,13 +30,33 @@ function useCountdown(targetTime, durationMin = 60) {
   return state;
 }
 
+/* -------- Skeleton Loader -------- */
+function Skeleton({ className = '' }) {
+  return <div className={`animate-pulse rounded-2xl bg-slate-200/60 ${className}`} />;
+}
+
+function SkeletonDashboard() {
+  return (
+    <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-6" data-testid="teacher-dashboard-skeleton">
+      <Skeleton className="h-44 w-full rounded-3xl" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Skeleton className="h-36" />
+        <Skeleton className="h-36" />
+        <Skeleton className="h-36" />
+      </div>
+      <Skeleton className="h-64 w-full" />
+    </div>
+  );
+}
+
+/* -------- Hero: Next Class -------- */
 function HeroNextClass({ booking }) {
   const navigate = useNavigate();
   const { text, canJoin } = useCountdown(booking.start_time_utc);
   const classroomUrl = booking.session_id ? `/classroom/${booking.session_id}` : null;
 
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-800 via-emerald-700 to-emerald-900 p-6 sm:p-8 text-white" data-testid="teacher-hero-card">
+    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-800 via-emerald-700 to-emerald-900 p-6 sm:p-8 text-white shadow-lg" data-testid="teacher-hero-card">
       <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-white/5" />
       <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/5" />
       <div className="relative z-10">
@@ -64,43 +87,49 @@ function HeroNextClass({ booking }) {
   );
 }
 
+/* -------- Hero: Empty State (improved) -------- */
 function HeroEmptyState({ onNavigateTab }) {
   return (
-    <div className="relative overflow-hidden rounded-3xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-6 sm:p-8" data-testid="teacher-hero-empty">
-      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-emerald-50" />
-      <div className="relative z-10 text-center sm:text-left">
-        <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
-          <Calendar className="w-3.5 h-3.5" />No Classes Today
+    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-50 to-emerald-50/30 border border-slate-200/60 shadow-sm p-6 sm:p-8" data-testid="teacher-hero-empty">
+      <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-emerald-100/40" />
+      <div className="absolute bottom-4 left-4 w-16 h-16 rounded-full bg-amber-100/30" />
+      <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
+        <div className="w-20 h-20 rounded-2xl bg-white shadow-sm flex items-center justify-center flex-shrink-0">
+          <Calendar className="w-9 h-9 text-emerald-600/60" />
         </div>
-        <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">No upcoming classes</h2>
-        <p className="text-sm text-slate-500 mb-6 max-w-md">Update your availability to get booked by students.</p>
-        <button
-          onClick={() => onNavigateTab?.('availability')}
-          data-testid="update-availability-btn"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-700 text-white font-semibold text-sm hover:bg-emerald-800 transition-all active:scale-[0.97] shadow-sm"
-        >
-          <Calendar className="w-4 h-4" />Update Availability
-        </button>
+        <div className="text-center sm:text-left flex-1">
+          <h2 className="text-lg font-bold text-slate-900 mb-1">Your Schedule is Clear</h2>
+          <p className="text-sm text-slate-500 mb-4 max-w-sm">No upcoming classes right now. Set your availability so students can book sessions with you.</p>
+          <button
+            onClick={() => onNavigateTab?.('availability')}
+            data-testid="update-availability-btn"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-emerald-700 text-white font-semibold text-sm hover:bg-emerald-800 transition-all active:scale-[0.97] shadow-sm"
+          >
+            <Calendar className="w-4 h-4" />Set Availability
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
+/* -------- Tier Widget -------- */
 function TierWidget({ tier }) {
   const tierIcons = { new: Users, rated: Star, elite: Award };
   const tierColors = { new: 'text-slate-600', rated: 'text-amber-600', elite: 'text-emerald-700' };
   const tierBg = { new: 'bg-slate-50', rated: 'bg-amber-50', elite: 'bg-emerald-50' };
   const Icon = tierIcons[tier.level] || Users;
+  const netRate = tier.commission_rate != null ? Math.round((1 - tier.commission_rate) * 100) : 60;
 
   return (
-    <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-5" data-testid="tier-widget">
+    <div className="rounded-2xl bg-white border border-slate-200/60 shadow-sm p-5" data-testid="tier-widget">
       <div className="flex items-center gap-2 mb-4">
         <div className={`w-8 h-8 rounded-xl ${tierBg[tier.level]} flex items-center justify-center`}>
           <Icon className={`w-4 h-4 ${tierColors[tier.level]}`} />
         </div>
         <div>
           <span className="text-sm font-semibold text-slate-900">{tier.name}</span>
-          <p className="text-[11px] text-slate-400">{Math.round((1 - tier.commission_rate) * 100)}% earnings rate</p>
+          <p className="text-[11px] text-emerald-600 font-medium" data-testid="tier-net-rate">You earn {netRate}%</p>
         </div>
       </div>
       {tier.next_tier_name && (
@@ -124,9 +153,10 @@ function TierWidget({ tier }) {
   );
 }
 
+/* -------- Earnings Widget -------- */
 function EarningsWidget({ stats }) {
   return (
-    <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-5" data-testid="earnings-widget">
+    <div className="rounded-2xl bg-white border border-slate-200/60 shadow-sm p-5" data-testid="earnings-widget">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
           <DollarSign className="w-4 h-4 text-amber-600" />
@@ -144,9 +174,10 @@ function EarningsWidget({ stats }) {
   );
 }
 
+/* -------- Stats Widget -------- */
 function StatsWidget({ teacher }) {
   return (
-    <div className="rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm p-5" data-testid="stats-widget">
+    <div className="rounded-2xl bg-white border border-slate-200/60 shadow-sm p-5" data-testid="stats-widget">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
           <TrendingUp className="w-4 h-4 text-emerald-600" />
@@ -168,8 +199,113 @@ function StatsWidget({ teacher }) {
   );
 }
 
+/* -------- Analytics Charts (#10) -------- */
+function AnalyticsCharts() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch(`${API}/teacher/analytics`, { credentials: 'include' });
+        if (r.ok) setData(await r.json());
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
+    })();
+  }, []);
+
+  if (loading) return <Skeleton className="h-64 w-full" />;
+  if (!data) return null;
+
+  const earningsData = (data.daily_earnings || []).map(d => ({
+    date: d.date.slice(5), // MM-DD
+    earnings: d.earnings,
+  }));
+
+  const ratingData = (data.rating_trend || []).map(d => ({
+    date: d.date?.slice(5) || '',
+    rating: d.rating,
+  }));
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload?.length) return null;
+    return (
+      <div className="bg-white/95 backdrop-blur-sm border border-slate-200 rounded-xl px-3 py-2 shadow-lg text-xs">
+        <p className="font-medium text-slate-700">{label}</p>
+        {payload.map((p, i) => (
+          <p key={i} style={{ color: p.color }} className="font-semibold">{p.name}: {typeof p.value === 'number' && p.name === 'RM' ? `RM ${p.value.toFixed(2)}` : p.value}</p>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" data-testid="teacher-analytics-charts">
+      {/* Daily Earnings Chart */}
+      <div className="rounded-2xl bg-white border border-slate-200/60 shadow-sm p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <BarChart3 className="w-4 h-4 text-emerald-600" />
+          </div>
+          <div>
+            <span className="text-sm font-semibold text-slate-900">Daily Earnings</span>
+            <p className="text-[11px] text-slate-400">Last 30 days</p>
+          </div>
+        </div>
+        {earningsData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={earningsData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} interval="preserveStartEnd" />
+              <YAxis tick={{ fontSize: 10, fill: '#94a3b8' }} width={45} />
+              <Tooltip content={<CustomTooltip />} />
+              <Line type="monotone" dataKey="earnings" name="RM" stroke="#059669" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#059669' }} />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-[200px] flex flex-col items-center justify-center text-slate-400">
+            <BarChart3 className="w-8 h-8 mb-2 opacity-30" />
+            <p className="text-xs">No earnings data yet</p>
+          </div>
+        )}
+      </div>
+
+      {/* Rating Trend Chart */}
+      <div className="rounded-2xl bg-white border border-slate-200/60 shadow-sm p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center">
+            <Star className="w-4 h-4 text-amber-500" />
+          </div>
+          <div>
+            <span className="text-sm font-semibold text-slate-900">Rating Trend</span>
+            <p className="text-[11px] text-slate-400">Last 10 reviews</p>
+          </div>
+        </div>
+        {ratingData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <LineChart data={ratingData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94a3b8' }} />
+              <YAxis domain={[0, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 10, fill: '#94a3b8' }} width={30} />
+              <Tooltip content={<CustomTooltip />} />
+              <Line type="monotone" dataKey="rating" name="Rating" stroke="#d97706" strokeWidth={2} dot={{ r: 3, fill: '#d97706' }} activeDot={{ r: 5, fill: '#d97706' }} />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-[200px] flex flex-col items-center justify-center text-slate-400">
+            <Star className="w-8 h-8 mb-2 opacity-30" />
+            <p className="text-xs">No reviews yet</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* -------- Main Dashboard -------- */
 export default function DashboardOverview({ dashboardData, onNavigateTab }) {
-  // Filter out classes that have already ended
+  if (!dashboardData) return <SkeletonDashboard />;
+
   const now = new Date();
   const upcomingClasses = (dashboardData?.upcoming_classes || []).filter(b => {
     const start = new Date(b.start_time_utc);
@@ -182,14 +318,17 @@ export default function DashboardOverview({ dashboardData, onNavigateTab }) {
   const teacher = dashboardData?.teacher || {};
 
   return (
-    <div className="p-4 lg:p-8 max-w-6xl mx-auto" data-testid="teacher-dashboard-home">
-      <section className="mb-6">
+    <div className="p-4 lg:p-8 max-w-6xl mx-auto space-y-6" data-testid="teacher-dashboard-home">
+      <section>
         {nextClass ? <HeroNextClass booking={nextClass} /> : <HeroEmptyState onNavigateTab={onNavigateTab} />}
       </section>
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <TierWidget tier={tier} />
         <EarningsWidget stats={stats} />
         <StatsWidget teacher={teacher} />
+      </section>
+      <section>
+        <AnalyticsCharts />
       </section>
     </div>
   );
