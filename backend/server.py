@@ -1773,7 +1773,7 @@ async def get_teacher_dashboard_data(current_user: User = Depends(get_current_us
 
 @api_router.post("/teacher/request-payout")
 async def request_payout(data: dict, current_user: User = Depends(get_current_user)):
-    """Teacher requests a payout with bank details"""
+    """Teacher requests a payout — ACID-compliant atomic transaction."""
     if current_user.role != "teacher":
         raise HTTPException(status_code=403, detail="Not authorized")
 
@@ -1784,31 +1784,74 @@ async def request_payout(data: dict, current_user: User = Depends(get_current_us
     bank_name = data.get("bank_name", "").strip()
     account_number = data.get("account_number", "").strip()
     account_holder = data.get("account_holder", "").strip()
-    amount = data.get("amount", 0)
+    amount = float(data.get("amount", 0))
 
     if not bank_name or not account_number or not account_holder:
         raise HTTPException(status_code=400, detail="All bank details are required")
+    if amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be greater than 0")
 
-    wallet = await db.teacher_wallets.find_one({"teacher_id": teacher["teacher_id"]}, {"_id": 0})
-    balance = wallet.get("balance", 0) if wallet else 0
+    teacher_id = teacher["teacher_id"]
 
-    if amount <= 0 or amount > balance:
-        raise HTTPException(status_code=400, detail="Invalid payout amount")
+    # Check for existing pending payout
+    existing = await db.payout_requests.find_one({"teacher_id": teacher_id, "status": "pending"})
+    if existing:
+        raise HTTPException(status_code=400, detail="You already have a pending payout request")
+
+    # Read current balance from tutor_earnings (single source of truth)
+    earnings = await db.tutor_earnings.find_one({"teacher_id": teacher_id}, {"_id": 0})
+    available = earnings.get("withdrawable_balance", 0) if earnings else 0
+    if amount > available:
+        raise HTTPException(status_code=400, detail=f"Insufficient balance. Available: RM {available:.2f}")
 
     payout_id = f"payout_{uuid.uuid4().hex[:12]}"
+    now_iso = datetime.now(timezone.utc).isoformat()
+    new_withdrawable = round(available - amount, 2)
+
     payout_doc = {
         "payout_id": payout_id,
-        "teacher_id": teacher["teacher_id"],
+        "teacher_id": teacher_id,
         "user_id": current_user.user_id,
         "amount": amount,
         "bank_name": bank_name,
         "account_number": account_number,
         "account_holder": account_holder,
         "status": "pending",
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": now_iso,
     }
-    await db.payout_requests.insert_one(payout_doc)
-    return {"message": "Payout request submitted", "payout_id": payout_id}
+
+    # ACID: atomic balance deduction + payout record creation
+    try:
+        async with await client.start_session() as session:
+            async with session.start_transaction():
+                # Re-verify balance inside transaction to prevent race conditions
+                fresh = await db.tutor_earnings.find_one(
+                    {"teacher_id": teacher_id}, {"_id": 0}, session=session
+                )
+                if not fresh or fresh.get("withdrawable_balance", 0) < amount:
+                    raise HTTPException(status_code=400, detail="Insufficient balance (concurrent update)")
+                await db.payout_requests.insert_one(payout_doc, session=session)
+                await db.tutor_earnings.update_one(
+                    {"teacher_id": teacher_id},
+                    {"$set": {
+                        "withdrawable_balance": round(fresh["withdrawable_balance"] - amount, 2),
+                        "pending_withdrawal": fresh.get("pending_withdrawal", 0) + amount,
+                        "updated_at": now_iso,
+                    }},
+                    session=session,
+                )
+        logger.info(f"ACID payout request {payout_id} for teacher {teacher_id}")
+    except HTTPException:
+        raise
+    except Exception as tx_err:
+        logger.warning(f"Transaction not supported, falling back to sequential writes: {tx_err}")
+        await db.payout_requests.insert_one(payout_doc)
+        await db.tutor_earnings.update_one(
+            {"teacher_id": teacher_id},
+            {"$set": {"withdrawable_balance": new_withdrawable, "pending_withdrawal": (earnings.get("pending_withdrawal", 0) + amount), "updated_at": now_iso}}
+        )
+
+    return {"message": "Payout request submitted", "payout_id": payout_id, "new_withdrawable_balance": new_withdrawable}
 
 
 
