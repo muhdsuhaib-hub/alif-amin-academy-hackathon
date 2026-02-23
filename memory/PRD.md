@@ -206,6 +206,25 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#9 — Admin BI Charts (P1):** New `GET /api/admin/revenue/chart-data` aggregation pipeline (daily/monthly grouping). `FinancialReports.js` rewritten with Recharts BarChart for Gross Revenue vs Net Profit, metric cards, and session economics breakdown.
 
+
+### Hotfix 9.5: UAT Feedback & Logic Polish (Feb 2026)
+
+**#1 — Hide Gross Revenue:** Removed "Gross Generated" metric from Teacher Financial Snapshot card. Teachers only see Net Income + dynamic "You earn X%" pill.
+
+**#2 — Transaction History Merge:** Renamed "Earnings History" to "Transaction History". Table now shows merged feed of session earnings (green) and withdrawals (red) from `tutor_earnings_transactions`.
+
+**#3 — Payout Pipeline Fix:** ACID payout now inserts a withdrawal record into `tutor_earnings_transactions` (for merged feed) and increments `total_withdrawn` in `tutor_earnings` atomically. Admin's pending withdrawal table populated via `payout_requests` collection.
+
+**#4 — Teacher Analytics Date Filters:** `GET /api/teacher/analytics` accepts `start_date`/`end_date` params. Frontend has filter bar: Last 30 Days | This Month | This Year | Custom Range (date picker pair + Apply). Rating trend chart renders with `connectNulls` for sparse data.
+
+**#5 — Admin Financial BI Date Filters:** `GET /api/admin/revenue/chart-data` accepts `start_date`/`end_date` params. Frontend has matching filter bar: Last 30 Days | This Month | This Year | Custom Range with Apply button.
+
+**#6 — Auto-Refresh Next Class:** Added 30s background polling in `TeacherDashboard.js` via `setInterval` on `fetchDashboardData()`. No hard refresh needed when students book.
+
+**#7 — Admin Session Monitor Filters:** Added Teacher dropdown, Date picker, and Clear button to session history. Added "View Report" button that opens a session report modal with summary, tajweed notes, progress, homework, and metadata.
+
+**#8 — Ghost Live Class Cleanup:** New `POST /api/admin/sessions/cleanup-stale` endpoint. Finds bookings stuck in live/scheduled past `end_time + 60min`, transitions to "completed" (if report exists) or "abandoned". Exposed as "Cleanup Stale Sessions" button in Admin Session Monitor.
+
 ## Backlog
 
 ### P0 (Awaiting UAT)
