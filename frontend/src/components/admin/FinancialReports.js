@@ -58,10 +58,13 @@ export default function FinancialReports() {
     finally { setLoading(false); }
   }, []);
 
-  const fetchChart = useCallback(async (groupBy) => {
+  const fetchChart = useCallback(async (groupBy, startDate, endDate) => {
     setChartLoading(true);
     try {
-      const r = await fetch(`${API}/admin/revenue/chart-data?group_by=${groupBy}`, { credentials: 'include' });
+      const params = new URLSearchParams({ group_by: groupBy });
+      if (startDate) params.set('start_date', startDate);
+      if (endDate) params.set('end_date', endDate);
+      const r = await fetch(`${API}/admin/revenue/chart-data?${params}`, { credentials: 'include' });
       if (r.ok) {
         const d = await r.json();
         setChartData((d.chart_data || []).map(item => ({
