@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
+import asyncio
 import math
 import os
 import logging
@@ -10,6 +11,7 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 import uuid
 import httpx
+import bcrypt
 from typing import Optional, List, Dict, Any
 from passlib.context import CryptContext
 from pydantic import BaseModel, EmailStr
