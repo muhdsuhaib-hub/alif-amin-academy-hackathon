@@ -384,7 +384,7 @@ export default function UserManagement() {
               <input type="password" maxLength={6} value={pinValue} onChange={e => setPinValue(e.target.value.replace(/\D/g, ''))} placeholder="6-digit PIN" className="h-12 w-full rounded-xl border border-slate-200 px-4 text-lg text-center font-mono tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-emerald-500/20" autoFocus data-testid="wallet-pin-input" />
               <div className="flex gap-3">
                 <button type="submit" className="flex-1 h-11 rounded-xl bg-emerald-700 text-white text-sm font-medium hover:bg-emerald-800">{pinMode === 'create' ? 'Create & Adjust' : 'Verify & Adjust'}</button>
-                <button type="button" onClick={() => { setShowPinModal(false); setPinValue(''); }} className="flex-1 h-11 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50">Cancel</button>
+                <button type="button" onClick={() => { setShowPinModal(false); setPinValue(''); if (adjustTarget && !showAdjustBalanceModal) setAdjustTarget(null); }} className="flex-1 h-11 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50">Cancel</button>
               </div>
             </form>
           </div>
