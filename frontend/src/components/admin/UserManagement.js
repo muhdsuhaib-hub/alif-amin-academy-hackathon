@@ -437,7 +437,7 @@ export default function UserManagement() {
         </div>
       )}
 
-      {/* Adjust Teacher Balance Modal (#8-10) */}
+      {/* Adjust Teacher Balance Modal — uses shared PIN modal */}
       {showAdjustBalanceModal && adjustTarget && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[70] p-4 animate-fade-in" onClick={() => setShowAdjustBalanceModal(false)} data-testid="adjust-balance-modal">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -473,45 +473,22 @@ export default function UserManagement() {
                   data-testid="adjust-description-input"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Verify Admin PIN</label>
-                <input
-                  type="password"
-                  value={adjustPin}
-                  onChange={e => setAdjustPin(e.target.value)}
-                  placeholder="Enter admin PIN"
-                  className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400"
-                  data-testid="adjust-pin-input"
-                />
-              </div>
             </div>
             <div className="flex gap-3 px-6 pb-6">
               <button onClick={() => setShowAdjustBalanceModal(false)} className="flex-1 h-11 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors" data-testid="cancel-adjust-btn">Cancel</button>
               <button
-                onClick={async () => {
+                onClick={() => {
                   const amt = parseFloat(adjustAmount);
-                  if (!amt || !adjustDescription.trim() || !adjustPin.trim()) { toast.error('All fields are required'); return; }
-                  setAdjustProcessing(true);
-                  try {
-                    const r = await fetch(`${API}/admin/finance/adjust-tutor-balance`, {
-                      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-                      body: JSON.stringify({ user_id: adjustTarget.user_id, amount: amt, description: adjustDescription, admin_pin: adjustPin }),
-                    });
-                    const d = await r.json();
-                    if (r.ok) {
-                      toast.success(`Balance adjusted: ${d.message}. New balance: RM ${d.new_balance}`);
-                      setShowAdjustBalanceModal(false);
-                    } else {
-                      toast.error(d.detail || 'Failed to adjust balance');
-                    }
-                  } catch (e) { toast.error('Network error'); }
-                  finally { setAdjustProcessing(false); }
+                  if (!amt || !adjustDescription.trim()) { toast.error('Amount and description are required'); return; }
+                  setPinMode('verify');
+                  setPinValue('');
+                  setShowPinModal(true);
                 }}
-                disabled={adjustProcessing || !adjustAmount || !adjustDescription || !adjustPin}
+                disabled={adjustProcessing || !adjustAmount || !adjustDescription}
                 className="flex-1 h-11 rounded-xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 data-testid="confirm-adjust-btn"
               >
-                {adjustProcessing ? <><Spinner className="w-4 h-4 border-white border-t-transparent" /> Processing...</> : 'Adjust Balance'}
+                {adjustProcessing ? 'Processing...' : 'Verify PIN & Adjust'}
               </button>
             </div>
           </div>
