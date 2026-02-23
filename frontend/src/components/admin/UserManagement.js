@@ -406,6 +406,87 @@ export default function UserManagement() {
           </div>
         </div>
       )}
+
+      {/* Adjust Teacher Balance Modal (#8-10) */}
+      {showAdjustBalanceModal && adjustTarget && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[70] p-4 animate-fade-in" onClick={() => setShowAdjustBalanceModal(false)} data-testid="adjust-balance-modal">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Adjust Teacher Balance</h3>
+                <p className="text-xs text-slate-400 mt-0.5">{adjustTarget.name} ({adjustTarget.email})</p>
+              </div>
+              <button onClick={() => setShowAdjustBalanceModal(false)} className="p-1.5 hover:bg-slate-100 rounded-lg"><X className="w-4 h-4 text-slate-400" /></button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Amount (RM)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={adjustAmount}
+                  onChange={e => setAdjustAmount(e.target.value)}
+                  placeholder="e.g. 100 or -50"
+                  className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  data-testid="adjust-amount-input"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">Positive = credit, negative = debit</p>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Reason / Description</label>
+                <input
+                  type="text"
+                  value={adjustDescription}
+                  onChange={e => setAdjustDescription(e.target.value)}
+                  placeholder="e.g. Manual Admin Refund"
+                  className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400"
+                  data-testid="adjust-description-input"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Verify Admin PIN</label>
+                <input
+                  type="password"
+                  value={adjustPin}
+                  onChange={e => setAdjustPin(e.target.value)}
+                  placeholder="Enter admin PIN"
+                  className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-400"
+                  data-testid="adjust-pin-input"
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 px-6 pb-6">
+              <button onClick={() => setShowAdjustBalanceModal(false)} className="flex-1 h-11 rounded-xl border border-slate-200 text-sm text-slate-600 hover:bg-slate-50 transition-colors" data-testid="cancel-adjust-btn">Cancel</button>
+              <button
+                onClick={async () => {
+                  const amt = parseFloat(adjustAmount);
+                  if (!amt || !adjustDescription.trim() || !adjustPin.trim()) { toast.error('All fields are required'); return; }
+                  setAdjustProcessing(true);
+                  try {
+                    const r = await fetch(`${API}/admin/finance/adjust-tutor-balance`, {
+                      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+                      body: JSON.stringify({ user_id: adjustTarget.user_id, amount: amt, description: adjustDescription, admin_pin: adjustPin }),
+                    });
+                    const d = await r.json();
+                    if (r.ok) {
+                      toast.success(`Balance adjusted: ${d.message}. New balance: RM ${d.new_balance}`);
+                      setShowAdjustBalanceModal(false);
+                    } else {
+                      toast.error(d.detail || 'Failed to adjust balance');
+                    }
+                  } catch (e) { toast.error('Network error'); }
+                  finally { setAdjustProcessing(false); }
+                }}
+                disabled={adjustProcessing || !adjustAmount || !adjustDescription || !adjustPin}
+                className="flex-1 h-11 rounded-xl bg-emerald-700 text-white text-sm font-semibold hover:bg-emerald-800 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                data-testid="confirm-adjust-btn"
+              >
+                {adjustProcessing ? <><Spinner className="w-4 h-4 border-white border-t-transparent" /> Processing...</> : 'Adjust Balance'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
