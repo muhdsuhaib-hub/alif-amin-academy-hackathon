@@ -59,8 +59,10 @@ export default function SessionMonitor() {
   useEffect(() => {
     fetchLive();
     fetchHistory(0, filter, filterTeacher, filterDate);
-    const iv = setInterval(fetchLive, 15000);
-    return () => clearInterval(iv);
+    // Poll both live sessions AND history for real-time sync across all roles
+    const livePoll = setInterval(fetchLive, 15000);
+    const historyPoll = setInterval(() => fetchHistory(page, filter, filterTeacher, filterDate), 30000);
+    return () => { clearInterval(livePoll); clearInterval(historyPoll); };
   }, [fetchLive, fetchHistory, filter, filterTeacher, filterDate]);
 
   const changePage = (p) => { setPage(p); fetchHistory(p, filter, filterTeacher, filterDate); };
