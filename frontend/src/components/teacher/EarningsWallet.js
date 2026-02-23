@@ -61,6 +61,16 @@ export default function EarningsWallet({ dashboardData, user, onRefresh }) {
     if (teacherId) fetchTransactions(0);
   }, [teacherId]);
 
+  // #2: 15-second auto-refresh for wallet metrics
+  useEffect(() => {
+    if (!teacherId) return;
+    const interval = setInterval(() => {
+      if (onRefresh) onRefresh();
+      fetchTransactions(page);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [teacherId, page, onRefresh]);
+
   const fetchTransactions = async (pageNum) => {
     setLoading(true);
     try {
