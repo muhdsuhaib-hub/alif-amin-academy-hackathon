@@ -2196,21 +2196,30 @@ async def seed_system_settings():
 # BACKGROUND JOB: Automated Stale Session Sweeper (every 5 min)
 # ============================================================
 async def _sweep_stale_sessions():
-    """Background coroutine that runs every 5 minutes to auto-transition stale sessions."""
+    """Background coroutine — strict session timing, runs every 5 minutes.
+    
+    Rules:
+    - If now is between start_time and end_time → mark booking AND class_session as 'live'
+    - If now > end_time → mark as 'completed' (if session report exists) or 'missed'
+    - No grace period. Strict start + duration = end boundary.
+    """
     INTERVAL_SECONDS = 5 * 60  # 5 minutes
-    TWO_HOURS = timedelta(hours=2)
     while True:
         try:
             await asyncio.sleep(INTERVAL_SECONDS)
             now = datetime.now(timezone.utc)
-            stale = await db.bookings.find(
+
+            # Fetch all active sessions (scheduled or live)
+            active = await db.bookings.find(
                 {"status": {"$in": ["Live", "live", "LIVE", "Scheduled", "scheduled"]}},
-                {"_id": 0, "booking_id": 1, "start_time_utc": 1, "duration_minutes": 1, "status": 1, "created_at": 1}
+                {"_id": 0, "booking_id": 1, "start_time_utc": 1, "duration_minutes": 1, "status": 1}
             ).to_list(500)
 
-            cleaned = 0
-            for b in stale:
-                time_str = b.get("start_time_utc") or b.get("created_at")
+            transitioned_live = 0
+            transitioned_ended = 0
+
+            for b in active:
+                time_str = b.get("start_time_utc")
                 if not time_str:
                     continue
                 try:
@@ -2221,19 +2230,41 @@ async def _sweep_stale_sessions():
                     continue
 
                 duration_mins = b.get("duration_minutes", 60)
-                expected_end = start + timedelta(minutes=duration_mins)
-                if now > expected_end + TWO_HOURS:
-                    report = await db.session_reports.find_one({"booking_id": b["booking_id"]})
-                    new_status = "completed" if report else "abandoned"
+                end_time = start + timedelta(minutes=duration_mins)
+                booking_id = b["booking_id"]
+                current_status = b.get("status", "").lower()
+
+                if now >= start and now < end_time:
+                    # Session should be LIVE
+                    if current_status in ("scheduled",):
+                        await db.bookings.update_one(
+                            {"booking_id": booking_id},
+                            {"$set": {"status": "live"}}
+                        )
+                        await db.class_sessions.update_many(
+                            {"booking_id": booking_id},
+                            {"$set": {"status": "live", "updated_at": now.isoformat()}}
+                        )
+                        transitioned_live += 1
+                        logger.info(f"[Sweeper] {booking_id}: scheduled -> live")
+
+                elif now >= end_time:
+                    # Session has ENDED — completed or missed
+                    report = await db.session_reports.find_one({"booking_id": booking_id})
+                    new_status = "completed" if report else "missed"
                     await db.bookings.update_one(
-                        {"booking_id": b["booking_id"]},
+                        {"booking_id": booking_id},
                         {"$set": {"status": new_status, "auto_cleaned_at": now.isoformat()}}
                     )
-                    cleaned += 1
-                    logger.info(f"[Sweeper] Auto-cleaned {b['booking_id']}: {b['status']} -> {new_status}")
+                    await db.class_sessions.update_many(
+                        {"booking_id": booking_id},
+                        {"$set": {"status": new_status, "updated_at": now.isoformat()}}
+                    )
+                    transitioned_ended += 1
+                    logger.info(f"[Sweeper] {booking_id}: {current_status} -> {new_status}")
 
-            if cleaned > 0:
-                logger.info(f"[Sweeper] Cleaned {cleaned} stale session(s) out of {len(stale)} checked")
+            if transitioned_live > 0 or transitioned_ended > 0:
+                logger.info(f"[Sweeper] Cycle complete: {transitioned_live} -> live, {transitioned_ended} -> ended, {len(active)} checked")
         except Exception as e:
             logger.error(f"[Sweeper] Error in stale session sweep: {e}")
 
