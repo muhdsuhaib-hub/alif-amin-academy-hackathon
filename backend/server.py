@@ -2075,6 +2075,90 @@ async def cleanup_stale_sessions(current_user: User = Depends(get_current_user))
     return {"cleaned": cleaned, "checked": len(stale)}
 
 
+# ============== ADMIN BALANCE ADJUST (#5-7) ==============
+@api_router.post("/admin/finance/adjust-tutor-balance")
+async def adjust_tutor_balance(data: dict, current_user: User = Depends(get_current_user)):
+    """Secure admin endpoint to manually adjust a teacher's balance with PIN verification."""
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    user_id = data.get("user_id", "").strip()
+    amount = float(data.get("amount", 0))
+    description = data.get("description", "").strip()
+    admin_pin = data.get("admin_pin", "").strip()
+
+    if not user_id or not description:
+        raise HTTPException(status_code=400, detail="user_id and description are required")
+    if amount == 0:
+        raise HTTPException(status_code=400, detail="Amount cannot be zero")
+
+    # Verify admin PIN — check admin_settings or fallback to env
+    admin_settings = await db.admin_settings.find_one({"type": "settings_pin"}, {"_id": 0})
+    stored_pin = None
+    if admin_settings:
+        stored_pin = admin_settings.get("pin") or admin_settings.get("value")
+    if not stored_pin:
+        stored_pin = os.environ.get("ADMIN_PIN", "")
+    if not stored_pin or admin_pin != stored_pin:
+        raise HTTPException(status_code=403, detail="Invalid admin PIN")
+
+    # Verify user is a teacher
+    teacher = await db.teachers.find_one({"user_id": user_id}, {"_id": 0})
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher profile not found for this user")
+
+    teacher_id = teacher["teacher_id"]
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    # Ensure tutor_earnings doc exists
+    earnings = await db.tutor_earnings.find_one({"teacher_id": teacher_id}, {"_id": 0})
+    if not earnings:
+        await db.tutor_earnings.insert_one({
+            "teacher_id": teacher_id, "user_id": user_id,
+            "withdrawable_balance": 0, "total_earnings": 0, "total_withdrawn": 0,
+            "pending_withdrawal": 0, "created_at": now_iso, "updated_at": now_iso,
+        })
+
+    txn_id = f"txn_{uuid.uuid4().hex[:12]}"
+    adj_txn = {
+        "transaction_id": txn_id,
+        "teacher_id": teacher_id,
+        "transaction_type": "admin_adjustment",
+        "amount": abs(amount),
+        "net_amount": amount,
+        "description": f"[Admin] {description}",
+        "adjusted_by": current_user.user_id,
+        "status": "completed",
+        "created_at": now_iso,
+    }
+
+    # ACID: update balance + insert ledger
+    try:
+        async with await client.start_session() as session:
+            async with session.start_transaction():
+                await db.tutor_earnings.update_one(
+                    {"teacher_id": teacher_id},
+                    {"$inc": {"withdrawable_balance": amount, "total_earnings": max(amount, 0)}, "$set": {"updated_at": now_iso}},
+                    session=session,
+                )
+                await db.tutor_earnings_transactions.insert_one(adj_txn, session=session)
+    except Exception as tx_err:
+        logger.warning(f"Transaction not supported, fallback: {tx_err}")
+        await db.tutor_earnings.update_one(
+            {"teacher_id": teacher_id},
+            {"$inc": {"withdrawable_balance": amount, "total_earnings": max(amount, 0)}, "$set": {"updated_at": now_iso}}
+        )
+        await db.tutor_earnings_transactions.insert_one(adj_txn)
+
+    logger.info(f"Admin balance adjust: teacher={teacher_id} amount={amount} by={current_user.user_id}")
+    updated = await db.tutor_earnings.find_one({"teacher_id": teacher_id}, {"_id": 0})
+    return {
+        "message": f"Balance adjusted by RM {amount:+.2f}",
+        "transaction_id": txn_id,
+        "new_balance": round(updated.get("withdrawable_balance", 0), 2) if updated else 0,
+    }
+
+
 app.include_router(api_router)
 
 # Initialize admin routes with database
