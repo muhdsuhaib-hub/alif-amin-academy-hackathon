@@ -334,6 +334,16 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#3 — UI Timer:** `ClassroomTimer` renders MM:SS countdown in the classroom header. White when >5min, amber when <=5min, red when <=1min, "Time Expired" at 00:00. Identical across Student, Teacher, and Observer.
 
+### Phase C.2: WebSocket Interactive Activity Push (Feb 2026)
+
+**#1 — Content Library API:** `GET /api/content-library` — teacher-accessible read endpoint that returns active `learning_activities`. Reuses admin's existing CRUD collection.
+
+**#2 — Teacher Activities UI:** "Activities" (Layers icon) button added to ControlDock next to Book icon, visible only for teachers. Opens `ActivitiesBrowser` drawer listing available content from the library.
+
+**#3 — WebSocket Broadcast:** When teacher selects an activity, `ACTIVITY_START` message (with full activity JSON payload) broadcasts to all room clients via existing WS relay. `ACTIVITY_CLOSE` removes it.
+
+**#4 — Activity Overlay:** `ActivityOverlay` renders over the video viewport on all clients. Displays activity title, description, and questions with options. Teacher has "Close Activity" button; students and observers view passively.
+
 ### P1 (Earlier Issues)
 - "View Report" button rendering verification (code exists, depends on session_report data)
 - Teacher Transaction History pagination (code exists with `totalPages >= 1`)
