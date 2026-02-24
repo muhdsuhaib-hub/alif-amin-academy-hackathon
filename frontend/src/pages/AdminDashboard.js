@@ -99,25 +99,31 @@ function KpiCard({ label, value, icon: Icon, color, onClick, badge }) {
   );
 }
 
-/* ─── Live Session Row ─── */
-function LiveSessionRow({ session, onCancel }) {
-  const start = new Date(session.start_time_utc);
-  const now = new Date();
-  const isLive = start <= now;
+/* ─── Live Session Row (Rebuilt with strict time) ─── */
+function LiveSessionRow({ session, currentTime }) {
+  const start = new Date(session.start_time_utc).getTime();
+  const dur = (session.duration_minutes || 60) * 60 * 1000;
+  const end = start + dur;
+  const isLive = currentTime >= start && currentTime < end;
+  const isUpcoming = currentTime < start;
+  const remaining = isLive ? Math.max(0, Math.floor((end - currentTime) / 60000)) : 0;
   return (
     <div className="flex items-center justify-between py-3 px-4 hover:bg-slate-50/80 rounded-xl transition-colors" data-testid={`session-${session.booking_id}`}>
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${isLive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
         <div className="min-w-0">
           <p className="text-sm font-medium text-slate-900 truncate">{session.student_name} <span className="text-slate-400 font-normal">with</span> {session.teacher_name}</p>
-          <p className="text-[11px] text-slate-400">{start.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} &middot; {session.duration_minutes || 60}min</p>
+          <p className="text-[11px] text-slate-400">
+            {new Date(start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} – {new Date(end).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+            {isLive && <span className="ml-1.5 text-emerald-600 font-medium">{remaining}m left</span>}
+          </p>
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold ${isLive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-          {isLive ? 'Live' : session.status}
+        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold ${isLive ? 'bg-emerald-50 text-emerald-700' : isUpcoming ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>
+          {isLive ? 'Live' : isUpcoming ? 'Upcoming' : session.status}
         </span>
-        {session.meet_link_slug && (
+        {session.meet_link_slug && isLive && (
           <a href={`/classroom/${session.meet_link_slug}`} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg hover:bg-emerald-50 transition-colors" title="View Classroom">
             <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
           </a>
