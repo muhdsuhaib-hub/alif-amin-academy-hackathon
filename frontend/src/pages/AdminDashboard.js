@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Users, Calendar, DollarSign, TrendingUp,
-  Clock, AlertCircle, CheckCircle, BookOpen, UserPlus,
+  AlertCircle, CheckCircle, BookOpen, UserPlus,
   CreditCard, BarChart3, Bell, UserCheck, Wallet,
   Award, Star, Circle, Video, Settings, Library, LogIn,
   Ban, Edit, MoreHorizontal, X, Save, ShieldAlert,
