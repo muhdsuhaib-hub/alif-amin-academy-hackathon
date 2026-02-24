@@ -92,27 +92,19 @@ export default function SessionMonitor() {
   const totalPages = Math.max(1, Math.ceil(historyData.total / PAGE_SIZE));
   const hasActiveFilters = filter !== 'all' || filterTeacher || filterDate;
 
-  // Client-side strict time filter with 5-min early access: now >= (start - 5min) AND now < end
-  const EARLY_ACCESS_MS = 5 * 60 * 1000;
-  const verifiedLive = liveSessions.filter(s => {
-    const start = s.start_time_utc ? new Date(s.start_time_utc).getTime() : 0;
-    const end = s.end_time_utc ? new Date(s.end_time_utc).getTime() : (start + (s.duration_minutes || 30) * 60000);
-    return currentTime >= (start - EARLY_ACCESS_MS) && currentTime < end;
-  });
-
   if (loading) return <div className="flex justify-center py-12"><Spinner /></div>;
 
   return (
     <div className="space-y-6" data-testid="session-monitor">
       {/* Status Filters */}
       <div className="flex items-center gap-2 flex-wrap">
-        {['all', 'scheduled', 'completed', 'cancelled', 'abandoned'].map((f) => (
+        {['all', 'live', 'scheduled', 'completed', 'cancelled', 'abandoned'].map((f) => (
           <button key={f} onClick={() => handleFilterChange(f)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all capitalize ${
               filter === f ? 'bg-emerald-700 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300'
             }`}
             data-testid={`filter-${f}`}>
-            {f}
+            {f === 'live' ? 'Live' : f}
           </button>
         ))}
         <span className="ml-auto text-xs text-slate-400">{historyData.total} sessions</span>
