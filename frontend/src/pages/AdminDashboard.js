@@ -102,11 +102,11 @@ function KpiCard({ label, value, icon: Icon, color, onClick, badge }) {
 /* ─── Live Session Row (Rebuilt with strict time) ─── */
 function LiveSessionRow({ session, currentTime }) {
   const start = new Date(session.start_time_utc).getTime();
-  const dur = (session.duration_minutes || 60) * 60 * 1000;
-  const end = start + dur;
-  const isLive = currentTime >= start && currentTime < end;
-  const isUpcoming = currentTime < start;
-  const remaining = isLive ? Math.max(0, Math.floor((end - currentTime) / 60000)) : 0;
+  const end = session.end_time_utc ? new Date(session.end_time_utc).getTime() : (start + (session.duration_minutes || 30) * 60 * 1000);
+  const EARLY_ACCESS_MS = 5 * 60 * 1000;
+  const isLive = currentTime >= (start - EARLY_ACCESS_MS) && currentTime < end;
+  const isUpcoming = currentTime < (start - EARLY_ACCESS_MS);
+  const remaining = (currentTime >= start && currentTime < end) ? Math.max(0, Math.floor((end - currentTime) / 60000)) : 0;
   return (
     <div className="flex items-center justify-between py-3 px-4 hover:bg-slate-50/80 rounded-xl transition-colors" data-testid={`session-${session.booking_id}`}>
       <div className="flex items-center gap-3 min-w-0 flex-1">
