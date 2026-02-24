@@ -149,35 +149,6 @@ export default function AdminDashboard({ user }) {
                 <KpiCard label="Pending Approvals" value={pendingApprovals} icon={UserCheck} color="bg-red-50 text-red-700" onClick={() => setActiveTab('approvals')} badge={pendingApprovals} />
               </div>
 
-              {/* Today's Sessions — Rebuilt with strict client-side time verification */}
-              {(() => {
-                // Client-side filter: only show sessions that haven't expired
-                const activeSessions = liveSessions.filter(s => {
-                  const start = s.start_time_utc ? new Date(s.start_time_utc).getTime() : 0;
-                  const end = s.end_time_utc ? new Date(s.end_time_utc).getTime() : (start + (s.duration_minutes || 30) * 60 * 1000);
-                  return currentTime < end; // Show upcoming + live, hide expired
-                });
-                return (
-                  <Card className="overflow-hidden" data-testid="todays-sessions-card">
-                    <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <h3 className="text-sm font-bold text-slate-900">Today's Sessions</h3>
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">{activeSessions.length}</span>
-                      </div>
-                      <button onClick={fetchLiveSessions} className="p-2 rounded-lg hover:bg-slate-100 transition-colors"><RefreshCw className="w-4 h-4 text-slate-400" /></button>
-                    </div>
-                    {activeSessions.length === 0 ? (
-                      <div className="p-8 text-center"><Clock className="w-8 h-8 mx-auto mb-2 text-slate-200" /><p className="text-xs text-slate-400">No active sessions for today</p></div>
-                    ) : (
-                      <div className="divide-y divide-slate-50 max-h-[300px] overflow-y-auto">
-                        {activeSessions.map((s) => <LiveSessionRow key={s.booking_id} session={s} currentTime={currentTime} />)}
-                      </div>
-                    )}
-                  </Card>
-                );
-              })()}
-
               {/* Quick Stats */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
