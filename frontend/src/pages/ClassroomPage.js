@@ -548,6 +548,11 @@ export default function ClassroomPage() {
     navigate('/student/dashboard');
   }, [navigate]);
 
+  const handleStudentAnswer = useCallback((questionIndex, selectedAnswer) => {
+    send({ type: 'ACTIVITY_ANSWER', payload: { questionIndex, selectedAnswer } });
+    setStudentAnswers(prev => ({ ...prev, [questionIndex]: selectedAnswer }));
+  }, [send]);
+
   const handlePushActivity = useCallback((activity) => {
     setActiveActivity(activity);
     setShowActivities(false);
