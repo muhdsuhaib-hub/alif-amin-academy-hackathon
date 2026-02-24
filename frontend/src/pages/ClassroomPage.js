@@ -15,6 +15,58 @@ const BACKEND = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND}/api`;
 const WS_BASE = BACKEND.replace(/^http/, 'ws');
 
+// ==================== SERVER-SYNCED TIMER HOOK ====================
+function useServerTimer(session) {
+  const [remaining, setRemaining] = useState(null);
+  const offsetRef = useRef(0);
+
+  useEffect(() => {
+    if (!session?.server_time_utc || !session?.end_time_utc) return;
+
+    // Calculate clock offset: server_time - local_time
+    const serverNow = new Date(session.server_time_utc).getTime();
+    const localNow = Date.now();
+    offsetRef.current = serverNow - localNow;
+
+    const endMs = new Date(session.end_time_utc).getTime();
+
+    const tick = () => {
+      const trueNow = Date.now() + offsetRef.current;
+      const left = Math.max(0, endMs - trueNow);
+      setRemaining(left);
+    };
+
+    tick(); // immediate first tick
+    const iv = setInterval(tick, 1000);
+    return () => clearInterval(iv);
+  }, [session?.server_time_utc, session?.end_time_utc]);
+
+  return remaining;
+}
+
+// ==================== CLASSROOM TIMER UI ====================
+function ClassroomTimer({ remainingMs }) {
+  if (remainingMs === null) return null;
+
+  const totalSec = Math.floor(remainingMs / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  const display = remainingMs <= 0 ? 'Time Expired' : `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+
+  let color = 'text-white/70';
+  let bg = 'bg-white/5';
+  if (remainingMs <= 0) { color = 'text-red-400'; bg = 'bg-red-500/10'; }
+  else if (remainingMs <= 60000) { color = 'text-red-400'; bg = 'bg-red-500/10'; }
+  else if (remainingMs <= 300000) { color = 'text-amber-400'; bg = 'bg-amber-500/10'; }
+
+  return (
+    <div className={`flex items-center justify-center gap-2 px-4 py-1.5 flex-shrink-0 border-b border-white/5 ${bg}`} data-testid="classroom-timer">
+      <Clock className={`w-3.5 h-3.5 ${color}`} />
+      <span className={`text-sm font-mono font-semibold tracking-wider ${color}`} data-testid="timer-display">{display}</span>
+    </div>
+  );
+}
+
 // ==================== WEBSOCKET HOOK ====================
 function useClassroomWS(roomId, onMessage) {
   const wsRef = useRef(null);
