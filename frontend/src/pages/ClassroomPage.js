@@ -230,6 +230,12 @@ export default function ClassroomPage() {
         setRaisedHands(p => { const n = { ...p }; delete n[msg.identity]; return n; });
         if (msg.identity === user?.user_id) setMyHandRaised(false);
         break;
+      case 'ACTIVITY_START':
+        setActiveActivity(msg.activity || null);
+        break;
+      case 'ACTIVITY_CLOSE':
+        setActiveActivity(null);
+        break;
       case 'END_CLASS': setShowRatingModal(true); break;
       default: break;
     }
