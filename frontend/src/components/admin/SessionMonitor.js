@@ -12,7 +12,6 @@ const PAGE_SIZE = 20;
 
 export default function SessionMonitor() {
   const navigate = useNavigate();
-  const [liveSessions, setLiveSessions] = useState([]);
   const [historyData, setHistoryData] = useState({ bookings: [], total: 0 });
   const [loading, setLoading] = useState(true);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -22,13 +21,6 @@ export default function SessionMonitor() {
   const [teachers, setTeachers] = useState([]);
   const [page, setPage] = useState(0);
   const [reportModal, setReportModal] = useState(null);
-  const [currentTime, setCurrentTime] = useState(Date.now());
-
-  // Silent local clock — ticks every 10s to expire sessions client-side without network calls
-  useEffect(() => {
-    const tick = setInterval(() => setCurrentTime(Date.now()), 10000);
-    return () => clearInterval(tick);
-  }, []);
 
   // Fetch teachers list for filter
   useEffect(() => {
@@ -38,13 +30,6 @@ export default function SessionMonitor() {
         if (r.ok) setTeachers(await r.json());
       } catch {}
     })();
-  }, []);
-
-  const fetchLive = useCallback(async () => {
-    try {
-      const res = await fetch(`${API}/classroom/admin/sessions?status=live`, { credentials: 'include' });
-      if (res.ok) { const d = await res.json(); setLiveSessions(d.sessions || []); }
-    } catch {}
   }, []);
 
   const fetchHistory = useCallback(async (pageNum, statusFilter, teacherId, date) => {
@@ -63,14 +48,11 @@ export default function SessionMonitor() {
     finally { setHistoryLoading(false); setLoading(false); }
   }, []);
 
-  // Fetch live once on mount, then every 30s (silent — no DOM flicker)
   useEffect(() => {
-    fetchLive();
     fetchHistory(0, filter, filterTeacher, filterDate);
-    const livePoll = setInterval(fetchLive, 30000);
     const historyPoll = setInterval(() => fetchHistory(page, filter, filterTeacher, filterDate), 30000);
-    return () => { clearInterval(livePoll); clearInterval(historyPoll); };
-  }, [fetchLive, fetchHistory, filter, filterTeacher, filterDate]);
+    return () => clearInterval(historyPoll);
+  }, [fetchHistory, filter, filterTeacher, filterDate]);
 
   const changePage = (p) => { setPage(p); fetchHistory(p, filter, filterTeacher, filterDate); };
   const handleFilterChange = (f) => { setFilter(f); setPage(0); fetchHistory(0, f, filterTeacher, filterDate); };
