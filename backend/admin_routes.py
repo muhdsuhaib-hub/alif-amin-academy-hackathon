@@ -1366,18 +1366,46 @@ async def adjust_wallet(adj: WalletAdjustment, request: Request):
 
 @admin_router.get("/overview/live-sessions")
 async def get_live_sessions(request: Request):
-    """Get today's sessions with student and teacher names."""
+    """Get today's sessions with strict time enforcement. Only returns truly live sessions."""
     now = datetime.now(timezone.utc)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
     today_end = (now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)).isoformat()
 
     bookings = await db.bookings.find({
         "start_time_utc": {"$gte": today_start, "$lt": today_end},
-        "status": {"$in": ["scheduled", "completed", "in_progress"]},
+        "status": {"$in": ["scheduled", "live", "in_progress"]},
     }, {"_id": 0}).sort("start_time_utc", 1).to_list(50)
 
     results = []
     for b in bookings:
+        # Strict time math: compute end_time
+        start_str = b.get("start_time_utc")
+        if not start_str:
+            continue
+        try:
+            start_dt = datetime.fromisoformat(str(start_str).replace("Z", "+00:00"))
+            if start_dt.tzinfo is None:
+                start_dt = start_dt.replace(tzinfo=timezone.utc)
+        except (ValueError, TypeError):
+            continue
+
+        duration = b.get("duration_minutes", 60)
+        end_dt = start_dt + timedelta(minutes=duration)
+
+        # If session has expired, auto-transition and skip it
+        if now >= end_dt:
+            report = await db.session_reports.find_one({"booking_id": b["booking_id"]})
+            new_status = "completed" if report else "missed"
+            await db.bookings.update_one(
+                {"booking_id": b["booking_id"]},
+                {"$set": {"status": new_status, "auto_cleaned_at": now.isoformat()}}
+            )
+            await db.class_sessions.update_many(
+                {"booking_id": b["booking_id"]},
+                {"$set": {"status": new_status, "updated_at": now.isoformat()}}
+            )
+            continue  # Do NOT return expired session
+
         student_name = "Unknown Student"
         teacher_name = "Unknown Teacher"
 
@@ -1403,9 +1431,9 @@ async def get_live_sessions(request: Request):
             "student_name": student_name,
             "teacher_name": teacher_name,
             "start_time_utc": b["start_time_utc"],
-            "end_time_utc": b.get("end_time_utc"),
+            "end_time_utc": end_dt.isoformat(),
             "status": b["status"],
-            "duration_minutes": b.get("duration_minutes", 60),
+            "duration_minutes": duration,
             "session_id": cs.get("session_id") if cs else None,
             "meet_link_slug": cs.get("meet_link_slug") if cs else None,
         })
