@@ -191,7 +191,7 @@ function ActivitiesBrowser({ onSelect, onClose }) {
 // ==================== ACTIVITY OVERLAY ====================
 function ActivityOverlay({ activity, isTeacher, onClose, studentAnswers, onAnswer }) {
   if (!activity) return null;
-  const payload = activity.payload || {};
+  const content = activity.content || activity.payload || {};
   const aType = (activity.activity_type || activity.type || '').toLowerCase();
 
   return (
@@ -211,31 +211,32 @@ function ActivityOverlay({ activity, isTeacher, onClose, studentAnswers, onAnswe
         <div className="p-5 overflow-y-auto max-h-[60vh] space-y-4">
           {activity.description && <p className="text-sm text-white/70 mb-3">{activity.description}</p>}
 
-          {/* Quiz type — interactive with grading */}
-          {aType === 'quiz' && (payload.questions || []).map((q, qi) => {
+          {/* ====== QUIZ — optionA/B/C/D keys ====== */}
+          {aType === 'quiz' && (content.questions || []).map((q, qi) => {
+            const opts = ['A', 'B', 'C', 'D'].map(l => ({ letter: l, text: q[`option${l}`] })).filter(o => o.text);
             const studentPick = studentAnswers?.[qi];
-            const correct = q.correct ?? q.answer;
+            const correct = (q.correct || '').toUpperCase();
             return (
               <div key={qi} className="bg-white/5 rounded-xl p-4 border border-white/5">
-                <p className="text-sm font-medium text-white mb-3">Q{qi + 1}: {q.question || q.text}</p>
+                <p className="text-sm font-medium text-white mb-3">Q{qi + 1}: {q.question}</p>
                 <div className="space-y-1.5">
-                  {(q.options || []).map((opt, oi) => {
-                    const letter = String.fromCharCode(65 + oi);
-                    const isSelected = studentPick === oi || studentPick === letter || studentPick === opt;
-                    let optStyle = 'bg-white/5 text-white/60 hover:bg-white/10 cursor-pointer';
+                  {opts.map(({ letter, text }) => {
+                    const isSelected = studentPick === letter;
+                    let style = 'bg-white/5 text-white/60 hover:bg-white/10 cursor-pointer';
                     if (isTeacher && isSelected) {
-                      const isCorrect = correct === oi || correct === letter || correct === opt;
-                      optStyle = isCorrect ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-red-500/20 text-red-300 border-red-500/30';
+                      style = letter === correct
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                        : 'bg-red-500/20 text-red-300 border-red-500/30';
                     } else if (!isTeacher && isSelected) {
-                      optStyle = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+                      style = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
                     }
                     return (
-                      <button key={oi}
-                        onClick={() => { if (!isTeacher && onAnswer) onAnswer(qi, oi); }}
+                      <button key={letter}
+                        onClick={() => { if (!isTeacher && onAnswer) onAnswer(qi, letter); }}
                         disabled={isTeacher}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs border border-transparent transition-all ${optStyle}`}
-                        data-testid={`q${qi}-opt${oi}`}>
-                        {letter}. {opt}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs border border-transparent transition-all ${style}`}
+                        data-testid={`q${qi}-opt${letter}`}>
+                        {letter}. {text}
                       </button>
                     );
                   })}
@@ -244,52 +245,94 @@ function ActivityOverlay({ activity, isTeacher, onClose, studentAnswers, onAnswe
             );
           })}
 
-          {/* Hadith / Doa / Word Tracing — Arabic text display */}
-          {['hadith practice', 'doa practice', 'word tracing'].includes(aType) && (
-            <div className="space-y-3">
-              {payload.arabic_text && (
+          {/* ====== HADITH PRACTICE — content.hadiths[] ====== */}
+          {aType === 'hadith practice' && (content.hadiths || []).map((h, i) => (
+            <div key={i} className="space-y-3">
+              {h.reference && (
+                <p className="text-[11px] uppercase text-emerald-400/70 font-semibold tracking-wider">{h.reference}</p>
+              )}
+              {h.arabic && (
                 <div className="bg-white/5 rounded-xl p-5 border border-white/5 text-center">
-                  <p className="text-2xl font-arabic leading-loose text-white" dir="rtl">{payload.arabic_text}</p>
+                  <p className="text-2xl leading-[2.2] text-white" dir="rtl">{h.arabic}</p>
                 </div>
               )}
-              {payload.translation && (
+              {h.translation && (
                 <div className="bg-white/5 rounded-xl p-4 border border-white/5">
                   <p className="text-[11px] uppercase text-white/30 font-semibold mb-1">Translation</p>
-                  <p className="text-sm text-white/70">{payload.translation}</p>
+                  <p className="text-sm text-white/70 leading-relaxed">{h.translation}</p>
                 </div>
               )}
-              {payload.transliteration && (
+              {h.transliteration && (
                 <div className="bg-white/5 rounded-xl p-4 border border-white/5">
                   <p className="text-[11px] uppercase text-white/30 font-semibold mb-1">Transliteration</p>
-                  <p className="text-sm text-white/60 italic">{payload.transliteration}</p>
+                  <p className="text-sm text-white/60 italic">{h.transliteration}</p>
                 </div>
               )}
             </div>
-          )}
+          ))}
 
-          {/* Tajweed Match — concept + examples */}
+          {/* ====== DOA PRACTICE — content.duas[] or content.arabic_text ====== */}
+          {aType === 'doa practice' && (() => {
+            const duas = content.duas || (content.arabic_text ? [content] : []);
+            return duas.map((d, i) => (
+              <div key={i} className="space-y-3">
+                {d.reference && <p className="text-[11px] uppercase text-emerald-400/70 font-semibold tracking-wider">{d.reference}</p>}
+                {(d.arabic_text || d.arabic) && (
+                  <div className="bg-white/5 rounded-xl p-5 border border-white/5 text-center">
+                    <p className="text-2xl leading-[2.2] text-white" dir="rtl">{d.arabic_text || d.arabic}</p>
+                  </div>
+                )}
+                {d.translation && (
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                    <p className="text-[11px] uppercase text-white/30 font-semibold mb-1">Translation</p>
+                    <p className="text-sm text-white/70 leading-relaxed">{d.translation}</p>
+                  </div>
+                )}
+                {d.transliteration && (
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                    <p className="text-[11px] uppercase text-white/30 font-semibold mb-1">Transliteration</p>
+                    <p className="text-sm text-white/60 italic">{d.transliteration}</p>
+                  </div>
+                )}
+              </div>
+            ));
+          })()}
+
+          {/* ====== WORD TRACING — content.words[] or content.arabic_text ====== */}
+          {aType === 'word tracing' && (() => {
+            const words = content.words || (content.arabic_text ? [content] : []);
+            return words.map((w, i) => (
+              <div key={i} className="bg-white/5 rounded-xl p-5 border border-white/5 text-center space-y-2">
+                <p className="text-3xl leading-loose text-white" dir="rtl">{w.arabic_text || w.arabic || w.word}</p>
+                {w.translation && <p className="text-sm text-white/60">{w.translation}</p>}
+                {w.transliteration && <p className="text-xs text-white/40 italic">{w.transliteration}</p>}
+              </div>
+            ));
+          })()}
+
+          {/* ====== TAJWEED MATCH — content.concept + content.examples[] ====== */}
           {aType === 'tajweed match' && (
             <div className="space-y-3">
-              {payload.concept && (
+              {content.concept && (
                 <div className="bg-white/5 rounded-xl p-4 border border-white/5">
                   <p className="text-[11px] uppercase text-white/30 font-semibold mb-1">Concept</p>
-                  <p className="text-sm text-white/80">{payload.concept}</p>
+                  <p className="text-sm text-white/80">{content.concept}</p>
                 </div>
               )}
-              {(payload.examples || []).map((ex, i) => (
+              {(content.examples || content.matches || []).map((ex, i) => (
                 <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
                   <p className="text-xs text-white/40 mb-1">Example {i + 1}</p>
-                  <p className="text-lg font-arabic text-white" dir="rtl">{ex.arabic || ex}</p>
+                  <p className="text-lg text-white" dir="rtl">{ex.arabic || ex.word || (typeof ex === 'string' ? ex : '')}</p>
                   {ex.rule && <p className="text-xs text-emerald-400 mt-1">{ex.rule}</p>}
                 </div>
               ))}
             </div>
           )}
 
-          {/* Fallback for unknown types */}
+          {/* ====== FALLBACK ====== */}
           {!['quiz', 'hadith practice', 'doa practice', 'word tracing', 'tajweed match'].includes(aType) && (
             <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-              <pre className="text-xs text-white/70 whitespace-pre-wrap">{JSON.stringify(payload, null, 2)}</pre>
+              <pre className="text-xs text-white/70 whitespace-pre-wrap">{JSON.stringify(content, null, 2)}</pre>
             </div>
           )}
         </div>
