@@ -1317,11 +1317,11 @@ async def get_student_dashboard_data(current_user: User = Depends(get_current_us
     student_id = student_doc["student_id"]
     now = datetime.now(timezone.utc)
 
-    # Upcoming bookings with session_id enrichment — include in-progress classes (started up to 2h ago)
+    # Upcoming bookings with session_id enrichment — include scheduled AND live (in-progress)
     upcoming_cutoff = (now - timedelta(hours=2)).isoformat()
     upcoming_bookings = await db.bookings.find({
         "student_id": student_id,
-        "status": "scheduled",
+        "status": {"$in": ["scheduled", "live"]},
         "start_time_utc": {"$gte": upcoming_cutoff}
     }, {"_id": 0}).sort("start_time_utc", 1).limit(5).to_list(5)
 
@@ -1689,11 +1689,11 @@ async def get_teacher_dashboard_data(current_user: User = Depends(get_current_us
     teacher_id = teacher["teacher_id"]
     now = datetime.now(timezone.utc)
 
-    # Upcoming bookings — include in-progress (started up to 2h ago)
+    # Upcoming bookings — include scheduled AND live (in-progress)
     upcoming_cutoff = (now - timedelta(hours=2)).isoformat()
     upcoming = await db.bookings.find({
         "teacher_id": teacher_id,
-        "status": "scheduled",
+        "status": {"$in": ["scheduled", "live"]},
         "start_time_utc": {"$gte": upcoming_cutoff}
     }, {"_id": 0}).sort("start_time_utc", 1).limit(10).to_list(10)
 
