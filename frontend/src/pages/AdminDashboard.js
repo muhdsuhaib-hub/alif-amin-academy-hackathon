@@ -200,8 +200,7 @@ export default function AdminDashboard({ user }) {
                 // Client-side filter: only show sessions that haven't expired
                 const activeSessions = liveSessions.filter(s => {
                   const start = s.start_time_utc ? new Date(s.start_time_utc).getTime() : 0;
-                  const dur = (s.duration_minutes || 60) * 60 * 1000;
-                  const end = start + dur;
+                  const end = s.end_time_utc ? new Date(s.end_time_utc).getTime() : (start + (s.duration_minutes || 30) * 60 * 1000);
                   return currentTime < end; // Show upcoming + live, hide expired
                 });
                 return (
