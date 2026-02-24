@@ -164,7 +164,46 @@ export default function SessionMonitor() {
         )}
       </div>
 
-      {/* Live Sessions — UI removed for rebuild. WebRTC functions (handleStealthJoin, handleStealthRecord) preserved. */}
+      {/* Live Now — Rebuilt with client-side strict time verification */}
+      {verifiedLive.length > 0 && (
+        <Card className="overflow-hidden border-green-200" data-testid="live-now-section">
+          <CardHeader className="bg-green-50/50">
+            <div className="flex items-center gap-2">
+              <Radio className="w-4 h-4 text-green-600 animate-pulse" />
+              <h3 className="text-sm font-semibold text-green-800">Live Now ({verifiedLive.length})</h3>
+            </div>
+          </CardHeader>
+          <CardBody className="p-0">
+            {verifiedLive.map((s) => {
+              const start = new Date(s.start_time_utc);
+              const dur = s.duration_minutes || 60;
+              const end = new Date(start.getTime() + dur * 60000);
+              const elapsed = Math.floor((currentTime - start.getTime()) / 60000);
+              const remaining = Math.max(0, dur - elapsed);
+              return (
+                <div key={s.session_id} className="flex items-center gap-4 px-6 py-4 border-b border-green-100 last:border-0 hover:bg-green-50/30 transition-colors" data-testid={`live-session-${s.session_id}`}>
+                  <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-900">{s.teacher_name} & {s.student_name}</p>
+                    <p className="text-xs text-slate-400">
+                      {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      <span className="ml-2 text-green-600 font-medium">{remaining}m left</span>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" variant="secondary" onClick={() => handleStealthJoin(s)} data-testid={`stealth-join-${s.session_id}`}>
+                      <Eye className="w-3.5 h-3.5 mr-1" />Stealth
+                    </Button>
+                    <Button size="sm" variant="gold" onClick={() => handleStealthRecord(s)} data-testid={`stealth-record-${s.session_id}`}>
+                      <Radio className="w-3.5 h-3.5 mr-1" />Record
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </CardBody>
+        </Card>
+      )}
 
       {/* Session History Table */}
       <Card className="overflow-hidden">
