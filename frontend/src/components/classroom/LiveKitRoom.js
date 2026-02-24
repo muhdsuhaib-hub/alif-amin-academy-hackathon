@@ -295,11 +295,12 @@ function ControlDock({
         <button onClick={onToggleNavigator} className={btn(showNavigator, false)} title="Quran Navigator" data-testid="dock-quran">
           <BookOpen className="w-4 h-4 md:w-5 md:h-5" />
         </button>
-        {isTeacher && (
-          <button onClick={onToggleActivities} className={btn(showActivities, false)} title="Activities" data-testid="dock-activities">
-            <Layers className="w-4 h-4 md:w-5 md:h-5" />
-          </button>
-        )}
+      )}
+      {/* Activities (teacher) */}
+      {isTeacher && (
+        <button onClick={onToggleActivities} className={btn(showActivities, false)} title="Activities" data-testid="dock-activities">
+          <Layers className="w-4 h-4 md:w-5 md:h-5" />
+        </button>
       )}
 
       {/* Tajweed Highlighter (teacher) */}
