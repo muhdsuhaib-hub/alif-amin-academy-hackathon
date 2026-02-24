@@ -176,10 +176,9 @@ export default function SessionMonitor() {
           <CardBody className="p-0">
             {verifiedLive.map((s) => {
               const start = new Date(s.start_time_utc);
-              const dur = s.duration_minutes || 60;
-              const end = new Date(start.getTime() + dur * 60000);
-              const elapsed = Math.floor((currentTime - start.getTime()) / 60000);
-              const remaining = Math.max(0, dur - elapsed);
+              const end = s.end_time_utc ? new Date(s.end_time_utc) : new Date(start.getTime() + (s.duration_minutes || 30) * 60000);
+              const remainingMs = end.getTime() - currentTime;
+              const remaining = Math.max(0, Math.floor(remainingMs / 60000));
               return (
                 <div key={s.session_id} className="flex items-center gap-4 px-6 py-4 border-b border-green-100 last:border-0 hover:bg-green-50/30 transition-colors" data-testid={`live-session-${s.session_id}`}>
                   <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
