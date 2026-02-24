@@ -126,7 +126,13 @@ function MobileVideoRow({ raisedHands = {}, observerIds = [] }) {
     { onlySubscribed: false }
   );
   const { localParticipant } = useLocalParticipant();
-  const visibleTracks = tracks.filter(t => !observerIds.includes(t.participant.identity));
+  // Filter out observers: match by observerIds OR identity starting with admin_
+  const visibleTracks = tracks.filter(t => {
+    const id = t.participant.identity;
+    if (observerIds.includes(id)) return false;
+    if (id.startsWith('admin_')) return false;
+    return true;
+  });
 
   return (
     <div className="flex gap-2 p-2 overflow-x-auto flex-shrink-0" data-testid="mobile-video-row">
