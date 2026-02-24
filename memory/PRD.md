@@ -326,6 +326,14 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#2 — Frontend Fix:** Changed duration fallback from `|| 60` to `|| 30` in both Student `DashboardHome.js` and Teacher `DashboardOverview.js` active-class filters. Fixed Student's `useCountdown` to pass actual `booking.duration_minutes` instead of defaulting to 60.
 
+### Phase C.1: UTC Server-Side Synchronized Classroom Timer (Feb 2026)
+
+**#1 — Backend Payload:** `GET /api/classroom/session/{id}` now returns `server_time_utc` (ISO 8601), `end_time_utc` (computed from booking `duration_minutes` + `start_time_utc`), and `duration_minutes`. Single source of truth.
+
+**#2 — Drift-Corrected Timer Hook:** `useServerTimer(session)` calculates `clockOffset = server_time_utc - local_time` once on load. A 1-second `setInterval` computes `true_now = Date.now() + offset`, then `remaining = end_time_utc - true_now`. Immune to local clock tampering.
+
+**#3 — UI Timer:** `ClassroomTimer` renders MM:SS countdown in the classroom header. White when >5min, amber when <=5min, red when <=1min, "Time Expired" at 00:00. Identical across Student, Teacher, and Observer.
+
 ### P1 (Earlier Issues)
 - "View Report" button rendering verification (code exists, depends on session_report data)
 - Teacher Transaction History pagination (code exists with `totalPages >= 1`)
