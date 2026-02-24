@@ -43,9 +43,37 @@ function ConnectionBadge({ participant }) {
   );
 }
 
+// ==================== DEBOUNCED PRESENCE HOOK ====================
+function useDebouncedDisconnect(participant, delayMs = 3000) {
+  const [isDisconnected, setIsDisconnected] = useState(false);
+  const timerRef = useRef(null);
+
+  let quality;
+  try {
+    const indicator = useConnectionQualityIndicator({ participant });
+    quality = indicator?.quality;
+  } catch {
+    quality = undefined;
+  }
+
+  useEffect(() => {
+    if (quality === ConnectionQuality.Lost) {
+      timerRef.current = setTimeout(() => setIsDisconnected(true), delayMs);
+    } else {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = null;
+      setIsDisconnected(false);
+    }
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [quality, delayMs]);
+
+  return isDisconnected;
+}
+
 // ==================== VIDEO TILE ====================
 function ParticipantVideo({ track, name, isLocal, hasRaisedHand, isObserver }) {
   if (isObserver) return null;
+  const peerDisconnected = useDebouncedDisconnect(track?.participant);
 
   return (
     <div
@@ -56,7 +84,7 @@ function ParticipantVideo({ track, name, isLocal, hasRaisedHand, isObserver }) {
       data-testid={`video-tile-${isLocal ? 'local' : 'remote'}`}
     >
       {track?.publication?.track ? (
-        <VideoTrack trackRef={track} className="w-full h-full object-cover" />
+        <VideoTrack trackRef={track} className={`w-full h-full object-cover transition-all duration-500 ${!isLocal && peerDisconnected ? 'blur-sm scale-105' : ''}`} />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
           <div className="w-12 h-12 rounded-2xl bg-emerald-700/60 flex items-center justify-center text-white text-lg font-bold">
@@ -64,6 +92,19 @@ function ParticipantVideo({ track, name, isLocal, hasRaisedHand, isObserver }) {
           </div>
         </div>
       )}
+
+      {/* Reconnecting overlay — only for remote peers, after 3s debounce */}
+      {!isLocal && peerDisconnected && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-900/80 backdrop-blur-sm text-white rounded-2xl" data-testid="reconnecting-overlay">
+          <svg className="w-8 h-8 mb-3 animate-spin text-white/60" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <p className="text-sm font-medium text-white/80">Connection Lost</p>
+          <p className="text-[11px] text-white/40 mt-0.5">Waiting to reconnect...</p>
+        </div>
+      )}
+
       <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2 flex items-center justify-between">
         <span className="text-white text-[11px] font-medium truncate max-w-[70%]">
           {name}{isLocal ? ' (You)' : ''}
