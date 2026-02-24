@@ -840,6 +840,9 @@ async def classroom_websocket(websocket: WebSocket, room_id: str):
             elif msg_type == "ACTIVITY_ANSWER":
                 await broadcast_to_room(room_id, msg, exclude=websocket)
 
+            elif msg_type == "PING":
+                await websocket.send_json({"type": "PONG"})
+
     except WebSocketDisconnect:
         pass
     except Exception as e:
