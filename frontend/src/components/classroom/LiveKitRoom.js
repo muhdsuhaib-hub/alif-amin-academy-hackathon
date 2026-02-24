@@ -10,7 +10,7 @@ import {
 import { Track, ConnectionQuality } from 'livekit-client';
 import '@livekit/components-styles';
 import {
-  Mic, MicOff, Video, VideoOff, Settings, Hand, BookOpen,
+  Mic, MicOff, Video, VideoOff, Settings, Hand, BookOpen, Layers,
   MessageSquare, Radio, PhoneOff, ChevronDown, X,
   Wifi, WifiOff, Signal, Highlighter,
 } from 'lucide-react';
