@@ -2042,6 +2042,16 @@ async def get_admin_revenue_chart(
     return {"chart_data": data, "group_by": group_by}
 
 
+# ============== CONTENT LIBRARY (Teacher-accessible read) ==============
+@api_router.get("/content-library")
+async def get_content_library(current_user: User = Depends(get_current_user)):
+    """Teachers and admins can fetch active learning activities."""
+    if current_user.role not in ("teacher", "admin"):
+        raise HTTPException(status_code=403, detail="Not authorized")
+    activities = await db.learning_activities.find({"is_active": True}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return {"activities": activities}
+
+
 # ============== STALE SESSION CLEANUP (Automated Background Job) ==============
 # Manual endpoint removed — replaced by background task in startup event below.
 
