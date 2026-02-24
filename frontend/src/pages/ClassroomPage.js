@@ -385,6 +385,17 @@ export default function ClassroomPage() {
     navigate('/student/dashboard');
   }, [navigate]);
 
+  const handlePushActivity = useCallback((activity) => {
+    setActiveActivity(activity);
+    setShowActivities(false);
+    wsSend({ type: 'ACTIVITY_START', activity });
+  }, [wsSend]);
+
+  const handleCloseActivity = useCallback(() => {
+    setActiveActivity(null);
+    wsSend({ type: 'ACTIVITY_CLOSE' });
+  }, [wsSend]);
+
   // Clear pointer after inactivity
   useEffect(() => {
     if (!pointerPos) return;
