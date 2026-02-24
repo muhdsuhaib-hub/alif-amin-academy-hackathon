@@ -356,7 +356,7 @@ export default function DashboardOverview({ dashboardData, onNavigateTab }) {
   const now = new Date();
   const upcomingClasses = (dashboardData?.upcoming_classes || []).filter(b => {
     const start = new Date(b.start_time_utc);
-    const end = start.getTime() + (b.duration_minutes || 60) * 60 * 1000;
+    const end = start.getTime() + (b.duration_minutes || 30) * 60 * 1000;
     return end > now.getTime();
   });
   const nextClass = upcomingClasses[0];

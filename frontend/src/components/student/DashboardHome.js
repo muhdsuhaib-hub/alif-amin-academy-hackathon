@@ -38,7 +38,7 @@ const useCountdown = (targetTime, durationMin = 60) => {
 
 function SmartHeroCountdown({ booking }) {
   const navigate = useNavigate();
-  const { text, canJoin } = useCountdown(booking.start_time_utc);
+  const { text, canJoin } = useCountdown(booking.start_time_utc, booking.duration_minutes || 30);
   const classroomUrl = booking.session_id ? `/classroom/${booking.session_id}` : null;
 
   return (
@@ -277,7 +277,7 @@ export default function DashboardHome({ dashboardData, onOpenBooking, onNavigate
   const now = new Date();
   const activeClasses = upcomingClasses.filter(b => {
     const start = new Date(b.start_time_utc);
-    const end = start.getTime() + (b.duration_minutes || 60) * 60 * 1000;
+    const end = start.getTime() + (b.duration_minutes || 30) * 60 * 1000;
     return end > now.getTime();
   });
   const nextClass = activeClasses[0];
