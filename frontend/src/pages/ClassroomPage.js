@@ -199,12 +199,31 @@ export default function ClassroomPage() {
   const handleJoinFromLobby = useCallback(async (config) => {
     setJoinConfig(config);
     try {
-      const tRes = await fetch(`${API}/classroom/livekit/token`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        body: JSON.stringify({ room_name: session.meet_link_slug }),
-      });
-      if (tRes.ok) {
-        const tData = await tRes.json();
+      let tData;
+      if (config.mode === 'observer') {
+        // Admin stealth join — restricted token, invisible identity
+        const tRes = await fetch(`${API}/classroom/admin/stealth-join`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ room_name: session.meet_link_slug }),
+        });
+        if (tRes.ok) {
+          tData = await tRes.json();
+          setObserverIds(prev => [...prev, tData.identity]);
+        } else {
+          toast.error('Failed to join as observer');
+          return;
+        }
+      } else {
+        // Normal join
+        const tRes = await fetch(`${API}/classroom/livekit/token`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ room_name: session.meet_link_slug }),
+        });
+        if (tRes.ok) {
+          tData = await tRes.json();
+        }
+      }
+      if (tData) {
         setLkToken(tData.token);
         setLkUrl(tData.server_url);
         setJoined(true);
@@ -212,10 +231,6 @@ export default function ClassroomPage() {
       // Teacher: go live
       if (user?.role === 'teacher') {
         await fetch(`${API}/classroom/session/${sessionId}/go-live`, { method: 'POST', credentials: 'include' });
-      }
-      // Admin observer: track ID
-      if (config.mode === 'observer') {
-        setObserverIds(prev => [...prev, user?.user_id]);
       }
     } catch { toast.error('Failed to join room'); }
   }, [session, sessionId, user]);
