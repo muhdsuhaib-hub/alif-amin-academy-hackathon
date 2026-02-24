@@ -186,6 +186,8 @@ export default function ClassroomPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
+  const [showActivities, setShowActivities] = useState(false);
+  const [activeActivity, setActiveActivity] = useState(null);
 
   const isTeacher = user?.role === 'teacher';
   const isAdmin = user?.role === 'admin';
