@@ -190,6 +190,7 @@ export default function ClassroomPage() {
   const isTeacher = user?.role === 'teacher';
   const isAdmin = user?.role === 'admin';
   const isObserver = joinConfig?.mode === 'observer';
+  const remainingMs = useServerTimer(session);
 
   // WS message handler
   const handleWSMessage = useCallback((msg) => {
