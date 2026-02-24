@@ -110,6 +110,14 @@ export default function SessionMonitor() {
   const totalPages = Math.max(1, Math.ceil(historyData.total / PAGE_SIZE));
   const hasActiveFilters = filter !== 'all' || filterTeacher || filterDate;
 
+  // Client-side strict time filter: only sessions where now >= start AND now < end
+  const verifiedLive = liveSessions.filter(s => {
+    const start = s.start_time_utc ? new Date(s.start_time_utc).getTime() : 0;
+    const dur = (s.duration_minutes || 60) * 60 * 1000;
+    const end = start + dur;
+    return currentTime >= start && currentTime < end;
+  });
+
   if (loading) return <div className="flex justify-center py-12"><Spinner /></div>;
 
   return (
