@@ -224,6 +224,7 @@ function ControlDock({
   onEndClass, isRecording, isTeacher, isHandRaised, onRaiseHand, onLowerHand,
   showChat, onToggleChat, showNavigator, onToggleNavigator, onToggleSettings,
   onStartRecording, isObserver, highlighterActive, onToggleHighlighter,
+  showActivities, onToggleActivities,
 }) {
   const { localParticipant } = useLocalParticipant();
   const [micOn, setMicOn] = useState(!isObserver);
