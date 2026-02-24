@@ -85,7 +85,13 @@ function VideoStrip({ raisedHands = {}, observerIds = [] }) {
   );
   const { localParticipant } = useLocalParticipant();
 
-  const visibleTracks = tracks.filter(t => !observerIds.includes(t.participant.identity));
+  // Filter out observers: match by observerIds OR identity starting with admin_
+  const visibleTracks = tracks.filter(t => {
+    const id = t.participant.identity;
+    if (observerIds.includes(id)) return false;
+    if (id.startsWith('admin_')) return false;
+    return true;
+  });
 
   if (!visibleTracks.length) {
     return (
