@@ -403,7 +403,7 @@ async def delete_activity(activity_id: str, request: Request):
 
 @classroom_router.get("/admin/sessions")
 async def admin_list_sessions(request: Request, status: Optional[str] = None):
-    """Admin views all class sessions. When status=live, enforce strict time boundaries."""
+    """Admin views all class sessions. When status=live, enforce strict time boundaries with 5-min early access."""
     user = await _get_user(request)
     if user["role"] != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
@@ -415,54 +415,71 @@ async def admin_list_sessions(request: Request, status: Optional[str] = None):
     sessions = await db.class_sessions.find(query, {"_id": 0}).sort("start_time_utc", -1).to_list(200)
 
     now = datetime.now(timezone.utc)
+    EARLY_ACCESS = timedelta(minutes=5)
     enriched = []
     for s in sessions:
-        # Strict time enforcement for live sessions
-        if status and status.lower() == "live":
-            start_str = s.get("start_time_utc")
-            if start_str:
+        # Resolve actual end_time from the session doc or the booking
+        start_str = s.get("start_time_utc", "")
+        end_str = s.get("end_time_utc", "")
+        booking_dur = None
+
+        # Look up booking for authoritative duration_minutes
+        booking = await db.bookings.find_one({"booking_id": s.get("booking_id")}, {"_id": 0, "duration_minutes": 1})
+        if booking:
+            booking_dur = booking.get("duration_minutes")
+
+        try:
+            start_dt = datetime.fromisoformat(str(start_str).replace("Z", "+00:00"))
+            if start_dt.tzinfo is None:
+                start_dt = start_dt.replace(tzinfo=timezone.utc)
+        except (ValueError, TypeError):
+            start_dt = None
+
+        # Compute end_dt from: booking duration > session end_time_utc > fallback 30min
+        if start_dt:
+            if booking_dur:
+                end_dt = start_dt + timedelta(minutes=booking_dur)
+            elif end_str:
                 try:
-                    start_dt = datetime.fromisoformat(str(start_str).replace("Z", "+00:00"))
-                    if start_dt.tzinfo is None:
-                        start_dt = start_dt.replace(tzinfo=timezone.utc)
-                    duration = s.get("duration_minutes", 60)
-                    end_dt = start_dt + timedelta(minutes=duration)
-                    if now >= end_dt:
-                        # Session expired — auto-transition in DB
-                        report = await db.session_reports.find_one({"booking_id": s.get("booking_id")})
-                        new_status = "completed" if report else "missed"
-                        await db.class_sessions.update_one(
-                            {"session_id": s["session_id"]},
-                            {"$set": {"status": new_status, "updated_at": now.isoformat()}}
-                        )
-                        await db.bookings.update_one(
-                            {"booking_id": s.get("booking_id")},
-                            {"$set": {"status": new_status, "auto_cleaned_at": now.isoformat()}}
-                        )
-                        continue  # Do NOT return expired session
+                    end_dt = datetime.fromisoformat(str(end_str).replace("Z", "+00:00"))
+                    if end_dt.tzinfo is None:
+                        end_dt = end_dt.replace(tzinfo=timezone.utc)
                 except (ValueError, TypeError):
-                    pass
+                    end_dt = start_dt + timedelta(minutes=30)
+            else:
+                end_dt = start_dt + timedelta(minutes=30)
+            duration_mins = int((end_dt - start_dt).total_seconds() / 60)
+        else:
+            end_dt = None
+            duration_mins = booking_dur or 30
+
+        # Strict time enforcement for live sessions
+        if status and status.lower() == "live" and start_dt and end_dt:
+            if now >= end_dt:
+                # Session expired — auto-transition in DB
+                report = await db.session_reports.find_one({"booking_id": s.get("booking_id")})
+                new_status = "completed" if report else "missed"
+                await db.class_sessions.update_one(
+                    {"session_id": s["session_id"]},
+                    {"$set": {"status": new_status, "updated_at": now.isoformat()}}
+                )
+                await db.bookings.update_one(
+                    {"booking_id": s.get("booking_id")},
+                    {"$set": {"status": new_status, "auto_cleaned_at": now.isoformat()}}
+                )
+                continue  # Do NOT return expired session
 
         teacher_doc = await db.teachers.find_one({"teacher_id": s["teacher_id"]}, {"_id": 0})
         teacher_user = await db.users.find_one({"user_id": teacher_doc["user_id"]}, {"_id": 0, "name": 1}) if teacher_doc else None
         student_doc = await db.students.find_one({"student_id": s["student_id"]}, {"_id": 0})
         student_user = await db.users.find_one({"user_id": student_doc["user_id"]}, {"_id": 0, "name": 1}) if student_doc else None
 
-        duration = s.get("duration_minutes", 60)
-        start_str = s.get("start_time_utc", "")
-        try:
-            start_dt = datetime.fromisoformat(str(start_str).replace("Z", "+00:00"))
-            if start_dt.tzinfo is None:
-                start_dt = start_dt.replace(tzinfo=timezone.utc)
-            end_iso = (start_dt + timedelta(minutes=duration)).isoformat()
-        except (ValueError, TypeError):
-            end_iso = ""
-
         enriched.append({
             **s,
             "teacher_name": teacher_user.get("name") if teacher_user else "Unknown",
             "student_name": student_user.get("name") if student_user else "Unknown",
-            "end_time_utc": end_iso,
+            "end_time_utc": end_dt.isoformat() if end_dt else "",
+            "duration_minutes": duration_mins,
         })
 
     return {"sessions": enriched}
