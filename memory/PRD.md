@@ -288,6 +288,14 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#2 — Session Monitor "Live Now" removed:** Removed the green "Live Now" card from SessionMonitor. Stopped the 15s `fetchLive` polling. History polling (30s) retained. `handleStealthJoin` and `handleStealthRecord` WebRTC functions preserved intact for rebuild.
 
+### Hotfix 9.13: Bulletproof Full-Stack Live Sessions Rebuild (Feb 2026)
+
+**#1 — Backend Strict Time Enforcement:** Both `GET /api/classroom/admin/sessions?status=live` and `GET /api/admin/overview/live-sessions` now compute `end_time = start_time + duration` server-side. If `now >= end_time`, the session is auto-transitioned to `completed`/`missed` in both `class_sessions` and `bookings` collections and excluded from the response. Zero grace period.
+
+**#2 — Silent Client-Side Clock:** Both `SessionMonitor.js` and `AdminDashboard.js` use a `currentTime` state variable ticked by a 10-second `setInterval`. Sessions are filtered client-side (`now >= start && now < end`) before rendering. No DOM remount, no network flicker — sessions disappear instantly when the local clock surpasses end time.
+
+**#3 — UI Restored:** "Live Now" section rebuilt in SessionMonitor with green card, Stealth Join and Record buttons fully wired to `handleStealthJoin`/`handleStealthRecord`. "Today's Sessions" widget restored in AdminDashboard Command Center with `LiveSessionRow` showing live/upcoming status and remaining time.
+
 ### P1 (Earlier Issues)
 - "View Report" button rendering verification (code exists, depends on session_report data)
 - Teacher Transaction History pagination (code exists with `totalPages >= 1`)
