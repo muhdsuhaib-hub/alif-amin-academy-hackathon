@@ -22,6 +22,13 @@ export default function SessionMonitor() {
   const [teachers, setTeachers] = useState([]);
   const [page, setPage] = useState(0);
   const [reportModal, setReportModal] = useState(null);
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  // Silent local clock — ticks every 10s to expire sessions client-side without network calls
+  useEffect(() => {
+    const tick = setInterval(() => setCurrentTime(Date.now()), 10000);
+    return () => clearInterval(tick);
+  }, []);
 
   // Fetch teachers list for filter
   useEffect(() => {
@@ -56,14 +63,14 @@ export default function SessionMonitor() {
     finally { setHistoryLoading(false); setLoading(false); }
   }, []);
 
-  // Live session polling disabled — UI torn down for rebuild.
-  // handleStealthJoin and handleStealthRecord preserved below for WebRTC reuse.
-
+  // Fetch live once on mount, then every 30s (silent — no DOM flicker)
   useEffect(() => {
+    fetchLive();
     fetchHistory(0, filter, filterTeacher, filterDate);
+    const livePoll = setInterval(fetchLive, 30000);
     const historyPoll = setInterval(() => fetchHistory(page, filter, filterTeacher, filterDate), 30000);
-    return () => { clearInterval(historyPoll); };
-  }, [fetchHistory, filter, filterTeacher, filterDate]);
+    return () => { clearInterval(livePoll); clearInterval(historyPoll); };
+  }, [fetchLive, fetchHistory, filter, filterTeacher, filterDate]);
 
   const changePage = (p) => { setPage(p); fetchHistory(p, filter, filterTeacher, filterDate); };
   const handleFilterChange = (f) => { setFilter(f); setPage(0); fetchHistory(0, f, filterTeacher, filterDate); };
