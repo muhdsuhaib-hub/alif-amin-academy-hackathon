@@ -288,13 +288,23 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#2 — Session Monitor "Live Now" removed:** Removed the green "Live Now" card from SessionMonitor. Stopped the 15s `fetchLive` polling. History polling (30s) retained. `handleStealthJoin` and `handleStealthRecord` WebRTC functions preserved intact for rebuild.
 
-### Hotfix 9.13: Bulletproof Full-Stack Live Sessions Rebuild (Feb 2026)
+### Hotfix 9.13: Bulletproof Live Sessions Rebuild (Feb 2026)
 
-**#1 — Backend Strict Time Enforcement:** Both `GET /api/classroom/admin/sessions?status=live` and `GET /api/admin/overview/live-sessions` now compute `end_time = start_time + duration` server-side. If `now >= end_time`, the session is auto-transitioned to `completed`/`missed` in both `class_sessions` and `bookings` collections and excluded from the response. Zero grace period.
+**#1 — Backend Strict Time Enforcement:** Both `GET /api/classroom/admin/sessions?status=live` and `GET /api/admin/overview/live-sessions` now compute `end_time = start_time + duration` server-side. If `now >= end_time`, the session is auto-transitioned to `completed`/`missed` and excluded. Duration resolved from booking, not hardcoded. `end_time_utc` and `duration_minutes` included in response.
 
-**#2 — Silent Client-Side Clock:** Both `SessionMonitor.js` and `AdminDashboard.js` use a `currentTime` state variable ticked by a 10-second `setInterval`. Sessions are filtered client-side (`now >= start && now < end`) before rendering. No DOM remount, no network flicker — sessions disappear instantly when the local clock surpasses end time.
+**#2 — Silent Client-Side Clock:** Both `SessionMonitor.js` and `AdminDashboard.js` use a `currentTime` state ticked every 10s. No DOM remount.
 
-**#3 — UI Restored:** "Live Now" section rebuilt in SessionMonitor with green card, Stealth Join and Record buttons fully wired to `handleStealthJoin`/`handleStealthRecord`. "Today's Sessions" widget restored in AdminDashboard Command Center with `LiveSessionRow` showing live/upcoming status and remaining time.
+**#3 — UI Restored with Stealth Join/Record wired.**
+
+### Hotfix 9.14: Early Access, Math Fix & True Stealth (Feb 2026)
+
+**#1 — 5-Minute Early Access:** Frontend time filter updated to `now >= (start - 5min) && now < end` on both SessionMonitor and AdminDashboard. Backend left strict (no grace period for auto-transition), only frontend shows sessions 5 min early.
+
+**#2 — 60-Minute Hardcode Bug Fixed:** Backend `admin_list_sessions` now resolves `duration_minutes` from the associated booking document (not from `class_sessions` which doesn't store it). Frontend uses `end_time_utc` from the API response directly instead of computing from `duration_minutes`.
+
+**#3 — Classroom Link Fix:** `LiveSessionRow` in AdminDashboard now uses `meet_link_slug || session_id` for the classroom URL, not `booking_id`.
+
+**#4 — True Stealth Mode:** Admin observer now joins via `POST /api/classroom/admin/stealth-join` which issues a restricted LiveKit token (`can_publish=false`, identity `admin_{user_id}`, name "System"). `VideoStrip` and `MobileVideoRow` filter out any participant with `admin_` prefix identity — making admin 100% invisible to teacher/student on ALL clients. Chat input disabled for observers.
 
 ### P1 (Earlier Issues)
 - "View Report" button rendering verification (code exists, depends on session_report data)
