@@ -404,6 +404,9 @@ export default function ClassroomPage() {
         </div>
       )}
 
+      {/* Server-synced countdown timer */}
+      <ClassroomTimer remainingMs={remainingMs} />
+
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left: Quran Navigator (Desktop slide-out) */}
