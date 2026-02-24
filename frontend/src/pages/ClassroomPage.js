@@ -9,7 +9,7 @@ import GreenRoom from '../components/classroom/GreenRoom';
 import { VideoStrip, MobileVideoRow, ControlDock, AVSettingsModal } from '../components/classroom/LiveKitRoom';
 import { SessionReportModal, RateTeacherModal } from '../components/classroom/EndClassModals';
 import Spinner from '../components/Spinner';
-import { Hand, X, Send, Clock } from 'lucide-react';
+import { Hand, X, Send, Clock, Layers } from 'lucide-react';
 
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND}/api`;
