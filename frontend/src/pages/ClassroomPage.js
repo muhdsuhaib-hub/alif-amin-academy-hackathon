@@ -189,10 +189,10 @@ function ActivitiesBrowser({ onSelect, onClose }) {
 }
 
 // ==================== ACTIVITY OVERLAY ====================
-function ActivityOverlay({ activity, isTeacher, onClose }) {
+function ActivityOverlay({ activity, isTeacher, onClose, studentAnswers, onAnswer }) {
   if (!activity) return null;
   const payload = activity.payload || {};
-  const questions = payload.questions || [];
+  const aType = (activity.activity_type || activity.type || '').toLowerCase();
 
   return (
     <div className="absolute inset-0 z-30 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4" data-testid="activity-overlay">
@@ -200,7 +200,7 @@ function ActivityOverlay({ activity, isTeacher, onClose }) {
         <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
           <div>
             <h3 className="text-sm font-bold text-white">{activity.title}</h3>
-            <p className="text-[11px] text-white/40">{activity.activity_type}</p>
+            <p className="text-[11px] text-white/40 capitalize">{activity.activity_type || 'Activity'}</p>
           </div>
           {isTeacher && (
             <button onClick={onClose} className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-[11px] font-semibold hover:bg-red-500/30 transition-colors" data-testid="close-activity-btn">
@@ -209,23 +209,85 @@ function ActivityOverlay({ activity, isTeacher, onClose }) {
           )}
         </div>
         <div className="p-5 overflow-y-auto max-h-[60vh] space-y-4">
-          {activity.description && <p className="text-sm text-white/70">{activity.description}</p>}
-          {questions.length > 0 ? (
-            questions.map((q, i) => (
-              <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
-                <p className="text-sm font-medium text-white mb-2">Q{i + 1}: {q.question || q.text || JSON.stringify(q)}</p>
-                {q.options && (
-                  <div className="space-y-1.5">
-                    {q.options.map((opt, j) => (
-                      <div key={j} className="px-3 py-2 rounded-lg bg-white/5 text-xs text-white/60 hover:bg-white/10 transition-colors cursor-pointer">
-                        {String.fromCharCode(65 + j)}. {opt}
-                      </div>
-                    ))}
-                  </div>
-                )}
+          {activity.description && <p className="text-sm text-white/70 mb-3">{activity.description}</p>}
+
+          {/* Quiz type — interactive with grading */}
+          {aType === 'quiz' && (payload.questions || []).map((q, qi) => {
+            const studentPick = studentAnswers?.[qi];
+            const correct = q.correct ?? q.answer;
+            return (
+              <div key={qi} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                <p className="text-sm font-medium text-white mb-3">Q{qi + 1}: {q.question || q.text}</p>
+                <div className="space-y-1.5">
+                  {(q.options || []).map((opt, oi) => {
+                    const letter = String.fromCharCode(65 + oi);
+                    const isSelected = studentPick === oi || studentPick === letter || studentPick === opt;
+                    let optStyle = 'bg-white/5 text-white/60 hover:bg-white/10 cursor-pointer';
+                    if (isTeacher && isSelected) {
+                      const isCorrect = correct === oi || correct === letter || correct === opt;
+                      optStyle = isCorrect ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-red-500/20 text-red-300 border-red-500/30';
+                    } else if (!isTeacher && isSelected) {
+                      optStyle = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+                    }
+                    return (
+                      <button key={oi}
+                        onClick={() => { if (!isTeacher && onAnswer) onAnswer(qi, oi); }}
+                        disabled={isTeacher}
+                        className={`w-full text-left px-3 py-2 rounded-lg text-xs border border-transparent transition-all ${optStyle}`}
+                        data-testid={`q${qi}-opt${oi}`}>
+                        {letter}. {opt}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            ))
-          ) : (
+            );
+          })}
+
+          {/* Hadith / Doa / Word Tracing — Arabic text display */}
+          {['hadith practice', 'doa practice', 'word tracing'].includes(aType) && (
+            <div className="space-y-3">
+              {payload.arabic_text && (
+                <div className="bg-white/5 rounded-xl p-5 border border-white/5 text-center">
+                  <p className="text-2xl font-arabic leading-loose text-white" dir="rtl">{payload.arabic_text}</p>
+                </div>
+              )}
+              {payload.translation && (
+                <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                  <p className="text-[11px] uppercase text-white/30 font-semibold mb-1">Translation</p>
+                  <p className="text-sm text-white/70">{payload.translation}</p>
+                </div>
+              )}
+              {payload.transliteration && (
+                <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                  <p className="text-[11px] uppercase text-white/30 font-semibold mb-1">Transliteration</p>
+                  <p className="text-sm text-white/60 italic">{payload.transliteration}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Tajweed Match — concept + examples */}
+          {aType === 'tajweed match' && (
+            <div className="space-y-3">
+              {payload.concept && (
+                <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                  <p className="text-[11px] uppercase text-white/30 font-semibold mb-1">Concept</p>
+                  <p className="text-sm text-white/80">{payload.concept}</p>
+                </div>
+              )}
+              {(payload.examples || []).map((ex, i) => (
+                <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                  <p className="text-xs text-white/40 mb-1">Example {i + 1}</p>
+                  <p className="text-lg font-arabic text-white" dir="rtl">{ex.arabic || ex}</p>
+                  {ex.rule && <p className="text-xs text-emerald-400 mt-1">{ex.rule}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Fallback for unknown types */}
+          {!['quiz', 'hadith practice', 'doa practice', 'word tracing', 'tajweed match'].includes(aType) && (
             <div className="bg-white/5 rounded-xl p-4 border border-white/5">
               <pre className="text-xs text-white/70 whitespace-pre-wrap">{JSON.stringify(payload, null, 2)}</pre>
             </div>
