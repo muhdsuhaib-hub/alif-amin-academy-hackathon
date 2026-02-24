@@ -143,6 +143,99 @@ function ChatDrawer({ send, messages, onClose, isObserver }) {
   );
 }
 
+// ==================== ACTIVITIES BROWSER (Teacher Drawer) ====================
+function ActivitiesBrowser({ onSelect, onClose }) {
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch(`${API}/content-library`, { credentials: 'include' });
+        if (r.ok) { const d = await r.json(); setActivities(d.activities || []); }
+      } catch {}
+      finally { setLoading(false); }
+    })();
+  }, []);
+
+  return (
+    <div className="flex flex-col h-full bg-slate-900/80 backdrop-blur-xl" data-testid="activities-browser">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+        <h3 className="text-sm font-semibold text-white">Content Library</h3>
+        <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-4 h-4 text-white/40" /></button>
+      </div>
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+        {loading ? (
+          <p className="text-xs text-white/30 text-center py-8">Loading activities...</p>
+        ) : activities.length === 0 ? (
+          <p className="text-xs text-white/30 text-center py-8">No activities available. Add them in Admin Content Library.</p>
+        ) : (
+          activities.map(a => (
+            <button key={a.activity_id} onClick={() => onSelect(a)}
+              className="w-full text-left px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all group" data-testid={`activity-${a.activity_id}`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-white">{a.title}</p>
+                  <p className="text-[11px] text-white/40 mt-0.5">{a.activity_type}{a.description ? ` — ${a.description}` : ''}</p>
+                </div>
+                <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">Push</span>
+              </div>
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ==================== ACTIVITY OVERLAY ====================
+function ActivityOverlay({ activity, isTeacher, onClose }) {
+  if (!activity) return null;
+  const payload = activity.payload || {};
+  const questions = payload.questions || [];
+
+  return (
+    <div className="absolute inset-0 z-30 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4" data-testid="activity-overlay">
+      <div className="bg-slate-800 border border-white/10 rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-white/10">
+          <div>
+            <h3 className="text-sm font-bold text-white">{activity.title}</h3>
+            <p className="text-[11px] text-white/40">{activity.activity_type}</p>
+          </div>
+          {isTeacher && (
+            <button onClick={onClose} className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-[11px] font-semibold hover:bg-red-500/30 transition-colors" data-testid="close-activity-btn">
+              Close Activity
+            </button>
+          )}
+        </div>
+        <div className="p-5 overflow-y-auto max-h-[60vh] space-y-4">
+          {activity.description && <p className="text-sm text-white/70">{activity.description}</p>}
+          {questions.length > 0 ? (
+            questions.map((q, i) => (
+              <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                <p className="text-sm font-medium text-white mb-2">Q{i + 1}: {q.question || q.text || JSON.stringify(q)}</p>
+                {q.options && (
+                  <div className="space-y-1.5">
+                    {q.options.map((opt, j) => (
+                      <div key={j} className="px-3 py-2 rounded-lg bg-white/5 text-xs text-white/60 hover:bg-white/10 transition-colors cursor-pointer">
+                        {String.fromCharCode(65 + j)}. {opt}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+              <pre className="text-xs text-white/70 whitespace-pre-wrap">{JSON.stringify(payload, null, 2)}</pre>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ==================== RAISE HAND TOAST ====================
 function RaiseHandToast({ studentName, onLower }) {
   return (
