@@ -684,7 +684,7 @@ export default function ClassroomPage() {
       )}
 
       {/* Activity Overlay (all roles — pushed by teacher) */}
-      {activeActivity && <ActivityOverlay activity={activeActivity} isTeacher={isTeacher} onClose={handleCloseActivity} />}
+      {activeActivity && <ActivityOverlay activity={activeActivity} isTeacher={isTeacher} onClose={handleCloseActivity} studentAnswers={studentAnswers} onAnswer={handleStudentAnswer} />}
 
       {/* End Class Modals */}
       {showReportModal && <SessionReportModal sessionId={sessionId} onSubmitted={handleReportSubmitted} onClose={() => setShowReportModal(false)} />}
