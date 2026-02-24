@@ -352,6 +352,14 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#3 — Two-Way Live Grading:** Students click quiz options → `ACTIVITY_ANSWER` WS event sent. Teacher's overlay listens for `ACTIVITY_ANSWER` and shows student's selection: green if correct, red if incorrect (compared against `q.correct` field).
 
+### Phase C.3: Connection Heartbeats, Presence Overlay & Keep-Alive (Feb 2026)
+
+**#1 — Debounced Presence Hook:** `useDebouncedDisconnect(participant)` wraps LiveKit's `useConnectionQualityIndicator`. When quality drops to `Lost`, a 3-second `setTimeout` starts. If it fires, `isDisconnected = true`. If quality recovers to any other state, the timer is instantly cleared. Prevents false alarms from micro-stutters.
+
+**#2 — Reconnecting Overlay:** When `isDisconnected` is true for a remote peer, their video tile gets `blur-sm` + an absolute overlay with spinner + "Connection Lost / Waiting to reconnect..." text. Styled with `bg-gray-900/80 backdrop-blur-sm`.
+
+**#3 — WebSocket Keep-Alive:** Client sends `{ type: "PING" }` every 15 seconds. Backend responds with `{ type: "PONG" }` without broadcasting. Prevents WS timeout disconnections.
+
 ### P1 (Earlier Issues)
 - "View Report" button rendering verification (code exists, depends on session_report data)
 - Teacher Transaction History pagination (code exists with `totalPages >= 1`)
