@@ -282,6 +282,12 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#3 — Text Wrapping:** Removed `truncate max-w-[200px]` from the Description column in the Transaction History table. Replaced with `break-words max-w-[280px]` so full descriptions wrap naturally.
 
+### Hotfix 9.12: UI Teardown — Live Sessions Removed (Feb 2026)
+
+**#1 — Command Center "Today's Sessions" removed:** Removed the live sessions card from AdminDashboard overview. Stopped `fetchLiveSessions` polling. `LiveSessionRow` component preserved in code.
+
+**#2 — Session Monitor "Live Now" removed:** Removed the green "Live Now" card from SessionMonitor. Stopped the 15s `fetchLive` polling. History polling (30s) retained. `handleStealthJoin` and `handleStealthRecord` WebRTC functions preserved intact for rebuild.
+
 ### P1 (Earlier Issues)
 - "View Report" button rendering verification (code exists, depends on session_report data)
 - Teacher Transaction History pagination (code exists with `totalPages >= 1`)
