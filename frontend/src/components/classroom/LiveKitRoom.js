@@ -48,15 +48,11 @@ function useDebouncedDisconnect(participant, delayMs = 3000) {
   const [isDisconnected, setIsDisconnected] = useState(false);
   const timerRef = useRef(null);
 
-  let quality;
-  try {
-    const indicator = useConnectionQualityIndicator({ participant });
-    quality = indicator?.quality;
-  } catch {
-    quality = undefined;
-  }
+  // Always call the hook unconditionally — pass a dummy if no participant
+  const { quality } = useConnectionQualityIndicator({ participant: participant || {} });
 
   useEffect(() => {
+    if (!participant) { setIsDisconnected(false); return; }
     if (quality === ConnectionQuality.Lost) {
       timerRef.current = setTimeout(() => setIsDisconnected(true), delayMs);
     } else {
@@ -65,15 +61,16 @@ function useDebouncedDisconnect(participant, delayMs = 3000) {
       setIsDisconnected(false);
     }
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [quality, delayMs]);
+  }, [quality, delayMs, participant]);
 
-  return isDisconnected;
+  return participant ? isDisconnected : false;
 }
 
 // ==================== VIDEO TILE ====================
 function ParticipantVideo({ track, name, isLocal, hasRaisedHand, isObserver }) {
-  if (isObserver) return null;
   const peerDisconnected = useDebouncedDisconnect(track?.participant);
+
+  if (isObserver) return null;
 
   return (
     <div
