@@ -167,12 +167,22 @@ export default function SessionMonitor() {
                     <td className="px-4 py-3 text-sm text-slate-500 whitespace-nowrap">{b.start_time_utc ? new Date(b.start_time_utc).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}</td>
                     <td className="px-4 py-3 text-sm text-slate-500">{b.duration_minutes || 30} min</td>
                     <td className="px-4 py-3 text-right">
-                      {b.session_report ? (
-                        <button
-                          onClick={() => setReportModal(b.session_report)}
-                          className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg hover:bg-emerald-100 transition-colors"
-                          data-testid={`view-report-${i}`}
-                        >
+                      {['scheduled', 'live'].includes(b.status) ? (
+                        <div className="flex items-center justify-end gap-1.5">
+                          {b.meet_link_slug && (
+                            <button onClick={() => handleStealthJoin(b)} className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-lg hover:bg-blue-100 transition-colors" data-testid={`stealth-join-${i}`}>
+                              <Eye className="w-3 h-3" />Stealth
+                            </button>
+                          )}
+                          {b.session_id && (
+                            <button onClick={() => handleStealthRecord(b)} className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-lg hover:bg-amber-100 transition-colors" data-testid={`stealth-record-${i}`}>
+                              <Radio className="w-3 h-3" />Record
+                            </button>
+                          )}
+                          {!b.meet_link_slug && !b.session_id && <span className="text-[11px] text-slate-300">Awaiting</span>}
+                        </div>
+                      ) : b.session_report ? (
+                        <button onClick={() => setReportModal(b.session_report)} className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg hover:bg-emerald-100 transition-colors" data-testid={`view-report-${i}`}>
                           <FileText className="w-3 h-3" />View Report
                         </button>
                       ) : (
