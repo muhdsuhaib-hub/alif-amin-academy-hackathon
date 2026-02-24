@@ -308,7 +308,7 @@ export default function ClassroomPage() {
     } else if (isTeacher) {
       setShowReportModal(true);
     } else {
-      navigate('/student/dashboard');
+      setShowRatingModal(true);
     }
   }, [isTeacher, isAdmin, navigate]);
 
