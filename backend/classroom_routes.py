@@ -834,6 +834,12 @@ async def classroom_websocket(websocket: WebSocket, room_id: str):
                 classroom_rooms[room_id]["recording"] = {"active": False, "visible": False}
                 await broadcast_to_room(room_id, msg, exclude=websocket)
 
+            elif msg_type in ("ACTIVITY_START", "ACTIVITY_CLOSE"):
+                await broadcast_to_room(room_id, msg, exclude=websocket)
+
+            elif msg_type == "ACTIVITY_ANSWER":
+                await broadcast_to_room(room_id, msg, exclude=websocket)
+
     except WebSocketDisconnect:
         pass
     except Exception as e:
