@@ -318,6 +318,14 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#5 — Live Filter Added:** Added "Live" to the status filter bar in Session Monitor, so admins can filter to only live sessions when needed.
 
+### Hotfix 9.18: Prevent Premature Session Expiration (Feb 2026)
+
+**Root Cause:** Both `GET /api/students/dashboard-data` and `GET /api/teacher/dashboard-data` queried bookings with `"status": "scheduled"` only. When the background sweeper transitioned a session from `scheduled` → `live`, the session vanished from both dashboards.
+
+**#1 — Backend Fix:** Changed both queries to `"status": {"$in": ["scheduled", "live"]}` so live/in-progress sessions remain in the `upcoming_classes` payload until they complete or are missed.
+
+**#2 — Frontend Fix:** Changed duration fallback from `|| 60` to `|| 30` in both Student `DashboardHome.js` and Teacher `DashboardOverview.js` active-class filters. Fixed Student's `useCountdown` to pass actual `booking.duration_minutes` instead of defaulting to 60.
+
 ### P1 (Earlier Issues)
 - "View Report" button rendering verification (code exists, depends on session_report data)
 - Teacher Transaction History pagination (code exists with `totalPages >= 1`)
