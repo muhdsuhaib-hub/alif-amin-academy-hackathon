@@ -147,12 +147,28 @@ async def get_session_details(session_id: str, request: Request):
     student_doc = await db.students.find_one({"student_id": session["student_id"]}, {"_id": 0})
     student_user = await db.users.find_one({"user_id": student_doc["user_id"]}, {"_id": 0, "name": 1, "picture": 1}) if student_doc else None
 
+    # Resolve end_time_utc from booking duration
+    booking = await db.bookings.find_one({"booking_id": session.get("booking_id")}, {"_id": 0, "duration_minutes": 1})
+    duration_mins = booking.get("duration_minutes", 30) if booking else 30
+    start_str = session.get("start_time_utc", "")
+    try:
+        start_dt = datetime.fromisoformat(str(start_str).replace("Z", "+00:00"))
+        if start_dt.tzinfo is None:
+            start_dt = start_dt.replace(tzinfo=timezone.utc)
+        end_dt = start_dt + timedelta(minutes=duration_mins)
+        end_time_utc = end_dt.isoformat()
+    except (ValueError, TypeError):
+        end_time_utc = session.get("end_time_utc", "")
+
     return {
         **session,
         "teacher_name": teacher_user.get("name") if teacher_user else "Unknown",
         "teacher_picture": teacher_user.get("picture") if teacher_user else None,
         "student_name": student_user.get("name") if student_user else "Unknown",
         "student_picture": student_user.get("picture") if student_user else None,
+        "server_time_utc": datetime.now(timezone.utc).isoformat(),
+        "end_time_utc": end_time_utc,
+        "duration_minutes": duration_mins,
     }
 
 
