@@ -123,8 +123,8 @@ function LiveSessionRow({ session, currentTime }) {
         <span className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold ${isLive ? 'bg-emerald-50 text-emerald-700' : isUpcoming ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500'}`}>
           {isLive ? 'Live' : isUpcoming ? 'Upcoming' : session.status}
         </span>
-        {session.meet_link_slug && isLive && (
-          <a href={`/classroom/${session.meet_link_slug}`} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg hover:bg-emerald-50 transition-colors" title="View Classroom">
+        {(session.meet_link_slug || session.session_id) && isLive && (
+          <a href={`/classroom/${session.meet_link_slug || session.session_id}`} target="_blank" rel="noreferrer" className="p-1.5 rounded-lg hover:bg-emerald-50 transition-colors" title="View Classroom">
             <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
           </a>
         )}
