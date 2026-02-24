@@ -74,15 +74,22 @@ function useClassroomWS(roomId, onMessage) {
 
   useEffect(() => {
     if (!roomId) return;
+    let pingInterval;
     function connect() {
       const ws = new WebSocket(`${WS_BASE}/api/classroom/ws/${roomId}`);
       wsRef.current = ws;
       ws.onmessage = (e) => { try { onMessage(JSON.parse(e.data)); } catch {} };
-      ws.onclose = () => { reconnectRef.current = setTimeout(connect, 2000); };
+      ws.onopen = () => {
+        // Keep-alive ping every 15s to prevent backend WS timeout
+        pingInterval = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type: 'PING' }));
+        }, 15000);
+      };
+      ws.onclose = () => { clearInterval(pingInterval); reconnectRef.current = setTimeout(connect, 2000); };
       ws.onerror = () => ws.close();
     }
     connect();
-    return () => { clearTimeout(reconnectRef.current); wsRef.current?.close(); };
+    return () => { clearInterval(pingInterval); clearTimeout(reconnectRef.current); wsRef.current?.close(); };
   }, [roomId]);
 
   const send = useCallback((msg) => {
