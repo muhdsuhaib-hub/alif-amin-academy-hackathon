@@ -48,13 +48,13 @@ function useThrottledSend(send, delay = 50) {
 }
 
 // ==================== CHAT DRAWER ====================
-function ChatDrawer({ send, messages, onClose }) {
+function ChatDrawer({ send, messages, onClose, isObserver }) {
   const [text, setText] = useState('');
   const bottomRef = useRef(null);
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const handleSend = () => {
-    if (!text.trim()) return;
+    if (!text.trim() || isObserver) return;
     send({ type: 'CHAT', text: text.trim(), timestamp: Date.now() });
     setText('');
   };
@@ -74,13 +74,19 @@ function ChatDrawer({ send, messages, onClose }) {
         ))}
         <div ref={bottomRef} />
       </div>
-      <div className="flex items-center gap-2 p-3 border-t border-white/5">
-        <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Type a message..." className="flex-1 h-9 px-3 rounded-xl bg-white/5 text-sm text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-white/20" data-testid="chat-input" />
-        <button onClick={handleSend} className="p-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 transition-all" data-testid="chat-send">
-          <Send className="w-4 h-4" />
-        </button>
-      </div>
+      {isObserver ? (
+        <div className="px-4 py-3 border-t border-white/5 text-center">
+          <span className="text-[11px] text-white/30">Chat disabled in Observer mode</span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 p-3 border-t border-white/5">
+          <input value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            placeholder="Type a message..." className="flex-1 h-9 px-3 rounded-xl bg-white/5 text-sm text-white border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-white/20" data-testid="chat-input" />
+          <button onClick={handleSend} className="p-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 transition-all" data-testid="chat-send">
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
