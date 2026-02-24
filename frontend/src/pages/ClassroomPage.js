@@ -594,10 +594,22 @@ export default function ClassroomPage() {
         isObserver={isObserver}
         highlighterActive={highlighterActive}
         onToggleHighlighter={() => setHighlighterActive(!highlighterActive)}
+        showActivities={showActivities}
+        onToggleActivities={() => setShowActivities(!showActivities)}
       />
 
       {/* Settings Modal */}
       {showSettings && <AVSettingsModal onClose={() => setShowSettings(false)} />}
+
+      {/* Activities Drawer (Teacher only) */}
+      {showActivities && isTeacher && (
+        <div className="absolute right-0 top-0 bottom-0 w-80 z-40">
+          <ActivitiesBrowser onSelect={handlePushActivity} onClose={() => setShowActivities(false)} />
+        </div>
+      )}
+
+      {/* Activity Overlay (all roles — pushed by teacher) */}
+      {activeActivity && <ActivityOverlay activity={activeActivity} isTeacher={isTeacher} onClose={handleCloseActivity} />}
 
       {/* End Class Modals */}
       {showReportModal && <SessionReportModal sessionId={sessionId} onSubmitted={handleReportSubmitted} onClose={() => setShowReportModal(false)} />}
