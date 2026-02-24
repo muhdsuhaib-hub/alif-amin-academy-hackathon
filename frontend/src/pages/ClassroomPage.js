@@ -326,9 +326,16 @@ export default function ClassroomPage() {
         break;
       case 'ACTIVITY_START':
         setActiveActivity(msg.activity || null);
+        setStudentAnswers({});
         break;
       case 'ACTIVITY_CLOSE':
         setActiveActivity(null);
+        setStudentAnswers({});
+        break;
+      case 'ACTIVITY_ANSWER':
+        if (msg.payload) {
+          setStudentAnswers(prev => ({ ...prev, [msg.payload.questionIndex]: msg.payload.selectedAnswer }));
+        }
         break;
       case 'END_CLASS': setShowRatingModal(true); break;
       default: break;
