@@ -481,13 +481,13 @@ export default function ClassroomPage() {
   const handlePushActivity = useCallback((activity) => {
     setActiveActivity(activity);
     setShowActivities(false);
-    wsSend({ type: 'ACTIVITY_START', activity });
-  }, [wsSend]);
+    send({ type: 'ACTIVITY_START', activity });
+  }, [send]);
 
   const handleCloseActivity = useCallback(() => {
     setActiveActivity(null);
-    wsSend({ type: 'ACTIVITY_CLOSE' });
-  }, [wsSend]);
+    send({ type: 'ACTIVITY_CLOSE' });
+  }, [send]);
 
   // Clear pointer after inactivity
   useEffect(() => {
