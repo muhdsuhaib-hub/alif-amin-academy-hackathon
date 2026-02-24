@@ -393,7 +393,7 @@ export default function ClassroomPage() {
               </div>
               {/* Chat drawer */}
               <div className="flex-1 overflow-hidden">
-                <ChatDrawer send={handleChatSend} messages={chatMessages} onClose={() => setShowChat(false)} />
+                <ChatDrawer send={handleChatSend} messages={chatMessages} onClose={() => setShowChat(false)} isObserver={isObserver} />
               </div>
             </div>
           ) : (
