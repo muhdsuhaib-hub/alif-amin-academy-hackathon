@@ -306,6 +306,18 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#4 — True Stealth Mode:** Admin observer now joins via `POST /api/classroom/admin/stealth-join` which issues a restricted LiveKit token (`can_publish=false`, identity `admin_{user_id}`, name "System"). `VideoStrip` and `MobileVideoRow` filter out any participant with `admin_` prefix identity — making admin 100% invisible to teacher/student on ALL clients. Chat input disabled for observers.
 
+### Hotfix 9.17: Ultimate UI/API Simplification (Feb 2026)
+
+**#1 — Frontend Teardown:** Deleted "Today's Sessions" widget from AdminDashboard.js (including `LiveSessionRow`, `fetchLiveSessions`, `currentTime` clock). Deleted green "Live Now" section from SessionMonitor.js (including `liveSessions` state, `fetchLive`, `currentTime` clock). Zero separate live-data polling.
+
+**#2 — Backend Cleanup:** Deleted `GET /api/admin/overview/live-sessions` endpoint from admin_routes.py. Dead code removed.
+
+**#3 — Session History Integration:** WebRTC Stealth Join and Record buttons injected into the Actions column of the master Session History table. For `scheduled` or `live` rows: shows Stealth + Record buttons (using preserved `handleStealthJoin`/`handleStealthRecord`). For `completed`/`cancelled`/`abandoned`: shows View Report button or "-". No clocks, no time math — pure status-based visibility.
+
+**#4 — History API Enriched:** `GET /api/admin/sessions/history` now returns `session_id` and `meet_link_slug` per booking (via `class_sessions` lookup), enabling WebRTC access directly from history rows.
+
+**#5 — Live Filter Added:** Added "Live" to the status filter bar in Session Monitor, so admins can filter to only live sessions when needed.
+
 ### P1 (Earlier Issues)
 - "View Report" button rendering verification (code exists, depends on session_report data)
 - Teacher Transaction History pagination (code exists with `totalPages >= 1`)
