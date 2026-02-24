@@ -121,11 +121,7 @@ export default function AdminDashboard({ user }) {
   const fetchCommissionSummary = useCallback(async () => {
     try { const r = await fetch(`${API}/commission/admin/summary`, { credentials: 'include' }); if (r.ok) setCommissionSummary(await r.json()); } catch (e) { console.error(e); }
   }, []);
-  const fetchLiveSessions = useCallback(async () => {
-    try { const r = await fetch(`${API}/admin/overview/live-sessions`, { credentials: 'include' }); if (r.ok) setLiveSessions((await r.json()).sessions || []); } catch (e) { console.error(e); }
-  }, []);
-
-  useEffect(() => { fetchStats(); fetchLiability(); fetchRevenue(); fetchCommissionSummary(); fetchLiveSessions(); }, [fetchStats, fetchLiability, fetchRevenue, fetchCommissionSummary, fetchLiveSessions]);
+  useEffect(() => { fetchStats(); fetchLiability(); fetchRevenue(); fetchCommissionSummary(); }, [fetchStats, fetchLiability, fetchRevenue, fetchCommissionSummary]);
 
   const runTierEvaluation = async () => {
     try { const r = await fetch(`${API}/commission/evaluate-all`, { method: 'POST', credentials: 'include' }); if (r.ok) { const d = await r.json(); fetchCommissionSummary(); toast.success(`Tier evaluation complete! Upgraded: ${d.upgraded?.length || 0}`); } } catch (e) { console.error(e); }
