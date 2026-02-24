@@ -1992,6 +1992,12 @@ async def get_admin_session_history(
         if b.get("status") in ("completed", "abandoned") and b.get("booking_id"):
             report = await db.session_reports.find_one({"booking_id": b["booking_id"]}, {"_id": 0})
             b["session_report"] = report
+        # Attach class_session info for WebRTC access (session_id, meet_link_slug)
+        if b.get("booking_id"):
+            cs = await db.class_sessions.find_one({"booking_id": b["booking_id"]}, {"_id": 0, "session_id": 1, "meet_link_slug": 1})
+            if cs:
+                b["session_id"] = cs.get("session_id")
+                b["meet_link_slug"] = cs.get("meet_link_slug")
     return {"bookings": bookings, "total": total, "limit": limit, "offset": offset}
 
 
