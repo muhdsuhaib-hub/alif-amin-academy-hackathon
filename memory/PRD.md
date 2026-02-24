@@ -344,6 +344,14 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 **#4 — Activity Overlay:** `ActivityOverlay` renders over the video viewport on all clients. Displays activity title, description, and questions with options. Teacher has "Close Activity" button; students and observers view passively.
 
+### Hotfix C.2.2: Dynamic Activity Sync & Two-Way Live Grading (Feb 2026)
+
+**#1 — WS Sync Fixed:** Added `ACTIVITY_START`, `ACTIVITY_CLOSE`, and `ACTIVITY_ANSWER` handlers to the backend WS `elif` chain in `classroom_routes.py`. Messages now broadcast to all room participants.
+
+**#2 — Dynamic Activity Renderer:** `ActivityOverlay` renders based on `activity_type`: Quiz (interactive MCQ), Hadith/Doa/Word Tracing (Arabic text + translation), Tajweed Match (concept + examples). Unknown types show JSON fallback.
+
+**#3 — Two-Way Live Grading:** Students click quiz options → `ACTIVITY_ANSWER` WS event sent. Teacher's overlay listens for `ACTIVITY_ANSWER` and shows student's selection: green if correct, red if incorrect (compared against `q.correct` field).
+
 ### P1 (Earlier Issues)
 - "View Report" button rendering verification (code exists, depends on session_report data)
 - Teacher Transaction History pagination (code exists with `totalPages >= 1`)
