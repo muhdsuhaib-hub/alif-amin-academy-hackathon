@@ -143,6 +143,13 @@ export default function AdminDashboard({ user }) {
   const [revenue, setRevenue] = useState(null);
   const [commissionSummary, setCommissionSummary] = useState(null);
   const [liveSessions, setLiveSessions] = useState([]);
+  const [currentTime, setCurrentTime] = useState(Date.now());
+
+  // Silent local clock — ticks every 10s to auto-expire sessions client-side
+  useEffect(() => {
+    const tick = setInterval(() => setCurrentTime(Date.now()), 10000);
+    return () => clearInterval(tick);
+  }, []);
 
   const fetchStats = useCallback(async () => {
     try { const r = await fetch(`${API}/admin/stats`, { credentials: 'include' }); if (r.ok) setStats(await r.json()); } catch (e) { console.error(e); } finally { setLoading(false); }
