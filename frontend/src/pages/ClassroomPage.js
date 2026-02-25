@@ -655,12 +655,8 @@ export default function ClassroomPage() {
 
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: Quran Navigator (Desktop slide-out) */}
-        {showNavigator && isTeacher && (
-          <div className="hidden md:block w-72 border-r border-white/5 bg-slate-900/90 backdrop-blur-xl flex-shrink-0 overflow-hidden">
-            <QuranNavigator onNavigate={handleNavigate} onClose={() => setShowNavigator(false)} onClearHighlights={handleClearHighlights} />
-          </div>
-        )}
+        {/* Left: Legacy Quran Navigator — disabled when V2 is active. Kept for fallback. */}
+        {/* V2 has its own built-in navigation drawer */}
 
         {/* Center: Quran V2 Stage (maximized) */}
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
