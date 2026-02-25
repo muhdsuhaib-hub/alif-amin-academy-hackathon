@@ -155,7 +155,7 @@ function NavigationDrawer({ chapters, onNavigate, onClose, currentChapter, visib
 function VerseWord({ word, verseKey, isTeacher, highlighterActive, isHighlighted, isFocused, onHighlight, onHover, onLeave }) {
   if (word.char_type_name === 'end') {
     return (
-      <span className="inline-flex items-center justify-center mx-1 select-none"
+      <span className="flex items-center justify-center mx-1.5 select-none"
         style={{ color: '#0d9488', fontSize: 'clamp(1rem, 2vw, 1.3rem)', fontFamily: QURAN_FONT }}
         data-testid={`verse-end-${verseKey}`}>
         ﴿{toArabicNum(parseInt(verseKey.split(':')[1]))}﴾
@@ -169,8 +169,8 @@ function VerseWord({ word, verseKey, isTeacher, highlighterActive, isHighlighted
 
   return (
     <span
-      className={`quran-v2-word inline cursor-pointer transition-all duration-150 px-[2px] py-[1px] ${wordClass}`}
-      style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.8rem)', fontFamily: QURAN_FONT, lineHeight: '2.8' }}
+      className={`quran-v2-word cursor-pointer transition-all duration-150 mx-1 ${wordClass}`}
+      style={{ fontSize: 'clamp(1.6rem, 3.5vw, 2.8rem)', fontFamily: QURAN_FONT }}
       onClick={() => isTeacher && highlighterActive && onHighlight?.(verseKey, word.position)}
       onMouseEnter={() => onHover?.(verseKey, word.position)}
       onMouseLeave={onLeave}
