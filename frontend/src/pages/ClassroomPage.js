@@ -394,6 +394,7 @@ export default function ClassroomPage() {
   const [showActivities, setShowActivities] = useState(false);
   const [activeActivity, setActiveActivity] = useState(null);
   const [studentAnswers, setStudentAnswers] = useState({});
+  const [quranV2Sync, setQuranV2Sync] = useState(null);
 
   const isTeacher = user?.role === 'teacher';
   const isAdmin = user?.role === 'admin';
