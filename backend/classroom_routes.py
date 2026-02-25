@@ -769,6 +769,7 @@ async def classroom_websocket(websocket: WebSocket, room_id: str):
             "chapter": 1,
             "wordHighlights": {},
             "recording": {"active": False, "visible": False},
+            "quranV2": {"chapter": 1, "page": 1, "focusedVerse": None},
         }
     classroom_rooms[room_id]["connections"].add(websocket)
 
