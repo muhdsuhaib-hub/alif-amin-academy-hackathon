@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { toast } from 'sonner';
-import DigitalMushaf from '../components/classroom/DigitalMushaf';
+import QuranV2 from '../components/classroom/QuranV2';
 import QuranNavigator from '../components/classroom/QuranNavigator';
 import GreenRoom from '../components/classroom/GreenRoom';
 import { VideoStrip, MobileVideoRow, ControlDock, AVSettingsModal } from '../components/classroom/LiveKitRoom';
