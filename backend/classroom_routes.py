@@ -840,6 +840,10 @@ async def classroom_websocket(websocket: WebSocket, room_id: str):
             elif msg_type == "ACTIVITY_ANSWER":
                 await broadcast_to_room(room_id, msg, exclude=websocket)
 
+            elif msg_type == "SYNC_QURAN_V2":
+                # Real-time Quran V2 sync — teacher navigates/hovers/clicks, students mirror
+                await broadcast_to_room(room_id, msg, exclude=websocket)
+
             elif msg_type == "PING":
                 await websocket.send_json({"type": "PONG"})
 
