@@ -17,7 +17,7 @@ import os
 # Configure pytest-asyncio
 pytest_plugins = ('pytest_asyncio',)
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://crash-resolution-3.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://quran-sync-live.preview.emergentagent.com')
 WS_BASE = BASE_URL.replace('https://', 'wss://').replace('http://', 'ws://')
 
 # Test session token for teacher

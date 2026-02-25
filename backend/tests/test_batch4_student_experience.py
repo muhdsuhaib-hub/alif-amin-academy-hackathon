@@ -11,7 +11,7 @@ import os
 from datetime import datetime, timedelta
 
 # Use the production preview URL
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://crash-resolution-3.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://quran-sync-live.preview.emergentagent.com')
 
 # Test credentials
 TEST_STUDENT_EMAIL = "test_student@example.com"
