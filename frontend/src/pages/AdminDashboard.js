@@ -192,9 +192,9 @@ export default function AdminDashboard({ user }) {
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { icon: Circle, label: 'New', rate: '30%', count: commissionSummary?.tier_distribution?.new?.count || 0, cls: 'text-slate-500 bg-slate-50' },
-                      { icon: Star, label: 'Rated', rate: '25%', count: commissionSummary?.tier_distribution?.rated?.count || 0, cls: 'text-amber-600 bg-amber-50' },
-                      { icon: Award, label: 'Elite', rate: '20%', count: commissionSummary?.tier_distribution?.elite?.count || 0, cls: 'text-emerald-700 bg-emerald-50' },
+                      { icon: Circle, label: 'New', rate: '40%', count: commissionSummary?.tier_distribution?.new?.count || 0, cls: 'text-slate-500 bg-slate-50' },
+                      { icon: Star, label: 'Rated', rate: '35%', count: commissionSummary?.tier_distribution?.rated?.count || 0, cls: 'text-amber-600 bg-amber-50' },
+                      { icon: Award, label: 'Elite', rate: '30%', count: commissionSummary?.tier_distribution?.elite?.count || 0, cls: 'text-emerald-700 bg-emerald-50' },
                     ].map((t, i) => (
                       <div key={i} className={`p-4 rounded-xl ${t.cls} text-center`}>
                         <t.icon className="w-5 h-5 mx-auto mb-1" />

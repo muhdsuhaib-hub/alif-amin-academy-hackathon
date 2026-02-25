@@ -5,11 +5,11 @@ This module provides API endpoints for commission tier management.
 All business logic is delegated to the CommissionService module.
 
 Commission Tiers:
-- Level 1 (New Tutor): 30% platform commission
-- Level 2 (Rated Tutor): 25% commission (4.5+ rating, 20+ reviews)
-- Level 3 (Elite Tutor): 20% commission (100+ sessions, 4.7+ rating)
+- Level 1 (New Tutor): 40% platform commission
+- Level 2 (Rated Tutor): 35% commission (4.5+ rating, 20+ reviews)
+- Level 3 (Elite Tutor): 30% commission (100+ sessions, 4.7+ rating)
 
-Downgrade Rule: If rating falls below 4.3 → revert to 30%
+Downgrade Rule: If rating falls below 4.3 → revert to 40%
 
 All commission calculations are SERVER-SIDE ONLY to prevent manipulation.
 """
@@ -146,7 +146,7 @@ async def evaluate_and_update_tutor_tier(teacher_id: str) -> dict:
         raise HTTPException(status_code=404, detail="Teacher not found")
     
     current_tier = teacher.get("tier_level", "new")
-    current_commission = teacher.get("commission_rate", 0.30)
+    current_commission = teacher.get("commission_rate", 0.40)
     
     # Get fresh metrics from database
     metrics = await get_tutor_metrics(teacher_id)
@@ -267,8 +267,8 @@ async def get_tutor_commission_info(teacher_id: str):
         "tier_badge": tier_info["badge"],
         "tier_icon": tier_info["icon"],
         "tier_color": tier_info["color"],
-        "commission_rate": teacher.get("commission_rate", 0.30),
-        "tutor_rate": 1 - teacher.get("commission_rate", 0.30),
+        "commission_rate": teacher.get("commission_rate", 0.40),
+        "tutor_rate": 1 - teacher.get("commission_rate", 0.40),
         "metrics": {
             "total_completed_sessions": teacher.get("total_completed_sessions", 0),
             "average_rating": teacher.get("average_rating", 0),
@@ -300,7 +300,7 @@ def get_next_tier_requirements(teacher: dict) -> Optional[dict]:
                 "target_reviews": RATED_TUTOR_MIN_REVIEWS
             },
             "commission_reduction": "5%",
-            "new_commission": "25%"
+            "new_commission": "35%"
         }
     elif current_tier == "rated":
         # Next tier is Elite
@@ -316,7 +316,7 @@ def get_next_tier_requirements(teacher: dict) -> Optional[dict]:
                 "target_rating": ELITE_TUTOR_MIN_RATING
             },
             "commission_reduction": "5%",
-            "new_commission": "20%"
+            "new_commission": "30%"
         }
     else:
         # Already at Elite - top tier
@@ -469,7 +469,7 @@ async def get_tutor_tier_history(teacher_id: str):
     return {
         "teacher_id": teacher_id,
         "current_tier": teacher.get("tier_level", "new"),
-        "current_commission": teacher.get("commission_rate", 0.30),
+        "current_commission": teacher.get("commission_rate", 0.40),
         "tier_history": teacher.get("tier_history", []),
         "last_evaluated": teacher.get("tier_last_evaluated")
     }
