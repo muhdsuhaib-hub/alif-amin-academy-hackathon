@@ -618,6 +618,11 @@ export default function ClassroomPage() {
     send({ type: 'ACTIVITY_CLOSE' });
   }, [send]);
 
+  // QuranV2 sync — teacher sends events, students receive via WS
+  const handleQuranV2Sync = useCallback((payload) => {
+    send({ type: 'SYNC_QURAN_V2', payload });
+  }, [send]);
+
   // Clear pointer after inactivity
   useEffect(() => {
     if (!pointerPos) return;
