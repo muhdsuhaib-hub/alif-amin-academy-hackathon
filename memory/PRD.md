@@ -364,6 +364,22 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 - "View Report" button rendering verification (code exists, depends on session_report data)
 - Teacher Transaction History pagination (code exists with `totalPages >= 1`)
 
+### Advanced Quran V2: Secure Content Bridge & Center-Stage Whiteboard (Feb 2026)
+
+**#1 — Backend OAuth2 Proxy (P0):** Created `quran_v2_routes.py` with OAuth2 Client Credentials flow (`client_secret_basic` auth method) against `oauth2.quran.foundation`. Token auto-refreshes 60s before expiry. All Quran.com V4 API calls proxied through backend — credentials never exposed to frontend. Endpoints: `GET /api/quran/v2/chapters`, `GET /api/quran/v2/verses/by_chapter/{id}`, `GET /api/quran/v2/verses/by_page/{page}`, `GET /api/quran/v2/juzs`. MongoDB caching on all responses.
+
+**#2 — QuranV2 Center-Stage Component (P0):** New `QuranV2.js` component replaces `DigitalMushaf` as the primary classroom whiteboard. Quran.com-inspired aesthetic: warm `#FDFBF7` parchment background, generous padding (`px-12 lg:px-16`, `py-14`), emerald accents. KFGQPC Uthmanic Script HAFS font with `clamp(1.6rem, 3.5vw, 2.8rem)` fluid scaling. Bismillah rendered with decorative separator.
+
+**#3 — Responsive Navigation Drawer (P0):** Three-tab navigator (Surah/Page/Juz). Slides in on desktop pushing content, overlays on mobile with backdrop blur. Search filter on Surah tab. Current chapter highlighted with emerald accent. Auto-scrolls to active surah on open.
+
+**#4 — Interactive Verse Features (P0):** Hover-to-highlight words (emerald tint). Click-to-focus verses (emerald ring + background). Tajweed highlighter mode (rose highlight, persistent via `wordHighlights` state). Expand/collapse to fullscreen toggle.
+
+**#5 — WebSocket V2 Sync (P0):** New `SYNC_QURAN_V2` event type in backend WS handler and frontend. Teacher actions (navigate chapter, focus verse, scroll position, hover word) broadcast to students in real-time. Students auto-apply received sync state. No interference with existing WS events (CHAT, ACTIVITY, HIGHLIGHT_WORD, etc.).
+
+**#6 — ErrorBoundary (P0):** `QuranV2ErrorBoundary` class component wraps the entire V2 viewer. On error: shows friendly "Unable to load Quran" fallback with retry button. Prevents API failures from crashing the classroom.
+
+**#7 — Zero-Deletion Policy (P0):** All V1 code preserved: `DigitalMushaf.js`, `QuranNavigator.js`, `quran_routes.py`, `quranApi.js`. V1 API endpoints (`/api/quran/*`) remain active alongside V2 (`/api/quran/v2/*`).
+
 ### P1 (Phase C: WebRTC Engine — separate release)
 - Resilient Cloud Recording with GCS Signed URLs and media chunking
 - UTC Server-Side Timer with 10s WebSocket sync
