@@ -451,6 +451,9 @@ export default function ClassroomPage() {
         }
         break;
       case 'END_CLASS': setShowRatingModal(true); break;
+      case 'SYNC_QURAN_V2':
+        setQuranV2Sync(msg.payload || null);
+        break;
       default: break;
     }
   }, [user]);
