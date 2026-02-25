@@ -430,7 +430,7 @@ function QuranV2Core({
               </div>
             </div>
           ) : (
-            <div className="max-w-3xl mx-auto px-6 md:px-12 lg:px-16 py-8 md:py-14">
+            <div className="flex flex-col w-full max-w-4xl mx-auto px-4 md:px-12 py-8 md:py-14">
               {/* Bismillah */}
               {currentChapter !== 9 && currentPage === 1 && (
                 <div className="text-center mb-10 md:mb-16" data-testid="bismillah-v2">
@@ -445,34 +445,38 @@ function QuranV2Core({
                 </div>
               )}
 
-              {/* Verses */}
-              <div dir="rtl" className="text-right" data-testid="verses-container-v2">
+              {/* Verses — Block layout, one ayah per row */}
+              <div className="flex flex-col w-full" data-testid="verses-container-v2">
                 {verses.map(verse => {
                   const vk = verse.verse_key;
                   const isFocused = focusedVerse === vk;
                   return (
-                    <span
+                    <div
                       key={vk}
                       ref={el => { verseRefs.current[vk] = el; }}
-                      className={`inline transition-all duration-300 ${isFocused ? 'bg-emerald-50/70 rounded-lg ring-1 ring-emerald-200/40 px-1' : ''}`}
-                      onClick={(e) => { if (!highlighterActive) handleVerseFocus(vk); }}
+                      className={`w-full py-8 border-b border-gray-100 transition-colors ${isFocused ? 'bg-emerald-50/70' : 'hover:bg-emerald-50/50'}`}
+                      onClick={() => { if (!highlighterActive) handleVerseFocus(vk); }}
                       data-testid={`verse-v2-${vk}`}>
-                      {(verse.words || []).map(word => (
-                        <VerseWord
-                          key={`${vk}-w${word.position}`}
-                          word={word}
-                          verseKey={vk}
-                          isTeacher={isTeacher}
-                          highlighterActive={highlighterActive}
-                          isHighlighted={!!wordHighlights[`${vk}:${word.position}`]}
-                          isFocused={isFocused && hoveredWord === `${vk}:${word.position}`}
-                          onHighlight={onHighlightWord}
-                          onHover={handleWordHover}
-                          onLeave={() => setHoveredWord(null)}
-                        />
-                      ))}
-                      <span className="inline-block w-3" />
-                    </span>
+                      <div
+                        className="flex flex-row-reverse flex-wrap justify-start text-right w-full"
+                        dir="rtl"
+                        style={{ textRendering: 'optimizeLegibility', lineHeight: '2.5' }}>
+                        {(verse.words || []).map(word => (
+                          <VerseWord
+                            key={`${vk}-w${word.position}`}
+                            word={word}
+                            verseKey={vk}
+                            isTeacher={isTeacher}
+                            highlighterActive={highlighterActive}
+                            isHighlighted={!!wordHighlights[`${vk}:${word.position}`]}
+                            isFocused={isFocused && hoveredWord === `${vk}:${word.position}`}
+                            onHighlight={onHighlightWord}
+                            onHover={handleWordHover}
+                            onLeave={() => setHoveredWord(null)}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   );
                 })}
               </div>
