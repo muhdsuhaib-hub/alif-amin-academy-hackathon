@@ -662,23 +662,22 @@ export default function ClassroomPage() {
           </div>
         )}
 
-        {/* Center: Mushaf Stage (maximized) */}
+        {/* Center: Quran V2 Stage (maximized) */}
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
           {/* Mobile: Video row pinned top */}
           <div className="md:hidden flex-shrink-0 border-b border-white/5 bg-slate-800/50">
             <MobileVideoRow raisedHands={raisedHands} observerIds={observerIds} />
           </div>
-          {/* Mushaf fills remaining viewport */}
+          {/* Quran V2 fills remaining viewport */}
           <div className="flex-1 overflow-hidden">
-            <DigitalMushaf
-              currentChapter={currentChapter}
-              onChapterChange={handleChapterChange}
+            <QuranV2
               isTeacher={isTeacher}
               highlighterActive={highlighterActive}
               wordHighlights={wordHighlights}
               onHighlightWord={handleHighlightWord}
-              pointerPosition={!isTeacher ? pointerPos : null}
-              onPointerMove={isTeacher ? handlePointerMove : undefined}
+              onClearHighlights={handleClearHighlights}
+              onSyncEvent={handleQuranV2Sync}
+              syncState={quranV2Sync}
             />
           </div>
         </div>
