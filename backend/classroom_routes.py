@@ -271,28 +271,87 @@ async def submit_progress(session_id: str, data: StudentProgressCreate, request:
     )
 
     if session.get("booking_id"):
-        await db.bookings.update_one(
-            {"booking_id": session["booking_id"]},
-            {"$set": {"status": "completed"}}
-        )
+        booking = await db.bookings.find_one({"booking_id": session["booking_id"]}, {"_id": 0})
 
-        # REVENUE TRIGGER: Credit teacher earnings
-        try:
-            booking = await db.bookings.find_one({"booking_id": session["booking_id"]}, {"_id": 0})
-            if booking:
-                from wallet_routes import deduct_credits, DeductCreditsRequest
-                student_doc = await db.students.find_one({"student_id": session["student_id"]}, {"_id": 0})
-                if student_doc:
-                    deduct_req = DeductCreditsRequest(
-                        booking_id=session["booking_id"],
-                        teacher_id=session["teacher_id"],
-                        duration_minutes=booking.get("duration_minutes", 30),
+        # Idempotency guard — skip if already paid out
+        if booking and booking.get("payment_status") == "payout_done":
+            logger.info(f"Earnings already processed for booking {session['booking_id']}, skipping")
+        elif booking:
+            await db.bookings.update_one(
+                {"booking_id": session["booking_id"]},
+                {"$set": {"status": "completed"}}
+            )
+
+            # REVENUE TRIGGER: Credit teacher earnings (NO student deduction — already charged at booking time)
+            try:
+                # Check session_payment_records for duplicate safety
+                existing_record = await db.session_payment_records.find_one({"booking_id": session["booking_id"]})
+                if existing_record:
+                    logger.info(f"Payment record already exists for booking {session['booking_id']}, skipping payout")
+                else:
+                    from wallet_routes import get_base_session_price, get_credits_for_duration
+                    from commission_routes import get_tutor_commission_rate
+
+                    duration = booking.get("duration_minutes", 30)
+                    base_price = get_base_session_price(duration)
+                    commission_rate = await get_tutor_commission_rate(session["teacher_id"])
+                    tutor_payout = round(base_price * (1 - commission_rate), 2)
+                    platform_commission = round(base_price * commission_rate, 2)
+
+                    teacher_data = await db.teachers.find_one({"teacher_id": session["teacher_id"]}, {"_id": 0})
+                    teacher_tier = teacher_data.get("tier_level", "new") if teacher_data else "new"
+
+                    record_id = f"spr_{uuid.uuid4().hex[:12]}"
+                    await db.session_payment_records.insert_one({
+                        "record_id": record_id,
+                        "booking_id": session["booking_id"],
+                        "student_id": session["student_id"],
+                        "teacher_id": session["teacher_id"],
+                        "teacher_tier": teacher_tier,
+                        "duration_minutes": duration,
+                        "credits_used": booking.get("credits_charged", get_credits_for_duration(duration)),
+                        "base_session_price": base_price,
+                        "commission_rate": commission_rate,
+                        "tutor_payout": tutor_payout,
+                        "platform_commission": platform_commission,
+                        "created_at": now.isoformat(),
+                    })
+
+                    # Credit teacher earnings atomically
+                    if teacher_data and teacher_data.get("user_id"):
+                        student_user = await db.users.find_one(
+                            {"user_id": (await db.students.find_one({"student_id": session["student_id"]}, {"_id": 0, "user_id": 1}) or {}).get("user_id", "")},
+                            {"_id": 0, "name": 1}
+                        )
+                        student_name = student_user.get("name", "Student") if student_user else "Student"
+
+                        from tutor_earnings_routes import credit_tutor_earnings
+                        await credit_tutor_earnings(
+                            teacher_id=session["teacher_id"],
+                            user_id=teacher_data["user_id"],
+                            amount=tutor_payout,
+                            booking_id=session["booking_id"],
+                            session_payment_record_id=record_id,
+                            description=f"{student_name} - {duration} min session",
+                            gross_amount=base_price,
+                            platform_fee=platform_commission,
+                            student_id=session["student_id"],
+                            duration_minutes=duration,
+                        )
+
+                    # Mark payout done on booking (atomic flag)
+                    await db.bookings.update_one(
+                        {"booking_id": session["booking_id"]},
+                        {"$set": {"payment_status": "payout_done"}}
                     )
-                    await deduct_credits(deduct_req, student_doc["user_id"])
                     logger.info(f"Revenue credited for session {session_id}")
-        except Exception as e:
-            # Log but don't fail the progress submission
-            logger.error(f"Revenue credit failed for session {session_id}: {e}")
+            except Exception as e:
+                logger.error(f"Revenue credit failed for session {session_id}: {e}")
+        else:
+            await db.bookings.update_one(
+                {"booking_id": session["booking_id"]},
+                {"$set": {"status": "completed"}}
+            )
 
     return {"progress_id": progress_id, "session_status": "completed"}
 
