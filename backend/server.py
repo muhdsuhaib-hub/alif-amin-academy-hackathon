@@ -28,6 +28,7 @@ from tutor_earnings_routes import tutor_earnings_router, init_tutor_earnings_rou
 from booking_routes import booking_router, init_booking_routes
 from classroom_routes import classroom_router, init_classroom_routes
 from quran_routes import quran_router, init_quran_routes
+from quran_v2_routes import quran_v2_router, init_quran_v2_routes
 from upload_routes import upload_router, init_upload_routes
 from payment_routes import payment_router, init_payment_routes
 from credentials import init_credentials
@@ -2172,11 +2173,13 @@ app.include_router(booking_router)
 # Initialize classroom routes with database
 init_classroom_routes(db, get_current_user)
 init_quran_routes(db)
+init_quran_v2_routes(db)
 init_upload_routes(db)
 init_payment_routes(db)
 init_credentials(db)
 app.include_router(classroom_router)
 app.include_router(quran_router)
+app.include_router(quran_v2_router)
 app.include_router(upload_router)
 app.include_router(payment_router)
 
