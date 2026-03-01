@@ -155,7 +155,7 @@ function NavigationDrawer({ chapters, onNavigate, onClose, currentChapter, visib
 function VerseWord({ word, verseKey, isTeacher, highlighterActive, isHighlighted, isFocused, onHighlight, onHover, onLeave }) {
   if (word.char_type_name === 'end') {
     return (
-      <span className="inline-block mx-[3px] select-none align-middle"
+      <span className="inline-block mx-[5px] select-none align-middle"
         style={{ color: '#0d9488', fontSize: 'clamp(1rem, 2vw, 1.3rem)', fontFamily: QURAN_FONT }}
         data-testid={`verse-end-${verseKey}`}>
         ﴿{toArabicNum(parseInt(verseKey.split(':')[1]))}﴾
@@ -169,7 +169,7 @@ function VerseWord({ word, verseKey, isTeacher, highlighterActive, isHighlighted
 
   return (
     <span
-      className={`quran-v2-word inline-block cursor-pointer transition-all duration-150 mx-[3px] ${wordClass}`}
+      className={`quran-v2-word inline-block cursor-pointer transition-all duration-150 mx-[2px] ${wordClass}`}
       style={{ fontSize: 'clamp(1.8rem, 4vw, 2.4rem)', fontFamily: QURAN_FONT }}
       onClick={() => isTeacher && highlighterActive && onHighlight?.(verseKey, word.position)}
       onMouseEnter={() => onHover?.(verseKey, word.position)}
@@ -454,13 +454,13 @@ function QuranV2Core({
                     <div
                       key={vk}
                       ref={el => { verseRefs.current[vk] = el; }}
-                      className={`w-full block py-12 border-b border-gray-200 transition-colors ${isFocused ? 'bg-emerald-50/70' : 'hover:bg-emerald-50/50'}`}
+                      className={`w-full block py-20 border-b border-gray-200 transition-colors ${isFocused ? 'bg-emerald-50/70' : 'hover:bg-emerald-50/50'}`}
                       onClick={() => { if (!highlighterActive) handleVerseFocus(vk); }}
                       data-testid={`verse-v2-${vk}`}>
                       <div
-                        className="block text-right w-full break-words whitespace-normal antialiased leading-[3.5rem]"
+                        className="block text-right w-full break-words whitespace-normal antialiased leading-[2.2]"
                         dir="rtl"
-                        style={{ textRendering: 'optimizeLegibility' }}>
+                        style={{ textRendering: 'optimizeLegibility', verticalAlign: 'baseline'}}>
                         {(verse.words || []).map(word => (
                           <VerseWord
                             key={`${vk}-w${word.position}`}
