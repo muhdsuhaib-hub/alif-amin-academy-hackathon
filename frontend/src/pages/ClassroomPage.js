@@ -124,7 +124,7 @@ function ChatDrawer({ send, messages, onClose, isObserver }) {
         <h3 className="text-sm font-semibold text-white">Chat</h3>
         <button onClick={onClose} className="p-1 hover:bg-white/10 rounded-lg"><X className="w-4 h-4 text-white/40" /></button>
       </div>
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 pb-28">
         {messages.map((m, i) => (
           <div key={i} className={`text-xs px-3 py-2 rounded-xl max-w-[85%] ${m.self ? 'ml-auto bg-emerald-600/20 text-emerald-300' : 'bg-white/5 text-white/80'}`}>
             {!m.self && <p className="font-semibold mb-0.5 text-white/50">{m.sender}</p>}

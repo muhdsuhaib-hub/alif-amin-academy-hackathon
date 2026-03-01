@@ -105,7 +105,7 @@ function NavigationDrawer({ chapters, onNavigate, onClose, currentChapter, visib
       )}
 
       {/* List */}
-      <div ref={listRef} className="flex-1 overflow-y-auto px-3 py-2" data-testid="nav-list">
+      <div ref={listRef} className="flex-1 overflow-y-auto px-3 py-2 pb-28" data-testid="nav-list">
         {tab === 'surah' && filtered.map(ch => (
           <button key={ch.id} data-surah-id={ch.id}
             onClick={() => onNavigate({ type: 'surah', chapter: ch.id })}

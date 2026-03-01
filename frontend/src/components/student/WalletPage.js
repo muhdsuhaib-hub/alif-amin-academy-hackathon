@@ -213,13 +213,13 @@ export default function WalletPage({ user }) {
           <>
             <div className="divide-y divide-slate-50">
               {pagedTransactions.map((t, i) => (
-                <div key={t.transaction_id || i} className="px-5 py-3.5 flex items-center gap-3 hover:bg-slate-50/50 transition-colors">
+                <div key={t.transaction_id || i} className="px-5 py-3.5 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 hover:bg-slate-50/50 transition-colors">
                   <TransactionIcon type={t.transaction_type} amount={t.credit_amount} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-slate-900 truncate">{t.description}</p>
+                    <p className="text-sm text-slate-900 whitespace-normal">{t.description}</p>
                     <p className="text-[11px] text-slate-400">{formatDate(t.created_at)}</p>
                   </div>
-                  <span className={`text-sm font-semibold ${getAmountColor(t.transaction_type, t.credit_amount)}`}>
+                  <span className={`text-sm font-semibold flex-shrink-0 ${getAmountColor(t.transaction_type, t.credit_amount)}`}>
                     {t.credit_amount > 0 ? '+' : ''}{t.credit_amount}
                   </span>
                 </div>

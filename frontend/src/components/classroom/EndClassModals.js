@@ -108,11 +108,11 @@ export function SessionReportModal({ sessionId, onSubmitted, onClose }) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-ink-secondary mb-1.5">Ayah Start</label>
-              <input type="number" min={1} value={form.ayah_start} onChange={(e) => setForm({ ...form, ayah_start: parseInt(e.target.value) || 1 })} className={inputCls} data-testid="ayah-start" />
+              <input type="text" inputMode="numeric" value={form.ayah_start} onChange={(e) => { const v = e.target.value; setForm({ ...form, ayah_start: v === '' ? '' : (parseInt(v) || '') }); }} onFocus={(e) => e.target.select()} className={inputCls} data-testid="ayah-start" />
             </div>
             <div>
               <label className="block text-xs font-medium text-ink-secondary mb-1.5">Ayah End</label>
-              <input type="number" min={1} value={form.ayah_end} onChange={(e) => setForm({ ...form, ayah_end: parseInt(e.target.value) || 1 })} className={inputCls} data-testid="ayah-end" />
+              <input type="text" inputMode="numeric" value={form.ayah_end} onChange={(e) => { const v = e.target.value; setForm({ ...form, ayah_end: v === '' ? '' : (parseInt(v) || '') }); }} onFocus={(e) => e.target.select()} className={inputCls} data-testid="ayah-end" />
             </div>
           </div>
 
