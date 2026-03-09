@@ -398,6 +398,7 @@ export default function ClassroomPage() {
   const [quranV2Sync, setQuranV2Sync] = useState(null);
   const [viewMode, setViewMode] = useState('quran'); // 'quran' | 'iqra'
   const [iqraSync, setIqraSync] = useState(null);
+  const [iqraPointer, setIqraPointer] = useState(null);
 
   const isTeacher = user?.role === 'teacher';
   const isAdmin = user?.role === 'admin';
@@ -467,6 +468,9 @@ export default function ClassroomPage() {
           setViewMode('iqra');
         }
         setIqraSync(msg.payload || null);
+        break;
+      case 'IQRA_POINTER':
+        setIqraPointer(msg.pos || null);
         break;
       default: break;
     }
@@ -642,6 +646,11 @@ export default function ClassroomPage() {
     send({ type: 'SYNC_IQRA', payload });
   }, [send]);
 
+  // Iqra pointer — teacher mouse position over image
+  const handleIqraPointer = useCallback((pos) => {
+    throttledSend({ type: 'IQRA_POINTER', pos });
+  }, [throttledSend]);
+
   // Clear pointer after inactivity
   useEffect(() => {
     if (!pointerPos) return;
@@ -717,6 +726,8 @@ export default function ClassroomPage() {
                 isTeacher={isTeacher}
                 onSyncEvent={handleIqraSync}
                 syncState={iqraSync}
+                onPointerMove={handleIqraPointer}
+                pointerPos={iqraPointer}
               />
             )}
           </div>

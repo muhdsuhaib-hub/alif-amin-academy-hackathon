@@ -1,15 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, BookOpen, Loader2 } from 'lucide-react';
 
 const GCS_BASE = 'https://storage.googleapis.com/alif-amin-assets/iqra';
 const BOOKS = [1, 2, 3, 4, 5, 6];
 const PAGES_PER_BOOK = { 1: 35, 2: 35, 3: 35, 4: 35, 5: 35, 6: 35 };
 
-export default function IqraReader({ isTeacher, onSyncEvent, syncState }) {
+export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointerMove, pointerPos }) {
   const [currentBook, setCurrentBook] = useState(syncState?.book || 1);
   const [currentPage, setCurrentPage] = useState(syncState?.page || 1);
   const [imgLoading, setImgLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
+  const [pointerVisible, setPointerVisible] = useState(false);
+  const imgContainerRef = useRef(null);
+  const pointerTimerRef = useRef(null);
 
   const maxPages = PAGES_PER_BOOK[currentBook] || 35;
 
@@ -19,6 +22,15 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState }) {
     if (syncState.book) setCurrentBook(syncState.book);
     if (syncState.page) setCurrentPage(syncState.page);
   }, [syncState, isTeacher]);
+
+  // Show pointer on student side when receiving coords, hide after inactivity
+  useEffect(() => {
+    if (isTeacher || !pointerPos) return;
+    setPointerVisible(true);
+    clearTimeout(pointerTimerRef.current);
+    pointerTimerRef.current = setTimeout(() => setPointerVisible(false), 2000);
+    return () => clearTimeout(pointerTimerRef.current);
+  }, [pointerPos, isTeacher]);
 
   const emitSync = useCallback((book, page) => {
     if (isTeacher && onSyncEvent) {
@@ -42,6 +54,19 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState }) {
     emitSync(currentBook, page);
   }, [currentBook, maxPages, emitSync]);
 
+  // Teacher: emit pointer % coords on mouse move over image container
+  const handleMouseMove = useCallback((e) => {
+    if (!isTeacher || !imgContainerRef.current) return;
+    const rect = imgContainerRef.current.getBoundingClientRect();
+    const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+    const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+    onPointerMove?.({ x: xPct, y: yPct });
+  }, [isTeacher, onPointerMove]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (isTeacher) onPointerMove?.(null);
+  }, [isTeacher, onPointerMove]);
+
   const imgSrc = `${GCS_BASE}/book${currentBook}/${currentPage}.png`;
 
   return (
@@ -49,14 +74,12 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState }) {
       {/* Header */}
       <div className="flex-shrink-0 border-b border-stone-200/60 bg-[#FDFBF7]">
         <div className="flex items-center justify-between px-4 md:px-6 py-3">
-          {/* Left: Prev */}
           <button onClick={() => changePage(currentPage - 1)} disabled={currentPage <= 1}
             className="p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-600 disabled:opacity-20 transition-all"
             data-testid="iqra-prev-page">
             <ChevronLeft className="w-5 h-5" />
           </button>
 
-          {/* Center: Book selector + page info */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-emerald-600" />
@@ -75,7 +98,6 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState }) {
             </span>
           </div>
 
-          {/* Right: Next */}
           <button onClick={() => changePage(currentPage + 1)} disabled={currentPage >= maxPages}
             className="p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-600 disabled:opacity-20 transition-all"
             data-testid="iqra-next-page">
@@ -84,8 +106,14 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState }) {
         </div>
       </div>
 
-      {/* Image Viewer */}
-      <div className="flex-1 flex items-center justify-center overflow-auto px-4 py-6">
+      {/* Image Viewer with pointer overlay */}
+      <div
+        ref={imgContainerRef}
+        className="relative flex-1 flex items-center justify-center overflow-auto px-4 py-6"
+        onMouseMove={isTeacher ? handleMouseMove : undefined}
+        onMouseLeave={isTeacher ? handleMouseLeave : undefined}
+        data-testid="iqra-image-container">
+
         {imgLoading && !imgError && (
           <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
             <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
@@ -115,6 +143,16 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState }) {
             draggable={false}
             data-testid="iqra-page-image"
           />
+        )}
+
+        {/* Laser Pointer (student side only) */}
+        {!isTeacher && pointerVisible && pointerPos && (
+          <div
+            className="absolute w-4 h-4 rounded-full bg-emerald-500/50 pointer-events-none z-20 -translate-x-1/2 -translate-y-1/2"
+            style={{ left: `${pointerPos.x}%`, top: `${pointerPos.y}%` }}
+            data-testid="iqra-laser-pointer">
+            <div className="absolute inset-0 rounded-full bg-emerald-500/40 animate-ping" />
+          </div>
         )}
       </div>
     </div>

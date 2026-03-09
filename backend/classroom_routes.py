@@ -908,6 +908,10 @@ async def classroom_websocket(websocket: WebSocket, room_id: str):
                 # Real-time Iqra sync — teacher changes book/page, students mirror
                 await broadcast_to_room(room_id, msg, exclude=websocket)
 
+            elif msg_type == "IQRA_POINTER":
+                # Teacher pointer position over Iqra image
+                await broadcast_to_room(room_id, msg, exclude=websocket)
+
             elif msg_type == "PING":
                 await websocket.send_json({"type": "PONG"})
 
