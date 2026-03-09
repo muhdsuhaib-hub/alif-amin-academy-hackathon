@@ -455,10 +455,17 @@ export default function ClassroomPage() {
         break;
       case 'END_CLASS': setShowRatingModal(true); break;
       case 'SYNC_QURAN_V2':
+        if (msg.payload?.action === 'force_view') {
+          setViewMode('quran');
+        }
         setQuranV2Sync(msg.payload || null);
         break;
       case 'SYNC_IQRA':
-        setViewMode('iqra');
+        if (msg.payload?.action === 'force_view') {
+          setViewMode('iqra');
+        } else {
+          setViewMode('iqra');
+        }
         setIqraSync(msg.payload || null);
         break;
       default: break;
@@ -679,13 +686,13 @@ export default function ClassroomPage() {
 
           {/* Quran / Iqra toggle header */}
           <div className="flex-shrink-0 flex items-center justify-center gap-1 px-4 py-2 bg-slate-800/60 border-b border-white/5">
-            <button onClick={() => setViewMode('quran')}
+            <button onClick={() => { setViewMode('quran'); if (isTeacher) send({ type: 'SYNC_QURAN_V2', payload: { action: 'force_view' } }); }}
               className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'quran' ? 'bg-emerald-600 text-white' : 'text-white/50 hover:text-white/80 hover:bg-white/5'}`}
               data-testid="toggle-quran-mode">
               <BookOpen className="w-3.5 h-3.5" />
               Quran
             </button>
-            <button onClick={() => setViewMode('iqra')}
+            <button onClick={() => { setViewMode('iqra'); if (isTeacher) send({ type: 'SYNC_IQRA', payload: { action: 'force_view' } }); }}
               className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'iqra' ? 'bg-emerald-600 text-white' : 'text-white/50 hover:text-white/80 hover:bg-white/5'}`}
               data-testid="toggle-iqra-mode">
               <BookOpen className="w-3.5 h-3.5" />
@@ -715,18 +722,18 @@ export default function ClassroomPage() {
           </div>
         </div>
 
-        {/* Right Sidebar: Video Tiles + Chat Drawer (Desktop only, max 20% width) */}
+        {/* Right Sidebar: Video Tiles + Chat Drawer (Desktop only) */}
         <div className="hidden md:flex flex-col flex-shrink-0 border-l border-white/5 bg-slate-900/80 transition-all duration-300"
-          style={{ width: showChat ? '360px' : '240px' }}
+          style={{ width: showChat ? '520px' : '320px' }}
         >
           {showChat ? (
             <div className="flex flex-1 overflow-hidden">
               {/* Video tiles (compressed) */}
-              <div className="w-[120px] flex-shrink-0 border-r border-white/5 overflow-hidden">
+              <div className="w-[200px] flex-shrink-0 border-r border-white/5 overflow-hidden">
                 <VideoStrip raisedHands={raisedHands} observerIds={observerIds} />
               </div>
               {/* Chat drawer */}
-              <div className="flex-1 overflow-hidden">
+              <div className="flex-1 overflow-hidden pb-20">
                 <ChatDrawer send={handleChatSend} messages={chatMessages} onClose={() => setShowChat(false)} isObserver={isObserver} />
               </div>
             </div>
@@ -738,7 +745,7 @@ export default function ClassroomPage() {
 
       {/* Mobile chat (slides from bottom) */}
       {showChat && (
-        <div className="md:hidden fixed inset-x-0 bottom-0 top-1/2 z-40 rounded-t-3xl overflow-hidden shadow-2xl">
+       <div className="md:hidden fixed inset-x-2 bottom-24 top-15 z-50 rounded-3xl border border-white/10 overflow-hidden shadow-2xl">
           <ChatDrawer send={handleChatSend} messages={chatMessages} onClose={() => setShowChat(false)} />
         </div>
       )}

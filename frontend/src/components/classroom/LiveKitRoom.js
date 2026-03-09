@@ -77,11 +77,11 @@ function ParticipantVideo({ track, name, isLocal, hasRaisedHand, isObserver }) {
       className={`relative rounded-2xl overflow-hidden bg-slate-800 border-2 transition-all duration-300 ${
         hasRaisedHand ? 'border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.25)]' : 'border-white/5'
       }`}
-      style={{ aspectRatio: '16/9' }}
+      style={{ aspectRatio: '4/3' }}
       data-testid={`video-tile-${isLocal ? 'local' : 'remote'}`}
     >
       {track?.publication?.track ? (
-        <VideoTrack trackRef={track} className={`w-full h-full object-cover transition-all duration-500 ${!isLocal && peerDisconnected ? 'blur-sm scale-105' : ''}`} />
+        <VideoTrack trackRef={track} className={`w-full h-full object-center transition-all duration-500 ${!isLocal && peerDisconnected ? 'blur-sm scale-105' : ''}`} />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
           <div className="w-12 h-12 rounded-2xl bg-emerald-700/60 flex items-center justify-center text-white text-lg font-bold">
@@ -175,7 +175,7 @@ function MobileVideoRow({ raisedHands = {}, observerIds = [] }) {
   return (
     <div className="flex gap-2 p-2 overflow-x-auto flex-shrink-0" data-testid="mobile-video-row">
       {visibleTracks.map((trackRef) => (
-        <div key={trackRef.participant.sid} className="flex-shrink-0 w-28 h-20 rounded-xl overflow-hidden bg-slate-800 border border-white/5 relative">
+        <div key={trackRef.participant.sid} className="flex-shrink-0 w-36 h-28 rounded-xl overflow-hidden bg-slate-800 border border-white/5 relative">
           {trackRef?.publication?.track ? (
             <VideoTrack trackRef={trackRef} className="w-full h-full object-cover" />
           ) : (
