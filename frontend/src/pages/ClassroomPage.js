@@ -4,12 +4,13 @@ import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { toast } from 'sonner';
 import QuranV2 from '../components/classroom/QuranV2';
+import IqraReader from '../components/classroom/IqraReader';
 import QuranNavigator from '../components/classroom/QuranNavigator';
 import GreenRoom from '../components/classroom/GreenRoom';
 import { VideoStrip, MobileVideoRow, ControlDock, AVSettingsModal } from '../components/classroom/LiveKitRoom';
 import { SessionReportModal, RateTeacherModal } from '../components/classroom/EndClassModals';
 import Spinner from '../components/Spinner';
-import { Hand, X, Send, Clock, Layers } from 'lucide-react';
+import { Hand, X, Send, Clock, Layers, BookOpen } from 'lucide-react';
 
 const BACKEND = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND}/api`;
@@ -395,6 +396,8 @@ export default function ClassroomPage() {
   const [activeActivity, setActiveActivity] = useState(null);
   const [studentAnswers, setStudentAnswers] = useState({});
   const [quranV2Sync, setQuranV2Sync] = useState(null);
+  const [viewMode, setViewMode] = useState('quran'); // 'quran' | 'iqra'
+  const [iqraSync, setIqraSync] = useState(null);
 
   const isTeacher = user?.role === 'teacher';
   const isAdmin = user?.role === 'admin';
@@ -453,6 +456,10 @@ export default function ClassroomPage() {
       case 'END_CLASS': setShowRatingModal(true); break;
       case 'SYNC_QURAN_V2':
         setQuranV2Sync(msg.payload || null);
+        break;
+      case 'SYNC_IQRA':
+        setViewMode('iqra');
+        setIqraSync(msg.payload || null);
         break;
       default: break;
     }
@@ -623,6 +630,11 @@ export default function ClassroomPage() {
     send({ type: 'SYNC_QURAN_V2', payload });
   }, [send]);
 
+  // Iqra sync — teacher sends book/page, students receive via WS
+  const handleIqraSync = useCallback((payload) => {
+    send({ type: 'SYNC_IQRA', payload });
+  }, [send]);
+
   // Clear pointer after inactivity
   useEffect(() => {
     if (!pointerPos) return;
@@ -658,23 +670,48 @@ export default function ClassroomPage() {
         {/* Left: Legacy Quran Navigator — disabled when V2 is active. Kept for fallback. */}
         {/* V2 has its own built-in navigation drawer */}
 
-        {/* Center: Quran V2 Stage (maximized) */}
+        {/* Center: Quran / Iqra Stage (maximized) */}
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
           {/* Mobile: Video row pinned top */}
           <div className="md:hidden flex-shrink-0 border-b border-white/5 bg-slate-800/50">
             <MobileVideoRow raisedHands={raisedHands} observerIds={observerIds} />
           </div>
-          {/* Quran V2 fills remaining viewport */}
+
+          {/* Quran / Iqra toggle header */}
+          <div className="flex-shrink-0 flex items-center justify-center gap-1 px-4 py-2 bg-slate-800/60 border-b border-white/5">
+            <button onClick={() => setViewMode('quran')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'quran' ? 'bg-emerald-600 text-white' : 'text-white/50 hover:text-white/80 hover:bg-white/5'}`}
+              data-testid="toggle-quran-mode">
+              <BookOpen className="w-3.5 h-3.5" />
+              Quran
+            </button>
+            <button onClick={() => setViewMode('iqra')}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'iqra' ? 'bg-emerald-600 text-white' : 'text-white/50 hover:text-white/80 hover:bg-white/5'}`}
+              data-testid="toggle-iqra-mode">
+              <BookOpen className="w-3.5 h-3.5" />
+              Iqra
+            </button>
+          </div>
+
+          {/* Content area */}
           <div className="flex-1 overflow-hidden">
-            <QuranV2
-              isTeacher={isTeacher}
-              highlighterActive={highlighterActive}
-              wordHighlights={wordHighlights}
-              onHighlightWord={handleHighlightWord}
-              onClearHighlights={handleClearHighlights}
-              onSyncEvent={handleQuranV2Sync}
-              syncState={quranV2Sync}
-            />
+            {viewMode === 'quran' ? (
+              <QuranV2
+                isTeacher={isTeacher}
+                highlighterActive={highlighterActive}
+                wordHighlights={wordHighlights}
+                onHighlightWord={handleHighlightWord}
+                onClearHighlights={handleClearHighlights}
+                onSyncEvent={handleQuranV2Sync}
+                syncState={quranV2Sync}
+              />
+            ) : (
+              <IqraReader
+                isTeacher={isTeacher}
+                onSyncEvent={handleIqraSync}
+                syncState={iqraSync}
+              />
+            )}
           </div>
         </div>
 
