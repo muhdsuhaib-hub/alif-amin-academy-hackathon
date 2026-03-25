@@ -118,6 +118,7 @@ export default function Auth() {
   const localOnboardingData = storedData ? JSON.parse(storedData) : {};
   const onboardingData = Object.keys(stateOnboardingData).length > 0 ? stateOnboardingData : localOnboardingData;
   const isFromOnboarding = location.state?.fromOnboarding || Object.keys(localOnboardingData).length > 0;
+  const isExplicitLogin = location.state?.isLogin === true;
 
   const [formData, setFormData] = useState({
     email: '', password: '', confirmPassword: '', fullName: '',
@@ -127,7 +128,7 @@ export default function Auth() {
     goals: onboardingData.goals || [],
   });
 
-  useEffect(() => { if (isFromOnboarding) setMode('profile'); }, [isFromOnboarding]);
+  useEffect(() => { if (isExplicitLogin) setMode('login'); else if (isFromOnboarding) setMode('profile'); }, [isFromOnboarding, isExplicitLogin]);
 
   const handleGoogleLogin = () => {
     setLoading(true);

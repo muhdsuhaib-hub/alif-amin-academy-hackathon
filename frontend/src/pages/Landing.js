@@ -33,7 +33,7 @@ function Hero() {
           <img src={`${GCS}/Green%20png%20bg.png`} alt="AlifAmin Logo" className="h-10 md:h-12 w-auto cursor-pointer" data-testid="nav-logo" />
         </a>
         <div className="flex items-center gap-4" style={{ fontFamily: SANS }}>
-          <Link to="/auth" className="text-white text-sm font-medium hover:opacity-80 transition-opacity" data-testid="nav-login">Login</Link>
+          <Link to="/auth" state={{ isLogin: true }} className="text-white text-sm font-medium hover:opacity-80 transition-opacity" data-testid="nav-login">Login</Link>
           <Link to="/onboarding" className="bg-[#0f2e24] text-white text-sm font-medium px-5 py-2 rounded-full hover:scale-105 transition-transform duration-300 inline-block" data-testid="nav-signup">Sign up</Link>
         </div>
       </nav>
