@@ -23,12 +23,12 @@ const stagger = (delay) => ({
 function Hero({ navigate }) {
   return (
     <section className="relative min-h-screen flex flex-col overflow-hidden" data-testid="hero-section">
-      <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover -z-20"
+      <video autoPlay loop muted={true} playsInline className="absolute inset-0 w-full h-full object-cover z-0"
         src={`${GCS}/Hero.mp4`} />
-      <div className="absolute inset-0 bg-black/40 -z-10" />
+      <div className="absolute inset-0 bg-black/40 z-10" />
 
       {/* Navbar */}
-      <nav className="relative z-50 flex items-center justify-between px-6 md:px-10 py-5" data-testid="navbar">
+      <nav className="relative z-20 flex items-center justify-between px-6 md:px-10 py-5" data-testid="navbar">
         <a href="/">
           <img src={`${GCS}/Green%20png%20bg.png`} alt="AlifAmin Logo" className="h-10 md:h-12 w-auto cursor-pointer" data-testid="nav-logo" />
         </a>
@@ -39,7 +39,7 @@ function Hero({ navigate }) {
       </nav>
 
       {/* Hero Content */}
-      <div className="relative z-10 flex-1 flex flex-col justify-end px-6 md:px-10 pb-16 md:pb-20">
+      <div className="relative z-20 flex-1 flex flex-col justify-end px-6 md:px-10 pb-16 md:pb-20">
         <div className="max-w-4xl">
           <motion.h1 {...stagger(0)} className="text-white leading-[1.1]" style={{ fontFamily: SERIF, fontSize: 'clamp(2.5rem, 6vw, 4.5rem)' }} data-testid="hero-heading">
             Learn The Quran.<br />
