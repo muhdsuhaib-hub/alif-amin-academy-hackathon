@@ -58,7 +58,7 @@ export default function TeacherApprovals() {
         <Card className="overflow-hidden">
           <div className="w-full overflow-x-auto">
             <table className="w-full min-w-[600px]">
-              <thead><tr className="border-b border-slate-100 bg-slate-50/80">{['Teacher', 'Qualifications', 'Applied', 'Actions'].map((h, i) => <th key={i} className={`${i === 3 ? 'text-right' : 'text-left'} px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider`}>{h}</th>)}</tr></thead>
+              <thead><tr className="border-b border-slate-100 bg-slate-50/80">{['Tutor', 'Qualifications', 'Applied', 'Actions'].map((h, i) => <th key={i} className={`${i === 3 ? 'text-right' : 'text-left'} px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider`}>{h}</th>)}</tr></thead>
               <tbody className="divide-y divide-slate-50">
                 {paged.map((t) => (
                   <tr key={t.teacher_id} className="hover:bg-slate-50/50 transition-colors" data-testid={`approval-${t.teacher_id}`}>

@@ -163,9 +163,9 @@ export default function EditBookingModal({ isOpen, booking, onClose, onSuccess }
             </select>
           </div>
 
-          {/* Teacher */}
+          {/* Tutor */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Teacher</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Tutor</label>
             <select
               value={selectedTeacher}
               onChange={(e) => setSelectedTeacher(e.target.value)}

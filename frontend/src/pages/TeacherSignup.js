@@ -78,7 +78,7 @@ export default function TeacherSignup() {
               className="text-4xl md:text-5xl font-semibold mb-4"
               style={{ color: '#1F2933' }}
             >
-              Join as a Teacher
+              Join as a Tutor
             </h1>
             <p 
               className="text-lg text-gray-500"

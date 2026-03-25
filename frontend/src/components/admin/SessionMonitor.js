@@ -119,7 +119,7 @@ export default function SessionMonitor() {
           className="h-9 px-3 rounded-xl border border-slate-200 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
           data-testid="filter-teacher-select"
         >
-          <option value="">All Teachers</option>
+          <option value="">All Tutors</option>
           {teachers.map(t => (
             <option key={t.teacher_id} value={t.teacher_id}>{t.user?.name || 'Unknown'}</option>
           ))}
@@ -149,7 +149,7 @@ export default function SessionMonitor() {
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/60">
                 <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Status</th>
-                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Teacher</th>
+                <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Tutor</th>
                 <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Student</th>
                 <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Date / Time</th>
                 <th className="text-left px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Duration</th>

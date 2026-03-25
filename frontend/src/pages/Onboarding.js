@@ -14,7 +14,7 @@ const questions = [
     options: [
       { label: 'Student', subtitle: 'I want to learn myself', value: 'Student' },
       { label: 'Parent of a student', subtitle: 'For my child or children', value: 'Parent' },
-      { label: 'Teacher', subtitle: 'I want to teach Quran', value: 'Teacher' },
+      { label: 'Tutor', subtitle: 'I want to teach Quran', value: 'Tutor' },
     ]
   },
   {
@@ -76,7 +76,7 @@ export default function Onboarding() {
     const updatedAnswers = { ...answers, [field]: value };
     setAnswers(updatedAnswers);
 
-    if (field === 'userType' && value === 'Teacher') {
+    if (field === 'userType' && value === 'Tutor') {
       navigate('/teacher-signup');
       return;
     }

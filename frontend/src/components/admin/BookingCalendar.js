@@ -224,7 +224,7 @@ export default function BookingCalendar() {
                         <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full capitalize ${sc.bg} ${sc.text}`}>{b.status}</span>
                         {b.booking_type === 'trial' && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-600">Trial</span>}
                       </div>
-                      <p className="text-sm text-slate-900">{b.teacher?.user?.name || b.teacher_name || 'Teacher'} & {b.student?.user?.name || b.student_name || 'Student'}</p>
+                      <p className="text-sm text-slate-900">{b.teacher?.user?.name || b.teacher_name || 'Tutor'} & {b.student?.user?.name || b.student_name || 'Student'}</p>
                     </div>
                     {b.status === 'scheduled' && (
                       <button onClick={() => handleCancelBooking(b.booking_id)} className="p-1.5 rounded-lg hover:bg-red-50 transition-colors" data-testid={`cancel-${b.booking_id}`}>

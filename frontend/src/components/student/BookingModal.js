@@ -10,7 +10,7 @@ const DURATIONS = [
   { value: 60, label: '60 min', credits: 4 },
 ];
 
-const STEPS = ['Configure', 'Select Teacher', 'Review'];
+const STEPS = ['Configure', 'Select Tutor', 'Review'];
 
 function StepIndicator({ currentStep }) {
   return (
@@ -215,12 +215,12 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
                 className="w-full h-12 rounded-2xl bg-emerald-700 text-white font-semibold text-sm hover:bg-emerald-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
                 data-testid="booking-next-btn"
               >
-                Next: Select Teacher
+                Next: Select Tutor
               </button>
             </>
           )}
 
-          {/* Step 2: Select Teacher */}
+          {/* Step 2: Select Tutor */}
           {step === 2 && (
             <>
               <div>
@@ -296,7 +296,7 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
             </>
           )}
 
-          {/* Teacher Profile Quick View Modal */}
+          {/* Tutor Profile Quick View Modal */}
           {profileTeacher && (
             <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-[60] animate-fade-in" onClick={() => setProfileTeacher(null)}>
               <div
@@ -402,7 +402,7 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
                     className="w-full h-11 rounded-2xl bg-emerald-700 text-white font-semibold text-sm hover:bg-emerald-800 transition-all active:scale-[0.97]"
                     data-testid="select-teacher-from-profile"
                   >
-                    Select This Teacher
+                    Select This Tutor
                   </button>
                 </div>
               </div>

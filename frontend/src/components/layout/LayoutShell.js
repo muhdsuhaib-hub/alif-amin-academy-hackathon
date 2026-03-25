@@ -28,7 +28,7 @@ export function Avatar({ name = '', picture, size = 'md' }) {
 
 function ProfileDropdown({ user, userRole, onLogout, onNavigateTab, onOpenSupport }) {
 
-  const roleLabels = { student: 'Student', teacher: 'Teacher', admin: 'Admin' };
+  const roleLabels = { student: 'Student', teacher: 'Tutor', admin: 'Admin' };
 
   return (
     <DropdownMenu>

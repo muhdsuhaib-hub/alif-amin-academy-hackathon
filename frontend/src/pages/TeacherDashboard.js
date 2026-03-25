@@ -107,7 +107,7 @@ export default function TeacherDashboard({ user, onUserUpdate }) {
         tabTitles={TAB_TITLES}
         user={user}
         userRole="teacher"
-        roleBadge={isPending ? 'Pending' : 'Teacher'}
+        roleBadge={isPending ? 'Pending' : 'Tutor'}
         onLogout={handleLogout}
         onOpenSupport={() => setShowSupportModal(true)}
       >

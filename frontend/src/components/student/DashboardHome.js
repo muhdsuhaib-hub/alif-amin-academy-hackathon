@@ -244,7 +244,7 @@ function RecentClassesList({ classes }) {
                   <BookOpen className="w-4 h-4 text-emerald-600" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900 truncate">{b.teacher_name || 'Teacher'}</p>
+                  <p className="text-sm font-medium text-slate-900 truncate">{b.teacher_name || 'Tutor'}</p>
                   <p className="text-xs text-slate-500">
                     {new Date(b.start_time_utc).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} &middot; {b.duration_minutes || 30} min
                   </p>

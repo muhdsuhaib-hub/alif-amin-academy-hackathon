@@ -47,7 +47,7 @@ function ScheduleCard({ booking, onCancel }) {
           <p className="text-xs text-slate-500 mt-0.5">
             {new Date(booking.start_time_utc).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} &middot; {booking.duration_minutes || 30} min
           </p>
-          <p className="text-xs text-slate-400 mt-0.5">{booking.teacher_name || 'Teacher'}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{booking.teacher_name || 'Tutor'}</p>
         </div>
         <div className="flex flex-col items-end gap-2">
           <span data-testid={`status-badge-${booking.booking_id}`} className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${statusStyle}`}>

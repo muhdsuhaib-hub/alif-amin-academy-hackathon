@@ -8,7 +8,7 @@ import Spinner from '../Spinner';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const getRoleBadgeCls = (role) => ({ admin: 'bg-rose-50 text-rose-700', teacher: 'bg-amber-50 text-amber-700', parent: 'bg-sky-50 text-sky-700' }[role] || 'bg-emerald-50 text-emerald-700');
+const getRoleBadgeCls = (role) => ({ admin: 'bg-rose-50 text-rose-700', teacher: 'bg-amber-50 text-amber-700', Tutor: 'bg-amber-50 text-amber-700', parent: 'bg-sky-50 text-sky-700' }[role] || 'bg-emerald-50 text-emerald-700');
 const getStatusCls = (s) => ({ suspended: 'bg-red-50 text-red-600', active: 'bg-emerald-50 text-emerald-700' }[s] || 'bg-slate-50 text-slate-600');
 const getLevelBadgeCls = (l) => ({ beginner: 'bg-blue-50 text-blue-700', intermediate: 'bg-violet-50 text-violet-700', advanced: 'bg-amber-50 text-amber-700' }[l?.toLowerCase()] || 'bg-slate-50 text-slate-500');
 const getScheduleBadgeCls = (s) => s === 'fixed' ? 'bg-sky-50 text-sky-700' : s === 'flexible' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-400';
@@ -212,7 +212,7 @@ export default function UserManagement() {
             return (
               <>
                 <Card className="px-4 py-3"><p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Students</p><p className="text-xl font-bold text-emerald-700 mt-0.5">{students}</p></Card>
-                <Card className="px-4 py-3"><p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Teachers</p><p className="text-xl font-bold text-amber-600 mt-0.5">{teachers}</p></Card>
+                <Card className="px-4 py-3"><p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Tutors</p><p className="text-xl font-bold text-amber-600 mt-0.5">{teachers}</p></Card>
                 <Card className="px-4 py-3"><p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Parents</p><p className="text-xl font-bold text-sky-600 mt-0.5">{parents}</p></Card>
                 <Card className="px-4 py-3"><p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Schedule Split</p><p className="text-xs font-medium text-slate-600 mt-1">{scheduleTotal > 0 ? `${Math.round(flexible/scheduleTotal*100)}% Flexible / ${Math.round(fixed/scheduleTotal*100)}% Fixed` : 'No data'}</p></Card>
               </>
@@ -241,7 +241,7 @@ export default function UserManagement() {
         {showFilters && (
           <div className="border-t border-slate-100 pt-4 mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
             <select value={filterRole} onChange={e => { setFilterRole(e.target.value); setPage(1); }} className="h-10 rounded-xl border border-slate-200 px-3 text-sm text-slate-600 focus:outline-none" data-testid="filter-role">
-              <option value="">All Roles</option><option value="student">Student</option><option value="teacher">Teacher</option><option value="admin">Admin</option>
+              <option value="">All Roles</option><option value="student">Student</option><option value="teacher">Tutor</option><option value="admin">Admin</option>
             </select>
             <select value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }} className="h-10 rounded-xl border border-slate-200 px-3 text-sm text-slate-600 focus:outline-none" data-testid="filter-status">
               <option value="">All Status</option><option value="active">Active</option><option value="suspended">Suspended</option><option value="trial">Trial</option>
@@ -349,7 +349,7 @@ export default function UserManagement() {
               {[{ label: 'Full Name', key: 'name', type: 'text' }, { label: 'Email', key: 'email', type: 'email' }, { label: 'Phone', key: 'phone', type: 'tel' }].map(f => (
                 <div key={f.key}><label className="block text-xs font-medium text-slate-500 mb-1.5">{f.label}</label><input type={f.type} value={selectedUser[f.key] || ''} onChange={e => setSelectedUser({ ...selectedUser, [f.key]: e.target.value })} className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20" data-testid={`edit-${f.key}`} /></div>
               ))}
-              <div><label className="block text-xs font-medium text-slate-500 mb-1.5">Role</label><select value={selectedUser.role || 'student'} onChange={e => setSelectedUser({ ...selectedUser, role: e.target.value })} className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20" data-testid="edit-role"><option value="student">Student</option><option value="teacher">Teacher</option><option value="admin">Admin</option></select></div>
+              <div><label className="block text-xs font-medium text-slate-500 mb-1.5">Role</label><select value={selectedUser.role || 'student'} onChange={e => setSelectedUser({ ...selectedUser, role: e.target.value })} className="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20" data-testid="edit-role"><option value="student">Student</option><option value="teacher">Tutor</option><option value="admin">Admin</option></select></div>
 
               {/* Wallet Adjustment Section (students only) */}
               {selectedUser.role === 'student' && (
@@ -432,13 +432,13 @@ export default function UserManagement() {
         </div>
       )}
 
-      {/* Adjust Teacher Balance Modal — self-contained with inline PIN */}
+      {/* Adjust Tutor Balance Modal — self-contained with inline PIN */}
       {showAdjustBalanceModal && adjustTarget && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[70] p-4 animate-fade-in" onClick={() => setShowAdjustBalanceModal(false)} data-testid="adjust-balance-modal">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900">Adjust Teacher Balance</h3>
+                <h3 className="text-sm font-bold text-slate-900">Adjust Tutor Balance</h3>
                 <p className="text-xs text-slate-400 mt-0.5">{adjustTarget.name} ({adjustTarget.email})</p>
               </div>
               <button onClick={() => setShowAdjustBalanceModal(false)} className="p-1.5 hover:bg-slate-100 rounded-lg"><X className="w-4 h-4 text-slate-400" /></button>

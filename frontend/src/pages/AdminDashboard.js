@@ -41,7 +41,7 @@ const MENU_ITEMS = [
 ];
 
 const TAB_TITLES = {
-  overview: 'Command Center', sessions: 'Session Monitor', approvals: 'Teacher Approvals',
+  overview: 'Command Center', sessions: 'Session Monitor', approvals: 'Tutor Approvals',
   users: 'User Management', bookings: 'Bookings', withdrawals: 'Withdrawals',
   finance: 'Financial Reports', activities: 'Content Library', settings: 'Settings', support: 'Support',
 };

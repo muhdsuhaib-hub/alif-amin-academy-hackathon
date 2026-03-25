@@ -153,7 +153,7 @@ export function SessionReportModal({ sessionId, onSubmitted, onClose }) {
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-medium text-ink-secondary mb-1.5">Teacher Notes</label>
+            <label className="block text-xs font-medium text-ink-secondary mb-1.5">Tutor Notes</label>
             <textarea value={form.teacher_comments} onChange={(e) => setForm({ ...form, teacher_comments: e.target.value })}
               placeholder="Any observations, areas of improvement..."
               className="w-full h-20 p-3 rounded-xl bg-[#F5F5F7] border-none text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand/20"
@@ -210,7 +210,7 @@ export function RateTeacherModal({ sessionId, teacherName, onSubmitted, onClose 
           <div className="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center mx-auto mb-3">
             <Star className="w-7 h-7 text-brand" />
           </div>
-          <h2 className="text-lg font-semibold text-ink">Rate Your Teacher</h2>
+          <h2 className="text-lg font-semibold text-ink">Rate Your Tutor</h2>
           <p className="text-xs text-ink-tertiary mt-1">How was your class with {teacherName}?</p>
 
           {/* Stars */}

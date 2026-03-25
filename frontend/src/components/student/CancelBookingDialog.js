@@ -57,7 +57,7 @@ export default function CancelBookingDialog({ isOpen, booking, onClose, onSucces
           {/* Booking Info */}
           <div className="p-4 bg-gray-50 rounded-xl mb-4">
             <p className="font-medium text-sm" style={{ color: '#1D1D1F' }}>
-              {booking.teacher_name || 'Teacher'} &middot; {booking.duration_minutes || 30} min
+              {booking.teacher_name || 'Tutor'} &middot; {booking.duration_minutes || 30} min
             </p>
             <p className="text-sm text-gray-500 mt-1">
               {startTime.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}

@@ -177,7 +177,7 @@ export default function Auth() {
     setLoading(true);
     try {
       const response = await fetch(`${API}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, password: formData.password, full_name: formData.fullName, phone: `${formData.countryCode}${formData.phoneNumber}`, role: formData.userType === 'Teacher' ? 'teacher' : 'student', user_type: formData.userType, schedule_preference: formData.schedulePreference, reading_level: formData.readingLevel, goals: formData.goals }) });
+        body: JSON.stringify({ email: formData.email, password: formData.password, full_name: formData.fullName, phone: `${formData.countryCode}${formData.phoneNumber}`, role: formData.userType === 'Tutor' ? 'teacher' : 'student', user_type: formData.userType, schedule_preference: formData.schedulePreference, reading_level: formData.readingLevel, goals: formData.goals }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || 'Registration failed');
       document.cookie = `session_token=${data.session_token}; path=/; max-age=${7*24*60*60}; secure; samesite=none`;

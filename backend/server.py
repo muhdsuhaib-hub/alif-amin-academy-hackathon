@@ -349,7 +349,7 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
             try:
                 import json as json_lib
                 onboarding_data = json_lib.loads(state)
-                if onboarding_data.get("user_type") == "Teacher":
+                if onboarding_data.get("user_type") in ("Teacher", "Tutor"):
                     is_teacher_signup = True
             except Exception:
                 pass
@@ -1358,7 +1358,7 @@ async def get_student_dashboard_data(current_user: User = Depends(get_current_us
             teacher = await db.teachers.find_one({"teacher_id": b.get("teacher_id")}, {"_id": 0})
             if teacher:
                 teacher_user = await db.users.find_one({"user_id": teacher.get("user_id")}, {"_id": 0})
-                b["teacher_name"] = teacher_user.get("name", "Teacher") if teacher_user else "Teacher"
+                b["teacher_name"] = teacher_user.get("name", "Tutor") if teacher_user else "Tutor"
 
     # Past bookings
     past_bookings = await db.bookings.find({
@@ -1371,7 +1371,7 @@ async def get_student_dashboard_data(current_user: User = Depends(get_current_us
             teacher = await db.teachers.find_one({"teacher_id": b.get("teacher_id")}, {"_id": 0})
             if teacher:
                 teacher_user = await db.users.find_one({"user_id": teacher.get("user_id")}, {"_id": 0})
-                b["teacher_name"] = teacher_user.get("name", "Teacher") if teacher_user else "Teacher"
+                b["teacher_name"] = teacher_user.get("name", "Tutor") if teacher_user else "Tutor"
 
     # Wallet snapshot
     wallet = await db.student_wallets.find_one({"student_id": student_id}, {"_id": 0})
