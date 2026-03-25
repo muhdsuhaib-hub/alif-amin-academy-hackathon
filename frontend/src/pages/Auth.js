@@ -181,57 +181,35 @@ export default function Auth() {
     finally { setLoading(false); }
   };
 
-  const inputCls = 'h-12 w-full rounded-md border border-ink-faint/40 bg-surface-card px-4 text-body placeholder:text-ink-tertiary focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand/40 transition-all duration-200';
+  const inputCls = "h-12 w-full rounded-md border border-ink-faint/40 bg-surface-card px-4 text-body placeholder:text-ink-tertiary focus:outline-none focus:ring-1 focus:ring-[#0f2e24] focus:border-[#0f2e24] transition-all duration-200 font-['Bricolage_Grotesque']";
 
   return (
-    <div className="min-h-screen flex bg-surface">
+    <div className="min-h-screen flex bg-[#fbfaf6]">
       {/* Left Side Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-brand relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.06]">
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-white transform translate-x-1/3 -translate-y-1/3" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-white transform -translate-x-1/3 translate-y-1/3" />
-        </div>
-        <div className="relative z-10 flex flex-col justify-center px-16 xl:px-20 text-white max-w-xl">
-          <div className="flex items-center gap-3 mb-12">
-            <div className="w-12 h-12 rounded-lg bg-white/10 backdrop-blur flex items-center justify-center">
-              <BookOpen className="w-6 h-6" />
-            </div>
-            <span className="text-xl font-semibold tracking-tight">Alif Amin Academy</span>
-          </div>
-          <h1 className="text-4xl xl:text-5xl font-semibold tracking-tight leading-[1.1] mb-5">Begin Your Quran Journey Today</h1>
-          <p className="text-body text-white/60 leading-relaxed mb-10">Learn from qualified teachers in personalized 1-on-1 sessions. Start with a free trial class.</p>
-          <div className="space-y-4">
-            {['Certified Quran teachers', 'Flexible scheduling', 'Progress tracking'].map((item) => (
-              <div key={item} className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
-                  <CheckCircle className="w-3.5 h-3.5 text-gold" />
-                </div>
-                <span className="text-body text-white/80">{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="hidden lg:flex lg:w-1/2 bg-[#fbfaf6] relative overflow-hidden flex-col p-10 xl:p-14">
+        <img src="https://storage.googleapis.com/alif-amin-assets/landing-page/Green%20png%20bg.png" className="h-10 w-auto mb-auto self-start" alt="Logo" />
+        <img src="https://storage.googleapis.com/alif-amin-assets/landing-page/Login.jpg" className="max-w-md w-full object-cover shadow-2xl rounded-3xl mx-auto" alt="Community" />
+        <h1 className="font-['Libre_Baskerville'] text-[#0f2e24] text-4xl md:text-5xl leading-tight mt-auto">Explore the wisdom<br />you love.</h1>
       </div>
 
       {/* Right Side Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-8 bg-surface">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-8 bg-white" style={{ boxShadow: '-10px 0 30px rgba(0,0,0,0.03)', fontFamily: "'Bricolage Grotesque', sans-serif" }}>
         <div className="w-full max-w-[400px]">
           <button onClick={() => mode === 'profile' ? navigate('/onboarding') : navigate('/')}
-            className="flex items-center gap-2 text-small font-medium mb-8 text-ink-tertiary hover:text-ink-secondary transition-colors">
+            className="flex items-center gap-2 text-small font-medium mb-8 text-ink-tertiary hover:text-[#0f2e24] transition-colors font-['Bricolage_Grotesque']">
             <ArrowLeft className="w-3.5 h-3.5" />
             {mode === 'profile' ? 'Back to questions' : 'Back to home'}
           </button>
 
           <div className="lg:hidden flex items-center gap-2.5 mb-8">
-            <div className="w-10 h-10 rounded-lg bg-brand flex items-center justify-center"><BookOpen className="w-5 h-5 text-white" /></div>
-            <span className="text-h3 text-brand">Alif Amin Academy</span>
+            <img src="https://storage.googleapis.com/alif-amin-assets/landing-page/Green%20png%20bg.png" className="h-8 w-auto" alt="Logo" />
           </div>
 
           <AnimatePresence mode="wait">
             {mode === 'login' && (
               <motion.div key="login" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <h2 className="text-h1 text-ink mb-1.5">Welcome Back</h2>
-                <p className="text-ink-tertiary text-body mb-8">Log in to continue your learning journey</p>
+                <h2 className="text-h1 text-[#0f2e24] mb-1.5 font-['Bricolage_Grotesque']">Welcome Back</h2>
+                <p className="text-ink-tertiary text-body mb-8 font-['Bricolage_Grotesque']">Log in to continue your learning journey</p>
                 <form onSubmit={handleEmailLogin} className="space-y-5">
                   <div>
                     <label className="block text-small font-medium text-ink-secondary mb-2">Email</label>
@@ -251,26 +229,26 @@ export default function Auth() {
                       </button>
                     </div>
                   </div>
-                  <button type="submit" disabled={loading} className="w-full h-12 rounded-md bg-brand text-white font-medium hover:bg-brand-light transition-all duration-200 flex items-center justify-center">
+                  <button type="submit" disabled={loading} className="w-full h-12 rounded-md bg-[#0f2e24] text-white font-medium hover:bg-[#0f2e24]/90 transition-all duration-200 flex items-center justify-center font-['Bricolage_Grotesque']">
                     {loading ? <Spinner size="sm" className="border-white border-t-transparent" /> : 'Log In'}
                   </button>
                 </form>
-                <div className="flex items-center gap-4 my-7"><div className="flex-1 h-px bg-surface-muted" /><span className="text-small text-ink-tertiary">or</span><div className="flex-1 h-px bg-surface-muted" /></div>
-                <button onClick={handleGoogleLogin} disabled={loading} className="w-full h-12 rounded-md bg-surface-card text-ink border border-ink-faint/40 font-medium hover:bg-surface-subtle hover:border-ink-tertiary transition-all duration-200 flex items-center justify-center gap-3">
+                <div className="flex items-center gap-4 my-7"><div className="flex-1 h-px bg-surface-muted" /><span className="text-small text-ink-tertiary font-['Bricolage_Grotesque']">or</span><div className="flex-1 h-px bg-surface-muted" /></div>
+                <button onClick={handleGoogleLogin} disabled={loading} className="w-full h-12 rounded-md bg-surface-card text-ink border border-ink-faint/40 font-medium hover:bg-surface-subtle hover:border-ink-tertiary transition-all duration-200 flex items-center justify-center gap-3 font-['Bricolage_Grotesque']">
                   <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                   Continue with Google
                 </button>
-                <p className="text-center mt-6 text-ink-secondary text-body">
+                <p className="text-center mt-6 text-ink-secondary text-body font-['Bricolage_Grotesque']">
                   Don&apos;t have an account?{' '}
-                  <button onClick={() => navigate('/onboarding')} className="font-medium text-brand hover:underline">Sign up</button>
+                  <button onClick={() => navigate('/onboarding')} className="font-medium text-[#0f2e24] hover:underline">Sign up</button>
                 </p>
               </motion.div>
             )}
 
             {mode === 'profile' && (
               <motion.div key="profile" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <h2 className="text-h1 text-ink mb-2">Complete Your Profile</h2>
-                <p className="text-ink-secondary text-body mb-8">Tell us a bit about yourself</p>
+                <h2 className="text-h1 text-[#0f2e24] mb-2 font-['Bricolage_Grotesque']">Complete Your Profile</h2>
+                <p className="text-ink-secondary text-body mb-8 font-['Bricolage_Grotesque']">Tell us a bit about yourself</p>
                 <form onSubmit={handleEmailRegister} className="space-y-4">
                   <div>
                     <label className="block text-small font-medium text-ink-secondary mb-2">Full Name *</label>
@@ -313,12 +291,12 @@ export default function Auth() {
                       <input type={showPassword ? 'text' : 'password'} value={formData.confirmPassword} onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})} placeholder="Confirm your password" required className={`${inputCls} pl-11`} />
                     </div>
                   </div>
-                  <button type="submit" disabled={loading} className="w-full h-12 rounded-md bg-brand text-white font-medium hover:bg-brand-light transition-all duration-200 flex items-center justify-center">
+                  <button type="submit" disabled={loading} className="w-full h-12 rounded-md bg-[#0f2e24] text-white font-medium hover:bg-[#0f2e24]/90 transition-all duration-200 flex items-center justify-center font-['Bricolage_Grotesque']">
                     {loading ? <Spinner size="sm" className="border-white border-t-transparent" /> : 'Create Account & Start Learning'}
                   </button>
                 </form>
-                <p className="text-center mt-6 text-ink-secondary text-body">
-                  <button onClick={() => navigate('/onboarding')} className="font-medium text-brand hover:underline">Back to previous step</button>
+                <p className="text-center mt-6 text-ink-secondary text-body font-['Bricolage_Grotesque']">
+                  <button onClick={() => navigate('/onboarding')} className="font-medium text-[#0f2e24] hover:underline">Back to previous step</button>
                 </p>
               </motion.div>
             )}
