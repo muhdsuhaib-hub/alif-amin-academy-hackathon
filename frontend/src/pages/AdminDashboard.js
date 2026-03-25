@@ -127,7 +127,7 @@ export default function AdminDashboard({ user }) {
     try { const r = await fetch(`${API}/commission/evaluate-all`, { method: 'POST', credentials: 'include' }); if (r.ok) { const d = await r.json(); fetchCommissionSummary(); toast.success(`Tier evaluation complete! Upgraded: ${d.upgraded?.length || 0}`); } } catch (e) { console.error(e); }
   };
   const handleLogout = async () => {
-    try { await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' }); localStorage.removeItem('user'); localStorage.removeItem('admin_return_token'); localStorage.removeItem('admin_return_user'); navigate('/login'); } catch (e) { console.error(e); }
+    try { await fetch(`${API}/auth/logout`, { method: 'POST', credentials: 'include' }); localStorage.removeItem('user'); localStorage.removeItem('admin_return_token'); localStorage.removeItem('admin_return_user'); navigate('/'); } catch (e) { console.error(e); }
   };
 
   if (loading) return <PageLoader />;

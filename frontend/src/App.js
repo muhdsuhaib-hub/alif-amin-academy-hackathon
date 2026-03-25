@@ -13,6 +13,10 @@ import BookClass from './pages/BookClass';
 import TeacherSignup from './pages/TeacherSignup';
 import Auth from './pages/Auth';
 import ClassroomPage from './pages/ClassroomPage';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 import { Toaster } from './components/ui/sonner';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -197,6 +201,10 @@ function AppRouter() {
       <Route path="/teacher-signup" element={<TeacherSignup />} />
       <Route path="/auth/admin" element={<AdminLogin />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
       
       <Route path="/student/dashboard" element={
         <ProtectedRoute allowedRoles={['student']}>

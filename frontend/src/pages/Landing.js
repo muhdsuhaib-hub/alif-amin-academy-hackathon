@@ -312,10 +312,10 @@ function Footer() {
 
           {/* Links */}
           <div className="flex items-center gap-6 md:gap-8 text-sm">
-            <a href="#" className="hover:underline underline-offset-4">About</a>
-            <a href="#" className="hover:underline underline-offset-4">Contact</a>
-            <a href="#" className="hover:underline underline-offset-4">Privacy</a>
-            <a href="#" className="hover:underline underline-offset-4">Terms</a>
+            <Link to="/about" className="hover:underline underline-offset-4">About</Link>
+            <Link to="/contact" className="hover:underline underline-offset-4">Contact</Link>
+            <Link to="/privacy" className="hover:underline underline-offset-4">Privacy</Link>
+            <Link to="/terms" className="hover:underline underline-offset-4">Terms</Link>
           </div>
         </div>
       </div>
