@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
 const SERIF = "'Libre Baskerville', serif";
@@ -20,7 +20,7 @@ const stagger = (delay) => ({
 });
 
 // ─── Section 1: Hero ───
-function Hero({ navigate }) {
+function Hero() {
   return (
     <section className="relative min-h-screen flex flex-col overflow-hidden" data-testid="hero-section">
       <video autoPlay loop muted={true} playsInline className="absolute inset-0 w-full h-full object-cover z-0"
@@ -33,8 +33,8 @@ function Hero({ navigate }) {
           <img src={`${GCS}/Green%20png%20bg.png`} alt="AlifAmin Logo" className="h-10 md:h-12 w-auto cursor-pointer" data-testid="nav-logo" />
         </a>
         <div className="flex items-center gap-4" style={{ fontFamily: SANS }}>
-          <button onClick={() => navigate('/login')} className="text-white text-sm font-medium hover:opacity-80 transition-opacity" data-testid="nav-login">Login</button>
-          <button onClick={() => navigate('/signup')} className="bg-[#0f2e24] text-white text-sm font-medium px-5 py-2 rounded-full hover:scale-105 transition-transform duration-300" data-testid="nav-signup">Sign up</button>
+          <Link to="/auth" className="text-white text-sm font-medium hover:opacity-80 transition-opacity" data-testid="nav-login">Login</Link>
+          <Link to="/onboarding" className="bg-[#0f2e24] text-white text-sm font-medium px-5 py-2 rounded-full hover:scale-105 transition-transform duration-300 inline-block" data-testid="nav-signup">Sign up</Link>
         </div>
       </nav>
 
@@ -54,11 +54,11 @@ function Hero({ navigate }) {
         <motion.div {...stagger(0.4)} className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-0 sm:justify-between">
           <div>{/* spacer on desktop */}</div>
           <div className="flex flex-col items-center">
-            <button onClick={() => navigate('/signup')}
-              className="bg-[#0f2e24] text-white text-sm md:text-base font-semibold px-8 py-3.5 rounded-2xl hover:scale-105 transition-transform duration-300"
+            <Link to="/onboarding"
+              className="bg-[#0f2e24] text-white text-sm md:text-base font-semibold px-8 py-3.5 rounded-2xl hover:scale-105 transition-transform duration-300 inline-block text-center"
               style={{ fontFamily: SANS }} data-testid="hero-cta">
               Begin Free Trial
-            </button>
+            </Link>
             <span className="text-white/50 text-xs mt-2" style={{ fontFamily: SANS }}>No card required</span>
           </div>
         </motion.div>
@@ -201,21 +201,21 @@ function Dedicated() {
 }
 
 // ─── Section 4: Join Us CTA ───
-function JoinUs({ navigate }) {
+function JoinUs() {
   const cols = [
     {
       title: 'Student',
       p1: 'Begin your Quran journey with confidence.',
       p2: 'Matched with verified tutors \u2014 at your pace.',
       btn: 'Free Trial',
-      action: () => navigate('/signup'),
+      link: '/onboarding',
     },
     {
       title: 'Tutor',
       p1: 'Teach with purpose. Earn with dignity.',
       p2: 'We handle the rest.',
       btn: 'Sign up',
-      action: () => navigate('/signup'),
+      link: '/teacher-signup',
     },
     {
       title: 'Spread the word',
@@ -252,11 +252,19 @@ function JoinUs({ navigate }) {
               <h3 className="italic text-2xl md:text-3xl mb-4" style={{ fontFamily: SERIF }}>{c.title}</h3>
               <p className="text-sm text-[#fbfaf6]/80 leading-relaxed" style={{ fontFamily: SANS }}>{c.p1}</p>
               <p className="text-sm text-[#fbfaf6]/80 leading-relaxed mt-3" style={{ fontFamily: SANS }}>{c.p2}</p>
-              <button onClick={c.action}
-                className="mt-6 bg-black text-white text-sm font-medium px-6 py-2.5 rounded-xl hover:scale-105 transition-transform duration-300"
-                style={{ fontFamily: SANS }} data-testid={`joinus-btn-${i}`}>
-                {c.btn}
-              </button>
+              {c.link ? (
+                <Link to={c.link}
+                  className="mt-6 inline-block bg-black text-white text-sm font-medium px-6 py-2.5 rounded-xl hover:scale-105 transition-transform duration-300 text-center"
+                  style={{ fontFamily: SANS }} data-testid={`joinus-btn-${i}`}>
+                  {c.btn}
+                </Link>
+              ) : (
+                <button onClick={c.action}
+                  className="mt-6 bg-black text-white text-sm font-medium px-6 py-2.5 rounded-xl hover:scale-105 transition-transform duration-300"
+                  style={{ fontFamily: SANS }} data-testid={`joinus-btn-${i}`}>
+                  {c.btn}
+                </button>
+              )}
             </motion.div>
           ))}
         </div>
@@ -317,14 +325,12 @@ function Footer() {
 
 // ─── Main Landing Page ───
 export default function Landing() {
-  const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-[#fbfaf6] overflow-x-hidden" data-testid="landing-page">
-      <Hero navigate={navigate} />
+      <Hero />
       <Features />
       <Dedicated />
-      <JoinUs navigate={navigate} />
+      <JoinUs />
       <Footer />
     </div>
   );
