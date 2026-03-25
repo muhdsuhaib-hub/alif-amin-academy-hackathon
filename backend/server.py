@@ -56,6 +56,7 @@ class EmailRegister(BaseModel):
     full_name: str
     phone: Optional[str] = None
     role: str = "student"
+    user_type: Optional[str] = None
     schedule_preference: Optional[str] = None
     reading_level: Optional[str] = None
     goals: Optional[List[str]] = None
@@ -125,9 +126,12 @@ async def register_with_email(data: EmailRegister):
         "password_hash": hashed_password,
         "picture": None,
         "role": data.role,
+        "user_type": data.user_type,
         "phone": data.phone,
         "timezone": "UTC",
         "auth_provider": "email",
+        "schedule_preference": data.schedule_preference,
+        "reading_level": data.reading_level,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(user_doc)
@@ -335,7 +339,20 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
         )
     
     # Check if this is a teacher signup (from state parameter)
-    is_teacher_signup = state == "teacher_signup"
+    # State can be "teacher_signup" or JSON with onboarding data
+    is_teacher_signup = False
+    onboarding_data = {}
+    if state:
+        if state == "teacher_signup":
+            is_teacher_signup = True
+        else:
+            try:
+                import json as json_lib
+                onboarding_data = json_lib.loads(state)
+                if onboarding_data.get("user_type") == "Teacher":
+                    is_teacher_signup = True
+            except Exception:
+                pass
     
     # Check if user exists
     existing_user = await db.users.find_one({"email": email}, {"_id": 0})
@@ -402,8 +419,11 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
             "name": name,
             "picture": picture,
             "role": role,
+            "user_type": onboarding_data.get("user_type"),
             "timezone": "UTC",
             "auth_provider": "google",
+            "schedule_preference": onboarding_data.get("schedule"),
+            "reading_level": onboarding_data.get("level"),
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.users.insert_one(new_user)
@@ -417,7 +437,8 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
                 "parent_name": None,
                 "parent_email": None,
                 "parent_phone": None,
-                "current_level": "beginner",
+                "current_level": onboarding_data.get("level", "beginner"),
+                "schedule_preference": onboarding_data.get("schedule"),
                 "subscription_status": "trial",
                 "subscription_plan": None,
                 "next_billing_date": None
