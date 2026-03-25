@@ -8,8 +8,10 @@ import Spinner from '../Spinner';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-const getRoleBadgeCls = (role) => ({ admin: 'bg-rose-50 text-rose-700', teacher: 'bg-amber-50 text-amber-700' }[role] || 'bg-emerald-50 text-emerald-700');
+const getRoleBadgeCls = (role) => ({ admin: 'bg-rose-50 text-rose-700', teacher: 'bg-amber-50 text-amber-700', parent: 'bg-sky-50 text-sky-700' }[role] || 'bg-emerald-50 text-emerald-700');
 const getStatusCls = (s) => ({ suspended: 'bg-red-50 text-red-600', active: 'bg-emerald-50 text-emerald-700' }[s] || 'bg-slate-50 text-slate-600');
+const getLevelBadgeCls = (l) => ({ beginner: 'bg-blue-50 text-blue-700', intermediate: 'bg-violet-50 text-violet-700', advanced: 'bg-amber-50 text-amber-700' }[l?.toLowerCase()] || 'bg-slate-50 text-slate-500');
+const getScheduleBadgeCls = (s) => s === 'fixed' ? 'bg-sky-50 text-sky-700' : s === 'flexible' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-400';
 
 export default function UserManagement() {
   const navigate = useNavigate();
@@ -185,8 +187,8 @@ export default function UserManagement() {
       const r = await fetch(`${API}/admin/users/all?${params}`, { credentials: 'include' });
       if (!r.ok) throw new Error();
       const data = await r.json();
-      const rows = [['Name','Email','Phone','Role','Status','Timezone','Created'].join(',')];
-      (data.users || []).forEach(u => rows.push([u.name,u.email,u.phone,u.role,u.status||'active',u.timezone,u.created_at].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(',')));
+      const rows = [['Name','Email','Phone','Role','Reading Level','Schedule','Status','Timezone','Created'].join(',')];
+      (data.users || []).forEach(u => rows.push([u.name,u.email,u.phone,u.user_type||u.role,u.current_level||u.reading_level||'',u.schedule_preference||'',u.status||'active',u.timezone,u.created_at].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(',')));
       const blob = new Blob(['\ufeff' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `users_${new Date().toISOString().split('T')[0]}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
       toast.success(`Exported ${data.users?.length || 0} users`);
@@ -197,6 +199,27 @@ export default function UserManagement() {
 
   return (
     <div className="space-y-6" data-testid="user-management">
+      {/* Summary Analytics */}
+      {!loading && users.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="user-analytics">
+          {(() => {
+            const students = users.filter(u => u.role === 'student').length;
+            const teachers = users.filter(u => u.role === 'teacher').length;
+            const parents = users.filter(u => u.user_type === 'parent').length;
+            const flexible = users.filter(u => u.schedule_preference === 'flexible').length;
+            const fixed = users.filter(u => u.schedule_preference === 'fixed').length;
+            const scheduleTotal = flexible + fixed;
+            return (
+              <>
+                <Card className="px-4 py-3"><p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Students</p><p className="text-xl font-bold text-emerald-700 mt-0.5">{students}</p></Card>
+                <Card className="px-4 py-3"><p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Teachers</p><p className="text-xl font-bold text-amber-600 mt-0.5">{teachers}</p></Card>
+                <Card className="px-4 py-3"><p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Parents</p><p className="text-xl font-bold text-sky-600 mt-0.5">{parents}</p></Card>
+                <Card className="px-4 py-3"><p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Schedule Split</p><p className="text-xs font-medium text-slate-600 mt-1">{scheduleTotal > 0 ? `${Math.round(flexible/scheduleTotal*100)}% Flexible / ${Math.round(fixed/scheduleTotal*100)}% Fixed` : 'No data'}</p></Card>
+              </>
+            );
+          })()}
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div><h2 className="text-lg font-bold text-slate-900">User Management</h2><p className="text-xs text-slate-500">{totalUsers} total users</p></div>
         <div className="flex items-center gap-2">
@@ -248,10 +271,10 @@ export default function UserManagement() {
         : (
           <>
             <div className="w-full overflow-x-auto">
-              <table className="w-full min-w-[700px]">
+              <table className="w-full min-w-[900px]">
                 <thead><tr className="border-b border-slate-100 bg-slate-50/80">
                   <th className="px-3 py-3 w-10"><input type="checkbox" checked={users.length > 0 && selectedIds.length === users.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500/20 cursor-pointer" data-testid="select-all-checkbox" /></th>
-                  {['User', 'Contact', 'Role', 'Status', 'Registered', 'Actions'].map((h, i) => <th key={i} className={`${i === 5 ? 'text-right' : 'text-left'} px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider`}>{h}</th>)}
+                  {['User', 'Contact', 'Role', 'Level', 'Schedule', 'Status', 'Registered', 'Actions'].map((h, i) => <th key={i} className={`${i === 7 ? 'text-right' : 'text-left'} px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider`}>{h}</th>)}
                 </tr></thead>
                 <tbody className="divide-y divide-slate-50">
                   {users.map((u) => (
@@ -259,7 +282,9 @@ export default function UserManagement() {
                       <td className="px-3 py-3"><input type="checkbox" checked={selectedIds.includes(u.user_id)} onChange={() => toggleSelectOne(u.user_id)} className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500/20 cursor-pointer" data-testid={`select-user-${u.user_id}`} /></td>
                       <td className="px-5 py-3"><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-emerald-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{u.name?.charAt(0) || 'U'}</div><div className="min-w-0"><p className="text-sm font-medium text-slate-900 truncate">{u.name || 'Unknown'}</p></div></div></td>
                       <td className="px-5 py-3"><p className="text-xs text-slate-600 truncate max-w-[180px]">{u.email}</p>{u.phone && <p className="text-[10px] text-slate-400">{u.phone}</p>}</td>
-                      <td className="px-5 py-3"><span className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold capitalize ${getRoleBadgeCls(u.role)}`}>{u.role || 'student'}</span></td>
+                      <td className="px-5 py-3"><span className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold capitalize ${getRoleBadgeCls(u.user_type || u.role)}`}>{u.user_type || u.role || 'student'}</span></td>
+                      <td className="px-5 py-3"><span className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold capitalize ${getLevelBadgeCls(u.current_level || u.reading_level)}`}>{u.current_level || u.reading_level || '\u2014'}</span></td>
+                      <td className="px-5 py-3"><span className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold capitalize ${getScheduleBadgeCls(u.schedule_preference)}`}>{u.schedule_preference || '\u2014'}</span></td>
                       <td className="px-5 py-3"><span className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold capitalize ${getStatusCls(u.status)}`}>{u.status || 'active'}</span></td>
                       <td className="px-5 py-3"><span className="text-xs text-slate-500">{formatDate(u.created_at)}</span></td>
                       <td className="px-5 py-3 text-right">
