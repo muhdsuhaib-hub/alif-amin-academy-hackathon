@@ -14,7 +14,7 @@ export default function About() {
         <p className="font-['Bricolage_Grotesque'] text-lg leading-relaxed mb-6 opacity-85">Alif Amin was born from a simple belief shared by two siblings: the world becomes a better place when people can learn The Quran at their own pace and on their own time. As life gets busier every day, finding moments of spiritual connection can feel difficult. We built this platform to provide the luxury of accessible, dedicated Quran learning for the modern lifestyle.</p>
 
         <h2 className="font-['Bricolage_Grotesque'] text-2xl md:text-3xl font-bold mt-12 mb-6">The Mission</h2>
-        <p className="font-['Bricolage_Grotesque'] text-lg leading-relaxed mb-6 opacity-85">We noticed a growing challenge in the modern world. Students were struggling to find qualified, reliable Quran tutors locally, while incredibly gifted teachers lacked a platform to reach eager learners globally. Our mission is simple: to illuminate homes with the light of the Quran by connecting students with expert tutors through a seamless, high-quality online experience. We are more than an app; we are a global community connecting hearts through knowledge.</p>
+        <p className="font-['Bricolage_Grotesque'] text-lg leading-relaxed mb-6 opacity-85">We noticed a growing challenge in the modern world. Students were struggling to find qualified, reliable Quran tutors locally, while incredibly gifted tutors lacked a platform to reach eager learners globally.</p> <p className="font-['Bricolage_Grotesque'] text-lg leading-relaxed mb-6 opacity-85"> Our mission is simple: Illuminate homes with the light of the Quran by connecting students with expert tutors through a seamless, high-quality online experience. We are more than an app; we are a global community connecting hearts through knowledge.</p>
 
         <h2 className="font-['Bricolage_Grotesque'] text-2xl md:text-3xl font-bold mt-12 mb-6">How We Work</h2>
         <div className="grid md:grid-cols-2 gap-8 my-16">
@@ -23,7 +23,7 @@ export default function About() {
             <p className="font-['Bricolage_Grotesque'] text-lg leading-relaxed opacity-85">We offer a personalized learning path. Whether you are a parent looking for a patient guide for your child, or an adult seeking to refine your Tajweed, we connect you with vetted professionals who match your specific needs.</p>
           </div>
           <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-            <h3 className="font-['Bricolage_Grotesque'] text-xl font-bold mb-4">For Teachers</h3>
+            <h3 className="font-['Bricolage_Grotesque'] text-xl font-bold mb-4">For Tutors</h3>
             <p className="font-['Bricolage_Grotesque'] text-lg leading-relaxed opacity-85">We are committed to empowering you. We handle the administrative heavy lifting&mdash;scheduling, payments, and tracking&mdash;so you can focus on teaching. We ensure you are compensated fairly, turning your knowledge into a sustainable livelihood.</p>
           </div>
         </div>
@@ -37,7 +37,7 @@ export default function About() {
 
         <div className="text-center mt-24 border-t border-[#0f2e24]/10 pt-16">
           <p className="font-['Libre_Baskerville'] text-2xl md:text-3xl leading-relaxed italic mb-8">&ldquo;We envision a world where anyone, anywhere, can access the divine wisdom of the Quran with a single click. Where technology serves tradition. Where every teacher is valued... and every student is inspired.&rdquo;</p>
-          <p className="font-['Bricolage_Grotesque'] font-bold text-xl">AlifAmin.com &mdash; Students Learn. Teachers Earn.</p>
+          <p className="font-['Bricolage_Grotesque'] font-bold text-xl">AlifAmin.com &mdash; Students Learn. Tutors Earn.</p>
         </div>
       </div>
     </div>

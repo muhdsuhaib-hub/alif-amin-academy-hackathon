@@ -194,9 +194,9 @@ export default function Auth() {
     <div className="min-h-screen flex bg-[#fbfaf6]">
       {/* Left Side Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#fbfaf6] relative overflow-hidden flex-col p-10 xl:p-14">
-        <img src="https://storage.googleapis.com/alif-amin-assets/landing-page/Green%20png%20bg.png" className="h-10 w-auto mb-auto self-start" alt="Logo" />
+        <img src="https://storage.googleapis.com/alif-amin-assets/landing-page/Green%20png%20bg.png" className="h-20 w-auto mb-auto self-start" alt="Logo" />
         <img src="https://storage.googleapis.com/alif-amin-assets/landing-page/Login.jpg" className="max-w-md w-full object-cover shadow-2xl rounded-3xl mx-auto" alt="Community" />
-        <h1 className="font-['Libre_Baskerville'] text-[#0f2e24] text-4xl md:text-5xl leading-tight mt-auto">Explore the wisdom<br />you love.</h1>
+        <h1 className="font-['Libre_Baskerville'] text-[#0f2e24] text-4xl md:text-5xl leading-tight mt-auto">Explore the Book<br />of Wisdom.</h1>
       </div>
 
       {/* Right Side Form */}

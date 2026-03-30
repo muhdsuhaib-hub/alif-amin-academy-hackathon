@@ -24,13 +24,13 @@ function Hero() {
   return (
     <section className="relative min-h-screen flex flex-col overflow-hidden" data-testid="hero-section">
       <video autoPlay loop muted={true} playsInline className="absolute inset-0 w-full h-full object-cover z-0"
-        src={`${GCS}/Hero.mp4`} />
+        src={`${GCS}/Hero%20Video%202.mp4`} />
       <div className="absolute inset-0 bg-black/40 z-10" />
 
       {/* Navbar */}
       <nav className="relative z-20 flex items-center justify-between px-6 md:px-10 py-5" data-testid="navbar">
         <a href="/">
-          <img src={`${GCS}/Green%20png%20bg.png`} alt="AlifAmin Logo" className="h-10 md:h-12 w-auto cursor-pointer" data-testid="nav-logo" />
+          <img src={`${GCS}/Green%20png%20bg.png`} alt="AlifAmin Logo" className="h-10 md:h-20 w-auto cursor-pointer" data-testid="nav-logo" />
         </a>
         <div className="flex items-center gap-4" style={{ fontFamily: SANS }}>
           <Link to="/auth" state={{ isLogin: true }} className="text-white text-sm font-medium hover:opacity-80 transition-opacity" data-testid="nav-login">Login</Link>
@@ -239,7 +239,7 @@ function JoinUs() {
               Students Learn.<br />Tutors Earn.
             </p>
           </div>
-          <img src={`${GCS}/White%20png%20bg.png`} alt="AlifAmin Logo" className="h-12 md:h-16 w-auto opacity-90 flex-shrink-0" data-testid="joinus-logo" />
+          <img src={`${GCS}/White%20png%20bg.png`} alt="AlifAmin Logo" className="h-12 md:h-18 w-auto opacity-90 flex-shrink-0" data-testid="joinus-logo" />
         </motion.div>
 
         {/* Divider */}

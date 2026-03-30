@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, BookOpen, Star, Users, CheckCircle } from 'lucide-react';
+const GCS = 'https://storage.googleapis.com/alif-amin-assets/landing-page';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -59,19 +60,14 @@ export default function TeacherSignup() {
             className="text-center mb-10"
           >
             {/* Logo */}
-            <div className="flex items-center justify-center gap-3 mb-8">
-              <div 
-                className="w-12 h-12 rounded-xl flex items-center justify-center"
-                style={{ backgroundColor: '#0F3D2E' }}
-              >
-                <BookOpen className="w-6 h-6 text-white" />
-              </div>
-              <span 
-                className="text-2xl font-semibold"
-                style={{ color: '#0F3D2E' }}
-              >
-                Alif Amin Academy
-              </span>
+            <div className="flex justify-center mb-3">
+              <div className="flex justify-center mb-3">
+              <img 
+                src={`${GCS}/Green%20png%20bg.png`} 
+                alt="Alif Amin Logo" 
+                className="h-16 md:h-20 w-auto" 
+              />
+            </div>
             </div>
 
             <h1 
