@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any
 
 class QuranAcademyAPITester:
-    def __init__(self, base_url="https://quran-sync-live.preview.emergentagent.com"):
+    def __init__(self, base_url="https://amin-academy-bugs.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.session_token = None

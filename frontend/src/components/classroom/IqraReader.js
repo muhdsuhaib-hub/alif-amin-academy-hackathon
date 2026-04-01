@@ -74,8 +74,8 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointe
       {/* Header */}
       <div className="flex-shrink-0 border-b border-stone-200/60 bg-[#FDFBF7]">
         <div className="flex items-center justify-between px-4 md:px-6 py-3">
-          <button onClick={() => changePage(currentPage - 1)} disabled={currentPage <= 1}
-            className="p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-600 disabled:opacity-20 transition-all"
+          <button onClick={() => isTeacher && changePage(currentPage - 1)} disabled={currentPage <= 1 || !isTeacher}
+            className={`p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-600 disabled:opacity-20 transition-all ${!isTeacher ? 'cursor-not-allowed opacity-30' : ''}`}
             data-testid="iqra-prev-page">
             <ChevronLeft className="w-5 h-5" />
           </button>
@@ -85,8 +85,9 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointe
               <BookOpen className="w-4 h-4 text-emerald-600" />
               <select
                 value={currentBook}
-                onChange={(e) => changeBook(Number(e.target.value))}
-                className="bg-stone-100 border border-stone-200/80 text-sm text-stone-700 font-medium rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer"
+                onChange={(e) => isTeacher && changeBook(Number(e.target.value))}
+                disabled={!isTeacher}
+                className={`bg-stone-100 border border-stone-200/80 text-sm text-stone-700 font-medium rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 ${isTeacher ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
                 data-testid="iqra-book-select">
                 {BOOKS.map(b => (
                   <option key={b} value={b}>Iqra Book {b}</option>
@@ -98,8 +99,8 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointe
             </span>
           </div>
 
-          <button onClick={() => changePage(currentPage + 1)} disabled={currentPage >= maxPages}
-            className="p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-600 disabled:opacity-20 transition-all"
+          <button onClick={() => isTeacher && changePage(currentPage + 1)} disabled={currentPage >= maxPages || !isTeacher}
+            className={`p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-600 disabled:opacity-20 transition-all ${!isTeacher ? 'cursor-not-allowed opacity-30' : ''}`}
             data-testid="iqra-next-page">
             <ChevronRight className="w-5 h-5" />
           </button>

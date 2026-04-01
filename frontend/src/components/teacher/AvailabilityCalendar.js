@@ -21,14 +21,15 @@ function localDateStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function slotKey(date, hour, half) {
-  return `${localDateStr(date)}T${String(hour).padStart(2, '0')}:${half ? '30' : '00'}`;
+function slotKey(date, hour, quarter) {
+  const minute = quarter * 15;
+  return `${localDateStr(date)}T${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
 }
 
 function timeOptions() {
   const opts = [];
   for (let h = 0; h < 24; h++) {
-    for (const m of ['00', '30']) {
+    for (const m of ['00', '15', '30', '45']) {
       const val = `${String(h).padStart(2, '0')}:${m}`;
       const label = new Date(`2000-01-01T${val}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
       opts.push({ value: val, label });
@@ -129,9 +130,11 @@ export default function AvailabilityCalendar({ teacherId }) {
           const start = new Date(b.start_time_utc);
           const end = b.end_time_utc ? new Date(b.end_time_utc) : new Date(start.getTime() + (b.duration_minutes || 30) * 60000);
           const dur = (end - start) / 60000;
-          for (let m = 0; m < dur; m += 30) {
+          for (let m = 0; m < dur; m += 15) {
             const slotDate = new Date(start.getTime() + m * 60000);
-            const key = `${localDateStr(slotDate)}T${String(slotDate.getHours()).padStart(2, '0')}:${slotDate.getMinutes() < 30 ? '00' : '30'}`;
+            const mins = slotDate.getMinutes();
+            const snapped = Math.floor(mins / 15) * 15;
+            const key = `${localDateStr(slotDate)}T${String(slotDate.getHours()).padStart(2, '0')}:${String(snapped).padStart(2, '0')}`;
             booked[key] = b.student?.user?.name || b.student_name || 'Booked';
           }
         });
@@ -180,10 +183,10 @@ export default function AvailabilityCalendar({ teacherId }) {
     const endMin = eh * 60 + em;
     setSlots(prev => {
       const next = { ...prev };
-      for (let m = startMin; m < endMin; m += 30) {
+      for (let m = startMin; m < endMin; m += 15) {
         const h = Math.floor(m / 60);
-        const half = (m % 60) >= 30;
-        const key = `${date}T${String(h).padStart(2, '0')}:${half ? '30' : '00'}`;
+        const minute = m % 60;
+        const key = `${date}T${String(h).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
         if (!bookedSlots[key]) next[key] = 'available';
       }
       return next;
@@ -198,10 +201,11 @@ export default function AvailabilityCalendar({ teacherId }) {
         .filter(([, v]) => v === 'available')
         .map(([key]) => {
           const [date, time] = key.split('T');
-          const [h, m] = time.split(':');
-          const endH = m === '30' ? parseInt(h) + 1 : parseInt(h);
-          const endM = m === '30' ? '00' : '30';
-          return { date, start_time: time, end_time: `${String(endH).padStart(2, '0')}:${endM}` };
+          const [h, m] = time.split(':').map(Number);
+          const endTotalMin = h * 60 + m + 15;
+          const endH = Math.floor(endTotalMin / 60);
+          const endM = endTotalMin % 60;
+          return { date, start_time: time, end_time: `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}` };
         });
 
       const r = await fetch(`${API}/booking/availability/bulk`, {
@@ -216,9 +220,9 @@ export default function AvailabilityCalendar({ teacherId }) {
     finally { setSaving(false); }
   };
 
-  const isPast = (date, hour, half) => {
+  const isPast = (date, hour, quarter) => {
     const t = new Date(date);
-    t.setHours(hour, half ? 30 : 0, 0, 0);
+    t.setHours(hour, quarter * 15, 0, 0);
     return t < new Date();
   };
   const isToday = (d) => d.toDateString() === new Date().toDateString();
@@ -228,7 +232,7 @@ export default function AvailabilityCalendar({ teacherId }) {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-lg font-bold text-slate-900">Weekly Schedule</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Click or drag to toggle 30-minute slots</p>
+          <p className="text-xs text-slate-500 mt-0.5">Click or drag to toggle 15-minute slots</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setShowAddModal(true)} data-testid="add-availability-btn" className="flex items-center gap-2 px-4 py-2.5 rounded-2xl border border-slate-200 text-slate-700 font-medium text-sm hover:bg-slate-50 transition-all">
@@ -266,16 +270,16 @@ export default function AvailabilityCalendar({ teacherId }) {
             </div>
             {HOURS.map(hour => (
               <React.Fragment key={hour}>
-                {[false, true].map(half => (
-                  <div key={`${hour}-${half}`} className="grid grid-cols-[60px_repeat(7,1fr)]">
+                {[0, 1, 2, 3].map(quarter => (
+                  <div key={`${hour}-${quarter}`} className="grid grid-cols-[60px_repeat(7,1fr)]">
                     <div className="px-2 py-0 flex items-center justify-end pr-3 border-r border-slate-100">
-                      {!half && <span className="text-[10px] text-slate-400">{hour === 0 ? '12AM' : hour < 12 ? `${hour}AM` : hour === 12 ? '12PM' : `${hour - 12}PM`}</span>}
+                      {quarter === 0 && <span className="text-[10px] text-slate-400">{hour === 0 ? '12AM' : hour < 12 ? `${hour}AM` : hour === 12 ? '12PM' : `${hour - 12}PM`}</span>}
                     </div>
                     {weekDates.map((date, di) => {
-                      const key = slotKey(date, hour, half);
+                      const key = slotKey(date, hour, quarter);
                       const status = slots[key];
                       const isBooked = bookedSlots[key] || status === 'booked';
-                      const past = isPast(date, hour, half);
+                      const past = isPast(date, hour, quarter);
 
                       let bg = 'bg-white hover:bg-slate-50';
                       if (isBooked) bg = 'bg-red-400/70';
@@ -286,7 +290,7 @@ export default function AvailabilityCalendar({ teacherId }) {
                         <div
                           key={di}
                           title={isBooked ? `Booked: ${bookedSlots[key] || ''}` : ''}
-                          className={`h-5 border-l border-b border-slate-100/60 transition-colors ${isBooked ? 'cursor-not-allowed' : past ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} ${bg}`}
+                          className={`h-4 border-l border-b border-slate-100/60 transition-colors ${isBooked ? 'cursor-not-allowed' : past ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'} ${bg}`}
                           onMouseDown={() => !past && !isBooked && handleMouseDown(key)}
                           onMouseEnter={() => !past && !isBooked && handleMouseEnter(key)}
                           data-testid={`slot-${key}`}

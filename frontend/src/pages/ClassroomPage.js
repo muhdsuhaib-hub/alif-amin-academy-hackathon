@@ -490,7 +490,18 @@ export default function ClassroomPage() {
 
         const sRes = await fetch(`${API}/classroom/session/${sessionId}`, { credentials: 'include' });
         if (!sRes.ok) { toast.error('Session not found'); navigate(-1); return; }
-        setSession(await sRes.json());
+        const sessionData = await sRes.json();
+        
+        // Lock out users from completed/cancelled sessions
+        const sessionStatus = (sessionData.status || '').toLowerCase();
+        if (sessionStatus === 'completed' || sessionStatus === 'cancelled' || sessionStatus === 'missed') {
+          toast.error(`This session has been ${sessionStatus}. Redirecting...`);
+          const role = (meData.user || meData)?.role;
+          navigate(role === 'teacher' ? '/teacher/dashboard' : role === 'admin' ? '/admin/dashboard' : '/student/dashboard');
+          return;
+        }
+        
+        setSession(sessionData);
       } catch { toast.error('Failed to connect'); }
       finally { setLoading(false); }
     }
@@ -682,35 +693,37 @@ export default function ClassroomPage() {
       <ClassroomTimer remainingMs={remainingMs} />
 
       {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden max-md:landscape:flex-row">
         {/* Left: Legacy Quran Navigator — disabled when V2 is active. Kept for fallback. */}
         {/* V2 has its own built-in navigation drawer */}
 
         {/* Center: Quran / Iqra Stage (maximized) */}
         <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-          {/* Mobile: Video row pinned top */}
-          <div className="md:hidden flex-shrink-0 border-b border-white/5 bg-slate-800/50">
+          {/* Mobile: Video row pinned top — hidden in landscape (moved to side) */}
+          <div className="md:hidden flex-shrink-0 border-b border-white/5 bg-slate-800/50 max-md:landscape:hidden">
             <MobileVideoRow raisedHands={raisedHands} observerIds={observerIds} />
           </div>
 
           {/* Quran / Iqra toggle header */}
           <div className="flex-shrink-0 flex items-center justify-center gap-1 px-4 py-2 bg-slate-800/60 border-b border-white/5">
-            <button onClick={() => { setViewMode('quran'); if (isTeacher) send({ type: 'SYNC_QURAN_V2', payload: { action: 'force_view' } }); }}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'quran' ? 'bg-emerald-600 text-white' : 'text-white/50 hover:text-white/80 hover:bg-white/5'}`}
+            <button onClick={() => { if (isTeacher) { setViewMode('quran'); send({ type: 'SYNC_QURAN_V2', payload: { action: 'force_view' } }); } }}
+              disabled={!isTeacher}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'quran' ? 'bg-emerald-600 text-white' : 'text-white/50 hover:text-white/80 hover:bg-white/5'} ${!isTeacher ? 'cursor-not-allowed' : ''}`}
               data-testid="toggle-quran-mode">
               <BookOpen className="w-3.5 h-3.5" />
               Quran
             </button>
-            <button onClick={() => { setViewMode('iqra'); if (isTeacher) send({ type: 'SYNC_IQRA', payload: { action: 'force_view' } }); }}
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'iqra' ? 'bg-emerald-600 text-white' : 'text-white/50 hover:text-white/80 hover:bg-white/5'}`}
+            <button onClick={() => { if (isTeacher) { setViewMode('iqra'); send({ type: 'SYNC_IQRA', payload: { action: 'force_view' } }); } }}
+              disabled={!isTeacher}
+              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${viewMode === 'iqra' ? 'bg-emerald-600 text-white' : 'text-white/50 hover:text-white/80 hover:bg-white/5'} ${!isTeacher ? 'cursor-not-allowed' : ''}`}
               data-testid="toggle-iqra-mode">
               <BookOpen className="w-3.5 h-3.5" />
               Iqra
             </button>
           </div>
 
-          {/* Content area */}
-          <div className="flex-1 overflow-hidden">
+          {/* Content area — extra bottom padding in landscape to clear floating dock */}
+          <div className="flex-1 overflow-hidden max-md:landscape:pb-20">
             {viewMode === 'quran' ? (
               <QuranV2
                 isTeacher={isTeacher}
@@ -731,6 +744,11 @@ export default function ClassroomPage() {
               />
             )}
           </div>
+        </div>
+
+        {/* Mobile Landscape: Side video strip (compact column) */}
+        <div className="hidden max-md:landscape:flex flex-col flex-shrink-0 w-28 border-l border-white/5 bg-slate-900/80 overflow-y-auto">
+          <MobileVideoRow raisedHands={raisedHands} observerIds={observerIds} />
         </div>
 
         {/* Right Sidebar: Video Tiles + Chat Drawer (Desktop only) */}

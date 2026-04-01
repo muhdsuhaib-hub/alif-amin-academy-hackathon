@@ -1770,6 +1770,16 @@ async def get_teacher_dashboard_data(current_user: User = Depends(get_current_us
     month_gross = sum(t.get("gross_amount", 0) for t in monthly_txns)
     month_classes = len(monthly_txns)
 
+    # Calculate total_withdrawn ONLY from approved/completed withdrawals
+    total_withdrawn = 0
+    if tutor_earnings:
+        approved_pipeline = [
+            {"$match": {"teacher_id": teacher_id, "status": {"$in": ["approved", "completed", "Approved", "Completed"]}}},
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
+        ]
+        approved_agg = await db.withdrawal_requests.aggregate(approved_pipeline).to_list(1)
+        total_withdrawn = round(approved_agg[0]["total"], 2) if approved_agg else 0
+
     return {
         "teacher": teacher,
         "upcoming_classes": upcoming,
@@ -1791,20 +1801,9 @@ async def get_teacher_dashboard_data(current_user: User = Depends(get_current_us
         "wallet": {
             "balance": tutor_earnings.get("withdrawable_balance", 0) if tutor_earnings else 0,
             "total_earned": tutor_earnings.get("total_earnings", 0) if tutor_earnings else 0,
-            "total_withdrawn": 0,  # Will be calculated below from approved withdrawals only
+            "total_withdrawn": total_withdrawn,
         },
     }
-
-    # #1: total_withdrawn ONLY counts approved/completed withdrawals
-    if tutor_earnings:
-        approved_pipeline = [
-            {"$match": {"teacher_id": teacher_id, "status": {"$in": ["approved", "completed", "Approved", "Completed"]}}},
-            {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
-        ]
-        approved_agg = await db.withdrawal_requests.aggregate(approved_pipeline).to_list(1)
-        result["wallet"]["total_withdrawn"] = round(approved_agg[0]["total"], 2) if approved_agg else 0
-
-    return result
 
 @api_router.post("/teacher/request-payout")
 async def request_payout(data: dict, current_user: User = Depends(get_current_user)):
@@ -2314,3 +2313,97 @@ async def start_stale_session_sweeper():
     """Launch the background stale-session sweeper task."""
     asyncio.create_task(_sweep_stale_sessions())
     logger.info("[Sweeper] Stale session background sweeper started (interval: 5 min)")
+
+
+# ============================================================
+# BACKGROUND JOB: Class Reminder Notifications (1h 10m before)
+# ============================================================
+async def _class_reminder_cron():
+    """Background coroutine — sends class reminders ~70 minutes before start.
+    Runs every 5 minutes and checks for sessions starting within the next 70-75 minutes.
+    """
+    from notification_routes import create_notification as _create_notif
+    INTERVAL_SECONDS = 5 * 60
+    while True:
+        try:
+            await asyncio.sleep(INTERVAL_SECONDS)
+            now = datetime.now(timezone.utc)
+            # Window: 65-75 minutes from now (catches sessions in the ~70 min range)
+            window_start = now + timedelta(minutes=65)
+            window_end = now + timedelta(minutes=75)
+
+            upcoming = await db.bookings.find({
+                "status": "scheduled",
+                "start_time_utc": {
+                    "$gte": window_start.isoformat(),
+                    "$lte": window_end.isoformat()
+                }
+            }, {"_id": 0}).to_list(100)
+
+            for booking in upcoming:
+                bid = booking["booking_id"]
+                raw_time = booking["start_time_utc"]
+
+                # Notify student
+                student = await db.students.find_one({"student_id": booking.get("student_id")}, {"_id": 0})
+                if student:
+                    existing = await db.notifications.find_one({
+                        "user_id": student["user_id"],
+                        "notification_type": "class_reminder",
+                        "related_id": bid
+                    })
+                    if not existing:
+                        teacher = await db.teachers.find_one({"teacher_id": booking.get("teacher_id")}, {"_id": 0})
+                        teacher_user = await db.users.find_one({"user_id": teacher["user_id"]}, {"_id": 0}) if teacher else None
+                        teacher_name = teacher_user.get("name", "Your Tutor") if teacher_user else "Your Tutor"
+                        session_doc = await db.class_sessions.find_one({"booking_id": bid}, {"_id": 0, "session_id": 1})
+                        link = f"/classroom/{session_doc['session_id']}" if session_doc else None
+
+                        await _create_notif(
+                            user_id=student["user_id"],
+                            title="Class Starting Soon!",
+                            message=f"Your session with {teacher_name} starts in about 1 hour. Get ready!",
+                            notification_type="class_reminder",
+                            related_id=bid,
+                            link=link,
+                            action_required=True,
+                            class_time_utc=raw_time
+                        )
+                        logger.info(f"[Reminder] Sent student reminder for booking {bid}")
+
+                # Notify teacher
+                teacher = await db.teachers.find_one({"teacher_id": booking.get("teacher_id")}, {"_id": 0})
+                if teacher:
+                    existing = await db.notifications.find_one({
+                        "user_id": teacher["user_id"],
+                        "notification_type": "class_reminder",
+                        "related_id": bid
+                    })
+                    if not existing:
+                        student_doc = await db.students.find_one({"student_id": booking.get("student_id")}, {"_id": 0})
+                        student_user = await db.users.find_one({"user_id": student_doc["user_id"]}, {"_id": 0}) if student_doc else None
+                        student_name = student_user.get("name", "Your Student") if student_user else "Your Student"
+                        session_doc = await db.class_sessions.find_one({"booking_id": bid}, {"_id": 0, "session_id": 1})
+                        link = f"/classroom/{session_doc['session_id']}" if session_doc else None
+
+                        await _create_notif(
+                            user_id=teacher["user_id"],
+                            title="Class Starting Soon!",
+                            message=f"Your session with {student_name} starts in about 1 hour. Prepare your materials!",
+                            notification_type="class_reminder",
+                            related_id=bid,
+                            link=link,
+                            action_required=True,
+                            class_time_utc=raw_time
+                        )
+                        logger.info(f"[Reminder] Sent teacher reminder for booking {bid}")
+
+        except Exception as e:
+            logger.error(f"[Reminder] Error in class reminder cron: {e}")
+
+
+@app.on_event("startup")
+async def start_class_reminder_cron():
+    """Launch the background class reminder task."""
+    asyncio.create_task(_class_reminder_cron())
+    logger.info("[Reminder] Class reminder background task started (interval: 5 min, trigger: 70 min before class)")

@@ -24,7 +24,7 @@ function Hero() {
   return (
     <section className="relative min-h-screen flex flex-col overflow-hidden" data-testid="hero-section">
       <video autoPlay loop muted={true} playsInline className="absolute inset-0 w-full h-full object-cover z-0"
-        src={`${GCS}/Hero%20Video%202.mp4`} />
+        src={`${GCS}/Hero%20Video%202.1.mp4`} />
       <div className="absolute inset-0 bg-black/40 z-10" />
 
       {/* Navbar */}

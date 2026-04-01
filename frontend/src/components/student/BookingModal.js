@@ -117,7 +117,9 @@ export default function BookingModal({ isOpen, onClose, onSuccess, user }) {
   const times = [];
   for (let h = 0; h < 24; h++) {
     times.push(`${String(h).padStart(2, '0')}:00`);
+    times.push(`${String(h).padStart(2, '0')}:15`);
     times.push(`${String(h).padStart(2, '0')}:30`);
+    times.push(`${String(h).padStart(2, '0')}:45`);
   }
 
   const inputCls = 'h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40 transition-all';

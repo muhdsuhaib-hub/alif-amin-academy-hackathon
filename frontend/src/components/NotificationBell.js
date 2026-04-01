@@ -45,6 +45,15 @@ function formatTime(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+function formatClassTime(utcStr) {
+  if (!utcStr) return null;
+  try {
+    const d = new Date(utcStr.endsWith('Z') ? utcStr : utcStr + 'Z');
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+  } catch { return null; }
+}
+
 export default function NotificationBell({ userId, userRole }) {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
@@ -186,7 +195,12 @@ export default function NotificationBell({ userId, userRole }) {
                         </p>
                         {!n.is_read && <span className="w-2 h-2 rounded-full bg-emerald-600 flex-shrink-0 mt-1.5" />}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{n.message}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{n.message}</p>
+                      {n.class_time_utc && (
+                        <p className="text-xs font-medium text-emerald-700 mt-0.5">
+                          {formatClassTime(n.class_time_utc)}
+                        </p>
+                      )}
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-[11px] text-slate-400">{formatTime(n.created_at)}</p>
                         {n.link && n.action_required && (

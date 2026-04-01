@@ -386,8 +386,40 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 - WebSocket Heartbeat & Presence (pingInterval/pingTimeout, peer_disconnected)
 - WebSocket Activity Push (content library → classroom overlay)
 
+### P1 (Pending Issues)
+- **Tutor Transaction Pagination**: Pagination controls not rendering in `TransactionHistory.js`
+- **Missing "View Report" Button**: Add to Admin `SessionMonitor.js` for completed sessions
+
 ### P2
 - WhatsApp notifications integration
 - Admin Report Card PDF export
 - Blur Background toggle in A/V settings
 - SMS notifications
+
+---
+
+## Changelog
+
+### April 1, 2026 — P0 Critical Bug & UX Fixes
+
+**Fix 1 — Booking Intervals (15-min increments):**
+- Updated `AvailabilityCalendar.js`: `slotKey` now uses `quarter` (0-3) for 15-min granularity. Grid renders 4 sub-rows/hour. `handleAddFromModal` steps by 15 min. `saveAvailability` calculates 15-min end times.
+- Updated `BookingModal.js`: Time dropdown generates `:00/:15/:30/:45` options.
+- Booked overlay snapping adjusted from 30-min to 15-min grid.
+
+**Fix 2 — Classroom Real-Time Sync (Tutor Override):**
+- `IqraReader.js`: Prev/next page buttons and book selector disabled for students.
+- `QuranV2.js`: Chapter nav, pagination, verse focus, and navigation drawer disabled for students.
+- `ClassroomPage.js`: View mode toggle (Quran/Iqra) disabled for students — only tutor can switch views.
+
+**Fix 3 — Landscape Mode UI:**
+- Mobile video row hidden in landscape orientation; replaced by compact 28px-wide side strip.
+- Content area gets `pb-20` in mobile landscape to clear the floating control dock.
+- Uses `max-md:landscape:` Tailwind stacked modifiers for mobile-only landscape handling.
+
+**Fix 4 — Notifications & Timezones:**
+- Removed `line-clamp-2` text truncation from `NotificationBell.js`.
+- Added `class_time_utc` field to notification documents; frontend `formatClassTime()` renders in user's local timezone.
+- Added session lockout in `ClassroomPage.js` — completed/cancelled/missed sessions redirect users to their dashboard.
+- Added `_class_reminder_cron` background task in `server.py` — checks every 5 min for sessions starting in ~70 min and creates `class_reminder` notifications (with deduplication).
+- Fixed pre-existing dead code bug in tutor dashboard `total_withdrawn` calculation (unreachable code after early return).

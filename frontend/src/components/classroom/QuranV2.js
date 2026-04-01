@@ -363,13 +363,15 @@ function QuranV2Core({
                   <BookOpen className="w-4.5 h-4.5" />
                 </button>
               )}
-              <button onClick={() => setShowNav(!showNav)}
-                className="p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-all md:hidden"
-                data-testid="toggle-nav-mobile-btn">
-                <BookOpen className="w-4.5 h-4.5" />
-              </button>
-              <button onClick={handlePrevChapter} disabled={currentChapter <= 1}
-                className="p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-600 disabled:opacity-20 transition-all"
+              {isTeacher && (
+                <button onClick={() => setShowNav(!showNav)}
+                  className="p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-all md:hidden"
+                  data-testid="toggle-nav-mobile-btn">
+                  <BookOpen className="w-4.5 h-4.5" />
+                </button>
+              )}
+              <button onClick={handlePrevChapter} disabled={currentChapter <= 1 || !isTeacher}
+                className={`p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-600 disabled:opacity-20 transition-all ${!isTeacher ? 'cursor-not-allowed opacity-30' : ''}`}
                 data-testid="prev-chapter-v2">
                 <ChevronLeft className="w-5 h-5" />
               </button>
@@ -396,8 +398,8 @@ function QuranV2Core({
 
             {/* Right: Next + Expand */}
             <div className="flex items-center gap-1.5">
-              <button onClick={handleNextChapter} disabled={currentChapter >= 114}
-                className="p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-600 disabled:opacity-20 transition-all"
+              <button onClick={handleNextChapter} disabled={currentChapter >= 114 || !isTeacher}
+                className={`p-2 rounded-xl hover:bg-stone-100 text-stone-400 hover:text-stone-600 disabled:opacity-20 transition-all ${!isTeacher ? 'cursor-not-allowed opacity-30' : ''}`}
                 data-testid="next-chapter-v2">
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -455,7 +457,7 @@ function QuranV2Core({
                       key={vk}
                       ref={el => { verseRefs.current[vk] = el; }}
                       className={`w-full block py-20 border-b border-gray-200 transition-colors ${isFocused ? 'bg-emerald-50/70' : 'hover:bg-emerald-50/50'}`}
-                      onClick={() => { if (!highlighterActive) handleVerseFocus(vk); }}
+                      onClick={() => { if (isTeacher && !highlighterActive) handleVerseFocus(vk); }}
                       data-testid={`verse-v2-${vk}`}>
                       <div
                         className="block text-right w-full break-words whitespace-normal antialiased leading-[2.2]"
@@ -484,24 +486,25 @@ function QuranV2Core({
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-12 pt-8 border-t border-stone-200/60" data-testid="pagination-v2">
-                  <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage <= 1}
-                    className="px-4 py-2 rounded-full bg-stone-100 text-stone-500 text-sm font-medium hover:bg-stone-200 disabled:opacity-20 transition-all"
+                  <button onClick={() => isTeacher && handlePageChange(currentPage - 1)} disabled={currentPage <= 1 || !isTeacher}
+                    className={`px-4 py-2 rounded-full bg-stone-100 text-stone-500 text-sm font-medium hover:bg-stone-200 disabled:opacity-20 transition-all ${!isTeacher ? 'cursor-not-allowed' : ''}`}
                     data-testid="prev-page-v2">
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
                     const page = i + 1;
                     return (
-                      <button key={page} onClick={() => handlePageChange(page)}
-                        className={`w-9 h-9 rounded-full text-sm font-medium transition-all ${currentPage === page ? 'bg-emerald-600 text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}
+                      <button key={page} onClick={() => isTeacher && handlePageChange(page)}
+                        disabled={!isTeacher}
+                        className={`w-9 h-9 rounded-full text-sm font-medium transition-all ${currentPage === page ? 'bg-emerald-600 text-white' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'} ${!isTeacher ? 'cursor-not-allowed' : ''}`}
                         data-testid={`page-btn-${page}`}>
                         {page}
                       </button>
                     );
                   })}
                   {totalPages > 7 && <span className="text-stone-300 text-sm px-1">...</span>}
-                  <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages}
-                    className="px-4 py-2 rounded-full bg-stone-100 text-stone-500 text-sm font-medium hover:bg-stone-200 disabled:opacity-20 transition-all"
+                  <button onClick={() => isTeacher && handlePageChange(currentPage + 1)} disabled={currentPage >= totalPages || !isTeacher}
+                    className={`px-4 py-2 rounded-full bg-stone-100 text-stone-500 text-sm font-medium hover:bg-stone-200 disabled:opacity-20 transition-all ${!isTeacher ? 'cursor-not-allowed' : ''}`}
                     data-testid="next-page-v2">
                     <ChevronRight className="w-4 h-4" />
                   </button>

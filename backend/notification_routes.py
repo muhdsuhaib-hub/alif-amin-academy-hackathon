@@ -30,7 +30,8 @@ async def create_notification(
     notification_type: str,
     related_id: Optional[str] = None,
     link: Optional[str] = None,
-    action_required: bool = False
+    action_required: bool = False,
+    class_time_utc: Optional[str] = None
 ):
     notification_id = f"notif_{uuid.uuid4().hex[:12]}"
     notification_doc = {
@@ -45,6 +46,8 @@ async def create_notification(
         "is_read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
+    if class_time_utc:
+        notification_doc["class_time_utc"] = class_time_utc
     await db.notifications.insert_one(notification_doc)
     return notification_id
 
@@ -150,7 +153,9 @@ async def generate_student_notifications(user_id: str):
                 teacher_user = await db.users.find_one({"user_id": teacher["user_id"]}, {"_id": 0})
             
             teacher_name = teacher_user.get("name", "Your Teacher") if teacher_user else "Your Teacher"
-            class_time = booking["start_time_utc"][:16].replace("T", " at ")
+            
+            # Format time in a parseable way — frontend will convert to local tz
+            raw_time = booking["start_time_utc"]
             
             # Look up session_id for classroom link
             session_doc = await db.class_sessions.find_one(
@@ -161,11 +166,12 @@ async def generate_student_notifications(user_id: str):
             await create_notification(
                 user_id=user_id,
                 title="Upcoming Class Reminder",
-                message=f"You have a class with {teacher_name} on {class_time}. Don't forget to prepare!",
+                message=f"You have a class with {teacher_name}. Check your schedule for details!",
                 notification_type="upcoming_class",
                 related_id=booking["booking_id"],
                 link=classroom_link,
-                action_required=True
+                action_required=True,
+                class_time_utc=raw_time
             )
             generated_count += 1
     
@@ -236,7 +242,8 @@ async def generate_teacher_notifications(user_id: str):
                 student_user = await db.users.find_one({"user_id": student["user_id"]}, {"_id": 0})
             
             student_name = student_user.get("name", "Your Student") if student_user else "Your Student"
-            class_time = booking["start_time_utc"][:16].replace("T", " at ")
+            
+            raw_time = booking["start_time_utc"]
             
             # Look up session_id for classroom link
             session_doc = await db.class_sessions.find_one(
@@ -247,11 +254,12 @@ async def generate_teacher_notifications(user_id: str):
             await create_notification(
                 user_id=user_id,
                 title="Upcoming Class",
-                message=f"You have a class with {student_name} on {class_time}. Be ready to teach!",
+                message=f"You have a class with {student_name}. Be ready to teach!",
                 notification_type="upcoming_class",
                 related_id=booking["booking_id"],
                 link=classroom_link,
-                action_required=True
+                action_required=True,
+                class_time_utc=raw_time
             )
             generated_count += 1
     
