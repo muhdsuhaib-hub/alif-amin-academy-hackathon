@@ -56,7 +56,10 @@ function ProfileDropdown({ user, userRole, onLogout, onNavigateTab, onOpenSuppor
         <DropdownMenuItem
           data-testid="profile-dropdown-account"
           className="rounded-xl cursor-pointer text-sm text-slate-700 hover:bg-slate-50 focus:bg-slate-50 py-2"
-          onClick={() => onNavigateTab?.('profile')}
+          onClick={() => {
+            const tabId = userRole === 'teacher' ? 'profile' : userRole === 'admin' ? 'settings' : 'account';
+            onNavigateTab?.(tabId);
+          }}
         >
           <User className="w-4 h-4 mr-2.5 text-slate-400" />
           My Profile
