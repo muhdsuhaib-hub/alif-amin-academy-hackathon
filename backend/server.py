@@ -363,15 +363,14 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
         
         # If existing user is signing up as teacher and isn't already a teacher
         if is_teacher_signup and role == "student":
-            # Update role to teacher
+            # Update role to teacher — preserve user's custom name/picture
             role = "teacher"
             await db.users.update_one(
                 {"user_id": user_id},
                 {"$set": {
-                    "name": name,
-                    "picture": picture,
                     "role": "teacher",
-                    "auth_provider": "google"
+                    "auth_provider": "google",
+                    "last_login": datetime.now(timezone.utc).isoformat()
                 }}
             )
             # Create teacher profile with pending status
@@ -391,13 +390,12 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
             }
             await db.teachers.insert_one(teacher_doc)
         else:
-            # Just update user info
+            # Returning user — only update last_login, never overwrite custom name/picture
             await db.users.update_one(
                 {"user_id": user_id},
                 {"$set": {
-                    "name": name,
-                    "picture": picture,
-                    "auth_provider": "google"
+                    "auth_provider": "google",
+                    "last_login": datetime.now(timezone.utc).isoformat()
                 }}
             )
     else:

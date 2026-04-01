@@ -400,7 +400,11 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 ## Changelog
 
-### April 1, 2026 — P0 Critical Bug & UX Fixes
+### April 1, 2026 — Google OAuth Name Overwrite Bug Fix
+
+**Root Cause**: In `server.py` `google_oauth_callback`, both the returning-user branch (line ~395) and the teacher-role-upgrade branch (line ~368) used `$set: {name, picture}` on every login, overwriting any custom profile name the user had set.
+
+**Fix**: Removed `name` and `picture` from `$set` for existing users. Only `auth_provider` and `last_login` are updated on subsequent logins. New users still get their Google name/picture written on first registration.
 
 **Fix 1 — Booking Intervals (15-min increments):**
 - Updated `AvailabilityCalendar.js`: `slotKey` now uses `quarter` (0-3) for 15-min granularity. Grid renders 4 sub-rows/hour. `handleAddFromModal` steps by 15 min. `saveAvailability` calculates 15-min end times.
