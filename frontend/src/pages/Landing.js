@@ -39,7 +39,7 @@ function Hero() {
       </nav>
 
       {/* Hero Content */}
-      <div className="relative z-20 flex-1 flex flex-col justify-end px-6 md:px-10 pb-16 md:pb-20">
+      <div className="relative z-20 flex-1 flex flex-col justify-end px-6 md:px-10 pb-2 md:pb-4">
         <div className="max-w-4xl">
           <motion.h1 {...stagger(0)} className="text-white leading-[1.1]" style={{ fontFamily: SERIF, fontSize: 'clamp(2.5rem, 6vw, 4.5rem)' }} data-testid="hero-heading">
             Learn The Quran.<br />

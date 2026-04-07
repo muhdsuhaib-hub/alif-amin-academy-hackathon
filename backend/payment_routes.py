@@ -43,7 +43,7 @@ def _verify_x_signature(params: dict, x_sig_key: str, received_sig: str) -> bool
     filtered = {k: v for k, v in params.items() if k != "x_signature"}
     sorted_keys = sorted(filtered.keys())
     source = "|".join(f"{k}{filtered[k]}" for k in sorted_keys)
-    expected = hmac.new(
+    expected = hmac.HMAC(
         x_sig_key.encode("utf-8"),
         source.encode("utf-8"),
         hashlib.sha256
@@ -168,49 +168,81 @@ async def create_billplz_bill(req: CreateBillRequest, request: Request):
 
 
 async def _credit_wallet(payment_doc: dict):
-    """Credit the student's wallet after verified payment."""
+    """Credit the student's wallet after verified Billplz payment.
+    Uses the same wallet schema and transaction helpers as wallet_routes.py
+    to ensure consistency across admin reports and user-facing history.
+    """
+    from wallet_routes import get_or_create_wallet, add_transaction, create_bonus_credit_batch, BASE_CREDIT_PRICE
+
     student_id = payment_doc["student_id"]
+    user_id = payment_doc["user_id"]
     paid = payment_doc["paid_credits"]
     bonus = payment_doc["bonus_credits"]
+    amount_myr = payment_doc.get("amount_myr", 0)
+    package_id = payment_doc.get("package_id", "unknown")
+    payment_id = payment_doc.get("payment_id", "")
 
-    wallet = await db.student_wallets.find_one({"student_id": student_id}, {"_id": 0})
-    if not wallet:
-        await db.student_wallets.insert_one({
-            "student_id": student_id,
-            "paid_credits": 0, "bonus_credits": 0, "credit_balance": 0,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        })
-        wallet = {"paid_credits": 0, "bonus_credits": 0, "credit_balance": 0}
+    try:
+        wallet = await get_or_create_wallet(student_id, user_id)
+        wallet_id = wallet["wallet_id"]
 
-    new_paid = wallet.get("paid_credits", 0) + paid
-    new_bonus = wallet.get("bonus_credits", 0) + bonus
-    new_balance = new_paid + new_bonus
-    await db.student_wallets.update_one(
-        {"student_id": student_id},
-        {"$set": {"paid_credits": new_paid, "bonus_credits": new_bonus, "credit_balance": new_balance}}
-    )
+        new_paid = wallet.get("paid_credits", 0) + paid
+        new_bonus = wallet.get("bonus_credits", 0) + bonus
+        new_balance = new_paid + new_bonus
+        new_total_topup = wallet.get("total_topup_amount", 0) + amount_myr
+        new_total_paid = wallet.get("total_paid_credits_purchased", 0) + paid
+        new_total_bonus = wallet.get("total_bonus_credits_received", 0) + bonus
 
-    # Write transactions
-    now = datetime.now(timezone.utc).isoformat()
-    await db.wallet_transactions.insert_one({
-        "transaction_id": f"tx_{uuid.uuid4().hex[:12]}",
-        "student_id": student_id,
-        "transaction_type": "topup_paid",
-        "credit_amount": paid,
-        "description": f"Billplz top-up - {payment_doc['package_id']} (RM{payment_doc['amount_myr']})",
-        "created_at": now,
-    })
-    if bonus > 0:
-        await db.wallet_transactions.insert_one({
-            "transaction_id": f"tx_{uuid.uuid4().hex[:12]}",
-            "student_id": student_id,
-            "transaction_type": "topup_bonus",
-            "credit_amount": bonus,
-            "description": f"Bonus credits for {payment_doc['package_id']}",
-            "created_at": now,
-        })
+        await db.student_wallets.update_one(
+            {"wallet_id": wallet_id},
+            {"$set": {
+                "paid_credits": new_paid,
+                "bonus_credits": new_bonus,
+                "credit_balance": new_balance,
+                "total_topup_amount": new_total_topup,
+                "total_paid_credits_purchased": new_total_paid,
+                "total_bonus_credits_received": new_total_bonus,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }}
+        )
+        logger.info(f"[Billplz] Wallet updated: student={student_id} wallet={wallet_id} paid=+{paid} bonus=+{bonus} balance={new_balance}")
 
-    logger.info(f"Wallet credited: student={student_id} paid=+{paid} bonus=+{bonus}")
+        # Write paid-credit transaction
+        await add_transaction(
+            wallet_id=wallet_id,
+            student_id=student_id,
+            transaction_type="topup_paid",
+            credit_amount=paid,
+            description=f"Billplz Credit Top Up - {package_id} (RM{amount_myr})",
+            monetary_value=paid * BASE_CREDIT_PRICE,
+            payment_amount=amount_myr,
+            reference_id=payment_id,
+        )
+
+        # Write bonus-credit transaction + expiry batch
+        if bonus > 0:
+            await add_transaction(
+                wallet_id=wallet_id,
+                student_id=student_id,
+                transaction_type="topup_bonus",
+                credit_amount=bonus,
+                description=f"Bonus credits for {package_id}",
+                monetary_value=bonus * BASE_CREDIT_PRICE,
+                payment_amount=0,
+                reference_id=payment_id,
+            )
+            await create_bonus_credit_batch(
+                wallet_id=wallet_id,
+                student_id=student_id,
+                credit_amount=bonus,
+                source="topup_bonus",
+                reference_id=payment_id,
+            )
+            logger.info(f"[Billplz] Bonus batch created: student={student_id} bonus={bonus}")
+
+    except Exception as e:
+        logger.error(f"[Billplz] CRITICAL — wallet credit FAILED for student={student_id} payment={payment_id}: {e}", exc_info=True)
+        raise
 
 
 @payment_router.post("/billplz/callback")
@@ -221,25 +253,37 @@ async def billplz_callback(request: Request):
 
     bill_id = params.get("id", "")
     paid = params.get("paid", "false")
+    collection_id = params.get("collection_id", "")
     x_sig = params.get("x_signature", "")
 
-    logger.info(f"Billplz callback: bill_id={bill_id} paid={paid}")
+    logger.info(f"[Billplz Callback] Received: bill_id={bill_id} paid={paid} collection_id={collection_id} params={list(params.keys())}")
 
     # Verify X-Signature if key is configured
     _, _, x_sig_key, _ = await get_billplz_config()
     if x_sig_key and x_sig:
         if not _verify_x_signature(params, x_sig_key, x_sig):
-            logger.warning(f"Billplz callback X-Signature verification FAILED for bill {bill_id}")
-            raise HTTPException(status_code=403, detail="Invalid signature")
+            logger.warning(f"[Billplz Callback] X-Signature FAILED for bill {bill_id}")
+            # Return 200 anyway so Billplz doesn't retry endlessly, but don't process
+            return {"status": "signature_failed"}
 
     if paid == "true":
         payment = await db.pending_payments.find_one({"billplz_bill_id": bill_id}, {"_id": 0})
-        if payment and payment["status"] == "pending":
-            await _credit_wallet(payment)
-            await db.pending_payments.update_one(
-                {"billplz_bill_id": bill_id},
-                {"$set": {"status": "paid", "paid_at": datetime.now(timezone.utc).isoformat()}}
-            )
+        if not payment:
+            logger.warning(f"[Billplz Callback] No pending_payment found for bill_id={bill_id}")
+        elif payment["status"] != "pending":
+            logger.info(f"[Billplz Callback] Payment already processed (status={payment['status']}) for bill_id={bill_id} — skipping (idempotent)")
+        else:
+            try:
+                await _credit_wallet(payment)
+                await db.pending_payments.update_one(
+                    {"billplz_bill_id": bill_id},
+                    {"$set": {"status": "paid", "paid_at": datetime.now(timezone.utc).isoformat()}}
+                )
+                logger.info(f"[Billplz Callback] SUCCESS — bill_id={bill_id} user={payment['user_id']} credits={payment['paid_credits']}+{payment['bonus_credits']} RM{payment['amount_myr']}")
+            except Exception as e:
+                logger.error(f"[Billplz Callback] FAILED to credit wallet for bill_id={bill_id}: {e}", exc_info=True)
+    else:
+        logger.info(f"[Billplz Callback] Bill {bill_id} not paid (state={paid})")
 
     return {"status": "ok"}
 
@@ -253,7 +297,7 @@ async def billplz_redirect(request: Request):
     paid = params.get("billplz[paid]", "false")
     x_sig = params.get("billplz[x_signature]", "")
 
-    logger.info(f"Billplz redirect: bill_id={bill_id} paid={paid}")
+    logger.info(f"[Billplz Redirect] bill_id={bill_id} paid={paid}")
 
     # Verify X-Signature if available
     _, _, x_sig_key, _ = await get_billplz_config()
@@ -263,17 +307,25 @@ async def billplz_redirect(request: Request):
             clean_key = k.replace("billplz[", "").replace("]", "")
             redirect_params[clean_key] = v
         if not _verify_x_signature(redirect_params, x_sig_key, x_sig):
-            logger.warning("Billplz redirect signature verification failed")
+            logger.warning(f"[Billplz Redirect] Signature verification failed for bill {bill_id}")
 
-    # Also credit here in case callback hasn't fired yet
+    # Also credit here in case callback hasn't fired yet (race condition safety)
     if paid == "true":
         payment = await db.pending_payments.find_one({"billplz_bill_id": bill_id}, {"_id": 0})
-        if payment and payment["status"] == "pending":
-            await _credit_wallet(payment)
-            await db.pending_payments.update_one(
-                {"billplz_bill_id": bill_id},
-                {"$set": {"status": "paid", "paid_at": datetime.now(timezone.utc).isoformat()}}
-            )
+        if not payment:
+            logger.warning(f"[Billplz Redirect] No pending_payment found for bill_id={bill_id}")
+        elif payment["status"] != "pending":
+            logger.info(f"[Billplz Redirect] Already processed (status={payment['status']}) for bill_id={bill_id}")
+        else:
+            try:
+                await _credit_wallet(payment)
+                await db.pending_payments.update_one(
+                    {"billplz_bill_id": bill_id},
+                    {"$set": {"status": "paid", "paid_at": datetime.now(timezone.utc).isoformat()}}
+                )
+                logger.info(f"[Billplz Redirect] Credited via redirect path for bill_id={bill_id}")
+            except Exception as e:
+                logger.error(f"[Billplz Redirect] Failed to credit wallet for bill_id={bill_id}: {e}", exc_info=True)
 
     # Redirect user back to the wallet page
     frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "")
