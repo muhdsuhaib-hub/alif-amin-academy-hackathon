@@ -404,6 +404,7 @@ export default function ClassroomPage() {
   const isAdmin = user?.role === 'admin';
   const isObserver = joinConfig?.mode === 'observer';
   const remainingMs = useServerTimer(session);
+  const isTimeExpired = remainingMs === null || remainingMs <= 0;
 
   // WS message handler
   const handleWSMessage = useCallback((msg) => {
@@ -798,6 +799,7 @@ export default function ClassroomPage() {
         onToggleHighlighter={() => setHighlighterActive(!highlighterActive)}
         showActivities={showActivities}
         onToggleActivities={() => setShowActivities(!showActivities)}
+        isTimeExpired={isTimeExpired}
       />
 
       {/* Settings Modal */}
@@ -814,7 +816,7 @@ export default function ClassroomPage() {
       {activeActivity && <ActivityOverlay activity={activeActivity} isTeacher={isTeacher} onClose={handleCloseActivity} studentAnswers={studentAnswers} onAnswer={handleStudentAnswer} />}
 
       {/* End Class Modals */}
-      {showReportModal && <SessionReportModal sessionId={sessionId} onSubmitted={handleReportSubmitted} onClose={() => setShowReportModal(false)} />}
+      {showReportModal && <SessionReportModal sessionId={sessionId} onSubmitted={handleReportSubmitted} onClose={() => setShowReportModal(false)} isTimeExpired={isTimeExpired} />}
       {showRatingModal && <RateTeacherModal sessionId={sessionId} teacherName={session?.teacher_name} onSubmitted={handleRatingSubmitted} onClose={() => setShowRatingModal(false)} />}
     </div>
   );

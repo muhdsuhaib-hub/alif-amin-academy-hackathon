@@ -34,7 +34,7 @@ const SURAHS = [
 ];
 
 // ==================== SESSION REPORT MODAL (Teacher) ====================
-export function SessionReportModal({ sessionId, onSubmitted, onClose }) {
+export function SessionReportModal({ sessionId, onSubmitted, onClose, isTimeExpired = true }) {
   const [form, setForm] = useState({
     surah_name: '',
     ayah_start: 1,
@@ -163,8 +163,13 @@ export function SessionReportModal({ sessionId, onSubmitted, onClose }) {
 
         {/* Footer */}
         <div className="px-6 py-4 border-t border-black/5 bg-[#F5F5F7]/50">
-          <Button onClick={handleSubmit} disabled={submitting} className="w-full" data-testid="submit-report-btn">
-            <Send className="w-4 h-4" />{submitting ? 'Saving...' : 'Submit Report & End Class'}
+          {!isTimeExpired && (
+            <p className="text-xs text-amber-600 font-medium text-center mb-3" data-testid="time-lock-message">
+              You can submit the final report and claim payment once the class time expires.
+            </p>
+          )}
+          <Button onClick={handleSubmit} disabled={submitting || !isTimeExpired} className="w-full" data-testid="submit-report-btn">
+            <Send className="w-4 h-4" />{submitting ? 'Saving...' : !isTimeExpired ? 'Locked — Class Still in Progress' : 'Submit Report & End Class'}
           </Button>
         </div>
       </div>

@@ -12,7 +12,7 @@ import '@livekit/components-styles';
 import {
   Mic, MicOff, Video, VideoOff, Settings, Hand, BookOpen, Layers,
   MessageSquare, Radio, PhoneOff, ChevronDown, X,
-  Wifi, WifiOff, Signal, Highlighter,
+  Wifi, WifiOff, Signal, Highlighter, MoreVertical
 } from 'lucide-react';
 
 // ==================== CONNECTION QUALITY BADGE ====================
@@ -262,11 +262,12 @@ function ControlDock({
   onEndClass, isRecording, isTeacher, isHandRaised, onRaiseHand, onLowerHand,
   showChat, onToggleChat, showNavigator, onToggleNavigator, onToggleSettings,
   onStartRecording, isObserver, highlighterActive, onToggleHighlighter,
-  showActivities, onToggleActivities,
+  showActivities, onToggleActivities, isTimeExpired,
 }) {
   const { localParticipant } = useLocalParticipant();
   const [micOn, setMicOn] = useState(!isObserver);
   const [camOn, setCamOn] = useState(!isObserver);
+  const [showMoreMenu, setShowMoreMenu] = useState(false); // New state for mobile menu
 
   const toggleMic = useCallback(async () => {
     if (!localParticipant || isObserver) return;
@@ -280,16 +281,17 @@ function ControlDock({
     setCamOn(!camOn);
   }, [localParticipant, camOn, isObserver]);
 
-  const btn = (active, danger) =>
-    `p-3 rounded-2xl transition-all duration-200 border ${
+  // Added extraClass parameter to hide buttons on mobile
+  const btn = (active, danger, extraClass = '') =>
+    `p-3 rounded-2xl transition-all duration-200 border flex items-center justify-center ${
       danger ? 'bg-red-500/15 border-red-400/20 text-red-500' :
       active ? 'bg-emerald-600/15 border-emerald-400/20 text-emerald-600' :
       'bg-white/60 border-white/30 text-slate-600 hover:bg-white/80'
-    }`;
+    } ${extraClass}`;
 
   return (
     <div
-      className="fixed bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2.5 bg-white/80 backdrop-blur-2xl rounded-3xl border border-white/40 shadow-2xl"
+      className="fixed bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2.5 bg-white/80 backdrop-blur-2xl rounded-3xl border border-white/40 shadow-2xl w-[95vw] sm:w-auto overflow-visible"
       data-testid="control-dock"
     >
       {isRecording && (
@@ -299,74 +301,93 @@ function ControlDock({
         </div>
       )}
 
-      {/* Mic */}
-      <button onClick={toggleMic} className={btn(false, !micOn)} title={micOn ? 'Mute' : 'Unmute'} data-testid="dock-mic" disabled={isObserver}>
+      {/* === PRIMARY CONTROLS (Always Visible) === */}
+      <button onClick={toggleMic} className={btn(false, !micOn)} title={micOn ? 'Mute' : 'Unmute'} disabled={isObserver}>
         {micOn ? <Mic className="w-4 h-4 md:w-5 md:h-5" /> : <MicOff className="w-4 h-4 md:w-5 md:h-5" />}
       </button>
 
-      {/* Camera */}
-      <button onClick={toggleCam} className={btn(false, !camOn)} title={camOn ? 'Camera Off' : 'Camera On'} data-testid="dock-cam" disabled={isObserver}>
+      <button onClick={toggleCam} className={btn(false, !camOn)} title={camOn ? 'Camera Off' : 'Camera On'} disabled={isObserver}>
         {camOn ? <Video className="w-4 h-4 md:w-5 md:h-5" /> : <VideoOff className="w-4 h-4 md:w-5 md:h-5" />}
       </button>
 
-      {/* Settings */}
-      <button onClick={onToggleSettings} className={btn(false, false)} title="Settings" data-testid="dock-settings">
-        <Settings className="w-4 h-4 md:w-5 md:h-5" />
+      <button onClick={onToggleChat} className={btn(showChat, false)} title="Chat">
+        <MessageSquare className="w-4 h-4 md:w-5 md:h-5" />
       </button>
 
-      <div className="w-px h-6 bg-slate-200 mx-0.5" />
-
-      {/* Raise Hand (non-teacher) */}
       {!isTeacher && !isObserver && (
-        <button
-          onClick={isHandRaised ? onLowerHand : onRaiseHand}
-          className={btn(isHandRaised, false)}
-          title={isHandRaised ? 'Lower Hand' : 'Raise Hand'}
-          data-testid="dock-hand"
-        >
+        <button onClick={isHandRaised ? onLowerHand : onRaiseHand} className={btn(isHandRaised, false)} title={isHandRaised ? 'Lower Hand' : 'Raise Hand'}>
           <Hand className="w-4 h-4 md:w-5 md:h-5" />
         </button>
       )}
 
-      {/* Quran Navigator (teacher) */}
-      {isTeacher && (
-        <button onClick={onToggleNavigator} className={btn(showNavigator, false)} title="Quran Navigator" data-testid="dock-quran">
-          <BookOpen className="w-4 h-4 md:w-5 md:h-5" />
-        </button>
-      )}
-      {/* Activities (teacher) */}
-      {isTeacher && (
-        <button onClick={onToggleActivities} className={btn(showActivities, false)} title="Activities" data-testid="dock-activities">
-          <Layers className="w-4 h-4 md:w-5 md:h-5" />
-        </button>
-      )}
+      <div className="w-px h-6 bg-slate-200 mx-0.5" />
 
-      {/* Tajweed Highlighter (teacher) */}
+      {/* === SECONDARY CONTROLS (Desktop Only - Hidden on Mobile) === */}
       {isTeacher && (
-        <button onClick={onToggleHighlighter} className={btn(highlighterActive, false)} title={highlighterActive ? 'Disable Highlighter' : 'Enable Highlighter'} data-testid="dock-highlighter">
-          <Highlighter className="w-4 h-4 md:w-5 md:h-5" />
-        </button>
+        <>
+          <button onClick={onToggleNavigator} className={btn(showNavigator, false, 'hidden md:flex')} title="Quran Navigator">
+            <BookOpen className="w-5 h-5" />
+          </button>
+          <button onClick={onToggleActivities} className={btn(showActivities, false, 'hidden md:flex')} title="Activities">
+            <Layers className="w-5 h-5" />
+          </button>
+          <button onClick={onToggleHighlighter} className={btn(highlighterActive, false, 'hidden md:flex')} title="Highlighter">
+            <Highlighter className="w-5 h-5" />
+          </button>
+          <button onClick={onStartRecording} className={btn(isRecording, false, 'hidden md:flex')} title="Record">
+            <Radio className="w-5 h-5" />
+          </button>
+        </>
       )}
-
-      {/* Chat */}
-      <button onClick={onToggleChat} className={btn(showChat, false)} title="Chat" data-testid="dock-chat">
-        <MessageSquare className="w-4 h-4 md:w-5 md:h-5" />
+      <button onClick={onToggleSettings} className={btn(false, false, 'hidden md:flex')} title="Settings">
+        <Settings className="w-5 h-5" />
       </button>
 
-      {/* Record (teacher only) */}
-      {isTeacher && (
-        <button onClick={onStartRecording} className={btn(isRecording, false)} title="Record" data-testid="dock-record">
-          <Radio className="w-4 h-4 md:w-5 md:h-5" />
+      {/* === THE "MORE" MENU (Mobile Only) === */}
+      <div className="relative md:hidden">
+        <button onClick={() => setShowMoreMenu(!showMoreMenu)} className={btn(showMoreMenu, false)} title="More Options">
+          <MoreVertical className="w-4 h-4" />
         </button>
-      )}
+
+        {showMoreMenu && (
+          <div className="absolute bottom-full mb-3 right-[-40px] w-48 bg-white/95 backdrop-blur-xl border border-white/40 rounded-2xl shadow-xl overflow-hidden py-1 flex flex-col z-50">
+            {isTeacher && (
+              <>
+                <button onClick={() => { onToggleNavigator(); setShowMoreMenu(false); }} className="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 hover:bg-slate-100 transition-colors">
+                  <BookOpen className="w-4 h-4" /> Navigator
+                </button>
+                <button onClick={() => { onToggleActivities(); setShowMoreMenu(false); }} className="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 hover:bg-slate-100 transition-colors">
+                  <Layers className="w-4 h-4" /> Activities
+                </button>
+                <button onClick={() => { onToggleHighlighter(); setShowMoreMenu(false); }} className="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 hover:bg-slate-100 transition-colors">
+                  <Highlighter className="w-4 h-4" /> Highlighter
+                </button>
+                <button onClick={() => { onStartRecording(); setShowMoreMenu(false); }} className="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 hover:bg-slate-100 transition-colors">
+                  <Radio className="w-4 h-4" /> Record
+                </button>
+                <div className="h-px bg-slate-200 my-1 mx-3" />
+              </>
+            )}
+            <button onClick={() => { onToggleSettings(); setShowMoreMenu(false); }} className="flex items-center gap-3 px-4 py-3 text-sm text-slate-600 hover:bg-slate-100 transition-colors">
+              <Settings className="w-4 h-4" /> Settings
+            </button>
+          </div>
+        )}
+      </div>
 
       <div className="w-px h-6 bg-slate-200 mx-0.5" />
 
-      {/* End Class */}
+      {/* === END CLASS (Always Visible) === */}
       <button
         onClick={onEndClass}
-        className="px-4 md:px-5 py-2.5 rounded-2xl bg-red-500 text-white text-xs md:text-sm font-semibold hover:bg-red-600 transition-all shadow-md"
-        data-testid="dock-end-class"
+        disabled={isTeacher && !isTimeExpired}
+        title={isTeacher && !isTimeExpired ? 'Available once class time expires' : 'End Class'}
+        className={`px-4 md:px-5 py-2.5 rounded-2xl text-xs md:text-sm font-semibold transition-all shadow-md ${
+          isTeacher && !isTimeExpired
+            ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+            : 'bg-red-500 text-white hover:bg-red-600'
+        }`}
+        data-testid="end-class-btn"
       >
         <span className="hidden sm:inline">End Class</span>
         <PhoneOff className="w-4 h-4 sm:hidden" />

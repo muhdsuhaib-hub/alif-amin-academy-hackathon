@@ -247,6 +247,25 @@ async def submit_progress(session_id: str, data: StudentProgressCreate, request:
         raise HTTPException(status_code=403, detail="Not authorized")
 
     now = datetime.now(timezone.utc)
+
+    # Enforce scheduled duration — block early completion & payout
+    end_time_str = session.get("end_time_utc")
+    if end_time_str:
+        try:
+            end_time = datetime.fromisoformat(end_time_str.replace("Z", "+00:00"))
+            if end_time.tzinfo is None:
+                end_time = end_time.replace(tzinfo=timezone.utc)
+            if now < end_time:
+                remaining = int((end_time - now).total_seconds() // 60)
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Cannot complete class and trigger payout before the scheduled end time. {remaining} minute(s) remaining."
+                )
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.warning(f"Could not parse end_time_utc for session {session_id}: {e}")
+
     progress_id = f"sp_{uuid.uuid4().hex[:12]}"
 
     progress_doc = {
