@@ -290,44 +290,60 @@ async def billplz_callback(request: Request):
 
 @payment_router.get("/billplz/redirect")
 async def billplz_redirect(request: Request):
-    """Handle Billplz redirect after payment (user-facing)."""
-    params = dict(request.query_params)
-    # Billplz sends params as billplz[id], billplz[paid], etc.
-    bill_id = params.get("billplz[id]", "")
-    paid = params.get("billplz[paid]", "false")
-    x_sig = params.get("billplz[x_signature]", "")
-
-    logger.info(f"[Billplz Redirect] bill_id={bill_id} paid={paid}")
-
-    # Verify X-Signature if available
-    _, _, x_sig_key, _ = await get_billplz_config()
-    if x_sig_key and x_sig:
-        redirect_params = {}
-        for k, v in params.items():
-            clean_key = k.replace("billplz[", "").replace("]", "")
-            redirect_params[clean_key] = v
-        if not _verify_x_signature(redirect_params, x_sig_key, x_sig):
-            logger.warning(f"[Billplz Redirect] Signature verification failed for bill {bill_id}")
-
-    # Also credit here in case callback hasn't fired yet (race condition safety)
-    if paid == "true":
-        payment = await db.pending_payments.find_one({"billplz_bill_id": bill_id}, {"_id": 0})
-        if not payment:
-            logger.warning(f"[Billplz Redirect] No pending_payment found for bill_id={bill_id}")
-        elif payment["status"] != "pending":
-            logger.info(f"[Billplz Redirect] Already processed (status={payment['status']}) for bill_id={bill_id}")
-        else:
-            try:
-                await _credit_wallet(payment)
-                await db.pending_payments.update_one(
-                    {"billplz_bill_id": bill_id},
-                    {"$set": {"status": "paid", "paid_at": datetime.now(timezone.utc).isoformat()}}
-                )
-                logger.info(f"[Billplz Redirect] Credited via redirect path for bill_id={bill_id}")
-            except Exception as e:
-                logger.error(f"[Billplz Redirect] Failed to credit wallet for bill_id={bill_id}: {e}", exc_info=True)
-
-    # Redirect user back to the wallet page
+    """Handle Billplz redirect after payment (user-facing).
+    MUST always return a RedirectResponse — never a raw error page.
+    """
     frontend_url = os.environ.get("REACT_APP_BACKEND_URL", "")
-    status = "success" if paid == "true" else "failed"
+
+    try:
+        params = dict(request.query_params)
+        bill_id = params.get("billplz[id]", "")
+        paid = params.get("billplz[paid]", "false")
+        x_sig = params.get("billplz[x_signature]", "")
+
+        logger.info(f"[Billplz Redirect] bill_id={bill_id} paid={paid} params={list(params.keys())}")
+
+        # Verify X-Signature if key is configured
+        sig_valid = True
+        try:
+            _, _, x_sig_key, _ = await get_billplz_config()
+            if x_sig_key and x_sig:
+                redirect_params = {}
+                for k, v in params.items():
+                    clean_key = k.replace("billplz[", "").replace("]", "")
+                    redirect_params[clean_key] = v
+                if not _verify_x_signature(redirect_params, x_sig_key, x_sig):
+                    sig_valid = False
+                    logger.warning(f"[Billplz Redirect] X-Signature FAILED for bill {bill_id} — skipping wallet credit")
+        except Exception as e:
+            logger.error(f"[Billplz Redirect] Signature check error: {e}")
+            sig_valid = False
+
+        # Only credit wallet if signature is valid and payment is marked paid
+        if paid == "true" and sig_valid:
+            try:
+                payment = await db.pending_payments.find_one({"billplz_bill_id": bill_id}, {"_id": 0})
+                if not payment:
+                    logger.warning(f"[Billplz Redirect] No pending_payment for bill_id={bill_id}")
+                elif payment["status"] != "pending":
+                    logger.info(f"[Billplz Redirect] Already processed (status={payment['status']}) for bill_id={bill_id}")
+                else:
+                    await _credit_wallet(payment)
+                    await db.pending_payments.update_one(
+                        {"billplz_bill_id": bill_id},
+                        {"$set": {"status": "paid", "paid_at": datetime.now(timezone.utc).isoformat()}}
+                    )
+                    logger.info(f"[Billplz Redirect] Credited via redirect for bill_id={bill_id}")
+            except Exception as e:
+                logger.error(f"[Billplz Redirect] Wallet credit failed for bill_id={bill_id}: {e}", exc_info=True)
+                # Don't block redirect — the server callback will handle it
+
+        status = "success" if paid == "true" else "failed"
+        if not sig_valid:
+            status = "failed"
+
+    except Exception as e:
+        logger.error(f"[Billplz Redirect] Unhandled error: {e}", exc_info=True)
+        status = "failed"
+
     return RedirectResponse(url=f"{frontend_url}/student/wallet?payment={status}", status_code=302)
