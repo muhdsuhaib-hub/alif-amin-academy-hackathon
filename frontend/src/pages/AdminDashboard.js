@@ -164,25 +164,6 @@ export default function AdminDashboard({ user }) {
                 ))}
               </div>
 
-              {/* Financial Snapshot */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <Card className="p-5 border-l-4 border-l-amber-400">
-                  <p className="text-[10px] font-semibold text-amber-600 uppercase tracking-wider mb-1">Deferred Revenue (Liability)</p>
-                  <p className="text-2xl font-bold text-slate-900">RM {(revenue?.deferred_revenue?.amount || liability?.credit_liability?.paid_credits_monetary_value || 0).toLocaleString()}</p>
-                  <p className="text-[10px] text-slate-400 mt-1">Cash collected but not yet earned</p>
-                </Card>
-                <Card className="p-5 border-l-4 border-l-emerald-500">
-                  <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-1">Recognized Revenue</p>
-                  <p className="text-2xl font-bold text-slate-900">RM {(revenue?.revenue_recognition?.commission_earned || 0).toLocaleString()}</p>
-                  <p className="text-[10px] text-slate-400 mt-1">Platform commission from completed sessions</p>
-                </Card>
-                <Card className="p-5 border-l-4 border-l-red-400">
-                  <p className="text-[10px] font-semibold text-red-600 uppercase tracking-wider mb-1">Tutor Payable</p>
-                  <p className="text-2xl font-bold text-slate-900">RM {(revenue?.tutor_payable?.pending_payment || 0).toLocaleString()}</p>
-                  <p className="text-[10px] text-slate-400 mt-1">Owed to tutors (pending withdrawal)</p>
-                </Card>
-              </div>
-
               {/* Commission Tiers */}
               {commissionSummary && (
                 <Card className="p-5">

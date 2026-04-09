@@ -54,18 +54,26 @@ export default function FinancialReports() {
     setDownloading(true);
     try {
       const res = await fetch(`${API}/admin/transactions/export`, { credentials: 'include' });
-      if (!res.ok) throw new Error('Export failed');
+      if (!res.ok) {
+        const err = await res.text().catch(() => 'Export failed');
+        throw new Error(err);
+      }
       const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'text/csv' }));
       const a = document.createElement('a');
       a.href = url;
-      a.download = res.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'alifamin_financials.csv';
+      const now = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
+      a.download = `alifamin_financials_${now}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-    } catch (e) { console.error(e); }
-    finally { setDownloading(false); }
+    } catch (e) {
+      console.error('CSV export error:', e);
+      alert('Failed to download report. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const fetchData = useCallback(async () => {
