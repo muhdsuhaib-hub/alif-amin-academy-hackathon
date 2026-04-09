@@ -133,7 +133,7 @@ export default function Auth() {
 
   const handleGoogleLogin = (isSignup = false) => {
     setLoading(true);
-    const clientId = '106062879766-o4frbkk9tuhlmve4tc51g9hrpnu94dhf.apps.googleusercontent.com';
+    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
     const redirectUri = `${BACKEND_URL}/api/auth/google/callback`;
     const statePayload = isSignup ? encodeURIComponent(JSON.stringify({
       user_type: formData.userType || onboardingData.userType || 'Student',
