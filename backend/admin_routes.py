@@ -1067,65 +1067,81 @@ async def export_transactions_csv(request: Request):
         raise HTTPException(status_code=403, detail="Admin only")
 
     BASE_CREDIT_PRICE = 15.0
+    FIELDNAMES = [
+        "Date", "Transaction ID", "Booking / Reference ID", "Type",
+        "Student Name", "Tutor Name", "Duration (Mins)",
+        "Credits Used", "Gross Amount RM", "Platform Commission RM",
+        "Net Tutor Payout RM", "Status"
+    ]
     rows = []
+
+    # ---- Pre-load name maps ----
+    # Student ID → Name
+    all_students = await db.students.find({}, {"_id": 0, "student_id": 1, "user_id": 1}).to_list(5000)
+    student_user_ids = [s["user_id"] for s in all_students if s.get("user_id")]
+    student_users = {u["user_id"]: u.get("name") or "N/A" for u in await db.users.find({"user_id": {"$in": student_user_ids}}, {"_id": 0, "user_id": 1, "name": 1}).to_list(len(student_user_ids))}
+    student_name_map = {s["student_id"]: student_users.get(s.get("user_id"), "N/A") for s in all_students}
+
+    # Teacher ID → Name
+    all_teachers = await db.teachers.find({}, {"_id": 0, "teacher_id": 1, "user_id": 1}).to_list(5000)
+    teacher_user_ids = [t["user_id"] for t in all_teachers if t.get("user_id")]
+    teacher_users = {u["user_id"]: u.get("name") or "N/A" for u in await db.users.find({"user_id": {"$in": teacher_user_ids}}, {"_id": 0, "user_id": 1, "name": 1}).to_list(len(teacher_user_ids))}
+    teacher_name_map = {t["teacher_id"]: teacher_users.get(t.get("user_id"), "N/A") for t in all_teachers}
 
     # --- 1. Wallet Transactions (top-ups, deductions, adjustments) ---
     wallet_txns = await db.wallet_transactions.find({}, {"_id": 0}).sort("created_at", -1).to_list(5000)
-    # Pre-load student → user name map
-    student_ids = list({t.get("student_id") for t in wallet_txns if t.get("student_id")})
-    student_docs = await db.students.find({"student_id": {"$in": student_ids}}, {"_id": 0, "student_id": 1, "user_id": 1}).to_list(len(student_ids))
-    student_user_map = {}
-    for sd in student_docs:
-        u = await db.users.find_one({"user_id": sd["user_id"]}, {"_id": 0, "name": 1})
-        student_user_map[sd["student_id"]] = u.get("name", "Unknown") if u else "Unknown"
-
     for t in wallet_txns:
         credits = t.get("credit_amount") or 0
         amt = t.get("payment_amount") or t.get("monetary_value") or (credits * BASE_CREDIT_PRICE)
         rows.append({
             "Date": (t.get("created_at") or "")[:19],
-            "Transaction ID": t.get("transaction_id") or "",
-            "Type": t.get("transaction_type") or "",
-            "User / Tutor Name": student_user_map.get(t.get("student_id"), ""),
-            "Credits": credits,
-            "Amount RM": round(amt, 2),
-            "Platform Commission": "",
+            "Transaction ID": t.get("transaction_id") or "N/A",
+            "Booking / Reference ID": t.get("reference_id") or t.get("booking_id") or "N/A",
+            "Type": t.get("transaction_type") or "N/A",
+            "Student Name": student_name_map.get(t.get("student_id"), "N/A"),
+            "Tutor Name": "",
+            "Duration (Mins)": "",
+            "Credits Used": credits,
+            "Gross Amount RM": round(amt, 2),
+            "Platform Commission RM": 0,
+            "Net Tutor Payout RM": 0,
             "Status": "completed",
         })
 
     # --- 2. Session Payment Records (completed class payouts) ---
     session_records = await db.session_payment_records.find({}, {"_id": 0}).sort("created_at", -1).to_list(5000)
-    teacher_ids = list({r.get("teacher_id") for r in session_records if r.get("teacher_id")})
-    teacher_docs = await db.teachers.find({"teacher_id": {"$in": teacher_ids}}, {"_id": 0, "teacher_id": 1, "user_id": 1}).to_list(len(teacher_ids))
-    teacher_user_map = {}
-    for td in teacher_docs:
-        u = await db.users.find_one({"user_id": td["user_id"]}, {"_id": 0, "name": 1})
-        teacher_user_map[td["teacher_id"]] = u.get("name", "Unknown") if u else "Unknown"
-
     for r in session_records:
+        gross = r.get("base_session_price") or ((r.get("tutor_payout") or 0) + (r.get("platform_commission") or 0))
         rows.append({
             "Date": (r.get("created_at") or "")[:19],
-            "Transaction ID": r.get("record_id") or r.get("booking_id") or "",
+            "Transaction ID": r.get("record_id") or "N/A",
+            "Booking / Reference ID": r.get("booking_id") or "N/A",
             "Type": "session_payout",
-            "User / Tutor Name": teacher_user_map.get(r.get("teacher_id"), ""),
-            "Credits": r.get("credits_used") or 0,
-            "Amount RM": round(r.get("tutor_payout") or 0, 2),
-            "Platform Commission": round(r.get("platform_commission") or 0, 2),
+            "Student Name": student_name_map.get(r.get("student_id"), "N/A"),
+            "Tutor Name": teacher_name_map.get(r.get("teacher_id"), "N/A"),
+            "Duration (Mins)": r.get("duration_minutes") or 0,
+            "Credits Used": r.get("credits_used") or 0,
+            "Gross Amount RM": round(gross, 2),
+            "Platform Commission RM": round(r.get("platform_commission") or 0, 2),
+            "Net Tutor Payout RM": round(r.get("tutor_payout") or 0, 2),
             "Status": "completed",
         })
 
     # --- 3. Withdrawal Requests ---
     withdrawals = await db.withdrawal_requests.find({}, {"_id": 0}).sort("created_at", -1).to_list(5000)
     for w in withdrawals:
-        tid = w.get("teacher_id") or ""
         rows.append({
             "Date": (w.get("created_at") or "")[:19],
-            "Transaction ID": w.get("withdrawal_id") or "",
+            "Transaction ID": w.get("withdrawal_id") or "N/A",
+            "Booking / Reference ID": "N/A",
             "Type": "withdrawal",
-            "User / Tutor Name": teacher_user_map.get(tid, tid),
-            "Credits": "",
-            "Amount RM": round(w.get("amount") or 0, 2),
-            "Platform Commission": "",
+            "Student Name": "",
+            "Tutor Name": teacher_name_map.get(w.get("teacher_id"), "N/A"),
+            "Duration (Mins)": "",
+            "Credits Used": "",
+            "Gross Amount RM": round(w.get("amount") or 0, 2),
+            "Platform Commission RM": 0,
+            "Net Tutor Payout RM": round(w.get("amount") or 0, 2),
             "Status": w.get("status") or "pending",
         })
 
@@ -1134,8 +1150,7 @@ async def export_transactions_csv(request: Request):
 
     # Build CSV
     output = io.StringIO()
-    fieldnames = ["Date", "Transaction ID", "Type", "User / Tutor Name", "Credits", "Amount RM", "Platform Commission", "Status"]
-    writer = csv.DictWriter(output, fieldnames=fieldnames)
+    writer = csv.DictWriter(output, fieldnames=FIELDNAMES)
     writer.writeheader()
     writer.writerows(rows)
 
