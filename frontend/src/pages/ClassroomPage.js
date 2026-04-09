@@ -670,7 +670,7 @@ export default function ClassroomPage() {
     return () => clearTimeout(t);
   }, [pointerPos]);
 
-  if (loading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Spinner message="Loading classroom..." /></div>;
+  if (loading) return <div className="h-[100dvh] flex items-center justify-center bg-slate-900"><Spinner message="Loading classroom..." /></div>;
 
   // ==================== GREEN ROOM (PRE-JOIN) ====================
   if (!joined) {
@@ -679,7 +679,7 @@ export default function ClassroomPage() {
 
   // ==================== MAIN CLASSROOM LAYOUT ====================
   const roomContent = (
-    <div className="h-screen flex flex-col bg-slate-900 overflow-hidden" data-testid="classroom-page">
+    <div className="h-[100dvh] flex flex-col bg-slate-900 overflow-hidden" data-testid="classroom-page">
       {/* CRITICAL: RoomAudioRenderer plays ALL remote audio tracks */}
       <RoomAudioRenderer />
 
@@ -724,7 +724,7 @@ export default function ClassroomPage() {
           </div>
 
           {/* Content area — extra bottom padding in landscape to clear floating dock */}
-          <div className="flex-1 overflow-hidden max-md:landscape:pb-20">
+          <div className="flex-1 min-h-0 overflow-hidden max-md:landscape:pb-20">
             {viewMode === 'quran' ? (
               <QuranV2
                 isTeacher={isTeacher}

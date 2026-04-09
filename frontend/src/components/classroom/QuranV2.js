@@ -432,7 +432,7 @@ function QuranV2Core({
               </div>
             </div>
           ) : (
-            <div className="flex flex-col w-full max-w-4xl mx-auto px-4 md:px-12 py-8 md:py-14">
+            <div className="flex flex-col w-full max-w-4xl mx-auto px-4 md:px-12 py-8 md:py-14 pb-32">
               {/* Bismillah */}
               {currentChapter !== 9 && currentPage === 1 && (
                 <div className="text-center mb-10 md:mb-16" data-testid="bismillah-v2">

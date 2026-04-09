@@ -70,7 +70,7 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointe
   const imgSrc = `${GCS_BASE}/book${currentBook}/${currentPage}.png`;
 
   return (
-    <div className="h-full flex flex-col bg-[#FDFBF7] pb-32" data-testid="iqra-reader">
+    <div className="h-full flex flex-col bg-[#FDFBF7]" data-testid="iqra-reader">
       {/* Header */}
       <div className="flex-shrink-0 border-b border-stone-200/60 bg-[#FDFBF7]">
         <div className="flex items-center justify-between px-4 md:px-6 py-3">
@@ -110,7 +110,7 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointe
       {/* Image Viewer with pointer overlay */}
       <div
         ref={imgContainerRef}
-        className="relative flex-1 flex items-center justify-center overflow-auto px-4 py-6"
+        className="relative flex-1 min-h-0 flex items-center justify-center overflow-auto px-4 py-6 pb-32"
         onMouseMove={isTeacher ? handleMouseMove : undefined}
         onMouseLeave={isTeacher ? handleMouseLeave : undefined}
         data-testid="iqra-image-container">
@@ -138,7 +138,7 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointe
             key={imgSrc}
             src={imgSrc}
             alt={`Iqra Book ${currentBook} - Page ${currentPage}`}
-            className="object-contain w-full max-h-[75vh] rounded-lg select-none"
+            className="object-contain w-full h-full rounded-lg select-none"
             onLoad={() => setImgLoading(false)}
             onError={() => { setImgLoading(false); setImgError(true); }}
             draggable={false}
