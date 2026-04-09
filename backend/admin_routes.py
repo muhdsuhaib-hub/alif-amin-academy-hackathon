@@ -1,5 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, Request, Cookie
+from fastapi.responses import StreamingResponse
 from datetime import datetime, timezone, timedelta
+import csv
+import io
 import uuid
 import os
 import json
@@ -881,7 +884,9 @@ async def get_revenue_recognition(request: Request, session_token: Optional[str]
     
     # ============== REVENUE FROM COMPLETED SESSIONS ==============
     # Commission is ONLY recognized when session is completed
+    # Exclude trial sessions (credits_used = 0) for accurate financial metrics
     session_pipeline = [
+        {"$match": {"credits_used": {"$gt": 0}}},
         {"$group": {
             "_id": None,
             "total_sessions": {"$sum": 1},
@@ -911,24 +916,17 @@ async def get_revenue_recognition(request: Request, session_token: Optional[str]
     marketing_cost_realized = session_stats.get("total_marketing_cost", 0) or 0
     
     # ============== TUTOR PAYMENT STATUS ==============
-    # Track what's been paid vs what's pending
-    # For now, assume all tutor payouts are pending until withdrawal
+    # Query actual withdrawal_requests for accurate paid-out amounts
     tutor_paid_pipeline = [
-        {"$match": {"transaction_type": "withdrawal", "status": "completed"}},
+        {"$match": {"status": {"$in": ["approved", "completed", "Approved", "Completed"]}}},
         {"$group": {
             "_id": None,
             "total_paid": {"$sum": "$amount"}
         }}
     ]
-    tutor_paid_result = await db.teacher_transactions.aggregate(tutor_paid_pipeline).to_list(1)
-    tutor_paid = tutor_paid_result[0].get("total_paid", 0) if tutor_paid_result else 0
-    tutor_pending = tutor_payable - tutor_paid
-    
-    # ============== DEFERRED REVENUE CALCULATION ==============
-    # Deferred Revenue = Cash Collected - Revenue Recognized
-    # Revenue Recognized = Commission Earned + Tutor Payable (from completed sessions)
-    revenue_recognized = commission_earned + tutor_payable
-    deferred_revenue = cash_collected - revenue_recognized
+    tutor_paid_result = await db.withdrawal_requests.aggregate(tutor_paid_pipeline).to_list(1)
+    tutor_paid = round(tutor_paid_result[0].get("total_paid", 0), 2) if tutor_paid_result else 0
+    tutor_pending = max(0, tutor_payable - tutor_paid)
     
     # ============== OUTSTANDING CREDITS VALUE ==============
     # Calculate potential future revenue from outstanding credits
@@ -946,6 +944,11 @@ async def get_revenue_recognition(request: Request, session_token: Optional[str]
     outstanding_bonus = outstanding_stats.get("total_bonus_credits", 0) or 0
     outstanding_total = outstanding_paid + outstanding_bonus
     
+    # ============== DEFERRED REVENUE CALCULATION ==============
+    # Deferred Revenue = outstanding paid credits × credit price
+    # This is the strict wallet liability: money held that hasn't been consumed yet
+    deferred_revenue = outstanding_paid * BASE_CREDIT_PRICE
+    
     # Potential future values
     potential_session_value = outstanding_total * BASE_CREDIT_PRICE
     potential_commission = potential_session_value * COMMISSION_RATE
@@ -955,9 +958,9 @@ async def get_revenue_recognition(request: Request, session_token: Optional[str]
     now = datetime.now(timezone.utc)
     thirty_days_ago = now - timedelta(days=30)
     
-    # Last 30 days commission
+    # Last 30 days commission (non-trial only)
     recent_session_pipeline = [
-        {"$match": {"created_at": {"$gte": thirty_days_ago.isoformat()}}},
+        {"$match": {"created_at": {"$gte": thirty_days_ago.isoformat()}, "credits_used": {"$gt": 0}}},
         {"$group": {
             "_id": None,
             "sessions": {"$sum": 1},
@@ -1004,12 +1007,12 @@ async def get_revenue_recognition(request: Request, session_token: Optional[str]
             "description": "Amount owed to tutors from completed sessions"
         },
         "deferred_revenue": {
-            "amount": max(0, deferred_revenue),
-            "description": "Cash collected but not yet earned (outstanding credits)",
+            "amount": deferred_revenue,
+            "description": "Wallet liability: outstanding paid credits × RM15/credit",
             "breakdown": {
-                "cash_collected": cash_collected,
-                "minus_revenue_recognized": revenue_recognized,
-                "equals_deferred": max(0, deferred_revenue)
+                "outstanding_paid_credits": outstanding_paid,
+                "credit_price": BASE_CREDIT_PRICE,
+                "equals_deferred": deferred_revenue
             }
         },
         "marketing_expense": {
@@ -1039,6 +1042,108 @@ async def get_revenue_recognition(request: Request, session_token: Optional[str]
             "platform_margin_percent": round((commission_earned / (commission_earned + tutor_payable) * 100), 2) if (commission_earned + tutor_payable) > 0 else COMMISSION_RATE * 100
         }
     }
+
+
+# ============================================================
+# TRANSACTION CSV EXPORT
+# ============================================================
+
+@admin_router.get("/transactions/export")
+async def export_transactions_csv(request: Request):
+    """Export all financial transactions as a downloadable CSV file."""
+    # Auth check
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    admin_user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
+    if not admin_user or admin_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    BASE_CREDIT_PRICE = 15.0
+    rows = []
+
+    # --- 1. Wallet Transactions (top-ups, deductions, adjustments) ---
+    wallet_txns = await db.wallet_transactions.find({}, {"_id": 0}).sort("created_at", -1).to_list(5000)
+    # Pre-load student → user name map
+    student_ids = list({t.get("student_id") for t in wallet_txns if t.get("student_id")})
+    student_docs = await db.students.find({"student_id": {"$in": student_ids}}, {"_id": 0, "student_id": 1, "user_id": 1}).to_list(len(student_ids))
+    student_user_map = {}
+    for sd in student_docs:
+        u = await db.users.find_one({"user_id": sd["user_id"]}, {"_id": 0, "name": 1})
+        student_user_map[sd["student_id"]] = u.get("name", "Unknown") if u else "Unknown"
+
+    for t in wallet_txns:
+        rows.append({
+            "Date": t.get("created_at", "")[:19],
+            "Transaction ID": t.get("transaction_id", ""),
+            "Type": t.get("transaction_type", ""),
+            "User / Tutor Name": student_user_map.get(t.get("student_id"), ""),
+            "Credits": t.get("credit_amount", 0),
+            "Amount RM": round(t.get("payment_amount", t.get("monetary_value", t.get("credit_amount", 0) * BASE_CREDIT_PRICE)), 2),
+            "Platform Commission": "",
+            "Status": "completed",
+        })
+
+    # --- 2. Session Payment Records (completed class payouts) ---
+    session_records = await db.session_payment_records.find({}, {"_id": 0}).sort("created_at", -1).to_list(5000)
+    teacher_ids = list({r.get("teacher_id") for r in session_records if r.get("teacher_id")})
+    teacher_docs = await db.teachers.find({"teacher_id": {"$in": teacher_ids}}, {"_id": 0, "teacher_id": 1, "user_id": 1}).to_list(len(teacher_ids))
+    teacher_user_map = {}
+    for td in teacher_docs:
+        u = await db.users.find_one({"user_id": td["user_id"]}, {"_id": 0, "name": 1})
+        teacher_user_map[td["teacher_id"]] = u.get("name", "Unknown") if u else "Unknown"
+
+    for r in session_records:
+        rows.append({
+            "Date": r.get("created_at", "")[:19],
+            "Transaction ID": r.get("record_id", r.get("booking_id", "")),
+            "Type": "session_payout",
+            "User / Tutor Name": teacher_user_map.get(r.get("teacher_id"), ""),
+            "Credits": r.get("credits_used", 0),
+            "Amount RM": round(r.get("tutor_payout", 0), 2),
+            "Platform Commission": round(r.get("platform_commission", 0), 2),
+            "Status": "completed",
+        })
+
+    # --- 3. Withdrawal Requests ---
+    withdrawals = await db.withdrawal_requests.find({}, {"_id": 0}).sort("created_at", -1).to_list(5000)
+    for w in withdrawals:
+        tid = w.get("teacher_id", "")
+        rows.append({
+            "Date": w.get("created_at", "")[:19],
+            "Transaction ID": w.get("withdrawal_id", ""),
+            "Type": "withdrawal",
+            "User / Tutor Name": teacher_user_map.get(tid, tid),
+            "Credits": "",
+            "Amount RM": round(w.get("amount", 0), 2),
+            "Platform Commission": "",
+            "Status": w.get("status", "pending"),
+        })
+
+    # Sort all rows by date descending
+    rows.sort(key=lambda r: r["Date"], reverse=True)
+
+    # Build CSV
+    output = io.StringIO()
+    fieldnames = ["Date", "Transaction ID", "Type", "User / Tutor Name", "Credits", "Amount RM", "Platform Commission", "Status"]
+    writer = csv.DictWriter(output, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(rows)
+
+    now_str = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M")
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="alifamin_financials_{now_str}.csv"'}
+    )
+
 
 
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { DollarSign, TrendingUp, Wallet, AlertTriangle, RefreshCw } from 'lucide-react';
+import { DollarSign, TrendingUp, Wallet, AlertTriangle, RefreshCw, Download } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
 import Card from '../Card';
 import Spinner from '../Spinner';
@@ -48,6 +48,26 @@ export default function FinancialReports() {
   const [chartCustomFrom, setChartCustomFrom] = useState('');
   const [chartCustomTo, setChartCustomTo] = useState('');
 
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadCSV = async () => {
+    setDownloading(true);
+    try {
+      const res = await fetch(`${API}/admin/transactions/export`, { credentials: 'include' });
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = res.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'alifamin_financials.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) { console.error(e); }
+    finally { setDownloading(false); }
+  };
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -95,7 +115,15 @@ export default function FinancialReports() {
     <div className="space-y-6" data-testid="financial-reports">
       <div className="flex items-center justify-between">
         <div><h2 className="text-lg font-bold text-slate-900">Financial Dashboard</h2><p className="text-xs text-slate-500 mt-0.5">All figures calculated from real transaction data</p></div>
-        <button onClick={fetchData} className="p-2 rounded-lg hover:bg-slate-100 transition-colors"><RefreshCw className="w-4 h-4 text-slate-400" /></button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleDownloadCSV} disabled={downloading}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 disabled:opacity-50 transition-all shadow-sm"
+            data-testid="download-csv-btn">
+            <Download className="w-3.5 h-3.5" />
+            {downloading ? 'Exporting...' : 'Download Report (CSV)'}
+          </button>
+          <button onClick={fetchData} className="p-2 rounded-lg hover:bg-slate-100 transition-colors" data-testid="refresh-finance-btn"><RefreshCw className="w-4 h-4 text-slate-400" /></button>
+        </div>
       </div>
 
       {/* Primary Financial Metrics */}
