@@ -1080,13 +1080,15 @@ async def export_transactions_csv(request: Request):
         student_user_map[sd["student_id"]] = u.get("name", "Unknown") if u else "Unknown"
 
     for t in wallet_txns:
+        credits = t.get("credit_amount") or 0
+        amt = t.get("payment_amount") or t.get("monetary_value") or (credits * BASE_CREDIT_PRICE)
         rows.append({
-            "Date": t.get("created_at", "")[:19],
-            "Transaction ID": t.get("transaction_id", ""),
-            "Type": t.get("transaction_type", ""),
+            "Date": (t.get("created_at") or "")[:19],
+            "Transaction ID": t.get("transaction_id") or "",
+            "Type": t.get("transaction_type") or "",
             "User / Tutor Name": student_user_map.get(t.get("student_id"), ""),
-            "Credits": t.get("credit_amount", 0),
-            "Amount RM": round(t.get("payment_amount", t.get("monetary_value", t.get("credit_amount", 0) * BASE_CREDIT_PRICE)), 2),
+            "Credits": credits,
+            "Amount RM": round(amt, 2),
             "Platform Commission": "",
             "Status": "completed",
         })
@@ -1102,29 +1104,29 @@ async def export_transactions_csv(request: Request):
 
     for r in session_records:
         rows.append({
-            "Date": r.get("created_at", "")[:19],
-            "Transaction ID": r.get("record_id", r.get("booking_id", "")),
+            "Date": (r.get("created_at") or "")[:19],
+            "Transaction ID": r.get("record_id") or r.get("booking_id") or "",
             "Type": "session_payout",
             "User / Tutor Name": teacher_user_map.get(r.get("teacher_id"), ""),
-            "Credits": r.get("credits_used", 0),
-            "Amount RM": round(r.get("tutor_payout", 0), 2),
-            "Platform Commission": round(r.get("platform_commission", 0), 2),
+            "Credits": r.get("credits_used") or 0,
+            "Amount RM": round(r.get("tutor_payout") or 0, 2),
+            "Platform Commission": round(r.get("platform_commission") or 0, 2),
             "Status": "completed",
         })
 
     # --- 3. Withdrawal Requests ---
     withdrawals = await db.withdrawal_requests.find({}, {"_id": 0}).sort("created_at", -1).to_list(5000)
     for w in withdrawals:
-        tid = w.get("teacher_id", "")
+        tid = w.get("teacher_id") or ""
         rows.append({
-            "Date": w.get("created_at", "")[:19],
-            "Transaction ID": w.get("withdrawal_id", ""),
+            "Date": (w.get("created_at") or "")[:19],
+            "Transaction ID": w.get("withdrawal_id") or "",
             "Type": "withdrawal",
             "User / Tutor Name": teacher_user_map.get(tid, tid),
             "Credits": "",
-            "Amount RM": round(w.get("amount", 0), 2),
+            "Amount RM": round(w.get("amount") or 0, 2),
             "Platform Commission": "",
-            "Status": w.get("status", "pending"),
+            "Status": w.get("status") or "pending",
         })
 
     # Sort all rows by date descending
