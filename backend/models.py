@@ -420,9 +420,13 @@ class StudentProgressRecord(BaseModel):
 
 class StudentProgressCreate(BaseModel):
     session_id: Optional[str] = None  # Optional since it's provided via URL path
-    surah_name: str
-    ayah_start: int
-    ayah_end: int
+    material_type: Optional[str] = "quran"  # "quran" or "iqra"
+    surah_name: Optional[str] = None
+    ayah_start: Optional[int] = None
+    ayah_end: Optional[int] = None
+    iqra_book: Optional[int] = None  # 1-6
+    page_start: Optional[int] = None
+    page_end: Optional[int] = None
     track_type: Literal["Memorization (Hifz)", "Revision (Murajaah)", "Recitation (Nazra)"]
     grading: Dict[str, int]
     teacher_comments: Optional[str] = None

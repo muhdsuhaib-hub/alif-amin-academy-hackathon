@@ -33,12 +33,18 @@ const SURAHS = [
   'Al-Kafirun', 'An-Nasr', 'Al-Masad', 'Al-Ikhlas', 'Al-Falaq', 'An-Nas',
 ];
 
+const IQRA_BOOKS = [1, 2, 3, 4, 5, 6];
+
 // ==================== SESSION REPORT MODAL (Teacher) ====================
 export function SessionReportModal({ sessionId, onSubmitted, onClose, isTimeExpired = true }) {
+  const [materialType, setMaterialType] = useState('quran');
   const [form, setForm] = useState({
     surah_name: '',
     ayah_start: 1,
     ayah_end: 1,
+    iqra_book: 1,
+    page_start: 1,
+    page_end: 1,
     track_type: TRACK_TYPES[2],
     grading: { fluency_score: 5, tajweed_score: 5, makhraj_score: 5 },
     teacher_comments: '',
@@ -49,14 +55,30 @@ export function SessionReportModal({ sessionId, onSubmitted, onClose, isTimeExpi
     setForm((p) => ({ ...p, grading: { ...p.grading, [key]: Math.min(10, Math.max(1, val)) } }));
 
   const handleSubmit = async () => {
-    if (!form.surah_name) { toast.error('Please select a Surah'); return; }
+    if (materialType === 'quran' && !form.surah_name) { toast.error('Please select a Surah'); return; }
+    if (materialType === 'iqra' && !form.iqra_book) { toast.error('Please select an Iqra Book'); return; }
     setSubmitting(true);
     try {
+      const payload = {
+        material_type: materialType,
+        track_type: form.track_type,
+        grading: form.grading,
+        teacher_comments: form.teacher_comments,
+      };
+      if (materialType === 'quran') {
+        payload.surah_name = form.surah_name;
+        payload.ayah_start = form.ayah_start || 1;
+        payload.ayah_end = form.ayah_end || 1;
+      } else {
+        payload.iqra_book = form.iqra_book;
+        payload.page_start = form.page_start || 1;
+        payload.page_end = form.page_end || 1;
+      }
       const res = await fetch(`${API}/classroom/session/${sessionId}/progress`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         toast.success('Session report saved & earnings credited!');
@@ -92,27 +114,62 @@ export function SessionReportModal({ sessionId, onSubmitted, onClose, isTimeExpi
         </div>
 
         <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
-          {/* Surah */}
+          {/* Material Type Toggle */}
           <div>
-            <label className="block text-xs font-medium text-ink-secondary mb-1.5">Surah Covered</label>
-            <div className="relative">
-              <select value={form.surah_name} onChange={(e) => setForm({ ...form, surah_name: e.target.value })} className={selectCls} data-testid="surah-select">
-                <option value="">Select Surah...</option>
-                {SURAHS.map((s, i) => <option key={i} value={s}>{i + 1}. {s}</option>)}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary pointer-events-none" />
+            <label className="block text-xs font-medium text-ink-secondary mb-1.5">Material</label>
+            <div className="flex gap-2" data-testid="material-toggle">
+              {[{ id: 'quran', label: 'Quran' }, { id: 'iqra', label: 'Iqra' }].map((m) => (
+                <button key={m.id} onClick={() => setMaterialType(m.id)}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${materialType === m.id ? 'bg-brand text-white shadow-sm' : 'bg-[#F5F5F7] text-ink-secondary hover:bg-surface-subtle'}`}
+                  data-testid={`material-${m.id}`}>
+                  <BookOpen className="w-3.5 h-3.5 inline-block mr-1.5 -mt-0.5" />{m.label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Ayah Range */}
+          {/* Quran: Surah Selector */}
+          {materialType === 'quran' && (
+            <div>
+              <label className="block text-xs font-medium text-ink-secondary mb-1.5">Surah Covered</label>
+              <div className="relative">
+                <select value={form.surah_name} onChange={(e) => setForm({ ...form, surah_name: e.target.value })} className={selectCls} data-testid="surah-select">
+                  <option value="">Select Surah...</option>
+                  {SURAHS.map((s, i) => <option key={i} value={s}>{i + 1}. {s}</option>)}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary pointer-events-none" />
+              </div>
+            </div>
+          )}
+
+          {/* Iqra: Book Selector */}
+          {materialType === 'iqra' && (
+            <div>
+              <label className="block text-xs font-medium text-ink-secondary mb-1.5">Iqra Book</label>
+              <div className="relative">
+                <select value={form.iqra_book} onChange={(e) => setForm({ ...form, iqra_book: parseInt(e.target.value) })} className={selectCls} data-testid="iqra-book-select-report">
+                  {IQRA_BOOKS.map((b) => <option key={b} value={b}>Iqra Book {b}</option>)}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-tertiary pointer-events-none" />
+              </div>
+            </div>
+          )}
+
+          {/* Range Inputs — labels adapt to material type */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-ink-secondary mb-1.5">Ayah Start</label>
-              <input type="text" inputMode="numeric" value={form.ayah_start} onChange={(e) => { const v = e.target.value; setForm({ ...form, ayah_start: v === '' ? '' : (parseInt(v) || '') }); }} onFocus={(e) => e.target.select()} className={inputCls} data-testid="ayah-start" />
+              <label className="block text-xs font-medium text-ink-secondary mb-1.5">{materialType === 'quran' ? 'Ayah Start' : 'Page Start'}</label>
+              <input type="text" inputMode="numeric"
+                value={materialType === 'quran' ? form.ayah_start : form.page_start}
+                onChange={(e) => { const v = e.target.value; const num = v === '' ? '' : (parseInt(v) || ''); setForm({ ...form, ...(materialType === 'quran' ? { ayah_start: num } : { page_start: num }) }); }}
+                onFocus={(e) => e.target.select()} className={inputCls} data-testid="range-start" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-ink-secondary mb-1.5">Ayah End</label>
-              <input type="text" inputMode="numeric" value={form.ayah_end} onChange={(e) => { const v = e.target.value; setForm({ ...form, ayah_end: v === '' ? '' : (parseInt(v) || '') }); }} onFocus={(e) => e.target.select()} className={inputCls} data-testid="ayah-end" />
+              <label className="block text-xs font-medium text-ink-secondary mb-1.5">{materialType === 'quran' ? 'Ayah End' : 'Page End'}</label>
+              <input type="text" inputMode="numeric"
+                value={materialType === 'quran' ? form.ayah_end : form.page_end}
+                onChange={(e) => { const v = e.target.value; const num = v === '' ? '' : (parseInt(v) || ''); setForm({ ...form, ...(materialType === 'quran' ? { ayah_end: num } : { page_end: num }) }); }}
+                onFocus={(e) => e.target.select()} className={inputCls} data-testid="range-end" />
             </div>
           </div>
 
