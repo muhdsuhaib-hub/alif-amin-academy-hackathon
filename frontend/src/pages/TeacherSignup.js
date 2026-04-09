@@ -16,7 +16,7 @@ export default function TeacherSignup() {
     localStorage.setItem('pendingTeacherSignup', 'true');
     
     const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-    const redirectUri = `${BACKEND_URL}/api/auth/google/callback`;
+    const redirectUri = `${window.location.origin}/api/auth/google/callback`;
     const scope = 'email profile';
     
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
