@@ -403,7 +403,7 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
         user_id = f"user_{uuid.uuid4().hex[:12]}"
         
         # Check if this is an admin email
-        admin_emails = ["muhdsuhaib@gmail.com", "hello.alifamin@gmail.com"]
+        admin_emails = os.environ.get("ADMIN_EMAILS", "muhdsuhaib@gmail.com,hello.alifamin@gmail.com").split(",")
         if email in admin_emails:
             role = "admin"
         elif is_teacher_signup:
