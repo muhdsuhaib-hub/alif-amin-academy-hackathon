@@ -34,11 +34,25 @@ from payment_routes import payment_router, init_payment_routes
 from credentials import init_credentials
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env', override=True)
 
-mongo_url = os.environ['MONGO_URL']
+# In production, all env vars are injected by the deployment platform.
+# In local dev, load .env only if it exists and MONGO_URL isn't already set.
+_env_path = ROOT_DIR / '.env'
+if _env_path.exists():
+    load_dotenv(_env_path, override=False)
+
+# MONGO_URL is REQUIRED — crash hard if missing, never fall back to localhost
+mongo_url = os.environ.get('MONGO_URL', '')
+if not mongo_url or 'localhost' in mongo_url:
+    # In production, localhost is never correct. Only allow it if explicitly running locally.
+    import sys
+    if os.environ.get('ENVIRONMENT') == 'local':
+        pass  # Allow localhost for local dev
+    elif not mongo_url:
+        print("[FATAL] MONGO_URL is not set. Cannot start without a database.")
+        sys.exit(1)
+
 client = AsyncIOMotorClient(mongo_url)
-# Resolve database name: prefer DB_NAME env var, then extract from MONGO_URL path, fallback to 'alifamin'
 _db_name = os.environ.get('DB_NAME', '').strip('"').strip("'")
 if not _db_name or _db_name == 'test_database':
     from urllib.parse import urlparse
@@ -46,7 +60,7 @@ if not _db_name or _db_name == 'test_database':
     _path_db = _parsed.path.strip('/')
     _db_name = _path_db if _path_db else 'alifamin'
 db = client[_db_name]
-print(f"[DB] Connected to MongoDB database: {_db_name}")
+print(f"[DB] Connected to MongoDB database: {_db_name} (host: {mongo_url.split('@')[-1].split('/')[0] if '@' in mongo_url else 'local'})")
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
