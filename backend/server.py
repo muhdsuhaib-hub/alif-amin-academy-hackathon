@@ -38,7 +38,20 @@ load_dotenv(ROOT_DIR / '.env')
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+# Use DB_NAME from env, but if the MONGO_URL contains a database path (Atlas style),
+# extract it as the default. Atlas URIs look like: mongodb+srv://user:pass@host/dbname
+_db_name = os.environ.get('DB_NAME', '')
+if not _db_name or _db_name == 'test_database':
+    # Try to extract DB name from the connection string path
+    from urllib.parse import urlparse
+    _parsed = urlparse(mongo_url.replace('mongodb+srv://', 'https://').replace('mongodb://', 'https://'))
+    _path_db = _parsed.path.strip('/')
+    if _path_db:
+        _db_name = _path_db
+    else:
+        _db_name = 'alifamin'
+db = client[_db_name]
+print(f"[DB] Connected to MongoDB database: {_db_name}")
 
 # Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -2217,17 +2230,21 @@ async def shutdown_db_client():
 @app.on_event("startup")
 async def seed_system_settings():
     """Seed commission tiers into system_settings so admins can adjust them."""
-    existing = await db.system_settings.find_one({"key": "commission_tiers"})
-    if not existing:
-        await db.system_settings.insert_one({
-            "key": "commission_tiers",
-            "tiers": {
-                "new": {"name": "New Tutor", "commission_rate": 0.40, "min_sessions": 0, "min_rating": 0},
-                "rated": {"name": "Rated Tutor", "commission_rate": 0.35, "min_sessions": 20, "min_rating": 4.5},
-                "elite": {"name": "Elite Tutor", "commission_rate": 0.30, "min_sessions": 100, "min_rating": 4.7},
-            },
-            "updated_at": datetime.now(timezone.utc).isoformat()
-        })
+    try:
+        existing = await db.system_settings.find_one({"key": "commission_tiers"})
+        if not existing:
+            await db.system_settings.insert_one({
+                "key": "commission_tiers",
+                "tiers": {
+                    "new": {"name": "New Tutor", "commission_rate": 0.40, "min_sessions": 0, "min_rating": 0},
+                    "rated": {"name": "Rated Tutor", "commission_rate": 0.35, "min_sessions": 20, "min_rating": 4.5},
+                    "elite": {"name": "Elite Tutor", "commission_rate": 0.30, "min_sessions": 100, "min_rating": 4.7},
+                },
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            })
+        logger.info("[Startup] System settings seed completed")
+    except Exception as e:
+        logger.warning(f"[Startup] Non-fatal: Could not seed system_settings: {e}. App will continue.")
 
 
 # ============================================================
