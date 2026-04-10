@@ -38,18 +38,13 @@ load_dotenv(ROOT_DIR / '.env')
 
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
-# Use DB_NAME from env, but if the MONGO_URL contains a database path (Atlas style),
-# extract it as the default. Atlas URIs look like: mongodb+srv://user:pass@host/dbname
-_db_name = os.environ.get('DB_NAME', '')
+# Resolve database name: prefer DB_NAME env var, then extract from MONGO_URL path, fallback to 'alifamin'
+_db_name = os.environ.get('DB_NAME', '').strip('"').strip("'")
 if not _db_name or _db_name == 'test_database':
-    # Try to extract DB name from the connection string path
     from urllib.parse import urlparse
     _parsed = urlparse(mongo_url.replace('mongodb+srv://', 'https://').replace('mongodb://', 'https://'))
     _path_db = _parsed.path.strip('/')
-    if _path_db:
-        _db_name = _path_db
-    else:
-        _db_name = 'alifamin'
+    _db_name = _path_db if _path_db else 'alifamin'
 db = client[_db_name]
 print(f"[DB] Connected to MongoDB database: {_db_name}")
 
