@@ -15,6 +15,7 @@ import hashlib
 import httpx
 import logging
 import urllib.parse
+from functools import cmp_to_key
 from credentials import get_billplz_config
 
 payment_router = APIRouter(prefix="/api/payments")
@@ -38,15 +39,43 @@ def _billplz_base_url(sandbox: bool) -> str:
     return "https://www.billplz-sandbox.com/api/v3" if sandbox else "https://www.billplz.com/api/v3"
 
 
+def _billplz_cmp(a: str, b: str) -> int:
+    """Billplz key sort: case-insensitive, longer string first on prefix match.
+    Matches PHP's strncasecmp + ($b_len - $a_len) fallback."""
+    min_len = min(len(a), len(b))
+    for i in range(min_len):
+        ca, cb = a[i].lower(), b[i].lower()
+        if ca < cb:
+            return -1
+        elif ca > cb:
+            return 1
+    return len(b) - len(a)
+
+
+def _billplz_source_string(data: dict, prefix: str = "") -> str:
+    """Build Billplz canonical source string (recursive for nested params).
+    Matches the PHP buildSourceString exactly."""
+    sorted_keys = sorted(
+        [k for k in data.keys() if k != "x_signature"],
+        key=cmp_to_key(_billplz_cmp),
+    )
+    parts = []
+    for k in sorted_keys:
+        v = data[k]
+        if isinstance(v, dict):
+            parts.append(_billplz_source_string(v, k))
+        else:
+            parts.append(f"{prefix}{k}{v}")
+    return "|".join(parts)
+
+
 def _verify_x_signature(params: dict, x_sig_key: str, received_sig: str) -> bool:
-    """Verify Billplz X-Signature using HMAC-SHA256."""
-    filtered = {k: v for k, v in params.items() if k != "x_signature"}
-    sorted_keys = sorted(filtered.keys())
-    source = "|".join(f"{k}{filtered[k]}" for k in sorted_keys)
-    expected = hmac.HMAC(
+    """Verify Billplz X-Signature using HMAC-SHA256 with correct canonical sort."""
+    source = _billplz_source_string(params)
+    expected = hmac.new(
         x_sig_key.encode("utf-8"),
         source.encode("utf-8"),
-        hashlib.sha256
+        hashlib.sha256,
     ).hexdigest()
     return hmac.compare_digest(expected, received_sig)
 
@@ -308,11 +337,14 @@ async def billplz_redirect(request: Request):
         try:
             _, _, x_sig_key, _ = await get_billplz_config()
             if x_sig_key and x_sig:
-                redirect_params = {}
+                # Parse billplz[key]=val into nested {"billplz": {"key": "val"}}
+                # so _billplz_source_string prepends the "billplz" prefix correctly.
+                nested = {}
                 for k, v in params.items():
-                    clean_key = k.replace("billplz[", "").replace("]", "")
-                    redirect_params[clean_key] = v
-                if not _verify_x_signature(redirect_params, x_sig_key, x_sig):
+                    if k.startswith("billplz[") and k.endswith("]"):
+                        inner_key = k[8:-1]  # strip "billplz[" and "]"
+                        nested.setdefault("billplz", {})[inner_key] = v
+                if not _verify_x_signature(nested, x_sig_key, x_sig):
                     sig_valid = False
                     logger.warning(f"[Billplz Redirect] X-Signature FAILED for bill {bill_id} — skipping wallet credit")
         except Exception as e:

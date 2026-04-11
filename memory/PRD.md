@@ -5,7 +5,7 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 ## Architecture
 - **Frontend:** React 18, Tailwind CSS, Shadcn UI, LiveKit React SDK
-- **Backend:** FastAPI, Motor (MongoDB async), Pydantic, bcrypt, Fernet encryption
+- **Backend:** FastAPI, Motor (MongoDB async), Pydantic, Fernet encryption
 - **Database:** MongoDB
 - **Real-time:** LiveKit (WebRTC A/V), FastAPI WebSockets (Quran sync)
 - **Auth:** Google OAuth + Admin PIN (env var `ADMIN_PIN`)
@@ -447,6 +447,13 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 ### P2
 - Resilient Cloud Recording (WebRTC media chunking/GCS bucket)
 - WhatsApp notifications integration
+
+### Billplz X-Signature Verification Fix (Feb 2026)
+- **Root cause 1 — Wrong sort**: Python's default `sorted()` (lexicographic) differs from Billplz's spec (case-insensitive, longer-first on prefix match). This caused `paid, paid_amount, paid_at` vs correct `paid_amount, paid_at, paid` — different source strings → HMAC mismatch.
+- **Root cause 2 — Missing redirect prefix**: PHP natively parses `billplz[id]` into nested arrays; the recursive `buildSourceString` prepends `billplz` as a prefix. Python code was stripping `billplz[]` entirely, losing the prefix from the canonical string.
+- **Fix**: Implemented `_billplz_cmp()` comparator matching PHP's `strncasecmp` + length fallback, and `_billplz_source_string()` with recursive nested-dict support. Redirect handler now builds a nested `{"billplz": {...}}` dict instead of flattening keys.
+- **Verified**: Unit tests confirm correct sort order and full HMAC round-trip for both callback and redirect payloads.
+
 - Admin Report Card PDF export
 - Blur Background toggle in A/V settings
 - SMS notifications
