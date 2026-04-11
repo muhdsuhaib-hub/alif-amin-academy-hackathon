@@ -1,144 +1,138 @@
-<analysis>**original_problem_statement:**
-The user, acting as a Senior Full-Stack Engineer, has requested the implementation of an Advanced Quran V2 feature. The objective is to create a new, high-fidelity interactive Quran experience within the classroom, replacing the old version while keeping the legacy code as a fallback.
+<analysis>### Handover Summary
 
-**PRODUCT REQUIREMENTS (Quran V2):**
-1.  **Backend (Secure Content Bridge):**
-    *   Create a dedicated router at .
-    *   Securely store and use  and  from the  file for server-side OAuth2 authentication with .
-    *   Fetch high-resolution, word-by-word Quran data to ensure crisp font rendering.
+**original_problem_statement:**
+The user (acting as a Senior Full-Stack Engineer) is leading a massive overhaul of the Alif Amin Academy application (Premium Quran tutoring platform). In this session, the focus was on deploying the application to production, hardening backend environment variable architecture, fixing complex financial aggregations, implementing Admin CSV exports, resolving Billplz payment webhook/redirect bugs, and polishing the Classroom UI (duration enforcement, mobile layout, material tracking). 
 
-2.  **Frontend (Center-Stage Whiteboard):**
-    *   The Quranic text should become the primary interactive layer over the classroom's whiteboard area.
-    *   Replicate the aesthetics of , focusing on white space, margins, and clarity.
-    *   Verses (Ayahs) must be interactive, with hover-to-highlight and click-to-focus functionality.
-    *   Implement fluid font scaling using  for perfect rendering across mobile, tablet, and desktop.
-    *   Create a responsive navigation drawer (for Surah, Verse, Juz, Page) that slides in/out, pushing content on desktop and overlaying it on mobile.
-
-3.  **Real-Time Sync (WebSocket V2):**
-    *   Use a new, dedicated  event type to prevent conflicts with existing WebSocket traffic.
-    *   When a teacher navigates, scrolls, hovers, or clicks within the Quran view, the student's view must mirror these actions instantly.
-
-4.  **Safety & Guardrails:**
-    *   **NO AUTOMATED TESTING AGENTS.** All verification will be done via manual UAT by the user.
-    *   Wrap the new V2 components in a React  to prevent API failures from crashing the entire classroom.
-    *   **Zero-Deletion Policy:** Do not remove the old Quran code. It must be kept as a potential Legacy fallback.
+**PRODUCT REQUIREMENTS:**
+- **Strict Constraint**: NO AUTOMATED TESTING AGENTS ALLOWED. All validation must be done via manual UAT by the user or manual agent checks (curl/screenshots).
+- **Environment Variables Strategy**: The production app relies on Emergent container environment variables.  files must act strictly as local fallbacks and *must not* override or poison production container secrets. Hardcrashes are preferred over silent  fallbacks in production.
 
 **User's preferred language**: English
+*(INSTRUCT NEXT AGENT: You MUST respond in English only)*
 
-**what currently exists?**
-A full-stack Quran tutoring application with a classroom featuring video/audio, chat, and interactive activities via WebSockets. The agent has initiated the Advanced Quran V2 feature by creating the necessary boilerplate files: a new backend router (), a new frontend component (), and an API service file (). The required API credentials have been added to the  file.
+**what currently exists?** 
+A production-ready full-stack Quran tutoring application (React + FastAPI + MongoDB). The platform features Google OAuth, a Billplz payment integration, LiveKit virtual classrooms with real-time websocket syncing, and comprehensive Admin/Teacher/Student dashboards. Deployment readiness checks are passing, and production MongoDB Atlas / Google Cloud configurations have been integrated. 
 
 **Last working item**:
-- **Last item agent was working:** The agent was in the initial scaffolding phase for the Advanced Quran V2 feature. It created the initial files and folder structure required for the implementation but has not yet written any core logic.
-- **Status:** IN PROGRESS
+- **Last item agent was working:** Refactoring the **Admin PIN** authentication logic. The user requested stopping reliance on the database/hashed PINs for the Admin PIN. Instead, it must be added to the environment variable schema (), checked against user input directly in the backend route, and return a graceful error to the frontend if incorrect (instead of a generic 500 error).
+- **Status:** IN PROGRESS (Agent reviewed  and  to find the existing  logic around line 1200, but no code edits were made yet).
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** Manual testing by the user only. The user has issued a non-negotiable rule: **NO AUTOMATED TESTING AGENTS.**
+- **Which testing method agent to use?** Manual testing by curl / python -c / screenshot tool. (Automated testing agents strictly forbidden).
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-There are no pending bug fixes. The current focus is entirely on new feature development.
+- **Issue 1: Tutor Transaction Pagination UI** (P1)
+   - *Description*: Pagination controls for Tutor's Transaction History not rendering in . 
+   - *Status*: NOT STARTED
+- **Issue 2: Missing View Report Button** (P1)
+   - *Description*: Add View Report button to Admin  for completed sessions.
+   - *Status*: NOT STARTED
 
 **In progress Task List**:
--   **Task 1: Implement Advanced Quran V2 Feature (P0)**
-    -   **Where to resume:** The foundational files exist. The immediate next step is to implement the backend logic in , focusing on the OAuth2 token exchange and creating endpoints to fetch Quran data. Concurrently, the frontend UI in  needs to be built out, starting with the responsive navigation drawer and the main content display area.
-    -   **What will be achieved with this?** A new, high-fidelity, interactive Quran viewer will be integrated into the classroom, fulfilling the user's V2 requirements.
-    -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** Both
-    -   **Blocked on something:** No.
+- **Task 1: Admin PIN Environment Variable Refactor** (P0)
+   - *Where to resume*: In , locate the  or relevant PIN verification endpoints (around line 1200). Remove the  DB check. Compare input against . Return a clear .
+   - *What will be achieved*: Removes DB dependency for master admin credentials and standardizes it within the deployment environment secrets.
+   - *Status*: IN PROGRESS
+   - *Should Test frontend/backend/both after fix?*: Backend via .
+   - *Blocked on something*: Nothing.
 
 **Upcoming and Future Tasks**
-- **Upcoming Tasks (Quran V2 Implementation):**
-    - **P0: Backend API Implementation:** In , implement the server-side OAuth2 token management. Create endpoints to proxy requests to  for chapter lists and word-by-word verse data. Mount this new router in .
-    - **P0: Frontend UI Construction:** In , build the main UI, including the responsive navigation drawer and the Quran content viewer. Implement the  logic for fluid font scaling and the hover/click interactions on verses.
-    - **P0: WebSocket Integration:** In , extend the existing WebSocket logic to handle the  event. Implement functions to send sync messages when the teacher interacts with the Quran view and to listen for and apply these changes on the student's side.
-    - **P1: Error Boundary:** Wrap the primary  component in a React  to isolate it and prevent potential API errors from crashing the video call.
-- **Future Tasks (From Previous Forks):**
-    - **P0: Resilient Cloud Recording:** Implement robust WebRTC media chunking or server-side stream to a GCS bucket.
-    - **P1: WebSocket Heartbeat & Presence:** Implement ping/pong to detect disconnections and show a Reconnecting... UI (partially implemented, but may need review).
+- **P2**: Resilient Cloud Recording (WebRTC media chunking/GCS bucket).
+- **P2**: WhatsApp notifications integration.
+- **P2**: Admin Report Card PDF export.
+- **P2**: Blur Background toggle in A/V settings.
+- **P2**: SMS notifications.
 
 **Completed work in this session**
-- **Initial Scaffolding for Quran V2:**
-    - Created .
-    - Added  and  to .
-    - Created  for the main component.
-    - Created  to house API calls.
-    - Created  icon.
+- **4 Critical Fixes** (, , ): Forced 15m booking intervals, locked student navigation during WS sync, fixed landscape mobile UI flex layout, and fixed notification timezones/lockouts. (DONE)
+- **Google OAuth Profile Overwrite** (): Replaced  with new-user-only assignment so existing custom names/avatars aren't overwritten on subsequent Google logins. (DONE)
+- **Class Duration Enforcement** (, ): Added backend  validation and disabled frontend End Class buttons to prevent early tutor payouts. (DONE)
+- **Billplz Webhook & Redirect Fixes** (, , ): Fixed stripped wallet schema update, corrected  signatures, caught 403 API errors during redirect to send users gracefully to , and added a wildcard 404 React route. (DONE)
+- **Admin Finance UI & CSV Export** (, ): Fixed Deferred Revenue / Tutor Payable aggregation logic. Created a 12-column CSV builder endpoint that handles  type fallbacks safely. Added a functional Blob-based frontend download button exposing . (DONE)
+- **Session Report Material Tracking** (, ): Added conditional toggle for 'Quran' vs 'Iqra' books, passing dynamic tracking fields to the backend. (DONE)
+- **Deployment Hardening & Environment Variables** (, ): Extracted  DB_NAME from the Atlas URI, removed  fallbacks from the  to enforce container env precedence, and wrapped startup background tasks in try/except blocks to prevent Uvicorn crash loops. (DONE)
+- **Frontend Navigation** (): Mapped My Profile dropdown correctly for students (), teachers (), and admins (). (DONE)
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Teacher Transaction Pagination UI**
-    -   **Description:** The user reported in Hotfix 9.8 that the pagination controls for the Teacher's Transaction History were not rendering. The previous agent suspected a data issue (e.g., ) but did not confirm a fix.
-    -   **Debug checklist:** Manually verify in the UI if the pagination controls are absent when there are multiple pages of data. If so, inspect the rendering logic in .
-    -   **Why to solve this issue and what will be achieved with this?** Fixes a UI regression and restores core navigation functionality for teachers reviewing their earnings.
-    -   **Should Test frontend/backend/both after fix:** Frontend
-    -   **Is recurring issue?** N
--   **Issue 2: Missing View Report Button**
-    -   **Description:** The user noted in Hotfix 9.6 that the View Report button was missing from the Admin Session History table. This was never addressed.
-    -   **Debug checklist:** Add the View Report button to the Actions column in the table within  for completed sessions.
-    -   **Why to solve this issue and what will be achieved with this?** Implements a previously missed user requirement, improving admin utility.
-    -   **Should Test frontend/backend/both after fix:** Frontend
-    -   **Is recurring issue?** N
+*(Covered in Pending Issues list above: Transaction pagination & View Report button)*
 
 **Known issue recurrence from previous fork**
--   **Financial Logic & Data Sync:** Historically, there have been multiple bugs related to financial calculations and data consistency between the backend and frontend.
--   **Ghost Sessions:** The logic for managing and cleaning up stale live sessions has been a recurring problem area requiring several hotfixes.
+- **Environment Variable Poisoning**: Be *very careful* with  and local  files. The app is designed so that production container variables (like , ) dictate behavior. Ensure no code falls back silently to  in production. If  is missing, it *should* hard crash.
+- Recurrence count: 3 (Resolved in this session, but keep in mind).
+- Status: RESOLVED.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend:** FastAPI,  for external API calls, OAuth2 Client Credentials Flow.
--   **Frontend:** React, Tailwind CSS,  for responsive typography, WebSockets.
--   **API:** .
+- **Frontend**: React, Tailwind CSS, React Router DOM (Blob handling for CSV downloads).
+- **Backend**: FastAPI, MongoDB (Motor), Background tasks (asyncio). 
+- **Environment Handling**: Production relies strictly on injected  keys. Local development uses .
 
 **key DB schema**
--   No database schema changes are required for this feature.
-
-**changes in tech stack**
--   No changes to the core tech stack. A new external API integration is being added.
+- : Core profile data.
+- : Financial footprint per class session.
+- : Wallet ledger (top-ups, withdrawals).
+- : Stores commission tiers (queried at startup).
 
 **All files of reference**
--   : New file to implement the secure API bridge.
--   : Will need modification to mount the new router.
--   : New file for the main UI of the feature.
--   : Needs modification to handle WebSocket sync ().
--   : Needs modification to render the new  component.
--   : Contains the new  and .
+- : Target for current Task (Admin PIN). Also contains CSV builder.
+- : MongoDB initialization, env var loading, and cron jobs.
+- : Updated with 404 wildcard route and fixed protected routes.
+- : Hardened Billplz redirect handling to avoid API error responses.
+
+**Areas that need refactoring**: 
+-  has become very large due to complex aggregation pipelines and CSV building.
 
 **key api endpoints**
--   **To be created:**
-    -   : To get the list of Surahs.
-    -   : To get word-by-word data for a specific page.
-    -   (And other endpoints as needed for navigation).
+-  (Target endpoint to refactor from DB to Env Var).
+-  (New CSV endpoint).
+-  (Webhook for Top-ups).
+-  (User return path).
 
 **Critical Info for New Agent**
--   **Strict User Constraints:** You **MUST NOT** use any automated testing agents. You **MUST NOT** delete the old Quran code. You **MUST** wrap the new UI in a React .
--   **Security First:** All communication with  must be proxied through the new backend router () to protect the client credentials. Do not make direct calls from the frontend to the external API.
--   **UI/UX Goal:** The primary design goal is to replicate the clean, spacious, and highly readable aesthetic of .
--   **WebSocket Channel:** Use the new  event type for all real-time synchronization to avoid interfering with existing classroom events like chat or activities.
+- **STRICT TESTING BAN**: You are explicitly FORBIDDEN from using automated testing agents (). Use manual validation (, bash commands, screenshots) only.
+- **No Database Fallbacks**: The  logic has been deliberately configured to *crash* if the environment variable is missing, rather than silently connecting to localhost. Do not alter this.
+- **Admin PIN Task**: You are currently tasked with refactoring the Admin PIN verification to use .
 
 **documents and test reports created in this job**
--   None in this session yet.
+- None (Automated testing agents forbidden).
 
-**Last 10 User Messages and any pending HUMAN messages**
-1.  **User (LATEST):** Requested the implementation of the Advanced Quran V2 feature with detailed specifications for the backend, frontend, real-time sync, and safety guardrails. (IN PROGRESS)
+**Last 10 User Messages and any pending HUMAN messages** 
+1. **User (LATEST, PENDING)**: Requested to formalize  via environment variables instead of the database, update the verification route, and send a graceful error on failure. (Agent started but did not finish).
+2. **User**: Reported Blank Screen on Billplz Redirect and False Failure. (Fixed via wildcard 404 and signature logic adjustment).
+3. **User**: Reported reminder/sweeper cron jobs crashing due to localhost fallback. (Fixed by removing  from local ).
+4. **User**: Backend crashing due to local  logic vs . (Fixed to crash predictably on missing env vars instead of silent fallback).
+5. **User**: DB Unauthorized (Code 13) error for . (Fixed DB string parsing).
+6. **User**:  Google OAuth error. (Fixed env var injection pipeline context).
+7. **User**: Failed to download report CSV 500 error. (Fixed  TypeError in ).
+8. **User**: Enhance Admin CSV export with 12 specific columns. (Done).
+9. **User**: Clean up Command Center UI & fix CSV Blob download mechanism in frontend. (Done).
+10. **User**: Add Quran vs Iqra material toggle in Tutor Session Report modal. (Done).
 
 **Project Health Check:**
--   **Broken:** No known broken features at the start of this task.
--   **Mocked:** The new Quran V2 feature is currently in a mocked/scaffolded state.
+- **Broken**: None.
+- **Mocked**: None.
 
 **3rd Party Integrations**
--   **New Integration:**
-    -   : For fetching high-resolution Quran data.
--   **Existing Integrations:**
-    -   LiveKit (Real-time video/audio)
-    -   Billplz (Payments)
-    -   Google Cloud Storage (File uploads)
-    -   Custom Google OAuth (Authentication)
+- Google OAuth (Authentication) - Requires User API Key
+- LiveKit (Real-time Video/Audio) - Requires User API Key
+- Billplz (Payments) - Requires User API Key
+- Google Cloud Storage (Assets & Uploads) - Requires User API Key
+-  (External API Proxy) - Requires User API Key
 
 **Testing status**
--   **Testing agent used after significant changes:** NO. This is explicitly forbidden by the user.
--   **Test files created:** []
--   **Known regressions:** None at the start of this task.
+- Testing agent used after significant changes: **NO** (Strictly banned by user).
+- Troubleshoot agent used after agent stuck in loop: NO.
+- Test files created: []
+- Known regressions: None.
+
+**Credentials to test flow:**
+*(Rely on local environment configuration and  placeholders).*
 
 **What agent forgot to execute**
-- The task has just started. The previous agent did not mount the newly created  router in the main  file, which will be a necessary next step for the backend work.</analysis>
+- The agent gathered context for the  refactor task (), but did not actually perform the file edits to swap the database hash check with an  check. Start here immediately.
+
+<TESTING METHOD>
+Manual testing only (curl, python -c, or screenshot tool). DO NOT use automated testing subagents.
+</TESTING METHOD></analysis>

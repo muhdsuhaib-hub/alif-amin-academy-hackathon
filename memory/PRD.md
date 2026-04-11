@@ -8,7 +8,7 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 - **Backend:** FastAPI, Motor (MongoDB async), Pydantic, bcrypt, Fernet encryption
 - **Database:** MongoDB
 - **Real-time:** LiveKit (WebRTC A/V), FastAPI WebSockets (Quran sync)
-- **Auth:** Google OAuth + Admin PIN (bcrypt salted)
+- **Auth:** Google OAuth + Admin PIN (env var `ADMIN_PIN`)
 - **Encryption:** Fernet AES for API keys at rest
 - **External APIs:** Quran.com V4 (proxied), LiveKit Cloud
 
@@ -427,3 +427,26 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 - Added session lockout in `ClassroomPage.js` — completed/cancelled/missed sessions redirect users to their dashboard.
 - Added `_class_reminder_cron` background task in `server.py` — checks every 5 min for sessions starting in ~70 min and creates `class_reminder` notifications (with deduplication).
 - Fixed pre-existing dead code bug in tutor dashboard `total_withdrawn` calculation (unreachable code after early return).
+
+
+### Admin PIN Environment Variable Refactor (Feb 2026)
+- **Removed** all bcrypt-hashed database PIN storage (`admin_pin_hash` field no longer used)
+- **Added** `ADMIN_PIN` environment variable — all PIN verification now compares input directly against `os.environ.get("ADMIN_PIN")`
+- **Refactored locations**: `admin_routes.py` (7 sites: set, verify, status, wallet-adjust, settings-update, custom-key-update, custom-key-delete) + `server.py` (1 site: tutor payout)
+- **Helper function** `_verify_admin_pin(pin)` centralizes all PIN checks in `admin_routes.py`
+- **`/admin-pin/set`** endpoint deprecated — returns 400 instructing to set PIN via deployment secrets
+- **`/admin-pin/status`** now checks `bool(os.environ.get("ADMIN_PIN"))` instead of DB field
+- **Error responses**: `PIN_NOT_SET` (400), `PIN_REQUIRED` (400), `Invalid Admin PIN` (400) — all graceful, no 500s
+- **Architecture note**: `bcrypt` import removed from `admin_routes.py` entirely; kept in `server.py` for `pwd_context`
+
+## Prioritized Backlog
+### P1
+- Tutor Transaction Pagination UI (`TransactionHistory.js`)
+- Missing "View Report" Button in Admin `SessionMonitor.js`
+
+### P2
+- Resilient Cloud Recording (WebRTC media chunking/GCS bucket)
+- WhatsApp notifications integration
+- Admin Report Card PDF export
+- Blur Background toggle in A/V settings
+- SMS notifications

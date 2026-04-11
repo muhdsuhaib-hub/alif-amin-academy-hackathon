@@ -2113,15 +2113,14 @@ async def adjust_tutor_balance(data: dict, current_user: User = Depends(get_curr
     if amount == 0:
         raise HTTPException(status_code=400, detail="Amount cannot be zero")
 
-    # Verify admin PIN using bcrypt (same pattern as wallet-adjust in admin_routes.py)
-    admin_doc = await db.users.find_one({"user_id": current_user.user_id}, {"_id": 0})
-    stored_pin_hash = admin_doc.get("admin_pin_hash") if admin_doc else None
-    if not stored_pin_hash:
+    # Verify admin PIN against ADMIN_PIN environment variable
+    expected_pin = os.environ.get("ADMIN_PIN")
+    if not expected_pin:
         raise HTTPException(status_code=400, detail="PIN_NOT_SET")
     if not admin_pin:
         raise HTTPException(status_code=400, detail="PIN_REQUIRED")
-    if not bcrypt.checkpw(admin_pin.encode(), stored_pin_hash.encode()):
-        raise HTTPException(status_code=403, detail="Invalid PIN")
+    if admin_pin != expected_pin:
+        raise HTTPException(status_code=400, detail="Invalid Admin PIN")
 
     # Verify user is a teacher
     teacher = await db.teachers.find_one({"user_id": user_id}, {"_id": 0})

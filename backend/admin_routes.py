@@ -12,7 +12,6 @@ from email.mime.text import MIMEText
 from typing import Optional, List
 from pydantic import BaseModel
 from models import User, Teacher, Student
-import bcrypt
 from cryptography.fernet import Fernet
 import base64
 import hashlib
@@ -40,6 +39,18 @@ def _encrypt_value(value: str) -> str:
 def _decrypt_value(encrypted: str) -> str:
     f = _get_fernet_key()
     return f.decrypt(encrypted.encode()).decode()
+
+
+def _verify_admin_pin(pin: str):
+    """Verify admin PIN against the ADMIN_PIN environment variable.
+    Raises HTTPException on failure."""
+    expected = os.environ.get("ADMIN_PIN")
+    if not expected:
+        raise HTTPException(status_code=400, detail="PIN_NOT_SET")
+    if not pin:
+        raise HTTPException(status_code=400, detail="PIN_REQUIRED")
+    if pin != expected:
+        raise HTTPException(status_code=400, detail="Invalid Admin PIN")
 
 
 async def _send_email(to_email: str, subject: str, body: str):
@@ -1181,32 +1192,13 @@ async def export_transactions_csv(request: Request):
 
 @admin_router.post("/admin-pin/set")
 async def set_admin_pin(request: Request):
-    """Set or update the admin's 6-digit security PIN (bcrypt hashed)."""
-    token = request.cookies.get("session_token")
-    if not token:
-        auth = request.headers.get("Authorization")
-        if auth and auth.startswith("Bearer "):
-            token = auth.split(" ")[1]
-    if not token:
-        raise HTTPException(status_code=401, detail="Not authenticated")
-    session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
-    if not session:
-        raise HTTPException(status_code=401, detail="Invalid session")
-    admin_user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
-    if not admin_user or admin_user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
-    body = await request.json()
-    pin = body.get("pin", "")
-    if not pin or len(pin) != 6 or not pin.isdigit():
-        raise HTTPException(status_code=400, detail="PIN must be exactly 6 digits")
-    hashed = bcrypt.hashpw(pin.encode(), bcrypt.gensalt(rounds=10)).decode()
-    await db.users.update_one({"user_id": admin_user["user_id"]}, {"$set": {"admin_pin_hash": hashed}})
-    return {"success": True}
+    """Deprecated: Admin PIN is now managed via ADMIN_PIN environment variable."""
+    raise HTTPException(status_code=400, detail="Admin PIN is managed via environment variables. Set ADMIN_PIN in your deployment secrets.")
 
 
 @admin_router.post("/admin-pin/verify")
 async def verify_admin_pin(request: Request):
-    """Verify the admin's 6-digit PIN."""
+    """Verify the admin's PIN against the ADMIN_PIN environment variable."""
     token = request.cookies.get("session_token")
     if not token:
         auth = request.headers.get("Authorization")
@@ -1222,17 +1214,13 @@ async def verify_admin_pin(request: Request):
         raise HTTPException(status_code=403, detail="Admin only")
     body = await request.json()
     pin = body.get("pin", "")
-    stored_hash = admin_user.get("admin_pin_hash")
-    if not stored_hash:
-        raise HTTPException(status_code=400, detail="PIN_NOT_SET")
-    if not bcrypt.checkpw(pin.encode(), stored_hash.encode()):
-        raise HTTPException(status_code=403, detail="Invalid PIN")
+    _verify_admin_pin(pin)
     return {"success": True, "has_pin": True}
 
 
 @admin_router.get("/admin-pin/status")
 async def get_pin_status(request: Request):
-    """Check if the admin has set a PIN."""
+    """Check if ADMIN_PIN environment variable is configured."""
     token = request.cookies.get("session_token")
     if not token:
         auth = request.headers.get("Authorization")
@@ -1246,7 +1234,7 @@ async def get_pin_status(request: Request):
     admin_user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
     if not admin_user or admin_user.get("role") != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
-    return {"has_pin": bool(admin_user.get("admin_pin_hash"))}
+    return {"has_pin": bool(os.environ.get("ADMIN_PIN"))}
 
 
 @admin_router.post("/users/{user_id}/impersonate")
@@ -1447,13 +1435,7 @@ async def adjust_wallet(adj: WalletAdjustment, request: Request):
         raise HTTPException(status_code=403, detail="Admin only")
 
     # Verify Admin PIN
-    stored_pin_hash = admin_user.get("admin_pin_hash")
-    if not stored_pin_hash:
-        raise HTTPException(status_code=400, detail="PIN_NOT_SET")
-    if not adj.admin_pin:
-        raise HTTPException(status_code=400, detail="PIN_REQUIRED")
-    if not bcrypt.checkpw(adj.admin_pin.encode(), stored_pin_hash.encode()):
-        raise HTTPException(status_code=403, detail="Invalid PIN")
+    _verify_admin_pin(adj.admin_pin)
 
     user = await db.users.find_one({"user_id": adj.user_id}, {"_id": 0})
     if not user:
@@ -1619,11 +1601,7 @@ async def update_settings(body: AdminSettingsUpdate, request: Request):
         raise HTTPException(status_code=403, detail="Admin only")
 
     # Verify PIN
-    stored_hash = admin_user.get("admin_pin_hash")
-    if not stored_hash:
-        raise HTTPException(status_code=400, detail="PIN_NOT_SET")
-    if not body.admin_pin or not bcrypt.checkpw(body.admin_pin.encode(), stored_hash.encode()):
-        raise HTTPException(status_code=403, detail="Invalid PIN")
+    _verify_admin_pin(body.admin_pin)
 
     updates_to_save = {"updated_at": datetime.now(timezone.utc).isoformat()}
     if body.updates:
@@ -1674,11 +1652,7 @@ async def update_custom_key(key_name: str, request: Request):
     new_value = body.get("value", "").strip()
     admin_pin = body.get("admin_pin", "")
 
-    stored_hash = admin_user.get("admin_pin_hash")
-    if not stored_hash:
-        raise HTTPException(status_code=400, detail="PIN_NOT_SET")
-    if not admin_pin or not bcrypt.checkpw(admin_pin.encode(), stored_hash.encode()):
-        raise HTTPException(status_code=403, detail="Invalid PIN")
+    _verify_admin_pin(admin_pin)
 
     settings = await db.admin_settings.find_one({"_id_key": "global"}, {"_id": 0})
     customs = settings.get("custom_keys", []) if settings else []
@@ -1716,11 +1690,7 @@ async def delete_custom_key(key_name: str, request: Request):
     body = await request.json()
     admin_pin = body.get("admin_pin", "")
 
-    stored_hash = admin_user.get("admin_pin_hash")
-    if not stored_hash:
-        raise HTTPException(status_code=400, detail="PIN_NOT_SET")
-    if not admin_pin or not bcrypt.checkpw(admin_pin.encode(), stored_hash.encode()):
-        raise HTTPException(status_code=403, detail="Invalid PIN")
+    _verify_admin_pin(admin_pin)
 
     settings = await db.admin_settings.find_one({"_id_key": "global"}, {"_id": 0})
     customs = settings.get("custom_keys", []) if settings else []

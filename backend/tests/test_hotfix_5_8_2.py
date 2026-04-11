@@ -15,7 +15,7 @@ from datetime import datetime, timezone, timedelta
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://amin-academy-bugs.preview.emergentagent.com"
+    BASE_URL = "https://amin-env-secure.preview.emergentagent.com"
 
 
 class TestQuranAPIHealth:
