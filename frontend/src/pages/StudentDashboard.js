@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Home, Wallet, Calendar, User, TrendingUp } from 'lucide-react';
 import { PageLoader } from '../components/Spinner';
 import LayoutShell from '../components/layout/LayoutShell';
@@ -28,6 +28,7 @@ const TAB_TITLES = {
 
 export default function StudentDashboard({ user, onUserUpdate }) {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState('home');
   const [dashboardData, setDashboardData] = useState(null);
   const [bookings, setBookings] = useState([]);
@@ -36,6 +37,20 @@ export default function StudentDashboard({ user, onUserUpdate }) {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
   const [studentId, setStudentId] = useState(null);
+
+  // Handle ?tab= and ?payment= query params (e.g., from Billplz redirect)
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    const payment = searchParams.get('payment');
+    if (tab) setActiveTab(tab);
+    if (payment) {
+      setActiveTab('wallet');
+      const { toast } = require('sonner');
+      if (payment === 'success') toast.success('Payment successful! Credits have been added to your wallet.');
+      else toast.error('Payment was not completed. Please try again or contact support.');
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const fetchDashboardData = useCallback(async () => {
     try {

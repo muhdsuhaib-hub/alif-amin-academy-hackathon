@@ -338,12 +338,12 @@ async def billplz_redirect(request: Request):
                 logger.error(f"[Billplz Redirect] Wallet credit failed for bill_id={bill_id}: {e}", exc_info=True)
                 # Don't block redirect — the server callback will handle it
 
+        # Determine user-facing status: paid status from Billplz is the source of truth.
+        # Signature failure only prevents wallet crediting here (the server callback handles it).
         status = "success" if paid == "true" else "failed"
-        if not sig_valid:
-            status = "failed"
 
     except Exception as e:
         logger.error(f"[Billplz Redirect] Unhandled error: {e}", exc_info=True)
         status = "failed"
 
-    return RedirectResponse(url=f"{frontend_url}/student/wallet?payment={status}", status_code=302)
+    return RedirectResponse(url=f"{frontend_url}/student/dashboard?tab=wallet&payment={status}", status_code=302)

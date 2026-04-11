@@ -18,6 +18,24 @@ import Contact from './pages/Contact';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import { Toaster } from './components/ui/sonner';
+import { Home } from 'lucide-react';
+
+function NotFoundPage() {
+  const navigate = useNavigate();
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#fbfaf6] px-4">
+      <div className="text-center max-w-md">
+        <h1 className="text-6xl font-bold text-[#0f2e24] mb-4" style={{ fontFamily: 'Libre Baskerville, serif' }}>404</h1>
+        <p className="text-lg text-slate-600 mb-6">This page doesn't exist or has been moved.</p>
+        <button onClick={() => navigate('/')}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0f2e24] text-white font-medium hover:bg-[#0f2e24]/90 transition-all"
+          data-testid="404-go-home">
+          <Home className="w-4 h-4" /> Go Home
+        </button>
+      </div>
+    </div>
+  );
+}
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -241,6 +259,9 @@ function AppRouter() {
           <ClassroomPage />
         </ProtectedRoute>
       } />
+
+      {/* Wildcard 404 fallback — never show a blank screen */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
