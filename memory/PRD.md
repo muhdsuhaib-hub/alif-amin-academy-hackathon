@@ -464,6 +464,14 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 - **Teacher email**: "Welcome to Alif Amin! Let's get to know you" — introduces get-to-know-you session expectation.
 - Hooked into all 3 signup paths: email registration (`POST /auth/register`), Google OAuth callback (new users), and session-data flow (new users).
 
+### 30-Minute Class Reminder Emails (Feb 2026)
+- Rewrote `_class_reminder_cron()` in `server.py`: window changed from 65-75 min to **25-35 min** before session start.
+- **Dedup**: Query filters `reminder_30_sent: {$ne: True}` on the booking document. After both emails are sent, the booking is atomically flagged `reminder_30_sent: true` — guarantees no duplicate emails even if cron fires multiple times.
+- **Student email**: "Your Quran session starts in 30 minutes!" with class time + tutor name.
+- **Tutor email**: "Upcoming Class Reminder: 30 minutes to go!" with class time + student name.
+- Both emails sent as HTML + plain text via `asyncio.create_task()` (non-blocking). Times formatted in Malaysia Time (GMT+8).
+
+
 
 
 - Admin Report Card PDF export

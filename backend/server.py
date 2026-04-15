@@ -2407,11 +2407,22 @@ async def start_stale_session_sweeper():
 
 
 # ============================================================
-# BACKGROUND JOB: Class Reminder Notifications (1h 10m before)
+# BACKGROUND JOB: Class Reminder Notifications + Emails (30 min before)
 # ============================================================
+def _format_myt(utc_str: str) -> str:
+    """Convert a UTC ISO string to a human-friendly Malaysia Time string."""
+    try:
+        dt = datetime.fromisoformat(utc_str.replace("Z", "+00:00"))
+        myt = dt + timedelta(hours=8)
+        return myt.strftime("%A, %d %b %Y at %I:%M %p") + " (GMT+8)"
+    except Exception:
+        return utc_str
+
+
 async def _class_reminder_cron():
-    """Background coroutine — sends class reminders ~70 minutes before start.
-    Runs every 5 minutes and checks for sessions starting within the next 70-75 minutes.
+    """Background coroutine — sends class reminders ~30 minutes before start.
+    Runs every 5 minutes and checks for sessions starting within a 25-35 min window.
+    Uses booking-level `reminder_30_sent` flag to guarantee no duplicate emails.
     """
     from notification_routes import create_notification as _create_notif
     INTERVAL_SECONDS = 5 * 60
@@ -2419,12 +2430,12 @@ async def _class_reminder_cron():
         try:
             await asyncio.sleep(INTERVAL_SECONDS)
             now = datetime.now(timezone.utc)
-            # Window: 65-75 minutes from now (catches sessions in the ~70 min range)
-            window_start = now + timedelta(minutes=65)
-            window_end = now + timedelta(minutes=75)
+            window_start = now + timedelta(minutes=25)
+            window_end = now + timedelta(minutes=35)
 
             upcoming = await db.bookings.find({
                 "status": "scheduled",
+                "reminder_30_sent": {"$ne": True},
                 "start_time_utc": {
                     "$gte": window_start.isoformat(),
                     "$lte": window_end.isoformat()
@@ -2434,60 +2445,112 @@ async def _class_reminder_cron():
             for booking in upcoming:
                 bid = booking["booking_id"]
                 raw_time = booking["start_time_utc"]
+                friendly_time = _format_myt(raw_time)
 
-                # Notify student
-                student = await db.students.find_one({"student_id": booking.get("student_id")}, {"_id": 0})
-                if student:
-                    existing = await db.notifications.find_one({
-                        "user_id": student["user_id"],
-                        "notification_type": "class_reminder",
-                        "related_id": bid
-                    })
-                    if not existing:
-                        teacher = await db.teachers.find_one({"teacher_id": booking.get("teacher_id")}, {"_id": 0})
-                        teacher_user = await db.users.find_one({"user_id": teacher["user_id"]}, {"_id": 0}) if teacher else None
-                        teacher_name = teacher_user.get("name", "Your Tutor") if teacher_user else "Your Tutor"
-                        session_doc = await db.class_sessions.find_one({"booking_id": bid}, {"_id": 0, "session_id": 1})
-                        link = f"/classroom/{session_doc['session_id']}" if session_doc else None
+                # ---------- Look up both parties ----------
+                student_doc = await db.students.find_one({"student_id": booking.get("student_id")}, {"_id": 0})
+                student_user = await db.users.find_one({"user_id": student_doc["user_id"]}, {"_id": 0}) if student_doc else None
 
-                        await _create_notif(
-                            user_id=student["user_id"],
-                            title="Class Starting Soon!",
-                            message=f"Your session with {teacher_name} starts in about 1 hour. Get ready!",
-                            notification_type="class_reminder",
-                            related_id=bid,
-                            link=link,
-                            action_required=True,
-                            class_time_utc=raw_time
-                        )
-                        logger.info(f"[Reminder] Sent student reminder for booking {bid}")
+                teacher_doc = await db.teachers.find_one({"teacher_id": booking.get("teacher_id")}, {"_id": 0})
+                teacher_user = await db.users.find_one({"user_id": teacher_doc["user_id"]}, {"_id": 0}) if teacher_doc else None
 
-                # Notify teacher
-                teacher = await db.teachers.find_one({"teacher_id": booking.get("teacher_id")}, {"_id": 0})
-                if teacher:
-                    existing = await db.notifications.find_one({
-                        "user_id": teacher["user_id"],
-                        "notification_type": "class_reminder",
-                        "related_id": bid
-                    })
-                    if not existing:
-                        student_doc = await db.students.find_one({"student_id": booking.get("student_id")}, {"_id": 0})
-                        student_user = await db.users.find_one({"user_id": student_doc["user_id"]}, {"_id": 0}) if student_doc else None
-                        student_name = student_user.get("name", "Your Student") if student_user else "Your Student"
-                        session_doc = await db.class_sessions.find_one({"booking_id": bid}, {"_id": 0, "session_id": 1})
-                        link = f"/classroom/{session_doc['session_id']}" if session_doc else None
+                student_name = student_user.get("name", "Student") if student_user else "Student"
+                teacher_name = teacher_user.get("name", "Your Tutor") if teacher_user else "Your Tutor"
+                student_first = student_name.split()[0]
+                teacher_first = teacher_name.split()[0]
 
-                        await _create_notif(
-                            user_id=teacher["user_id"],
-                            title="Class Starting Soon!",
-                            message=f"Your session with {student_name} starts in about 1 hour. Prepare your materials!",
-                            notification_type="class_reminder",
-                            related_id=bid,
-                            link=link,
-                            action_required=True,
-                            class_time_utc=raw_time
-                        )
-                        logger.info(f"[Reminder] Sent teacher reminder for booking {bid}")
+                session_doc = await db.class_sessions.find_one({"booking_id": bid}, {"_id": 0, "session_id": 1})
+                link = f"/classroom/{session_doc['session_id']}" if session_doc else None
+
+                # ---------- Student reminder ----------
+                if student_user and student_user.get("email"):
+                    # In-app notification
+                    await _create_notif(
+                        user_id=student_user["user_id"],
+                        title="Class in 30 minutes!",
+                        message=f"Your session with {teacher_name} starts in 30 minutes. Get ready!",
+                        notification_type="class_reminder",
+                        related_id=bid,
+                        link=link,
+                        action_required=True,
+                        class_time_utc=raw_time
+                    )
+                    # Email
+                    s_plain = (
+                        f"Assalamu'alaikum {student_first},\n\n"
+                        f"This is a quick reminder that your upcoming Quran session with {teacher_name} is starting in exactly 30 minutes!\n\n"
+                        "Class Details:\n"
+                        f"Time: {friendly_time}\n"
+                        f"Tutor: {teacher_name}\n\n"
+                        "Please log in to your dashboard a few minutes early to ensure your microphone and camera are ready.\n\n"
+                        "Warmly,\nThe Alif Amin Team"
+                    )
+                    s_html = (
+                        "<div style='font-family:Arial,Helvetica,sans-serif;color:#1e293b;line-height:1.6;max-width:600px;margin:0 auto;'>"
+                        f"<p>Assalamu'alaikum <strong>{student_first}</strong>,</p>"
+                        f"<p>This is a quick reminder that your upcoming Quran session with <strong>{teacher_name}</strong> is starting in exactly 30 minutes!</p>"
+                        "<p><strong>Class Details:</strong></p>"
+                        "<table style='border-collapse:collapse;margin:8px 0 16px;'>"
+                        f"<tr><td style='padding:4px 16px 4px 0;color:#64748b;'>Time:</td><td style='padding:4px 0;'><strong>{friendly_time}</strong></td></tr>"
+                        f"<tr><td style='padding:4px 16px 4px 0;color:#64748b;'>Tutor:</td><td style='padding:4px 0;'><strong>{teacher_name}</strong></td></tr>"
+                        "</table>"
+                        "<p>Please log in to your dashboard a few minutes early to ensure your microphone and camera are ready.</p>"
+                        "<p>Warmly,<br/>The Alif Amin Team</p>"
+                        "</div>"
+                    )
+                    asyncio.create_task(_send_email(
+                        student_user["email"],
+                        "Your Quran session starts in 30 minutes!",
+                        s_plain, s_html
+                    ))
+                    logger.info(f"[Reminder] Sent 30-min student reminder for booking {bid}")
+
+                # ---------- Tutor reminder ----------
+                if teacher_user and teacher_user.get("email"):
+                    await _create_notif(
+                        user_id=teacher_user["user_id"],
+                        title="Class in 30 minutes!",
+                        message=f"Your session with {student_name} starts in 30 minutes. Prepare your materials!",
+                        notification_type="class_reminder",
+                        related_id=bid,
+                        link=link,
+                        action_required=True,
+                        class_time_utc=raw_time
+                    )
+                    t_plain = (
+                        f"Assalamu'alaikum {teacher_first},\n\n"
+                        "This is a quick reminder that you have a teaching session starting in 30 minutes.\n\n"
+                        "Class Details:\n"
+                        f"Time: {friendly_time}\n"
+                        f"Student: {student_name}\n\n"
+                        "Please log in to your Teacher Dashboard early to review your student's progress and prepare for the session.\n\n"
+                        "Warmly,\nThe Alif Amin Team"
+                    )
+                    t_html = (
+                        "<div style='font-family:Arial,Helvetica,sans-serif;color:#1e293b;line-height:1.6;max-width:600px;margin:0 auto;'>"
+                        f"<p>Assalamu'alaikum <strong>{teacher_first}</strong>,</p>"
+                        "<p>This is a quick reminder that you have a teaching session starting in 30 minutes.</p>"
+                        "<p><strong>Class Details:</strong></p>"
+                        "<table style='border-collapse:collapse;margin:8px 0 16px;'>"
+                        f"<tr><td style='padding:4px 16px 4px 0;color:#64748b;'>Time:</td><td style='padding:4px 0;'><strong>{friendly_time}</strong></td></tr>"
+                        f"<tr><td style='padding:4px 16px 4px 0;color:#64748b;'>Student:</td><td style='padding:4px 0;'><strong>{student_name}</strong></td></tr>"
+                        "</table>"
+                        "<p>Please log in to your Teacher Dashboard early to review your student's progress and prepare for the session.</p>"
+                        "<p>Warmly,<br/>The Alif Amin Team</p>"
+                        "</div>"
+                    )
+                    asyncio.create_task(_send_email(
+                        teacher_user["email"],
+                        "Upcoming Class Reminder: 30 minutes to go!",
+                        t_plain, t_html
+                    ))
+                    logger.info(f"[Reminder] Sent 30-min tutor reminder for booking {bid}")
+
+                # ---------- Flag booking so we never re-send ----------
+                await db.bookings.update_one(
+                    {"booking_id": bid},
+                    {"$set": {"reminder_30_sent": True}}
+                )
 
         except Exception as e:
             logger.error(f"[Reminder] Error in class reminder cron: {e}")
@@ -2497,4 +2560,4 @@ async def _class_reminder_cron():
 async def start_class_reminder_cron():
     """Launch the background class reminder task."""
     asyncio.create_task(_class_reminder_cron())
-    logger.info("[Reminder] Class reminder background task started (interval: 5 min, trigger: 70 min before class)")
+    logger.info("[Reminder] Class reminder background task started (interval: 5 min, trigger: 30 min before class)")
