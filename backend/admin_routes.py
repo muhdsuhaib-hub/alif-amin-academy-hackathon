@@ -9,6 +9,7 @@ import json
 import logging
 import smtplib
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from typing import Optional, List
 from pydantic import BaseModel
 from models import User, Teacher, Student
@@ -53,7 +54,7 @@ def _verify_admin_pin(pin: str):
         raise HTTPException(status_code=400, detail="Invalid Admin PIN")
 
 
-async def _send_email(to_email: str, subject: str, body: str):
+async def _send_email(to_email: str, subject: str, body: str, html_body: str = None):
     """Send email via SMTP with TLS. DB credentials first, .env fallback, then console log."""
     from credentials import get_smtp_config
     smtp_email, smtp_password, smtp_host, smtp_port = await get_smtp_config()
@@ -64,10 +65,18 @@ async def _send_email(to_email: str, subject: str, body: str):
         return
 
     try:
-        msg = MIMEText(body, "plain", "utf-8")
-        msg["Subject"] = subject
-        msg["From"] = sender
-        msg["To"] = to_email
+        if html_body:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = sender
+            msg["To"] = to_email
+            msg.attach(MIMEText(body, "plain", "utf-8"))
+            msg.attach(MIMEText(html_body, "html", "utf-8"))
+        else:
+            msg = MIMEText(body, "plain", "utf-8")
+            msg["Subject"] = subject
+            msg["From"] = sender
+            msg["To"] = to_email
         with smtplib.SMTP(smtp_host, smtp_port) as server:
             server.ehlo()
             server.starttls()
@@ -264,8 +273,36 @@ async def approve_teacher(teacher_id: str):
     user = await db.users.find_one({"user_id": teacher["user_id"]}, {"_id": 0})
     if user and user.get("email"):
         name = user.get("name", "Teacher")
-        await _send_email(user["email"], "Welcome to Alif Amin! Your teaching application is APPROVED",
-            f"Assalamu'alaikum {name},\n\nWe have wonderful news! After reviewing your application, we are thrilled to officially welcome you as a verified Tutor at Alif Amin Academy.\n\nYour dedication to teaching the Book of Allah is exactly what our students are looking for.\n\nYour Next Steps:\n1. Log in to your Teacher Dashboard.\n2. Complete your profile by uploading your Intro Video and Certificates.\n3. Set your schedule so students can start booking your classes immediately!\n\nWe are excited to support you on this journey. May Allah bless your efforts.\n\nWarmly,\nThe Alif Amin Team")
+        plain_body = (
+            f"Assalamu'alaikum {name},\n\n"
+            "We have wonderful news! After reviewing your application, we are thrilled to officially welcome you as a verified Tutor at Alif Amin Academy.\n\n"
+            "Your dedication to teaching the Book of Allah is exactly what our students are looking for.\n\n"
+            "Your Next Steps:\n"
+            "1. Log in to your Teacher Dashboard.\n"
+            "2. Complete your profile by uploading your Intro Video and Certificates.\n"
+            "3. Set your schedule so students can start booking your classes immediately!\n"
+            "4. Join our official Tutor Telegram community where we share guides on how to teach, navigate the web app, and other important updates: https://t.me/+r0zmhkvFPrUwMzVl\n\n"
+            "We are excited to support you on this journey. May Allah bless your efforts.\n\n"
+            "Warmly,\nThe Alif Amin Team"
+        )
+        html_body = (
+            f"<div style='font-family:Arial,Helvetica,sans-serif;color:#1e293b;line-height:1.6;max-width:600px;margin:0 auto;'>"
+            f"<p>Assalamu'alaikum <strong>{name}</strong>,</p>"
+            "<p>We have wonderful news! After reviewing your application, we are thrilled to officially welcome you as a verified Tutor at <strong>Alif Amin Academy</strong>.</p>"
+            "<p>Your dedication to teaching the Book of Allah is exactly what our students are looking for.</p>"
+            "<p><strong>Your Next Steps:</strong></p>"
+            "<ol style='padding-left:20px;'>"
+            "<li>Log in to your Teacher Dashboard.</li>"
+            "<li>Complete your profile by uploading your Intro Video and Certificates.</li>"
+            "<li>Set your schedule so students can start booking your classes immediately!</li>"
+            "<li>Join our official Tutor Telegram community where we share guides on how to teach, navigate the web app, and other important updates: "
+            "<a href='https://t.me/+r0zmhkvFPrUwMzVl' target='_blank' style='color:#059669;text-decoration:underline;'>https://t.me/+r0zmhkvFPrUwMzVl</a></li>"
+            "</ol>"
+            "<p>We are excited to support you on this journey. May Allah bless your efforts.</p>"
+            "<p>Warmly,<br/>The Alif Amin Team</p>"
+            "</div>"
+        )
+        await _send_email(user["email"], "Welcome to Alif Amin! Your teaching application is APPROVED", plain_body, html_body)
     return {"message": "Teacher approved successfully", "teacher_id": teacher_id}
 
 
