@@ -11,7 +11,7 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointe
   const [imgLoading, setImgLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
   const [pointerVisible, setPointerVisible] = useState(false);
-  const imgContainerRef = useRef(null);
+  const imgWrapperRef = useRef(null);
   const pointerTimerRef = useRef(null);
 
   const maxPages = PAGES_PER_BOOK[currentBook] || 35;
@@ -54,16 +54,26 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointe
     emitSync(currentBook, page);
   }, [currentBook, maxPages, emitSync]);
 
-  // Teacher: emit pointer % coords on mouse move over image container
-  const handleMouseMove = useCallback((e) => {
-    if (!isTeacher || !imgContainerRef.current) return;
-    const rect = imgContainerRef.current.getBoundingClientRect();
-    const xPct = ((e.clientX - rect.left) / rect.width) * 100;
-    const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+  // Teacher: emit pointer % coords relative to the actual image area
+  const handlePointerCoords = useCallback((clientX, clientY) => {
+    if (!isTeacher || !imgWrapperRef.current) return;
+    const rect = imgWrapperRef.current.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return;
+    const xPct = ((clientX - rect.left) / rect.width) * 100;
+    const yPct = ((clientY - rect.top) / rect.height) * 100;
     onPointerMove?.({ x: xPct, y: yPct });
   }, [isTeacher, onPointerMove]);
 
-  const handleMouseLeave = useCallback(() => {
+  const handleMouseMove = useCallback((e) => {
+    handlePointerCoords(e.clientX, e.clientY);
+  }, [handlePointerCoords]);
+
+  const handleTouchMove = useCallback((e) => {
+    if (!e.touches.length) return;
+    handlePointerCoords(e.touches[0].clientX, e.touches[0].clientY);
+  }, [handlePointerCoords]);
+
+  const handlePointerLeave = useCallback(() => {
     if (isTeacher) onPointerMove?.(null);
   }, [isTeacher, onPointerMove]);
 
@@ -108,12 +118,7 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointe
       </div>
 
       {/* Image Viewer with pointer overlay */}
-      <div
-        ref={imgContainerRef}
-        className="relative flex-1 min-h-0 flex items-center justify-center overflow-auto px-4 py-6 pb-32"
-        onMouseMove={isTeacher ? handleMouseMove : undefined}
-        onMouseLeave={isTeacher ? handleMouseLeave : undefined}
-        data-testid="iqra-image-container">
+      <div className="relative flex-1 min-h-0 flex items-center justify-center overflow-auto px-4 py-6 pb-32">
 
         {imgLoading && !imgError && (
           <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
@@ -134,25 +139,38 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointe
             </button>
           </div>
         ) : (
-          <img
-            key={imgSrc}
-            src={imgSrc}
-            alt={`Iqra Book ${currentBook} - Page ${currentPage}`}
-            className="object-contain w-full h-full rounded-lg select-none"
-            onLoad={() => setImgLoading(false)}
-            onError={() => { setImgLoading(false); setImgError(true); }}
-            draggable={false}
-            data-testid="iqra-page-image"
-          />
-        )}
-
-        {/* Laser Pointer (student side only) */}
-        {!isTeacher && pointerVisible && pointerPos && (
+          /* Tight wrapper: sizes to the actual rendered image so
+             percentage-based pointer coords map identically on every screen. */
           <div
-            className="absolute w-4 h-4 rounded-full bg-emerald-500/50 pointer-events-none z-20 -translate-x-1/2 -translate-y-1/2"
-            style={{ left: `${pointerPos.x}%`, top: `${pointerPos.y}%` }}
-            data-testid="iqra-laser-pointer">
-            <div className="absolute inset-0 rounded-full bg-emerald-500/40 animate-ping" />
+            ref={imgWrapperRef}
+            className="relative"
+            onMouseMove={isTeacher ? handleMouseMove : undefined}
+            onMouseLeave={isTeacher ? handlePointerLeave : undefined}
+            onTouchMove={isTeacher ? handleTouchMove : undefined}
+            onTouchEnd={isTeacher ? handlePointerLeave : undefined}
+            data-testid="iqra-image-container"
+          >
+            <img
+              key={imgSrc}
+              src={imgSrc}
+              alt={`Iqra Book ${currentBook} - Page ${currentPage}`}
+              className="block rounded-lg select-none"
+              style={{ maxWidth: '100%', maxHeight: 'calc(100vh - 200px)' }}
+              onLoad={() => setImgLoading(false)}
+              onError={() => { setImgLoading(false); setImgError(true); }}
+              draggable={false}
+              data-testid="iqra-page-image"
+            />
+
+            {/* Laser Pointer (student side) — positioned relative to image area */}
+            {!isTeacher && pointerVisible && pointerPos && (
+              <div
+                className="absolute w-4 h-4 rounded-full bg-emerald-500/50 pointer-events-none z-20 -translate-x-1/2 -translate-y-1/2"
+                style={{ left: `${pointerPos.x}%`, top: `${pointerPos.y}%` }}
+                data-testid="iqra-laser-pointer">
+                <div className="absolute inset-0 rounded-full bg-emerald-500/40 animate-ping" />
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -454,6 +454,11 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 - **Fix**: Implemented `_billplz_cmp()` comparator matching PHP's `strncasecmp` + length fallback, and `_billplz_source_string()` with recursive nested-dict support. Redirect handler now builds a nested `{"billplz": {...}}` dict instead of flattening keys.
 - **Verified**: Unit tests confirm correct sort order and full HMAC round-trip for both callback and redirect payloads.
 
+### Mobile UI Bug Fixes (Feb 2026)
+- **Notification Dropdown Overflow**: Added `max-w-[calc(100vw-1.5rem)]` to `NotificationBell.js` dropdown so it stays within viewport on all screen sizes.
+- **Iqra Pointer Cross-Device Sync**: Refactored `IqraReader.js` — replaced `object-contain w-full h-full` (where img element = container size, not image area) with a tight `relative` wrapper around the `<img>` using `maxWidth: 100%` + `maxHeight`. Pointer coordinates are now computed and rendered relative to the actual image dimensions, not the padded container. Also added `onTouchMove`/`onTouchEnd` support for mobile tutors.
+
+
 - Admin Report Card PDF export
 - Blur Background toggle in A/V settings
 - SMS notifications
