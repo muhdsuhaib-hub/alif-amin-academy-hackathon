@@ -20,7 +20,7 @@ from models import (
     AvailabilitySlot, AvailabilityCreate, Booking, BookingCreate,
     Lesson, LessonCreate, Progress, Subscription, Payment
 )
-from admin_routes import admin_router, init_admin_routes
+from admin_routes import admin_router, init_admin_routes, _send_email
 from notification_routes import notification_router, init_notification_routes
 from wallet_routes import wallet_router, init_wallet_routes
 from commission_routes import commission_router, init_commission_routes
@@ -123,6 +123,68 @@ async def root():
     return {"message": "Alif Amin Academy API", "version": "1.0"}
 
 
+async def _send_welcome_email(email: str, name: str, role: str):
+    """Fire-and-forget welcome email after signup. Errors are logged, never raised."""
+    first_name = (name or "").split()[0] if name else "there"
+    try:
+        if role == "student":
+            subject = "Welcome to the Alif Amin Family! Here is your Free Trial"
+            plain = (
+                f"Assalamu'alaikum {first_name},\n\n"
+                "Welcome to Alif Amin Academy! We are so incredibly grateful and excited to be part of your Quran learning journey.\n\n"
+                "To help you get started immediately, we have just added 1 Free Trial Credit (worth RM15) to your wallet!\n\n"
+                "Your Next Steps:\n"
+                "1. Log in to your Student Dashboard.\n"
+                "2. Select your preferred time and date.\n"
+                "3. Browse our list of verified tutors.\n"
+                "4. Use your free credit to book your very first 15-minute session!\n\n"
+                "If you need any help, we are always here for you. May Allah bless your path of seeking knowledge.\n\n"
+                "Warmly,\nThe Alif Amin Team"
+            )
+            html = (
+                "<div style='font-family:Arial,Helvetica,sans-serif;color:#1e293b;line-height:1.6;max-width:600px;margin:0 auto;'>"
+                f"<p>Assalamu'alaikum <strong>{first_name}</strong>,</p>"
+                "<p>Welcome to <strong>Alif Amin Academy</strong>! We are so incredibly grateful and excited to be part of your Quran learning journey.</p>"
+                "<p>To help you get started immediately, we have just added <strong>1 Free Trial Credit</strong> (worth RM15) to your wallet!</p>"
+                "<p><strong>Your Next Steps:</strong></p>"
+                "<ol style='padding-left:20px;'>"
+                "<li>Log in to your Student Dashboard.</li>"
+                "<li>Select your preferred time and date.</li>"
+                "<li>Browse our list of verified tutors.</li>"
+                "<li>Use your free credit to book your very first 15-minute session!</li>"
+                "</ol>"
+                "<p>If you need any help, we are always here for you. May Allah bless your path of seeking knowledge.</p>"
+                "<p>Warmly,<br/>The Alif Amin Team</p>"
+                "</div>"
+            )
+        elif role == "teacher":
+            subject = "Welcome to Alif Amin! Let's get to know you"
+            plain = (
+                f"Assalamu'alaikum {first_name},\n\n"
+                "Welcome to Alif Amin Academy! We are thrilled that you have signed up to join our community of dedicated Quran educators.\n\n"
+                "Teaching the Book of Allah is a noble path, and we are here to support you every step of the way.\n\n"
+                "Before you can start teaching, our next step is to arrange a quick, friendly 'get to know you' session so we can meet face-to-face and show you how the platform works.\n\n"
+                "Please look out for a follow-up message from our admin team to schedule this brief chat!\n\n"
+                "Warmly,\nThe Alif Amin Team"
+            )
+            html = (
+                "<div style='font-family:Arial,Helvetica,sans-serif;color:#1e293b;line-height:1.6;max-width:600px;margin:0 auto;'>"
+                f"<p>Assalamu'alaikum <strong>{first_name}</strong>,</p>"
+                "<p>Welcome to <strong>Alif Amin Academy</strong>! We are thrilled that you have signed up to join our community of dedicated Quran educators.</p>"
+                "<p>Teaching the Book of Allah is a noble path, and we are here to support you every step of the way.</p>"
+                "<p>Before you can start teaching, our next step is to arrange a quick, friendly <em>'get to know you'</em> session so we can meet face-to-face and show you how the platform works.</p>"
+                "<p>Please look out for a follow-up message from our admin team to schedule this brief chat!</p>"
+                "<p>Warmly,<br/>The Alif Amin Team</p>"
+                "</div>"
+            )
+        else:
+            return
+        await _send_email(email, subject, plain, html)
+    except Exception as e:
+        logger.error(f"[Welcome Email] Failed for {email}: {e}")
+
+
+
 # Email/Password Registration
 @api_router.post("/auth/register")
 async def register_with_email(data: EmailRegister):
@@ -219,6 +281,9 @@ async def register_with_email(data: EmailRegister):
     # Return user without password
     user_response = {k: v for k, v in user_doc.items() if k != "password_hash"}
     
+    # Send welcome email asynchronously (non-blocking)
+    asyncio.create_task(_send_welcome_email(data.email, data.full_name, data.role))
+
     return {
         "message": "Registration successful",
         "user": user_response,
@@ -476,6 +541,9 @@ async def google_oauth_callback(request: Request, code: str, state: Optional[str
                 "created_at": datetime.now(timezone.utc).isoformat()
             }
             await db.teachers.insert_one(teacher_doc)
+
+        # Send welcome email for new Google OAuth users (non-blocking)
+        asyncio.create_task(_send_welcome_email(email, name, role))
     
     # Create session
     session_token = f"session_{uuid.uuid4().hex}"
@@ -555,6 +623,9 @@ async def get_session_data(request: Request):
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.users.insert_one(new_user)
+
+        # Send welcome email for new session-data users (non-blocking)
+        asyncio.create_task(_send_welcome_email(session_data["email"], session_data["name"], "student"))
     
     session_token = session_data["session_token"]
     expires_at = datetime.now(timezone.utc) + timedelta(days=7)

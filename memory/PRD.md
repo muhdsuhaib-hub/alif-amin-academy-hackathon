@@ -458,6 +458,13 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 - **Notification Dropdown Overflow**: Added `max-w-[calc(100vw-1.5rem)]` to `NotificationBell.js` dropdown so it stays within viewport on all screen sizes.
 - **Iqra Pointer Cross-Device Sync**: Refactored `IqraReader.js` — replaced `object-contain w-full h-full` (where img element = container size, not image area) with a tight `relative` wrapper around the `<img>` using `maxWidth: 100%` + `maxHeight`. Pointer coordinates are now computed and rendered relative to the actual image dimensions, not the padded container. Also added `onTouchMove`/`onTouchEnd` support for mobile tutors.
 
+### Automated Welcome Emails (Feb 2026)
+- Added `_send_welcome_email()` helper in `server.py` — sends role-specific HTML+plain-text welcome emails via `asyncio.create_task()` (non-blocking).
+- **Student email**: "Welcome to the Alif Amin Family! Here is your Free Trial" — includes 4-step onboarding guide.
+- **Teacher email**: "Welcome to Alif Amin! Let's get to know you" — introduces get-to-know-you session expectation.
+- Hooked into all 3 signup paths: email registration (`POST /auth/register`), Google OAuth callback (new users), and session-data flow (new users).
+
+
 
 - Admin Report Card PDF export
 - Blur Background toggle in A/V settings
