@@ -1281,8 +1281,8 @@ async def get_bookings(current_user: User = Depends(get_current_user), status: O
 
 @api_router.get("/booking/past-sessions")
 async def get_past_sessions(current_user: User = Depends(get_current_user)):
-    """Return completed/missed bookings for the current user with review state."""
-    query = {"status": {"$in": ["completed", "missed"]}}
+    """Return completed/missed/cancelled bookings for the current user with review state."""
+    query = {"status": {"$in": ["completed", "missed", "cancelled"]}}
     if current_user.role == "student":
         student_doc = await db.students.find_one({"user_id": current_user.user_id}, {"_id": 0})
         if not student_doc:
@@ -2425,15 +2425,8 @@ async def _sweep_stale_sessions():
                         logger.info(f"[Sweeper] {booking_id}: scheduled -> live")
 
                 elif now >= end_time:
-                    # Session has ENDED — completed if anyone joined, missed if nobody did
-                    cs = await db.class_sessions.find_one({"booking_id": booking_id}, {"_id": 0, "status": 1})
-                    was_live = current_status in ("live",) or (cs and cs.get("status") in ("live", "completed"))
-                    new_status = "completed" if was_live else "missed"
-                    # If was never live, also check if session report exists (tutor ended manually)
-                    if new_status == "missed":
-                        report = await db.session_reports.find_one({"booking_id": booking_id})
-                        if report:
-                            new_status = "completed"
+                    # Session has ENDED — always mark completed (evaluation is decoupled)
+                    new_status = "completed"
                     await db.bookings.update_one(
                         {"booking_id": booking_id},
                         {"$set": {"status": new_status, "auto_cleaned_at": now.isoformat()}}
@@ -2454,6 +2447,20 @@ async def _sweep_stale_sessions():
 @app.on_event("startup")
 async def start_stale_session_sweeper():
     """Launch the background stale-session sweeper task."""
+    # One-time retroactive patch: flip all 'missed' bookings to 'completed'
+    try:
+        result = await db.bookings.update_many(
+            {"status": "missed"},
+            {"$set": {"status": "completed"}}
+        )
+        if result.modified_count > 0:
+            logger.info(f"[Sweeper] Retroactive patch: {result.modified_count} 'missed' bookings -> 'completed'")
+            await db.class_sessions.update_many(
+                {"status": "missed"},
+                {"$set": {"status": "completed"}}
+            )
+    except Exception as e:
+        logger.error(f"[Sweeper] Retroactive patch error: {e}")
     asyncio.create_task(_sweep_stale_sessions())
     logger.info("[Sweeper] Stale session background sweeper started (interval: 5 min)")
 

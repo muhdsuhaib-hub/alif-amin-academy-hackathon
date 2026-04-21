@@ -279,6 +279,9 @@ async def get_my_bookings(request: Request, status: Optional[str] = None):
     query = {"student_id": student["student_id"]}
     if status:
         query["status"] = status
+    else:
+        # Default: only upcoming/active bookings (not completed/missed/cancelled)
+        query["status"] = {"$in": ["scheduled", "live"]}
 
     bookings = await db.bookings.find(query, {"_id": 0}).sort("start_time_utc", -1).to_list(200)
 

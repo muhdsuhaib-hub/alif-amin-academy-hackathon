@@ -133,7 +133,11 @@ export default function MySchedule({ bookings: initialBookings, onOpenBooking, o
       const r = await fetch(`${API}/booking/my-bookings`, { credentials: 'include' });
       if (r.ok) {
         const data = await r.json();
-        setBookings(data.bookings || []);
+        // Defensive: only keep scheduled/live bookings for upcoming view
+        const upcoming = (data.bookings || []).filter(b =>
+          ['scheduled', 'live'].includes(b.status)
+        );
+        setBookings(upcoming);
       }
     } catch (e) { console.error('Schedule fetch error:', e); }
   };
