@@ -198,7 +198,7 @@ function Header({ title, user, userRole, onMenuClick, onLogout, onNavigateTab, o
           <h1 className="text-base font-semibold text-slate-900">{title}</h1>
         </div>
         <div className="flex items-center gap-1.5">
-          <NotificationBell userId={user?.user_id} userRole={user?.role || userRole} />
+          <NotificationBell userId={user?.user_id} userRole={user?.role || userRole} userTimezone={user?.timezone} />
           <ProfileDropdown user={user} userRole={userRole} onLogout={onLogout} onNavigateTab={onNavigateTab} onOpenSupport={onOpenSupport} />
         </div>
       </div>

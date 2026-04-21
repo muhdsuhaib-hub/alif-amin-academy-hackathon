@@ -3,6 +3,7 @@ import { Camera, User, Mail, Globe, Lock, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
+import { getTimezones } from '../../utils/timezones';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -11,6 +12,7 @@ export default function AccountPage({ user, onUserUpdate }) {
     name: user?.name || '',
     phone: user?.phone || '',
     timezone: user?.timezone || 'Asia/Kuala_Lumpur',
+    gender: user?.gender || '',
   });
   const [saving, setSaving] = useState(false);
 
@@ -36,11 +38,7 @@ export default function AccountPage({ user, onUserUpdate }) {
     finally { setSaving(false); }
   };
 
-  const timezones = [
-    'Asia/Kuala_Lumpur', 'Asia/Singapore', 'Asia/Jakarta', 'Asia/Dubai',
-    'Asia/Riyadh', 'Europe/London', 'America/New_York', 'America/Los_Angeles',
-    'Australia/Sydney', 'UTC',
-  ];
+  const timezones = getTimezones();
 
   const inputCls = 'h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 pl-11 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500/40 transition-all';
 
@@ -135,6 +133,21 @@ export default function AccountPage({ user, onUserUpdate }) {
           </div>
 
           <div className="relative">
+            <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Gender</label>
+            <User className="absolute left-4 top-[calc(50%+8px)] -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <select
+              value={formData.gender}
+              onChange={e => handleChange('gender', e.target.value)}
+              className={inputCls}
+              data-testid="account-gender-select"
+            >
+              <option value="">Select</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+
+          <div className="relative">
             <label className="block text-xs font-medium text-slate-500 mb-2 uppercase tracking-wider">Timezone</label>
             <Globe className="absolute left-4 top-[calc(50%+8px)] -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <select
@@ -143,7 +156,14 @@ export default function AccountPage({ user, onUserUpdate }) {
               className={inputCls}
               data-testid="account-timezone-select"
             >
-              {timezones.map(tz => <option key={tz} value={tz}>{tz.replace('_', ' ')}</option>)}
+              {timezones.map(tz => {
+                let label = tz.replace(/_/g, ' ');
+                try {
+                  const off = new Intl.DateTimeFormat('en', { timeZone: tz, timeZoneName: 'shortOffset' }).formatToParts().find(p => p.type === 'timeZoneName')?.value;
+                  if (off) label += ` (${off})`;
+                } catch { /* ignore */ }
+                return <option key={tz} value={tz}>{label}</option>;
+              })}
             </select>
           </div>
         </div>

@@ -45,16 +45,18 @@ function formatTime(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function formatClassTime(utcStr) {
+function formatClassTime(utcStr, tz) {
   if (!utcStr) return null;
   try {
     const d = new Date(utcStr.endsWith('Z') ? utcStr : utcStr + 'Z');
     if (isNaN(d.getTime())) return null;
-    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+    const opts = { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true };
+    if (tz) opts.timeZone = tz;
+    return d.toLocaleString('en-US', opts);
   } catch { return null; }
 }
 
-export default function NotificationBell({ userId, userRole }) {
+export default function NotificationBell({ userId, userRole, userTimezone }) {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -145,7 +147,7 @@ export default function NotificationBell({ userId, userRole }) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-[380px] max-w-[calc(100vw-1.5rem)] bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg border border-slate-200/60 z-50 overflow-hidden animate-scale-in">
+        <div className="fixed inset-x-3 top-16 z-50 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[380px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-lg border border-slate-200/60 overflow-hidden animate-scale-in">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
             <h3 className="font-semibold text-sm text-slate-900">Notifications</h3>
             <div className="flex items-center gap-2">
@@ -198,7 +200,7 @@ export default function NotificationBell({ userId, userRole }) {
                       <p className="text-xs text-slate-500 mt-0.5">{n.message}</p>
                       {n.class_time_utc && (
                         <p className="text-xs font-medium text-emerald-700 mt-0.5">
-                          {formatClassTime(n.class_time_utc)}
+                          {formatClassTime(n.class_time_utc, userTimezone)}
                         </p>
                       )}
                       <div className="flex items-center gap-2 mt-1">

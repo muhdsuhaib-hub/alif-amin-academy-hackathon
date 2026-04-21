@@ -249,7 +249,7 @@ async def delete_user(user_id: str):
 async def get_pending_teachers():
     """Get all teachers pending approval"""
     pending_teachers = await db.teachers.find(
-        {"$or": [{"approval_status": "pending"}, {"is_active": False}]},
+        {"approval_status": "pending"},
         {"_id": 0}
     ).to_list(100)
     
@@ -316,9 +316,14 @@ async def reject_teacher(teacher_id: str, body: Optional[RejectBody] = None, rea
     if not teacher:
         raise HTTPException(status_code=404, detail="Teacher not found")
     rejection_reason = (body.reason if body and body.reason else reason) or ""
-    await db.teachers.update_one({"teacher_id": teacher_id}, {"$set": {"is_active": False, "approval_status": "rejected", "rejection_reason": rejection_reason, "rejected_at": datetime.now(timezone.utc).isoformat()}})
-    await db.users.update_one({"user_id": teacher["user_id"]}, {"$set": {"role": "student"}})
-    user = await db.users.find_one({"user_id": teacher["user_id"]}, {"_id": 0})
+    user_id = teacher["user_id"]
+
+    # Hard delete the teacher document so it never reappears in pending list
+    await db.teachers.delete_one({"teacher_id": teacher_id})
+    # Revert user to student role (frees them to re-apply later)
+    await db.users.update_one({"user_id": user_id}, {"$set": {"role": "student"}})
+
+    user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
     if user and user.get("email"):
         name = user.get("name", "Teacher")
         reason_text = f"\n\nAdmin note: {rejection_reason}" if rejection_reason else ""

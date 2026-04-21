@@ -75,7 +75,7 @@ function NavigationDrawer({ chapters, onNavigate, onClose, currentChapter, visib
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200/60">
         <h3 className="text-sm font-semibold text-stone-700 tracking-wide">Navigate</h3>
-        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-stone-100 transition-colors" data-testid="close-nav-drawer">
+        <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-stone-100 transition-colors cursor-pointer" data-testid="close-nav-drawer">
           <X className="w-4 h-4 text-stone-400" />
         </button>
       </div>
@@ -109,7 +109,7 @@ function NavigationDrawer({ chapters, onNavigate, onClose, currentChapter, visib
         {tab === 'surah' && filtered.map(ch => (
           <button key={ch.id} data-surah-id={ch.id}
             onClick={() => onNavigate({ type: 'surah', chapter: ch.id })}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all group mb-0.5 ${currentChapter === ch.id ? 'bg-emerald-50 border border-emerald-200/60' : 'hover:bg-stone-50'}`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all group mb-0.5 cursor-pointer ${currentChapter === ch.id ? 'bg-emerald-50 border border-emerald-200/60' : 'hover:bg-stone-50'}`}
             data-testid={`nav-surah-${ch.id}`}>
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold flex-shrink-0 ${currentChapter === ch.id ? 'bg-emerald-600 text-white' : 'bg-stone-100 text-stone-500'}`}>
               {ch.id}
@@ -126,7 +126,7 @@ function NavigationDrawer({ chapters, onNavigate, onClose, currentChapter, visib
           <div className="grid grid-cols-5 gap-1.5 py-2">
             {Array.from({ length: 604 }, (_, i) => i + 1).map(p => (
               <button key={p} onClick={() => onNavigate({ type: 'page', page: p })}
-                className="h-9 rounded-lg text-xs font-medium text-stone-500 hover:bg-emerald-50 hover:text-emerald-700 transition-colors bg-stone-50"
+                className="h-9 rounded-lg text-xs font-medium text-stone-500 hover:bg-emerald-50 hover:text-emerald-700 transition-colors bg-stone-50 cursor-pointer"
                 data-testid={`nav-page-${p}`}>
                 {p}
               </button>
@@ -330,22 +330,24 @@ function QuranV2Core({
     <div className={`h-full w-full max-w-full overflow-x-hidden flex bg-[#FDFBF7] transition-all duration-300 ${expanded ? 'fixed inset-0 z-50' : ''}`}
       data-testid="quran-v2-viewer">
 
-      {/* Navigation Drawer */}
-      <NavigationDrawer
-        chapters={chapters}
-        onNavigate={handleNavAction}
-        onClose={() => setShowNav(false)}
-        currentChapter={currentChapter}
-        visible={showNav}
-      />
+      {/* Navigation Drawer — desktop sidebar only, hidden on mobile */}
+      <div className="hidden md:block">
+        <NavigationDrawer
+          chapters={chapters}
+          onNavigate={handleNavAction}
+          onClose={() => setShowNav(false)}
+          currentChapter={currentChapter}
+          visible={showNav}
+        />
+      </div>
 
-      {/* Mobile Nav Overlay */}
+      {/* Mobile Nav Overlay — full-screen slide-over */}
       {showNav && (
-        <div className="md:hidden fixed inset-0 z-40 flex" data-testid="mobile-nav-overlay">
-          <div className="w-80 bg-[#FDFBF7] shadow-2xl overflow-hidden">
+        <div className="md:hidden fixed inset-0 z-50 flex" data-testid="mobile-nav-overlay">
+          <div className="w-[85vw] max-w-80 bg-[#FDFBF7] shadow-2xl overflow-hidden">
             <NavigationDrawer chapters={chapters} onNavigate={handleNavAction} onClose={() => setShowNav(false)} currentChapter={currentChapter} visible={true} />
           </div>
-          <div className="flex-1 bg-black/30 backdrop-blur-sm" onClick={() => setShowNav(false)} />
+          <div className="flex-1 bg-black/30 backdrop-blur-sm cursor-pointer" onClick={() => setShowNav(false)} />
         </div>
       )}
 

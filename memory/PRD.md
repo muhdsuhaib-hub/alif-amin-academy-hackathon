@@ -471,6 +471,14 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 - **Tutor email**: "Upcoming Class Reminder: 30 minutes to go!" with class time + student name.
 - Both emails sent as HTML + plain text via `asyncio.create_task()` (non-blocking). Times formatted in Malaysia Time (GMT+8).
 
+### 5 Production Hotfixes (Feb 2026)
+1. **Timezone Sync**: Replaced hardcoded 10-item timezone list with `Intl.supportedValuesOf('timeZone')` (400+ IANA zones) in both `AccountPage.js` and `ProfileManagement.js`. Created shared `utils/timezones.js`. Notification `formatClassTime` now accepts user's saved timezone via prop drilling (`LayoutShell -> NotificationBell`). Labels show UTC offset.
+2. **Mobile Notification Dropdown**: Changed from `absolute right-0 w-[380px]` to `fixed inset-x-3 top-16` on mobile (`<sm`), reverting to absolute positioning on `sm:` breakpoint. No more off-screen overflow on iPhones.
+3. **Gender Persistence**: Added `gender` field to student `AccountPage.js` (formData, UI select, and JSON payload). Backend `/auth/update-profile` already accepted it — student form was simply not sending it.
+4. **Quran Surah Menu Mobile**: Fixed duplicate `NavigationDrawer` rendering (desktop sidebar was competing with mobile overlay). Desktop drawer now `hidden md:block`. Mobile overlay elevated to `z-50`. Added `cursor-pointer` to all interactive buttons (iOS Safari tap fix). Overlay uses `w-[85vw] max-w-80` for proper mobile sizing.
+5. **Admin Rejection Hard Delete**: Changed `reject_teacher` from `update_one` (soft reject) to `delete_one`. Fixed `get_pending_teachers` query from `{$or: [{approval_status: "pending"}, {is_active: false}]}` to just `{approval_status: "pending"}`. Rejected tutors no longer reappear; their user account reverts to student role cleanly.
+
+
 
 
 
