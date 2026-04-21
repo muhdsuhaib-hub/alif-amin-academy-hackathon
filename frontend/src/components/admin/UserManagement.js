@@ -274,7 +274,7 @@ export default function UserManagement() {
               <table className="w-full min-w-[900px]">
                 <thead><tr className="border-b border-slate-100 bg-slate-50/80">
                   <th className="px-3 py-3 w-10"><input type="checkbox" checked={users.length > 0 && selectedIds.length === users.length} onChange={toggleSelectAll} className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500/20 cursor-pointer" data-testid="select-all-checkbox" /></th>
-                  {['User', 'Contact', 'Role', 'Level', 'Schedule', 'Status', 'Registered', 'Actions'].map((h, i) => <th key={i} className={`${i === 7 ? 'text-right' : 'text-left'} px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider`}>{h}</th>)}
+                  {['User', 'Contact', 'Role', 'Gender', 'Level', 'Schedule', 'Status', 'Registered', 'Actions'].map((h, i) => <th key={i} className={`${i === 8 ? 'text-right' : 'text-left'} px-5 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider`}>{h}</th>)}
                 </tr></thead>
                 <tbody className="divide-y divide-slate-50">
                   {users.map((u) => (
@@ -283,6 +283,7 @@ export default function UserManagement() {
                       <td className="px-5 py-3"><div className="flex items-center gap-3"><div className="w-9 h-9 rounded-xl bg-emerald-700 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">{u.name?.charAt(0) || 'U'}</div><div className="min-w-0"><p className="text-sm font-medium text-slate-900 truncate">{u.name || 'Unknown'}</p></div></div></td>
                       <td className="px-5 py-3"><p className="text-xs text-slate-600 truncate max-w-[180px]">{u.email}</p>{u.phone && <p className="text-[10px] text-slate-400">{u.phone}</p>}</td>
                       <td className="px-5 py-3"><span className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold capitalize ${getRoleBadgeCls(u.user_type || u.role)}`}>{u.user_type || u.role || 'student'}</span></td>
+                      <td className="px-5 py-3"><span className="text-xs text-slate-600 capitalize">{u.gender || '\u2014'}</span></td>
                       <td className="px-5 py-3"><span className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold capitalize ${getLevelBadgeCls(u.current_level || u.reading_level)}`}>{u.current_level || u.reading_level || '\u2014'}</span></td>
                       <td className="px-5 py-3"><span className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold capitalize ${getScheduleBadgeCls(u.schedule_preference)}`}>{u.schedule_preference || '\u2014'}</span></td>
                       <td className="px-5 py-3"><span className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold capitalize ${getStatusCls(u.status)}`}>{u.status || 'active'}</span></td>

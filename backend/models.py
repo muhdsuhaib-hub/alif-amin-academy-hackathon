@@ -12,6 +12,7 @@ class User(BaseModel):
     picture: Optional[str] = None
     timezone: str = "UTC"
     phone: Optional[str] = None
+    gender: Optional[str] = None
     created_at: datetime
 
 class UserSession(BaseModel):
