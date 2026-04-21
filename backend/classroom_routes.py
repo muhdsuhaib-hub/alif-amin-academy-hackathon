@@ -296,6 +296,12 @@ async def submit_progress(session_id: str, data: StudentProgressCreate, request:
     if session.get("booking_id"):
         booking = await db.bookings.find_one({"booking_id": session["booking_id"]}, {"_id": 0})
 
+        # Flag tutor_reviewed
+        await db.bookings.update_one(
+            {"booking_id": session["booking_id"]},
+            {"$set": {"tutor_reviewed": True}}
+        )
+
         # Idempotency guard — skip if already paid out
         if booking and booking.get("payment_status") == "payout_done":
             logger.info(f"Earnings already processed for booking {session['booking_id']}, skipping")
@@ -407,6 +413,13 @@ async def rate_teacher(session_id: str, request: Request):
         "review": review,
         "created_at": datetime.now(timezone.utc).isoformat(),
     })
+
+    # Flag student_reviewed on the booking
+    if session.get("booking_id"):
+        await db.bookings.update_one(
+            {"booking_id": session["booking_id"]},
+            {"$set": {"student_reviewed": True}}
+        )
 
     # Update teacher's cumulative average
     new_avg = float(rating)

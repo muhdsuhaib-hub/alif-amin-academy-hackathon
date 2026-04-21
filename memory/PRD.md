@@ -482,6 +482,26 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 
 
 
+### Post-Class Evaluation & Session Status Refactor (Feb 2026)
+**Backend:**
+- **Sweeper fix**: Auto-completes sessions once `end_time` passes if they were ever "live" (or have a session report). Only marks as "missed" if nobody joined at all. Decouples status from evaluation.
+- **Review tracking**: Added `student_reviewed` and `tutor_reviewed` boolean flags on bookings. Set atomically when student rates (`/session/{id}/rate`) or tutor submits progress report (`/session/{id}/submit-progress`).
+- **New endpoint**: `GET /booking/past-sessions` — returns completed/missed bookings with enriched names, session IDs, and review state booleans.
+- **Admin enrichment**: `/admin/sessions/history` now includes `student_reviewed` and `tutor_reviewed` in each booking.
+
+**Frontend — Student:**
+- `MySchedule.js` refactored with Upcoming / Past Sessions tabs. Past tab fetches from `/booking/past-sessions`.
+- `EvaluateModal.js` — in-page modal with 5-star rating + text review. No page redirect. Optimistic UI updates session to "Evaluated" on submit. Success toast.
+- Empty state for no past sessions.
+
+**Frontend — Teacher:**
+- New `TeacherSessions.js` component with Past Sessions list. Shows "Report Submitted" / "No Report" badges + student review indicator.
+- New "Sessions" tab added to teacher dashboard sidebar.
+
+**Frontend — Admin:**
+- `SessionMonitor.js` status column now shows review sub-text for completed sessions: "Fully Reviewed", "Missing Student Review", "Missing Tutor Report", or "No Reviews".
+
+
 - Admin Report Card PDF export
 - Blur Background toggle in A/V settings
 - SMS notifications

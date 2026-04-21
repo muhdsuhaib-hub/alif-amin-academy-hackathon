@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Home, Calendar, DollarSign, Users, User } from 'lucide-react';
+import { Home, Calendar, DollarSign, Users, User, Clock } from 'lucide-react';
 import { PageLoader } from '../components/Spinner';
 import LayoutShell from '../components/layout/LayoutShell';
 import { DashboardOverview, EarningsWallet, AvailabilityCalendar, StudentManagement, ProfileManagement } from '../components/teacher';
+import TeacherSessions from '../components/teacher/TeacherSessions';
 import SupportModal from '../components/SupportModal';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const MENU_ITEMS = [
   { id: 'home', label: 'Home', icon: Home },
+  { id: 'sessions', label: 'Sessions', icon: Clock },
   { id: 'availability', label: 'Availability', icon: Calendar },
   { id: 'earnings', label: 'Earnings', icon: DollarSign },
   { id: 'students', label: 'My Students', icon: Users },
@@ -18,6 +20,7 @@ const MENU_ITEMS = [
 
 const TAB_TITLES = {
   home: 'Dashboard',
+  sessions: 'My Sessions',
   availability: 'Availability Manager',
   earnings: 'Earnings & Wallet',
   students: 'My Students',
@@ -114,6 +117,7 @@ export default function TeacherDashboard({ user, onUserUpdate }) {
         {isPending && RESTRICTED_TABS.includes(activeTab) ? <PendingScreen /> : (
           <>
             {activeTab === 'home' && (isPending ? <PendingScreen /> : <DashboardOverview dashboardData={dashboardData} onNavigateTab={handleTabChange} />)}
+            {activeTab === 'sessions' && <TeacherSessions />}
             {activeTab === 'availability' && <AvailabilityCalendar teacherId={teacherId} />}
             {activeTab === 'earnings' && <EarningsWallet dashboardData={dashboardData} user={user} onRefresh={fetchDashboardData} />}
             {activeTab === 'students' && <StudentManagement teacherId={teacherId} />}

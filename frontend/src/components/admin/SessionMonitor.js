@@ -161,7 +161,20 @@ export default function SessionMonitor() {
                 const sc = statusConfig[b.status] || statusConfig.scheduled;
                 return (
                   <tr key={b.booking_id || i} className="hover:bg-slate-50/50 transition-colors" data-testid={`history-row-${i}`}>
-                    <td className="px-4 py-3"><Badge color={sc.color}>{sc.label}</Badge></td>
+                    <td className="px-4 py-3">
+                      <Badge color={sc.color}>{sc.label}</Badge>
+                      {b.status === 'completed' && (
+                        <p className="text-[10px] mt-1 text-slate-400">
+                          {b.student_reviewed && b.tutor_reviewed
+                            ? 'Fully Reviewed'
+                            : !b.student_reviewed && !b.tutor_reviewed
+                            ? 'No Reviews'
+                            : !b.student_reviewed
+                            ? 'Missing Student Review'
+                            : 'Missing Tutor Report'}
+                        </p>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-sm text-slate-900">{b.teacher_name || 'Unknown'}</td>
                     <td className="px-4 py-3 text-sm text-slate-900">{b.student_name || 'Unknown'}</td>
                     <td className="px-4 py-3 text-sm text-slate-500 whitespace-nowrap">{b.start_time_utc ? new Date(b.start_time_utc).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}</td>

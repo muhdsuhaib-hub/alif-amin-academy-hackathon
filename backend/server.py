@@ -1279,6 +1279,49 @@ async def get_bookings(current_user: User = Depends(get_current_user), status: O
     return enriched_bookings
 
 
+@api_router.get("/booking/past-sessions")
+async def get_past_sessions(current_user: User = Depends(get_current_user)):
+    """Return completed/missed bookings for the current user with review state."""
+    query = {"status": {"$in": ["completed", "missed"]}}
+    if current_user.role == "student":
+        student_doc = await db.students.find_one({"user_id": current_user.user_id}, {"_id": 0})
+        if not student_doc:
+            return {"sessions": []}
+        query["student_id"] = student_doc["student_id"]
+    elif current_user.role == "teacher":
+        teacher_doc = await db.teachers.find_one({"user_id": current_user.user_id}, {"_id": 0})
+        if not teacher_doc:
+            return {"sessions": []}
+        query["teacher_id"] = teacher_doc["teacher_id"]
+    else:
+        return {"sessions": []}
+
+    bookings = await db.bookings.find(query, {"_id": 0}).sort("start_time_utc", -1).limit(50).to_list(50)
+
+    for b in bookings:
+        # Enrich names
+        if b.get("teacher_id"):
+            t = await db.teachers.find_one({"teacher_id": b["teacher_id"]}, {"_id": 0, "user_id": 1})
+            if t:
+                u = await db.users.find_one({"user_id": t["user_id"]}, {"_id": 0, "name": 1})
+                b["teacher_name"] = u.get("name", "Tutor") if u else "Tutor"
+        if b.get("student_id"):
+            s = await db.students.find_one({"student_id": b["student_id"]}, {"_id": 0, "user_id": 1})
+            if s:
+                u = await db.users.find_one({"user_id": s["user_id"]}, {"_id": 0, "name": 1})
+                b["student_name"] = u.get("name", "Student") if u else "Student"
+        # Session ID for linking
+        cs = await db.class_sessions.find_one({"booking_id": b["booking_id"]}, {"_id": 0, "session_id": 1})
+        if cs:
+            b["session_id"] = cs.get("session_id")
+        # Review state booleans (default False)
+        b["student_reviewed"] = b.get("student_reviewed", False)
+        b["tutor_reviewed"] = b.get("tutor_reviewed", False)
+
+    return {"sessions": bookings}
+
+
+
 @api_router.post("/bookings")
 async def create_booking(booking: BookingCreate, current_user: User = Depends(get_current_user)):
     if current_user.role not in ["student", "admin"]:
@@ -2106,6 +2149,9 @@ async def get_admin_session_history(
             if cs:
                 b["session_id"] = cs.get("session_id")
                 b["meet_link_slug"] = cs.get("meet_link_slug")
+        # Review state
+        b["student_reviewed"] = b.get("student_reviewed", False)
+        b["tutor_reviewed"] = b.get("tutor_reviewed", False)
     return {"bookings": bookings, "total": total, "limit": limit, "offset": offset}
 
 
@@ -2379,9 +2425,15 @@ async def _sweep_stale_sessions():
                         logger.info(f"[Sweeper] {booking_id}: scheduled -> live")
 
                 elif now >= end_time:
-                    # Session has ENDED — completed or missed
-                    report = await db.session_reports.find_one({"booking_id": booking_id})
-                    new_status = "completed" if report else "missed"
+                    # Session has ENDED — completed if anyone joined, missed if nobody did
+                    cs = await db.class_sessions.find_one({"booking_id": booking_id}, {"_id": 0, "status": 1})
+                    was_live = current_status in ("live",) or (cs and cs.get("status") in ("live", "completed"))
+                    new_status = "completed" if was_live else "missed"
+                    # If was never live, also check if session report exists (tutor ended manually)
+                    if new_status == "missed":
+                        report = await db.session_reports.find_one({"booking_id": booking_id})
+                        if report:
+                            new_status = "completed"
                     await db.bookings.update_one(
                         {"booking_id": booking_id},
                         {"$set": {"status": new_status, "auto_cleaned_at": now.isoformat()}}
