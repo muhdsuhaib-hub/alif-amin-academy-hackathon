@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, BookOpen, Search, X, Loader2, Maximize2, Minimize2, Hash, Layers } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -70,7 +71,7 @@ function NavigationDrawer({ chapters, onNavigate, onClose, currentChapter, visib
   ];
 
   return (
-    <div className={`flex flex-col h-full bg-[#FDFBF7] transition-all duration-300 ${visible ? 'w-72 md:w-80' : 'w-0 overflow-hidden'}`}
+    <div className="flex flex-col h-full bg-[#FDFBF7]"
       data-testid="quran-v2-nav-drawer">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200/60">
@@ -330,25 +331,28 @@ function QuranV2Core({
     <div className={`h-full w-full max-w-full overflow-x-hidden flex bg-[#FDFBF7] transition-all duration-300 ${expanded ? 'fixed inset-0 z-50' : ''}`}
       data-testid="quran-v2-viewer">
 
-      {/* Navigation Drawer — desktop sidebar only, hidden on mobile */}
-      <div className="hidden md:block">
-        <NavigationDrawer
-          chapters={chapters}
-          onNavigate={handleNavAction}
-          onClose={() => setShowNav(false)}
-          currentChapter={currentChapter}
-          visible={showNav}
-        />
+      {/* Desktop NavigationDrawer — direct flex child, always collapsed on mobile */}
+      <div className={`flex-shrink-0 h-full transition-all duration-300 overflow-hidden hidden md:block ${showNav ? 'md:w-80' : 'md:w-0'}`}>
+        <div className="w-80 h-full">
+          <NavigationDrawer
+            chapters={chapters}
+            onNavigate={handleNavAction}
+            onClose={() => setShowNav(false)}
+            currentChapter={currentChapter}
+            visible={showNav}
+          />
+        </div>
       </div>
 
-      {/* Mobile Nav Overlay — full-screen slide-over */}
-      {showNav && (
-        <div className="md:hidden fixed inset-0 z-50 flex" data-testid="mobile-nav-overlay">
-          <div className="w-[85vw] max-w-80 bg-[#FDFBF7] shadow-2xl overflow-hidden">
+      {/* Mobile Nav — React Portal to escape overflow-hidden parents */}
+      {showNav && createPortal(
+        <div className="md:hidden fixed inset-0 z-[9999] flex" data-testid="mobile-nav-overlay">
+          <div className="w-[85vw] max-w-80 h-full bg-[#FDFBF7] shadow-2xl overflow-y-auto">
             <NavigationDrawer chapters={chapters} onNavigate={handleNavAction} onClose={() => setShowNav(false)} currentChapter={currentChapter} visible={true} />
           </div>
-          <div className="flex-1 bg-black/30 backdrop-blur-sm cursor-pointer" onClick={() => setShowNav(false)} />
-        </div>
+          <div className="flex-1 bg-black/30" onClick={() => setShowNav(false)} />
+        </div>,
+        document.body
       )}
 
       {/* Main Content Area */}

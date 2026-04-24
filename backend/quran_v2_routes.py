@@ -18,6 +18,18 @@ db = None
 _token_cache = {"access_token": None, "expires_at": 0}
 
 
+QURAN_PUBLIC_API = "https://api.quran.com/api/v4"
+
+
+def _has_oauth_config():
+    return all([
+        os.environ.get("QURAN_CLIENT_ID"),
+        os.environ.get("QURAN_CLIENT_SECRET"),
+        os.environ.get("QURAN_OAUTH_URL"),
+        os.environ.get("QURAN_API_URL"),
+    ])
+
+
 def _get_config():
     cid = os.environ.get("QURAN_CLIENT_ID")
     secret = os.environ.get("QURAN_CLIENT_SECRET")
@@ -56,7 +68,15 @@ async def _get_access_token() -> str:
 
 
 async def _authed_get(path: str, params: dict | None = None) -> dict:
-    """Make an authenticated GET request to the Quran API."""
+    """Make a GET request to the Quran API. Uses OAuth if configured, public API otherwise."""
+    if not _has_oauth_config():
+        # Fallback to public Quran.com API (no auth required)
+        url = f"{QURAN_PUBLIC_API}{path}"
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            r = await client.get(url, params=params)
+            r.raise_for_status()
+            return r.json()
+
     _, _, _, api_url = _get_config()
     token = await _get_access_token()
     url = f"{api_url}{path}"
@@ -68,7 +88,6 @@ async def _authed_get(path: str, params: dict | None = None) -> dict:
             headers={"Authorization": f"Bearer {token}"},
         )
         if r.status_code == 401:
-            # Token expired mid-flight, force refresh
             _token_cache["access_token"] = None
             token = await _get_access_token()
             r = await client.get(url, params=params, headers={"Authorization": f"Bearer {token}"})
