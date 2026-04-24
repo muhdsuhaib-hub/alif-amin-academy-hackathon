@@ -318,18 +318,24 @@ async def reject_teacher(teacher_id: str, body: Optional[RejectBody] = None, rea
     rejection_reason = (body.reason if body and body.reason else reason) or ""
     user_id = teacher["user_id"]
 
-    # Hard delete the teacher document so it never reappears in pending list
-    await db.teachers.delete_one({"teacher_id": teacher_id})
-    # Revert user to student role (frees them to re-apply later)
-    await db.users.update_one({"user_id": user_id}, {"$set": {"role": "student"}})
-
+    # Send rejection email BEFORE deleting (need user data for the email)
     user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
     if user and user.get("email"):
         name = user.get("name", "Teacher")
         reason_text = f"\n\nAdmin note: {rejection_reason}" if rejection_reason else ""
         await _send_email(user["email"], "Update on your Alif Amin Academy Application",
             f"Assalamu'alaikum {name},\n\nThank you so much for your interest in teaching with Alif Amin Academy and for taking the time to submit your application.\n\nAt this time, we are unable to move forward with your application. We receive a high volume of requests and must strictly match our specific requirements (e.g., Advanced Tajweed Certification, consistent teaching availability, or specific language fluency).{reason_text}\n\nWe deeply appreciate your desire to teach the Quran, and we highly encourage you to reapply in the future as our platform continues to grow. May Allah reward your noble intentions and grant you success.\n\nSincerely,\nThe Alif Amin Team")
-    return {"message": "Teacher application rejected", "teacher_id": teacher_id}
+
+    # Complete hard delete — remove the user from the platform entirely
+    await db.teachers.delete_many({"user_id": user_id})
+    await db.students.delete_many({"user_id": user_id})
+    await db.user_sessions.delete_many({"user_id": user_id})
+    await db.notifications.delete_many({"user_id": user_id})
+    await db.support_tickets.delete_many({"user_id": user_id})
+    await db.users.delete_one({"user_id": user_id})
+    logger.info(f"[Admin] Rejected & purged teacher {teacher_id} (user {user_id})")
+
+    return {"message": "Teacher application rejected and account removed", "teacher_id": teacher_id}
 
 
 # Master Calendar Endpoints
