@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Request, WebSocket, WebSocketDisco
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 from models import ClassSessionCreate, StudentProgressCreate, InteractiveActivityCreate
+from credentials import get_gcs_recordings_config
 from livekit import api as livekit_api
 import uuid
 import os
@@ -14,6 +15,22 @@ logger = logging.getLogger(__name__)
 
 db = None
 get_current_user = None
+
+
+async def get_gcs_recordings_bucket():
+    """Init GCS bucket for class recordings. Returns None if not configured."""
+    bucket_name, creds_json = await get_gcs_recordings_config()
+    if not bucket_name:
+        return None, None
+    try:
+        from google.cloud import storage as gcs_storage
+        creds_json = creds_json.strip().strip('"').strip("'")
+        creds_dict = json.loads(creds_json)
+        client = gcs_storage.Client.from_service_account_info(creds_dict)
+        return client.bucket(bucket_name), bucket_name
+    except Exception as e:
+        logger.warning(f"GCS Recordings bucket init failed: {e}")
+        return None, None
 
 
 def init_classroom_routes(database, auth_dependency):

@@ -68,8 +68,22 @@ async def get_billplz_config() -> tuple:
 
 
 async def get_gcs_config() -> tuple:
-    """Returns (bucket_name, creds_json_str)."""
+    """Returns (bucket_name, creds_json_str) for the main ASSETS bucket. DO NOT USE for teacher uploads or recordings."""
     bucket = await get_credential("gcs_bucket_name", "GCS_BUCKET_NAME")
+    creds = await get_credential("gcs_credentials_json", "GCS_CREDENTIALS_JSON")
+    return bucket, creds
+
+
+async def get_gcs_teachers_media_config() -> tuple:
+    """Returns (bucket_name, creds_json_str) for teacher video/certificate uploads."""
+    bucket = await get_credential("gcs_teachers_media_bucket", "GCS_TEACHERS_MEDIA_BUCKET")
+    creds = await get_credential("gcs_credentials_json", "GCS_CREDENTIALS_JSON")
+    return bucket, creds
+
+
+async def get_gcs_recordings_config() -> tuple:
+    """Returns (bucket_name, creds_json_str) for class recording uploads."""
+    bucket = await get_credential("gcs_recordings_bucket", "GCS_RECORDINGS_BUCKET")
     creds = await get_credential("gcs_credentials_json", "GCS_CREDENTIALS_JSON")
     return bucket, creds
 

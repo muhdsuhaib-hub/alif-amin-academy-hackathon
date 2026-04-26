@@ -11,7 +11,7 @@ import uuid
 import os
 import logging
 import json
-from credentials import get_gcs_config
+from credentials import get_gcs_teachers_media_config
 
 upload_router = APIRouter(prefix="/api/teacher")
 logger = logging.getLogger(__name__)
@@ -30,11 +30,11 @@ def init_upload_routes(database):
 
 
 async def _get_gcs_bucket():
-    """Init GCS bucket from DB credentials first, then .env. Returns None if not configured."""
-    bucket_name, creds_json = await get_gcs_config()
+    """Init GCS bucket for teacher media uploads. Returns None if not configured."""
+    bucket_name, creds_json = await get_gcs_teachers_media_config()
 
     if not bucket_name:
-        logger.info("GCS: No bucket name configured in DB or .env, using local storage")
+        logger.info("GCS Teachers Media: No bucket configured, using local storage")
         return None
 
     try:
