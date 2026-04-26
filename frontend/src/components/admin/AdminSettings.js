@@ -9,7 +9,9 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const FIELDS = [
   { key: 'billplz_api_key', label: 'Billplz API Key', desc: 'Payment gateway' },
   { key: 'billplz_collection_id', label: 'Billplz Collection ID', desc: 'Collection for payments' },
-  { key: 'gcs_credentials_json', label: 'GCS JSON Credentials', desc: 'Google Cloud Storage', multi: true },
+  { key: 'gcs_credentials_json', label: 'GCS JSON Credentials', desc: 'Google Cloud Storage auth', multi: true },
+  { key: 'gcs_teachers_media_bucket', label: 'GCS Teachers Media Bucket', desc: 'Bucket for tutor videos & certs' },
+  { key: 'gcs_recordings_bucket', label: 'GCS Recordings Bucket', desc: 'Bucket for class recordings' },
   { key: 'whatsapp_api_key', label: 'WhatsApp API Key', desc: 'WhatsApp notifications' },
   { key: 'smtp_email', label: 'SMTP Email', desc: 'Email sender address' },
   { key: 'smtp_password', label: 'SMTP Password', desc: 'Email sender password' },
