@@ -33,11 +33,11 @@ def _decrypt(encrypted: str) -> str:
 
 async def get_credential(key: str, env_key: str = "", default: str = "") -> str:
     """
-    Resolve a credential: DB admin_settings first, then .env, then default.
+    Resolve a credential: DB admin_settings first (top-level, then custom_keys), then .env, then default.
     `key` = field name in admin_settings (e.g. 'billplz_api_key')
     `env_key` = corresponding env var (e.g. 'BILLPLZ_API_KEY')
     """
-    # 1. Try database
+    # 1. Try database (top-level fields)
     if db is not None:
         try:
             settings = await db.admin_settings.find_one({"_id_key": "global"}, {"_id": 0})
@@ -47,6 +47,14 @@ async def get_credential(key: str, env_key: str = "", default: str = "") -> str:
                     val = _decrypt(encrypted)
                     if val and val.strip():
                         return val.strip()
+                # 1b. Search custom_keys array (name match, case-insensitive)
+                for ck in settings.get("custom_keys", []):
+                    if ck.get("name", "").lower() == key.lower() or ck.get("name", "").upper() == (env_key or key.upper()):
+                        enc_val = ck.get("encrypted_value", "")
+                        if enc_val:
+                            val = _decrypt(enc_val)
+                            if val and val.strip():
+                                return val.strip()
         except Exception as e:
             logger.warning(f"DB credential lookup failed for {key}: {e}")
 

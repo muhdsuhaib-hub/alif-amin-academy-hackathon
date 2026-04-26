@@ -1595,7 +1595,7 @@ async def delete_activity(activity_id: str, request: Request):
 # ADMIN SETTINGS: Encrypted API Key Storage with PIN Gate
 # ============================================================
 
-SETTINGS_KEYS = ["billplz_api_key", "billplz_collection_id", "gcs_credentials_json", "gcs_teachers_media_bucket", "gcs_recordings_bucket", "whatsapp_api_key", "smtp_email", "smtp_password"]
+SETTINGS_KEYS = ["billplz_api_key", "billplz_collection_id", "gcs_credentials_json", "whatsapp_api_key", "smtp_email", "smtp_password"]
 
 
 class AdminSettingsUpdate(BaseModel):
