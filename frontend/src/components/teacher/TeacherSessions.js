@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, CheckCircle, BookOpen, Star, FileText } from 'lucide-react';
+import { SessionReportModal } from '../classroom/EndClassModals';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-function PastSessionCard({ session }) {
+function PastSessionCard({ session, onOpenReport }) {
   const reviewed = session.tutor_reviewed;
   return (
     <div className="p-4 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/20 shadow-sm" data-testid={`tutor-past-card-${session.booking_id}`}>
@@ -26,9 +27,17 @@ function PastSessionCard({ session }) {
               <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-600 text-[11px] font-medium" data-testid={`tutor-reviewed-badge-${session.booking_id}`}>
                 <CheckCircle className="w-3 h-3" />Report Submitted
               </span>
+            ) : session.session_id ? (
+              <button
+                onClick={() => onOpenReport(session)}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-500 text-white text-[11px] font-semibold hover:bg-amber-600 active:scale-95 transition-all cursor-pointer"
+                data-testid={`tutor-report-btn-${session.booking_id}`}
+              >
+                <FileText className="w-3 h-3" />Submit Report
+              </button>
             ) : (
-              <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-50 text-amber-600 text-[11px] font-medium" data-testid={`tutor-pending-badge-${session.booking_id}`}>
-                <FileText className="w-3 h-3" />No Report
+              <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-100 text-slate-400 text-[11px] font-medium">
+                <FileText className="w-3 h-3" />No Session
               </span>
             )}
             {session.student_reviewed ? (
@@ -46,6 +55,7 @@ function PastSessionCard({ session }) {
 export default function TeacherSessions() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reportSession, setReportSession] = useState(null);
 
   const fetchPastSessions = useCallback(async () => {
     setLoading(true);
@@ -60,6 +70,15 @@ export default function TeacherSessions() {
   }, []);
 
   useEffect(() => { fetchPastSessions(); }, [fetchPastSessions]);
+
+  const handleReportSubmitted = () => {
+    if (reportSession) {
+      setSessions(prev => prev.map(s =>
+        s.booking_id === reportSession.booking_id ? { ...s, tutor_reviewed: true } : s
+      ));
+    }
+    setReportSession(null);
+  };
 
   return (
     <div className="p-4 lg:p-8 max-w-4xl mx-auto" data-testid="teacher-sessions-page">
@@ -84,11 +103,20 @@ export default function TeacherSessions() {
         ) : (
           <div className="space-y-2 max-h-[600px] overflow-y-auto">
             {sessions.map(s => (
-              <PastSessionCard key={s.booking_id} session={s} />
+              <PastSessionCard key={s.booking_id} session={s} onOpenReport={setReportSession} />
             ))}
           </div>
         )}
       </div>
+
+      {reportSession && (
+        <SessionReportModal
+          sessionId={reportSession.session_id}
+          onSubmitted={handleReportSubmitted}
+          onClose={() => setReportSession(null)}
+          isTimeExpired={true}
+        />
+      )}
     </div>
   );
 }
