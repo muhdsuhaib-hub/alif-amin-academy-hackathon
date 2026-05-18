@@ -31,6 +31,7 @@ from quran_routes import quran_router, init_quran_routes
 from quran_v2_routes import quran_v2_router, init_quran_v2_routes
 from upload_routes import upload_router, init_upload_routes
 from payment_routes import payment_router, init_payment_routes
+from bookmark_routes import bookmark_router, init_bookmark_routes
 from credentials import init_credentials
 
 ROOT_DIR = Path(__file__).parent
@@ -2328,12 +2329,14 @@ init_quran_routes(db)
 init_quran_v2_routes(db)
 init_upload_routes(db)
 init_payment_routes(db)
+init_bookmark_routes(db)
 init_credentials(db)
 app.include_router(classroom_router)
 app.include_router(quran_router)
 app.include_router(quran_v2_router)
 app.include_router(upload_router)
 app.include_router(payment_router)
+app.include_router(bookmark_router)
 
 app.add_middleware(
     CORSMiddleware,

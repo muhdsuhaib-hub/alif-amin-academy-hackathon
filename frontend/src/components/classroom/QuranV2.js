@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, ChevronRight, BookOpen, Search, X, Loader2, Maximize2, Minimize2, Hash, Layers } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, Search, X, Loader2, Maximize2, Minimize2, Hash, Layers, Bookmark } from 'lucide-react';
+import { toast } from 'sonner';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -204,6 +205,54 @@ function QuranV2Core({
   const [expanded, setExpanded] = useState(false);
   const contentRef = useRef(null);
   const verseRefs = useRef({});
+
+  // ─── Bookmarks ───
+  const [bookmarkedVerses, setBookmarkedVerses] = useState(new Set());
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await fetch(`${API}/bookmarks`, { credentials: 'include' });
+        if (r.ok) {
+          const data = await r.json();
+          setBookmarkedVerses(new Set((data.bookmarks || []).map(b => b.verse_key)));
+        }
+      } catch { /* silent */ }
+    })();
+  }, []);
+
+  const toggleBookmark = useCallback(async (verseKey, chapterId, verseNumber, surahName) => {
+    const isBookmarked = bookmarkedVerses.has(verseKey);
+    // Optimistic update
+    setBookmarkedVerses(prev => {
+      const next = new Set(prev);
+      if (isBookmarked) next.delete(verseKey); else next.add(verseKey);
+      return next;
+    });
+    try {
+      if (isBookmarked) {
+        const r = await fetch(`${API}/bookmarks/${verseKey}`, { method: 'DELETE', credentials: 'include' });
+        if (r.ok) toast.success('Bookmark removed');
+        else throw new Error();
+      } else {
+        const r = await fetch(`${API}/bookmarks`, {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ verse_key: verseKey, chapter_id: chapterId, verse_number: verseNumber, surah_name: surahName }),
+        });
+        if (r.ok) toast.success('Ayah bookmarked!');
+        else throw new Error();
+      }
+    } catch {
+      // Revert on failure
+      setBookmarkedVerses(prev => {
+        const next = new Set(prev);
+        if (isBookmarked) next.add(verseKey); else next.delete(verseKey);
+        return next;
+      });
+      toast.error('Failed to update bookmark');
+    }
+  }, [bookmarkedVerses]);
 
   // Apply sync state from teacher (student side)
   useEffect(() => {
@@ -458,6 +507,7 @@ function QuranV2Core({
                 {verses.map(verse => {
                   const vk = verse.verse_key;
                   const isFocused = focusedVerse === vk;
+                  const isBookmarked = bookmarkedVerses.has(vk);
                   return (
                     <div
                       key={vk}
@@ -465,6 +515,18 @@ function QuranV2Core({
                       className={`w-full block py-20 border-b border-gray-200 transition-colors ${isFocused ? 'bg-emerald-50/70' : 'hover:bg-emerald-50/50'}`}
                       onClick={() => { if (isTeacher && !highlighterActive) handleVerseFocus(vk); }}
                       data-testid={`verse-v2-${vk}`}>
+                      {/* Verse number + bookmark row */}
+                      <div className="flex items-center justify-between mb-3 px-1">
+                        <span className="text-[10px] font-medium text-stone-400 tabular-nums">{vk}</span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); toggleBookmark(vk, verse.chapter_id, verse.verse_number, chapterMeta?.name_simple || ''); }}
+                          className="p-1.5 rounded-lg hover:bg-emerald-50 transition-all cursor-pointer group"
+                          title={isBookmarked ? 'Remove bookmark' : 'Bookmark this ayah'}
+                          data-testid={`bookmark-btn-${vk}`}
+                        >
+                          <Bookmark className={`w-4 h-4 transition-colors ${isBookmarked ? 'text-emerald-600 fill-emerald-600' : 'text-stone-300 group-hover:text-emerald-400'}`} />
+                        </button>
+                      </div>
                       <div
                         className="block text-right w-full break-words whitespace-normal antialiased leading-[2.2]"
                         dir="rtl"

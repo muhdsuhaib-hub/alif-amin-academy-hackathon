@@ -505,3 +505,9 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 - Admin Report Card PDF export
 - Blur Background toggle in A/V settings
 - SMS notifications
+
+
+### Quran Ayah Bookmarks — User API (Feb 2026)
+- **Backend**: New `bookmark_routes.py` with 3 endpoints: `GET /api/bookmarks` (list), `POST /api/bookmarks` (add), `DELETE /api/bookmarks/{verse_key}` (remove). Stored in MongoDB `bookmarks` collection keyed by `user_id` + `verse_key`. Deduplication on add. Auth via session cookie.
+- **Frontend**: Bookmark icon added to every verse row in `QuranV2.js`. Filled emerald icon = bookmarked, outline = not. Click toggles with optimistic UI + toast feedback. Bookmarks fetched on component mount.
+- **Hackathon**: Satisfies the mandatory "User API" requirement (Bookmarks) alongside the existing Content API usage (chapters, verses, pages, juzs from api.quran.com/api/v4).
