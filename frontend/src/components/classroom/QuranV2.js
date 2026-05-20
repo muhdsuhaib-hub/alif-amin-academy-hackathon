@@ -305,6 +305,7 @@ function QuranV2Core({
 
   // Fetch verses when chapter/page changes
   const fetchVerses = useCallback(async (chapter, page = 1) => {
+    setVerses([]);
     setLoading(true);
     try {
       const r = await fetch(`${API}/quran/v2/verses/by_chapter/${chapter}?page=${page}&per_page=50`);
@@ -329,6 +330,8 @@ function QuranV2Core({
   useEffect(() => {
     if (currentChapter >= 1 && currentChapter <= 114) {
       fetchVerses(currentChapter, 1);
+      // Reset scroll to top when chapter changes
+      if (contentRef.current) contentRef.current.scrollTop = 0;
     }
   }, [currentChapter, fetchVerses]);
 

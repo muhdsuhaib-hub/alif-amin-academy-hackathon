@@ -54,9 +54,13 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointe
     emitSync(currentBook, page);
   }, [currentBook, maxPages, emitSync]);
 
-  // Teacher: emit pointer % coords relative to the actual image area
+  // Teacher: emit pointer % coords with throttle (60ms) to prevent WS flooding
+  const lastEmitRef = useRef(0);
   const handlePointerCoords = useCallback((clientX, clientY) => {
     if (!isTeacher || !imgWrapperRef.current) return;
+    const now = Date.now();
+    if (now - lastEmitRef.current < 60) return;
+    lastEmitRef.current = now;
     const rect = imgWrapperRef.current.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
     const xPct = ((clientX - rect.left) / rect.width) * 100;
@@ -162,11 +166,16 @@ export default function IqraReader({ isTeacher, onSyncEvent, syncState, onPointe
               data-testid="iqra-page-image"
             />
 
-            {/* Laser Pointer (student side) — positioned relative to image area */}
-            {!isTeacher && pointerVisible && pointerPos && (
+            {/* Laser Pointer (student side) — always mounted, visibility toggled to prevent flashing */}
+            {!isTeacher && (
               <div
-                className="absolute w-4 h-4 rounded-full bg-emerald-500/50 pointer-events-none z-20 -translate-x-1/2 -translate-y-1/2"
-                style={{ left: `${pointerPos.x}%`, top: `${pointerPos.y}%` }}
+                className="absolute w-4 h-4 rounded-full bg-emerald-500/50 pointer-events-none z-20 -translate-x-1/2 -translate-y-1/2 transition-[left,top] duration-75 ease-out"
+                style={{
+                  left: `${pointerPos?.x ?? 0}%`,
+                  top: `${pointerPos?.y ?? 0}%`,
+                  visibility: pointerVisible && pointerPos ? 'visible' : 'hidden',
+                  opacity: pointerVisible && pointerPos ? 1 : 0,
+                }}
                 data-testid="iqra-laser-pointer">
                 <div className="absolute inset-0 rounded-full bg-emerald-500/40 animate-ping" />
               </div>
