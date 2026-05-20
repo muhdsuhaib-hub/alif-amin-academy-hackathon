@@ -298,14 +298,14 @@ function Footer() {
           <div>
             <p className="text-sm font-medium mb-2">Social</p>
             <div className="flex items-center gap-3">
-              <a href="#" className="w-8 h-8 border border-[#0f2e24]/30 rounded-lg flex items-center justify-center hover:bg-[#0f2e24]/5 transition-colors" aria-label="Facebook" data-testid="social-fb">
+              <a href="https://www.facebook.com/profile.php?id=61589674349299" target="_blank" rel="noopener noreferrer" className="w-8 h-8 border border-[#0f2e24]/30 rounded-lg flex items-center justify-center hover:bg-[#0f2e24]/5 transition-colors" aria-label="Facebook" data-testid="social-fb">
                 <svg viewBox="0 0 24 24" className="w-4 h-4 fill-[#0f2e24]"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
               </a>
-              <a href="#" className="w-8 h-8 border border-[#0f2e24]/30 rounded-lg flex items-center justify-center hover:bg-[#0f2e24]/5 transition-colors" aria-label="Instagram" data-testid="social-ig">
+              <a href="https://www.instagram.com/alifaminacademy/" target="_blank" rel="noopener noreferrer" className="w-8 h-8 border border-[#0f2e24]/30 rounded-lg flex items-center justify-center hover:bg-[#0f2e24]/5 transition-colors" aria-label="Instagram" data-testid="social-ig">
                 <svg viewBox="0 0 24 24" className="w-4 h-4 fill-none stroke-[#0f2e24]" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg>
               </a>
-              <a href="#" className="w-8 h-8 border border-[#0f2e24]/30 rounded-lg flex items-center justify-center hover:bg-[#0f2e24]/5 transition-colors" aria-label="LinkedIn" data-testid="social-li">
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-[#0f2e24]"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              <a href="https://www.tiktok.com/@alif.amin.academy" target="_blank" rel="noopener noreferrer" className="w-8 h-8 border border-[#0f2e24]/30 rounded-lg flex items-center justify-center hover:bg-[#0f2e24]/5 transition-colors" aria-label="TikTok" data-testid="social-tt">
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-[#0f2e24]"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.72a8.2 8.2 0 004.76 1.52V6.79a4.84 4.84 0 01-1-.1z"/></svg>
               </a>
             </div>
           </div>
