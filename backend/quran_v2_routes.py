@@ -3,7 +3,7 @@ Quran V2 — Secure Content Bridge
 OAuth2 Client Credentials flow with api.quran.com/api/v4.
 All frontend calls are proxied through here; credentials never leave the server.
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 import httpx
 import os
 import time
@@ -100,7 +100,175 @@ def init_quran_v2_routes(database):
     db = database
 
 
-# --------------- Endpoints ---------------
+# --------------- OAuth2 Authorization Code + PKCE (User-Level) ---------------
+
+OAUTH2_BASE = os.environ.get("QURAN_OAUTH_URL", "https://oauth2.quran.foundation")
+QF_API_BASE = os.environ.get("QURAN_USER_API_URL", "https://apis.quran.foundation")
+
+
+def _generate_pkce():
+    """Generate PKCE code_verifier and code_challenge (S256)."""
+    import hashlib
+    import base64
+    import secrets as sec
+    verifier = base64.urlsafe_b64encode(sec.token_bytes(32)).rstrip(b"=").decode()
+    digest = hashlib.sha256(verifier.encode()).digest()
+    challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode()
+    return verifier, challenge
+
+
+@quran_v2_router.get("/oauth/login")
+async def quran_oauth_login(request: Request):
+    """Redirect user to Quran Foundation authorization page."""
+    import secrets as sec
+    cid = os.environ.get("QURAN_CLIENT_ID")
+    redirect_uri = os.environ.get("QURAN_REDIRECT_URI", str(request.base_url).rstrip("/") + "/api/quran/v2/oauth/callback")
+    if not cid:
+        raise HTTPException(status_code=500, detail="QURAN_CLIENT_ID not configured")
+
+    state = sec.token_urlsafe(32)
+    nonce = sec.token_urlsafe(16)
+    verifier, challenge = _generate_pkce()
+
+    # Extract user_id from session
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+
+    # Store PKCE verifier + state in DB, keyed by state for callback lookup
+    await db.quran_oauth_state.insert_one({
+        "state": state,
+        "nonce": nonce,
+        "code_verifier": verifier,
+        "user_id": session["user_id"],
+        "redirect_uri": redirect_uri,
+        "created_at": time.time(),
+    })
+
+    from urllib.parse import urlencode
+    params = urlencode({
+        "client_id": cid,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "scope": "openid",
+        "state": state,
+        "nonce": nonce,
+        "code_challenge": challenge,
+        "code_challenge_method": "S256",
+    })
+    auth_url = f"{OAUTH2_BASE}/oauth2/auth?{params}"
+    from starlette.responses import RedirectResponse
+    return RedirectResponse(url=auth_url)
+
+
+@quran_v2_router.get("/oauth/callback")
+async def quran_oauth_callback(request: Request):
+    """Handle Quran Foundation OAuth2 callback — exchange code for tokens."""
+    params = dict(request.query_params)
+    code = params.get("code", "")
+    state = params.get("state", "")
+    error = params.get("error", "")
+
+    if error:
+        logger.error(f"[QF OAuth] Error from provider: {error} - {params.get('error_description', '')}")
+        from starlette.responses import RedirectResponse
+        return RedirectResponse(url="/student/dashboard?qf_auth=error")
+
+    if not code or not state:
+        raise HTTPException(status_code=400, detail="Missing code or state")
+
+    # Look up the PKCE state
+    stored = await db.quran_oauth_state.find_one({"state": state})
+    if not stored:
+        raise HTTPException(status_code=400, detail="Invalid or expired state")
+
+    # Clean up used state
+    await db.quran_oauth_state.delete_one({"state": state})
+
+    cid = os.environ.get("QURAN_CLIENT_ID")
+    csecret = os.environ.get("QURAN_CLIENT_SECRET")
+    redirect_uri = stored["redirect_uri"]
+    verifier = stored["code_verifier"]
+    user_id = stored["user_id"]
+
+    # Exchange code for tokens
+    try:
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            token_url = f"{OAUTH2_BASE}/oauth2/token"
+            payload = {
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": redirect_uri,
+                "code_verifier": verifier,
+            }
+            auth_header = None
+            if csecret:
+                auth_header = (cid, csecret)
+            else:
+                payload["client_id"] = cid
+
+            r = await client.post(token_url, data=payload, auth=auth_header)
+            if r.status_code != 200:
+                logger.error(f"[QF OAuth] Token exchange failed {r.status_code}: {r.text}")
+                from starlette.responses import RedirectResponse
+                return RedirectResponse(url="/student/dashboard?qf_auth=failed")
+
+            tokens = r.json()
+    except Exception as e:
+        logger.error(f"[QF OAuth] Token exchange error: {e}")
+        from starlette.responses import RedirectResponse
+        return RedirectResponse(url="/student/dashboard?qf_auth=error")
+
+    # Save tokens to user document
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$set": {
+            "quran_com_auth": {
+                "access_token": tokens.get("access_token"),
+                "refresh_token": tokens.get("refresh_token"),
+                "id_token": tokens.get("id_token"),
+                "expires_at": time.time() + tokens.get("expires_in", 3600),
+                "token_type": tokens.get("token_type", "bearer"),
+                "connected_at": time.time(),
+            }
+        }}
+    )
+    logger.info(f"[QF OAuth] User {user_id} connected Quran.com account")
+
+    # Redirect back to dashboard with success flag
+    user = await db.users.find_one({"user_id": user_id}, {"_id": 0, "role": 1})
+    dashboard = "/teacher/dashboard" if user and user.get("role") == "teacher" else "/student/dashboard"
+    from starlette.responses import RedirectResponse
+    return RedirectResponse(url=f"{dashboard}?qf_auth=success")
+
+
+@quran_v2_router.get("/oauth/status")
+async def quran_oauth_status(request: Request):
+    """Check if the current user has connected their Quran.com account."""
+    token = request.cookies.get("session_token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    session = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid session")
+    user = await db.users.find_one({"user_id": session["user_id"]}, {"_id": 0, "quran_com_auth": 1})
+    qf_auth = user.get("quran_com_auth") if user else None
+    connected = bool(qf_auth and qf_auth.get("access_token"))
+    return {"connected": connected, "connected_at": qf_auth.get("connected_at") if qf_auth else None}
+
+
+# --------------- Content Endpoints ---------------
 
 @quran_v2_router.get("/chapters")
 async def get_chapters():

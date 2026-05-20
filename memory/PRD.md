@@ -507,7 +507,23 @@ Premium, enterprise-grade 1-on-1 Quran tutoring platform (EdTech). Google OAuth,
 - SMS notifications
 
 
-### Quran Ayah Bookmarks — User API (Feb 2026)
-- **Backend**: New `bookmark_routes.py` with 3 endpoints: `GET /api/bookmarks` (list), `POST /api/bookmarks` (add), `DELETE /api/bookmarks/{verse_key}` (remove). Stored in MongoDB `bookmarks` collection keyed by `user_id` + `verse_key`. Deduplication on add. Auth via session cookie.
-- **Frontend**: Bookmark icon added to every verse row in `QuranV2.js`. Filled emerald icon = bookmarked, outline = not. Click toggles with optimistic UI + toast feedback. Bookmarks fetched on component mount.
-- **Hackathon**: Satisfies the mandatory "User API" requirement (Bookmarks) alongside the existing Content API usage (chapters, verses, pages, juzs from api.quran.com/api/v4).
+### Quran Foundation OAuth2 + Bookmarks Refactor (Feb 2026)
+**OAuth2 Authorization Code + PKCE flow** (`quran_v2_routes.py`):
+- `GET /api/quran/v2/oauth/login` — redirects to Quran Foundation auth page with PKCE challenge, state, nonce
+- `GET /api/quran/v2/oauth/callback` — exchanges code for tokens, stores `access_token` + `refresh_token` in user's `quran_com_auth` MongoDB field
+- `GET /api/quran/v2/oauth/status` — checks if user has connected their QF account
+- PKCE state stored in `quran_oauth_state` collection, deleted after use
+- Token refresh built into bookmark routes (auto-refreshes expired tokens)
+
+**Bookmarks refactored to Quran Foundation API** (`bookmark_routes.py`):
+- `POST /api/bookmarks` → proxies to `POST apis.quran.foundation/v1/bookmarks` with `{type: "ayah", key: surah_id, verseNumber, mushafId: 1}`
+- `GET /api/bookmarks` → fetches from `GET apis.quran.foundation/v1/bookmarks`, maps to frontend format
+- `DELETE /api/bookmarks/{verse_key}` → looks up QF bookmark ID then calls `DELETE apis.quran.foundation/v1/bookmarks/{id}`
+- All requests use `x-auth-token` + `x-client-id` headers
+- Returns `401 QURAN_COM_NOT_CONNECTED` if user hasn't authorized — frontend shows toast prompt
+
+**Frontend**:
+- `QuranComConnect.js` — reusable "Connect to Quran.com" button added to both student `AccountPage.js` and teacher `ProfileManagement.js`
+- `QuranV2.js` — bookmark toggle handles `QURAN_COM_NOT_CONNECTED` error with specific toast message, no false-positive green icon
+
+**New Secrets required**: `QURAN_REDIRECT_URI` (= `https://alifamin.com/api/quran/v2/oauth/callback`), `QURAN_USER_API_URL` (= `https://apis.quran.foundation`)

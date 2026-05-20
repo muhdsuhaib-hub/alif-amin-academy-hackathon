@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
 import { getTimezones } from '../../utils/timezones';
+import QuranComConnect from '../QuranComConnect';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -414,6 +415,9 @@ export default function ProfileManagement({ user, teacher, onRefresh, onUserUpda
           </div>
         </div>
       </div>
+
+      {/* Quran.com Integration */}
+      <QuranComConnect />
 
       <button
         onClick={handleSave}

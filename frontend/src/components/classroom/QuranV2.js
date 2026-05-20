@@ -230,18 +230,31 @@ function QuranV2Core({
       return next;
     });
     try {
+      let r;
       if (isBookmarked) {
-        const r = await fetch(`${API}/bookmarks/${verseKey}`, { method: 'DELETE', credentials: 'include' });
-        if (r.ok) toast.success('Bookmark removed');
-        else throw new Error();
+        r = await fetch(`${API}/bookmarks/${verseKey}`, { method: 'DELETE', credentials: 'include' });
       } else {
-        const r = await fetch(`${API}/bookmarks`, {
+        r = await fetch(`${API}/bookmarks`, {
           method: 'POST', credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ verse_key: verseKey, chapter_id: chapterId, verse_number: verseNumber, surah_name: surahName }),
         });
-        if (r.ok) toast.success('Ayah bookmarked!');
-        else throw new Error();
+      }
+      if (r.ok) {
+        toast.success(isBookmarked ? 'Bookmark removed' : 'Ayah bookmarked!');
+      } else {
+        const err = await r.json().catch(() => ({}));
+        if (err.detail === 'QURAN_COM_NOT_CONNECTED') {
+          // Revert and show connect prompt
+          setBookmarkedVerses(prev => {
+            const next = new Set(prev);
+            if (isBookmarked) next.add(verseKey); else next.delete(verseKey);
+            return next;
+          });
+          toast.error('Please connect your Quran.com account in your Profile to save bookmarks.');
+          return;
+        }
+        throw new Error(err.detail || 'Failed');
       }
     } catch {
       // Revert on failure
