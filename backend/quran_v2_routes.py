@@ -1,7 +1,9 @@
 """
-Quran V2 — Secure Content Bridge
-OAuth2 Client Credentials flow with api.quran.com/api/v4.
-All frontend calls are proxied through here; credentials never leave the server.
+Quran V2 — Secure Content & User Bridge
+All Content API calls route through the Quran Foundation gateway at
+QURAN_USER_API_URL/content/api/v4/ using Client Credentials (scope=content).
+User-level OAuth2 (Authorization Code + PKCE) for bookmarks and user APIs.
+Credentials never leave the server.
 """
 from fastapi import APIRouter, HTTPException, Request
 import httpx
@@ -14,83 +16,75 @@ logger = logging.getLogger(__name__)
 quran_v2_router = APIRouter(prefix="/api/quran/v2")
 db = None
 
-# --------------- OAuth2 Token Cache ---------------
-_token_cache = {"access_token": None, "expires_at": 0}
+# --------------- Base URLs ---------------
+# All traffic goes through the QF gateway — no legacy public API
+def _qf_base():
+    return os.environ.get("QURAN_USER_API_URL", "https://apis.quran.foundation")
+
+def _oauth_base():
+    return os.environ.get("QURAN_OAUTH_URL", "https://oauth2.quran.foundation")
+
+def _client_id():
+    return os.environ.get("QURAN_CLIENT_ID", "")
+
+def _client_secret():
+    return os.environ.get("QURAN_CLIENT_SECRET", "")
 
 
-QURAN_PUBLIC_API = "https://api.quran.com/api/v4"
+# --------------- Client Credentials Token Manager (Content API) ---------------
+_content_token_cache = {"access_token": None, "expires_at": 0}
 
 
-def _has_oauth_config():
-    return all([
-        os.environ.get("QURAN_CLIENT_ID"),
-        os.environ.get("QURAN_CLIENT_SECRET"),
-        os.environ.get("QURAN_OAUTH_URL"),
-        os.environ.get("QURAN_API_URL"),
-    ])
+async def _get_content_token() -> str:
+    """Get a valid Client Credentials token (scope=content). Auto-refreshes."""
+    global _content_token_cache
+    if _content_token_cache["access_token"] and time.time() < _content_token_cache["expires_at"] - 60:
+        return _content_token_cache["access_token"]
 
+    cid = _client_id()
+    secret = _client_secret()
+    if not cid or not secret:
+        raise HTTPException(status_code=500, detail="QURAN_CLIENT_ID or QURAN_CLIENT_SECRET not configured")
 
-def _get_config():
-    cid = os.environ.get("QURAN_CLIENT_ID")
-    secret = os.environ.get("QURAN_CLIENT_SECRET")
-    oauth_url = os.environ.get("QURAN_OAUTH_URL")
-    api_url = os.environ.get("QURAN_API_URL")
-    if not all([cid, secret, oauth_url, api_url]):
-        raise HTTPException(status_code=500, detail="Quran API credentials not configured")
-    return cid, secret, oauth_url, api_url
-
-
-async def _get_access_token() -> str:
-    """Return a valid access token, refreshing if expired."""
-    global _token_cache
-    if _token_cache["access_token"] and time.time() < _token_cache["expires_at"] - 60:
-        return _token_cache["access_token"]
-
-    cid, secret, oauth_url, _ = _get_config()
-    token_url = f"{oauth_url}/oauth2/token"
-
+    token_url = f"{_oauth_base()}/oauth2/token"
     async with httpx.AsyncClient(timeout=15.0) as client:
         r = await client.post(
             token_url,
-            data={"grant_type": "client_credentials"},
+            data={"grant_type": "client_credentials", "scope": "content"},
             auth=(cid, secret),
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
         if r.status_code != 200:
-            logger.error(f"OAuth2 token error {r.status_code}: {r.text}")
-            raise HTTPException(status_code=502, detail="Failed to authenticate with Quran API")
+            logger.error(f"[QF Content] Token error {r.status_code}: {r.text}")
+            raise HTTPException(status_code=502, detail="Failed to authenticate with Quran Foundation API")
 
         body = r.json()
-        _token_cache["access_token"] = body["access_token"]
-        _token_cache["expires_at"] = time.time() + body.get("expires_in", 3600)
-        logger.info("Quran V2 OAuth2 token refreshed")
-        return _token_cache["access_token"]
+        _content_token_cache["access_token"] = body["access_token"]
+        _content_token_cache["expires_at"] = time.time() + body.get("expires_in", 3600)
+        logger.info("[QF Content] Client Credentials token refreshed")
+        return _content_token_cache["access_token"]
 
 
-async def _authed_get(path: str, params: dict | None = None) -> dict:
-    """Make a GET request to the Quran API. Uses OAuth if configured, public API otherwise."""
-    if not _has_oauth_config():
-        # Fallback to public Quran.com API (no auth required)
-        url = f"{QURAN_PUBLIC_API}{path}"
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            r = await client.get(url, params=params)
-            r.raise_for_status()
-            return r.json()
+def _content_headers(token: str) -> dict:
+    """Required headers for every Content API request."""
+    return {
+        "x-auth-token": token,
+        "x-client-id": _client_id(),
+    }
 
-    _, _, _, api_url = _get_config()
-    token = await _get_access_token()
-    url = f"{api_url}{path}"
+
+async def _content_get(path: str, params: dict | None = None) -> dict:
+    """Authenticated GET to the Content API at /content/api/v4{path}."""
+    token = await _get_content_token()
+    url = f"{_qf_base()}/content/api/v4{path}"
 
     async with httpx.AsyncClient(timeout=20.0) as client:
-        r = await client.get(
-            url,
-            params=params,
-            headers={"Authorization": f"Bearer {token}"},
-        )
+        r = await client.get(url, params=params, headers=_content_headers(token))
         if r.status_code == 401:
-            _token_cache["access_token"] = None
-            token = await _get_access_token()
-            r = await client.get(url, params=params, headers={"Authorization": f"Bearer {token}"})
+            # Token expired mid-flight, force refresh and retry once
+            _content_token_cache["access_token"] = None
+            token = await _get_content_token()
+            r = await client.get(url, params=params, headers=_content_headers(token))
         r.raise_for_status()
         return r.json()
 
@@ -101,9 +95,6 @@ def init_quran_v2_routes(database):
 
 
 # --------------- OAuth2 Authorization Code + PKCE (User-Level) ---------------
-
-OAUTH2_BASE = os.environ.get("QURAN_OAUTH_URL", "https://oauth2.quran.foundation")
-QF_API_BASE = os.environ.get("QURAN_USER_API_URL", "https://apis.quran.foundation")
 
 
 def _generate_pkce():
@@ -121,7 +112,7 @@ def _generate_pkce():
 async def quran_oauth_login(request: Request):
     """Redirect user to Quran Foundation authorization page."""
     import secrets as sec
-    cid = os.environ.get("QURAN_CLIENT_ID")
+    cid = _client_id()
     redirect_uri = os.environ.get("QURAN_REDIRECT_URI", str(request.base_url).rstrip("/") + "/api/quran/v2/oauth/callback")
     if not cid:
         raise HTTPException(status_code=500, detail="QURAN_CLIENT_ID not configured")
@@ -163,7 +154,7 @@ async def quran_oauth_login(request: Request):
         "code_challenge": challenge,
         "code_challenge_method": "S256",
     })
-    auth_url = f"{OAUTH2_BASE}/oauth2/auth?{params}"
+    auth_url = f"{_oauth_base()}/oauth2/auth?{params}"
     from starlette.responses import RedirectResponse
     return RedirectResponse(url=auth_url)
 
@@ -192,8 +183,8 @@ async def quran_oauth_callback(request: Request):
     # Clean up used state
     await db.quran_oauth_state.delete_one({"state": state})
 
-    cid = os.environ.get("QURAN_CLIENT_ID")
-    csecret = os.environ.get("QURAN_CLIENT_SECRET")
+    cid = _client_id()
+    csecret = _client_secret()
     redirect_uri = stored["redirect_uri"]
     verifier = stored["code_verifier"]
     user_id = stored["user_id"]
@@ -201,7 +192,7 @@ async def quran_oauth_callback(request: Request):
     # Exchange code for tokens
     try:
         async with httpx.AsyncClient(timeout=20.0) as client:
-            token_url = f"{OAUTH2_BASE}/oauth2/token"
+            token_url = f"{_oauth_base()}/oauth2/token"
             payload = {
                 "grant_type": "authorization_code",
                 "code": code,
@@ -279,7 +270,7 @@ async def get_chapters():
         return cached["data"]
 
     try:
-        data = await _authed_get("/chapters", {"language": "en"})
+        data = await _content_get("/chapters", {"language": "en"})
     except httpx.HTTPStatusError as e:
         logger.error(f"Quran V2 chapters error: {e}")
         raise HTTPException(status_code=502, detail="Quran API temporarily unavailable")
@@ -309,7 +300,7 @@ async def get_verses_by_chapter(chapter_id: int, page: int = 1, per_page: int = 
         return cached["data"]
 
     try:
-        data = await _authed_get(
+        data = await _content_get(
             f"/verses/by_chapter/{chapter_id}",
             {
                 "words": "true",
@@ -349,7 +340,7 @@ async def get_verses_by_page(page_number: int, per_page: int = 50):
         return cached["data"]
 
     try:
-        data = await _authed_get(
+        data = await _content_get(
             f"/verses/by_page/{page_number}",
             {
                 "words": "true",
@@ -385,7 +376,7 @@ async def get_juzs():
         return cached["data"]
 
     try:
-        data = await _authed_get("/juzs")
+        data = await _content_get("/juzs")
     except HTTPException:
         raise
     except Exception as e:

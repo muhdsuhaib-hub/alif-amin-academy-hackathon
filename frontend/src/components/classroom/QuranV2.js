@@ -338,6 +338,7 @@ function QuranV2Core({
   // Navigation handlers
   const navigateTo = useCallback((chapter, page = 1) => {
     setCurrentChapter(chapter);
+    setCurrentPage(1);
     setFocusedVerse(null);
     if (isTeacher) {
       onSyncEvent?.({ action: 'navigate', chapter, page });
